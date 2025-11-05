@@ -3697,7 +3697,7 @@ $SearchOrders_sig = array(
 	array(Value::$xmlrpcArray, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString));
 $SearchOrders_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
 
-function xmlrpc_SearchOrders($request)
+function xmlrpc_InsertSupplierInvoice($request)
 {
 	ob_start('ob_file_callback');
 	$encoder = new Encoder();
