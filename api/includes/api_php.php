@@ -11,7 +11,8 @@
  */
 
 // FOLLOWING IS ALWAYS REQUIRED
-
+echo 'That is it!';
+exit;
 if (isset($_SESSION['DatabaseName'])) {
 	$api_DatabaseName = $_SESSION['DatabaseName'];
 	$PathPrefix = __DIR__ . '/../../';
