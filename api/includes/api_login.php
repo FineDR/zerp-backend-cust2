@@ -116,12 +116,8 @@ function DoSetup()
 
 	/// @todo not having declared this as global means that this assignment is useless...
     $db = $_SESSION['db'];	    // Used a bit in the following.
-<<<<<<< HEAD
-    if(isset($_SESSION['DB_Maintenance'])){
-=======
 
     if (isset($_SESSION['DB_Maintenance'])) {
->>>>>>> 3c1eac11b1f2a0c53c580a461d0b76408d52bd2e
 		if ($_SESSION['DB_Maintenance']>0)  {
 		    if (DateDiff(Date($_SESSION['DefaultDateFormat']),
 				 	ConvertSQLDate($_SESSION['DB_Maintenance_LastRun'])
