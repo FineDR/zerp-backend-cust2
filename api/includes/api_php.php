@@ -11,17 +11,15 @@
  */
 
 // FOLLOWING IS ALWAYS REQUIRED
-echo 'That is it!';
-exit;
+
 if (isset($_SESSION['DatabaseName'])) {
 	$api_DatabaseName = $_SESSION['DatabaseName'];
-	$PathPrefix = __DIR__ . '/../../';
 }else{
 $api_DatabaseName = "zalongwa_weberp";
-$PathPrefix = __DIR__ . '/../';
 }
 
 $AllowAnyone = true;
+$PathPrefix = __DIR__ . '/../../';
 if (!isset($WebErpSessionType)) {
 	include(__DIR__ . '/api_session.php');
 } else {
