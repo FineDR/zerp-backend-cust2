@@ -3642,6 +3642,46 @@ unset($Parameter);
 unset($ReturnValue);
 
 ////////////////// jlungo's APIs ////////////////////
+$Description = __('This function is used to insert a new Location into the webERP database.');
+$Parameter[0]['name'] = __('Location Details');
+$Parameter[0]['description'] = __('A set of key/value pairs where the key must be identical to the name of the field to be updated. ')
+	. __('The field names can be found ') . '<a href="../../Z_DescribeTable.php?table=locations">' . __('here ') . '</a>'
+	. __('and are case sensitive. ') . __('The values should be of the correct type, and the api will check them before updating the database. ')
+	. __('It is not necessary to include all the fields in this parameter, the database default value will be used if the field is not given.');
+$Parameter[1]['name'] = __('User name');
+$Parameter[1]['description'] = __('A valid weberp username. This user should have security access  to this data.');
+$Parameter[2]['name'] = __('User password');
+$Parameter[2]['description'] = __('The weberp password associated with this user name. ');
+$ReturnValue = __('This function returns an array of integers. ')
+	. __('If the first element is zero then the function was successful. ')
+	. __('Otherwise an array of error codes is returned and no insertion takes place. ');
+
+$InsertLocation_sig = array(
+	array(Value::$xmlrpcArray, Value::$xmlrpcStruct),
+	array(Value::$xmlrpcArray, Value::$xmlrpcStruct, Value::$xmlrpcString, Value::$xmlrpcString));
+$InsertLocation_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
+
+function xmlrpc_InsertLocation($request)
+{
+	ob_start('ob_file_callback');
+	$encoder = new Encoder();
+	if ($request->getNumParams() == 3) {
+		$rtn = new Response($encoder->encode(InsertLocation(
+			$encoder->decode($request->getParam(0)),
+			$request->getParam(1)->scalarval(),
+			$request->getParam(2)->scalarval())));
+	} else {
+		$rtn = new Response($encoder->encode(InsertLocation($encoder->decode($request->getParam(0)), '', '')));
+	}
+	ob_end_flush();
+	return $rtn;
+}
+
+unset($Description);
+unset($Parameter);
+unset($ReturnValue);
+
+
 $Description = __('This function takes a supplier ID and returns an array of key/value pairs.') .
 	__('The keys represent the database field names, and the values are the value of that field.');
 $Parameter[0]['name'] = __('Supplier ID');
@@ -4143,4 +4183,8 @@ return array(
 		"function" => "xmlrpc_GetSupplierInquiry",
 		"signature" => $GetSupplierInquiry_sig,
 		"docstring" => $GetSupplierInquiry_doc),
+	"weberp.xmlrpc_InsertLocation" => array(
+		"function" => "xmlrpc_InsertLocation",
+		"signature" => $InsertLocation_sig,
+		"docstring" => $InsertLocation_doc),
 );
