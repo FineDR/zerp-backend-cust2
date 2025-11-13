@@ -3642,6 +3642,47 @@ unset($Parameter);
 unset($ReturnValue);
 
 ////////////////// jlungo's APIs ////////////////////
+$Description = __('This function is used to modify a location which is already setup in the webERP database.');
+$Parameter[0]['name'] = __('Location Details');
+$Parameter[0]['description'] = __('A set of key/value pairs where the key must be identical to the name of the field to be updated. ')
+	. __('The field names can be found ') . '<a href="../../Z_DescribeTable.php?table=locations">' . __('here ') . '</a>'
+	. __('and are case sensitive. ') . __('The values should be of the correct type, and the api will check them before updating the database. ')
+	. __('It is not necessary to include all the fields in this parameter, the database default value will be used if the field is not given.')
+	. '<p>' . __('The branchcode/debtorno combination must already exist in the weberp database.');
+$Parameter[1]['name'] = __('User name');
+$Parameter[1]['description'] = __('A valid weberp username. This user should have security access  to this data.');
+$Parameter[2]['name'] = __('User password');
+$Parameter[2]['description'] = __('The weberp password associated with this user name. ');
+$ReturnValue = __('This function returns an array of integers. ')
+	. __('If the first element is zero then the function was successful. ')
+	. __('Otherwise an array of error codes is returned and no insertion takes place. ');
+
+$ModifyLocation_sig = array(
+	array(Value::$xmlrpcArray, Value::$xmlrpcStruct),
+	array(Value::$xmlrpcArray, Value::$xmlrpcStruct, Value::$xmlrpcString, Value::$xmlrpcString));
+$ModifyLocation_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
+
+function xmlrpc_ModifyLocation($request)
+{
+	ob_start('ob_file_callback');
+	$encoder = new Encoder();
+	if ($request->getNumParams() == 3) {
+		$rtn = new Response($encoder->encode(ModifyLocation(
+			$encoder->decode($request->getParam(0)),
+			$request->getParam(1)->scalarval(),
+			$request->getParam(2)->scalarval())));
+	} else {
+		$rtn = new Response($encoder->encode(ModifyLocation($encoder->decode($request->getParam(0)), '', '')));
+	}
+	ob_end_flush();
+	return $rtn;
+}
+
+unset($Description);
+unset($Parameter);
+unset($ReturnValue);
+
+
 $Description = __('This function is used to insert a new Location into the webERP database.');
 $Parameter[0]['name'] = __('Location Details');
 $Parameter[0]['description'] = __('A set of key/value pairs where the key must be identical to the name of the field to be updated. ')
@@ -4187,4 +4228,8 @@ return array(
 		"function" => "xmlrpc_InsertLocation",
 		"signature" => $InsertLocation_sig,
 		"docstring" => $InsertLocation_doc),
+	"weberp.xmlrpc_ModifyLocation" => array(
+		"function" => "xmlrpc_ModifyLocation",
+		"signature" => $ModifyLocation_sig,
+		"docstring" => $ModifyLocation_doc),
 );
