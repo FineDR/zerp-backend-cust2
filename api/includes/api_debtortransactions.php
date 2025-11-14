@@ -1727,7 +1727,7 @@ function SearchInvoices($user, $password) {
 	*/
 
 	$SQL="SELECT transno
-		FROM debtortrans";
+		FROM debtortrans ORDER BY transno DESC";
 
 	$Result = DB_query($SQL);
 	$i=0;
