@@ -237,10 +237,10 @@ if (isset($_POST['EnterAdjustment']) AND $_POST['EnterAdjustment']!= ''){
 		$ErrMsg =  __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The stock movement record cannot be inserted because');
 		$Result = DB_query($SQL, $ErrMsg, '', true);
 
-/*Get the ID of the StockMove... */
+    /*Get the ID of the StockMove... */
 		$StkMoveNo = DB_Last_Insert_ID('stockmoves','stkmoveno');
 
-/*Insert the StockSerialMovements and update the StockSerialItems  for controlled items*/
+    /*Insert the StockSerialMovements and update the StockSerialItems  for controlled items*/
 
 		if ($_SESSION['Adjustment' . $identifier]->Controlled ==1){
 			foreach($_SESSION['Adjustment' . $identifier]->SerialItems as $Item){

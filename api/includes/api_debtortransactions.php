@@ -1595,3 +1595,140 @@ function InsertSalesCredit($CreditDetails, $user, $password) {
 		return $Errors;
 	}
 }
+
+/** This function takes a field name, and a string, and then returns an
+   array of Invoice ids that fulfill this criteria.
+*/
+function SearchInvoices($Field, $Criteria, $user, $password) {
+	$Errors = array();
+	$db = db($user, $password);
+	if (gettype($db)=='integer') {
+		$Errors[0]=NoAuthorisation;
+		return $Errors;
+	}
+    /*
+	$SQL='SELECT debtortrans.transno
+		FROM suppliers
+		WHERE '.$Field." LIKE '%".$Criteria."%' ORDER BY supplierid";
+	*/
+
+    /*
+	$SQL = 'SELECT debtortrans.trandate,
+			debtortrans.ovamount,
+			debtortrans.ovdiscount,
+			debtortrans.ovfreight,
+			debtortrans.ovgst,
+			debtortrans.rate,
+			debtortrans.invtext,
+			debtortrans.consignment,
+			debtortrans.packages,
+			debtorsmaster.name,
+			debtorsmaster.address1,
+			debtorsmaster.address2,
+			debtorsmaster.address3,
+			debtorsmaster.address4,
+			debtorsmaster.address5,
+			debtorsmaster.address6,
+			debtorsmaster.currcode,
+			debtorsmaster.invaddrbranch,
+			debtorsmaster.taxref,
+			debtorsmaster.language_id,
+			paymentterms.terms,
+			paymentterms.dayinfollowingmonth,
+			paymentterms.daysbeforedue,
+			salesorders.deliverto,
+			salesorders.deladd1,
+			salesorders.deladd2,
+			salesorders.deladd3,
+			salesorders.deladd4,
+			salesorders.deladd5,
+			salesorders.deladd6,
+			salesorders.customerref,
+			salesorders.orderno,
+			salesorders.orddate,
+			locations.locationname,
+			shippers.shippername,
+			custbranch.brname,
+			custbranch.braddress1,
+			custbranch.braddress2,
+			custbranch.braddress3,
+			custbranch.braddress4,
+			custbranch.braddress5,
+			custbranch.braddress6,
+			custbranch.brpostaddr1,
+			custbranch.brpostaddr2,
+			custbranch.brpostaddr3,
+			custbranch.brpostaddr4,
+			custbranch.brpostaddr5,
+			custbranch.brpostaddr6,
+			custbranch.salesman,
+			salesman.salesmanname,
+			debtortrans.debtorno,
+			debtortrans.branchcode,
+			currencies.decimalplaces
+		FROM debtortrans INNER JOIN debtorsmaster
+		ON debtortrans.debtorno=debtorsmaster.debtorno
+		INNER JOIN custbranch
+		ON debtortrans.debtorno=custbranch.debtorno
+		AND debtortrans.branchcode=custbranch.branchcode
+		INNER JOIN salesorders
+		ON debtortrans.order_ = salesorders.orderno
+		INNER JOIN shippers
+		ON debtortrans.shipvia=shippers.shipper_id
+		INNER JOIN salesman
+		ON custbranch.salesman=salesman.salesmancode
+		INNER JOIN locations
+		ON salesorders.fromstkloc=locations.loccode
+		INNER JOIN locationusers
+		ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
+		INNER JOIN paymentterms
+		ON debtorsmaster.paymentterms=paymentterms.termsindicator
+		INNER JOIN currencies
+		ON debtorsmaster.currcode=currencies.currabrev
+		WHERE debtortrans.type=10
+		AND '.$Field." LIKE '%".$Criteria."%' ORDER BY debtortrans.transno DESC";
+	*/
+
+				//AND debtortrans.transno='" . $FromTransNo . "'";
+	$SQL='SELECT debtortrans.transno
+		FROM debtortrans INNER JOIN debtorsmaster
+		ON debtortrans.debtorno=debtorsmaster.debtorno
+		INNER JOIN custbranch
+		ON debtortrans.debtorno=custbranch.debtorno
+		AND debtortrans.branchcode=custbranch.branchcode
+		INNER JOIN salesorders
+		ON debtortrans.order_ = salesorders.orderno
+		INNER JOIN shippers
+		ON debtortrans.shipvia=shippers.shipper_id
+		INNER JOIN salesman
+		ON custbranch.salesman=salesman.salesmancode
+		INNER JOIN locations
+		ON salesorders.fromstkloc=locations.loccode
+		INNER JOIN locationusers
+		ON locationusers.loccode=locations.loccode AND locationusers.userid='.$user.' AND locationusers.canview=1
+		INNER JOIN paymentterms
+		ON debtorsmaster.paymentterms=paymentterms.termsindicator
+		INNER JOIN currencies
+		ON debtorsmaster.currcode=currencies.currabrev
+		WHERE debtortrans.type=10
+		WHERE '.$Field." LIKE '%".$Criteria."%' ORDER BY supplierid";
+
+		//ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
+	
+	$SQL='SELECT transno
+		FROM debtortrans
+		WHERE '.$Field." LIKE '%".$Criteria."%' ORDER BY transno DESC";
+
+	$SQL='SELECT transno
+		FROM debtortrans
+		WHERE '.$Field." LIKE '%".$Criteria."%' ORDER BY transno DESC";
+
+	$Result = DB_query($SQL);
+	$i=0;
+	$InvoiceList = array();
+	while ($MyRow=DB_fetch_array($Result)) {
+		$InvoiceList[$i]=$MyRow[0];
+		$i++;
+	}
+	return $InvoiceList;
+}

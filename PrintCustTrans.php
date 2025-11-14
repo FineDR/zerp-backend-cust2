@@ -597,13 +597,7 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 	$DomPDF->render();
 
 	// Output the generated PDF to Browser
-<<<<<<< HEAD
-	$dompdf->stream($PdfFileName, array("Attachment" => false));
-
-
-=======
 	$DomPDF->stream($PdfFileName, array("Attachment" => false));
->>>>>>> 3c1eac11b1f2a0c53c580a461d0b76408d52bd2e
 }
 
 } else {
