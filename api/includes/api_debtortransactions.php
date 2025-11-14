@@ -1744,7 +1744,6 @@ function SearchInvoices($user, $password) {
    array of Invoice ids that fulfill this criteria.
 */
 function SearchInvoiceDetails($TransNo, $user, $password) {
-//function SearchInvoices($user, $password) {
 	$Errors = array();
 	$db = db($user, $password);
 	if (gettype($db)=='integer') {
@@ -1868,11 +1867,14 @@ function SearchInvoiceDetails($TransNo, $user, $password) {
 		WHERE '.$Field." LIKE '%".$Criteria."%' ORDER BY transno DESC";
 	*/
 	$Result = DB_query($SQL);
-	$i=0;
-	$InvoiceList = array();
-	while ($MyRow=DB_fetch_array($Result)) {
-		$InvoiceList[$i]=$MyRow[0];
-		$i++;
+	if (sizeof($Errors)==0) {
+		$i=0;
+		while ($MyRow=DB_fetch_array($Result)) {
+			$Answer[$i]=$MyRow;
+			$i++;
+		}
+		return $Answer;
+	} else {
+		return $Errors;
 	}
-	return $InvoiceList;
 }

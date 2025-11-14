@@ -4304,7 +4304,11 @@ return array(
 		"signature" => $ModifyLocation_sig,
 		"docstring" => $ModifyLocation_doc),
 	"weberp.xmlrpc_SearchInvoiceDetails" => array(
-		"function" => "xmlrpc_Searchinvoicedetails",
+		"function" => "xmlrpc_SearchinvoiceDetails",
+		"signature" => $SearchinvoiceDetails_sig,
+		"docstring" => $SearchinvoiceDetails_doc),
+	"weberp.xmlrpc_SearchInvoices" => array(
+		"function" => "xmlrpc_Searchinvoices",
 		"signature" => $Searchinvoices_sig,
 		"docstring" => $Searchinvoices_doc),
 );
