@@ -3642,6 +3642,37 @@ unset($Parameter);
 unset($ReturnValue);
 
 ////////////////// jlungo's APIs ////////////////////
+$Description = __('This function returns a list of Invoce codes.');
+$Parameter[0]['name'] = __('User name');
+$Parameter[0]['description'] = __('A valid weberp username. This user should have security access  to this data.');
+$Parameter[1]['name'] = __('User password');
+$Parameter[1]['description'] = __('The weberp password associated with this user name. ');
+$ReturnValue = __('This function returns an array of general ledger account codes.');
+
+$SearchInvoices_sig = array(
+	array(Value::$xmlrpcArray),
+	array(Value::$xmlrpcArray, Value::$xmlrpcString, Value::$xmlrpcString));
+$SearchInvoices_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
+
+function xmlrpc_SearchInvoices($request)
+{
+	ob_start('ob_file_callback');
+	$encoder = new Encoder();
+	if ($request->getNumParams() == 2) {
+		$rtn = new Response($encoder->encode(SearchInvoices(
+			$request->getParam(0)->scalarval(),
+			$request->getParam(1)->scalarval())));
+	} else {
+		$rtn = new Response($encoder->encode(SearchInvoices('', '')));
+	}
+	ob_end_flush();
+	return $rtn;
+}
+
+unset($Description);
+unset($Parameter);
+unset($ReturnValue);
+
 $Description = __('This function is used to retrieve the details of an Invoice from the webERP database.');
 $Parameter[0]['name'] = __('Field name');
 $Parameter[0]['description'] = __('This is a string value. It must be a valid field in the Invoice table. This is case sensitive');
@@ -3654,23 +3685,23 @@ $Parameter[3]['description'] = __('The weberp password associated with this user
 $ReturnValue = __('If successful this function returns an array of Invoice numbers. ')
 	. __('Otherwise an array of error codes is returned. ');
 
-$SearchInvoices_sig = array(
+$SearchInvoiceDetails_sig = array(
 	array(Value::$xmlrpcArray, Value::$xmlrpcString, Value::$xmlrpcString),
 	array(Value::$xmlrpcArray, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString));
-$SearchInvoices_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
+$SearchInvoiceDetails_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
 
-function xmlrpc_SearchInvoices($request)
+function xmlrpc_SearchInvoiceDetails($request)
 {
 	ob_start('ob_file_callback');
 	$encoder = new Encoder();
 	if ($request->getNumParams() == 4) {
-		$rtn = new Response($encoder->encode(SearchInvoices(
+		$rtn = new Response($encoder->encode(SearchInvoiceDetails(
 			$request->getParam(0)->scalarval(),
 			$request->getParam(1)->scalarval(),
 			$request->getParam(2)->scalarval(),
 			$request->getParam(3)->scalarval())));
 	} else {
-		$rtn = new Response($encoder->encode(SearchInvoices(
+		$rtn = new Response($encoder->encode(SearchInvoiceDetails(
 			$request->getParam(0)->scalarval(),
 			$request->getParam(1)->scalarval(), '', '')));
 	}
@@ -4272,8 +4303,8 @@ return array(
 		"function" => "xmlrpc_ModifyLocation",
 		"signature" => $ModifyLocation_sig,
 		"docstring" => $ModifyLocation_doc),
-	"weberp.xmlrpc_SearchInvoices" => array(
-		"function" => "xmlrpc_Searchinvoices",
+	"weberp.xmlrpc_SearchInvoiceDetails" => array(
+		"function" => "xmlrpc_Searchinvoicedetails",
 		"signature" => $Searchinvoices_sig,
 		"docstring" => $Searchinvoices_doc),
 );
