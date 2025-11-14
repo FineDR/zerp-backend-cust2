@@ -1743,7 +1743,7 @@ function SearchInvoices($user, $password) {
 /** This function takes a field name, and a string, and then returns an
    array of Invoice ids that fulfill this criteria.
 */
-function SearchInvoiceDetails($TransNo, $user, $password) {
+function GetInvoiceDetails($TransNo, $user, $password) {
 	$Errors = array();
 	$db = db($user, $password);
 	if (gettype($db)=='integer') {
