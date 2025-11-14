@@ -1750,11 +1750,6 @@ function SearchInvoiceDetails($TransNo, $user, $password) {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-    /*
-	$SQL='SELECT debtortrans.transno
-		FROM suppliers
-		WHERE '.$Field." LIKE '%".$Criteria."%' ORDER BY supplierid";
-	*/
 
 	$SQL = "SELECT debtortrans.trandate,
 			debtortrans.ovamount,
@@ -1831,41 +1826,6 @@ function SearchInvoiceDetails($TransNo, $user, $password) {
 		WHERE debtortrans.type=10
 		AND debtortrans.transno='".$TransNo."'";
 
-				//AND debtortrans.transno='" . $FromTransNo . "'";
-	/*
-	$SQL='SELECT debtortrans.transno
-		FROM debtortrans INNER JOIN debtorsmaster
-		ON debtortrans.debtorno=debtorsmaster.debtorno
-		INNER JOIN custbranch
-		ON debtortrans.debtorno=custbranch.debtorno
-		AND debtortrans.branchcode=custbranch.branchcode
-		INNER JOIN salesorders
-		ON debtortrans.order_ = salesorders.orderno
-		INNER JOIN shippers
-		ON debtortrans.shipvia=shippers.shipper_id
-		INNER JOIN salesman
-		ON custbranch.salesman=salesman.salesmancode
-		INNER JOIN locations
-		ON salesorders.fromstkloc=locations.loccode
-		INNER JOIN locationusers
-		ON locationusers.loccode=locations.loccode AND locationusers.userid='.$user.' AND locationusers.canview=1
-		INNER JOIN paymentterms
-		ON debtorsmaster.paymentterms=paymentterms.termsindicator
-		INNER JOIN currencies
-		ON debtorsmaster.currcode=currencies.currabrev
-		WHERE debtortrans.type=10
-		WHERE '.$Field." LIKE '%".$Criteria."%' ORDER BY supplierid";
-
-		//ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
-	
-	$SQL='SELECT transno
-		FROM debtortrans
-		WHERE '.$Field." LIKE '%".$Criteria."%' ORDER BY transno DESC";
-
-	$SQL='SELECT transno
-		FROM debtortrans
-		WHERE '.$Field." LIKE '%".$Criteria."%' ORDER BY transno DESC";
-	*/
 	$Result = DB_query($SQL);
 	if (sizeof($Errors)==0) {
 		$i=0;
