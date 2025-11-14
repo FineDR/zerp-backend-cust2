@@ -1818,7 +1818,7 @@ function GetInvoiceDetails($TransNo, $user, $password) {
 		INNER JOIN locations
 		ON salesorders.fromstkloc=locations.loccode
 		INNER JOIN locationusers
-		ON locationusers.loccode=locations.loccode AND locationusers.userid='".$user."' AND locationusers.canview=1
+		ON locationusers.loccode=locations.loccode
 		INNER JOIN paymentterms
 		ON debtorsmaster.paymentterms=paymentterms.termsindicator
 		INNER JOIN currencies
