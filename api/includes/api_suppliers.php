@@ -502,10 +502,6 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 	if (gettype($db)=='integer') {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
-	}else{
-		$Errors[0]=ZALONGWA;
-		return $Errors;
-
 	}
 
 
