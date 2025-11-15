@@ -553,6 +553,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 			AND suppliers.supplierid = '$SupplierID'";
 
 	$Result = DB_query($SQL, $ErrMsg);
+	return $Result;
 	//=========show output============
 	if (sizeof($Errors)==0) {
 		$i=0;
