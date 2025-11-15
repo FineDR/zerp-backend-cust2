@@ -3841,10 +3841,10 @@ $ReturnValue = __('This function returns an array of order IDs, which may be int
 	. __('If the first element is zero then the function was successful. ')
 	. __('Otherwise an array of error codes is returned and no insertion takes place. ');
 
-$SearchOrders_sig = array(
+$InsertSupplierInvoice_sig = array(
 	array(Value::$xmlrpcArray, Value::$xmlrpcString, Value::$xmlrpcString),
 	array(Value::$xmlrpcArray, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString));
-$SearchOrders_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
+$InsertSupplierInvoice_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
 
 function xmlrpc_InsertSupplierInvoice($request)
 {
@@ -4308,4 +4308,8 @@ return array(
 		"function" => "xmlrpc_Searchinvoices",
 		"signature" => $Searchinvoices_sig,
 		"docstring" => $Searchinvoices_doc),
+	"weberp.xmlrpc_InsertSupplierInvoice" => array(
+		"function" => "xmlrpc_InsertSupplierInvoice",
+		"signature" => $InsertSupplierInvoice_sig,
+		"docstring" => $InsertSupplierInvoice_doc),
 );
