@@ -502,11 +502,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 	if (gettype($db)=='integer') {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
-	}else{
-		$test=ZALONGWA;
-    	return $test;
 	}
-
 
 	/********************** expected parameters ****************************************  
 	 * (1) InvoiceType (i. Purchase Order
