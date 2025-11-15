@@ -530,46 +530,5 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 	foreach ($Header as $key => $Value) {
 		$HeaderData[$key] = DB_escape_string($Value);
 	}
-	return $HeaderData[$key];
-	
 	$Errors=VerifySupplierNo($HeaderData['supplierid'], sizeof($Errors), $Errors);
-	/*Now retrieve supplier information - name, currency, default ex rate, terms, tax rate etc */
-	$SQL = "SELECT suppliers.suppname,
-				suppliers.supplierid,
-				paymentterms.terms,
-				paymentterms.daysbeforedue,
-				paymentterms.dayinfollowingmonth,
-				suppliers.currcode,
-				currencies.rate AS exrate,
-				currencies.decimalplaces,
-				suppliers.taxgroupid,
-				taxgroups.taxgroupdescription
-			FROM suppliers,
-				taxgroups,
-				currencies,
-				paymentterms,
-				taxauthorities
-			WHERE suppliers.taxgroupid=taxgroups.taxgroupid
-			AND suppliers.currcode=currencies.currabrev
-			AND suppliers.paymentterms=paymentterms.termsindicator
-			AND suppliers.supplierid = '$SupplierID'";
-
-	$Result = DB_query($SQL, $ErrMsg);
-	
-	//=========show output============
-	
-		if (sizeof($Errors)==0) {
-			$i=0;
-			while ($MyRow=DB_fetch_array($Result)) {
-				$Answer[$i]=$MyRow;
-				$i++;
-			}
-			return $Answer;
-		} else {
-			return $Errors;
-		}
-	
-
-    	//=========end of show==========
-
 }
