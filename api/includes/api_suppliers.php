@@ -553,10 +553,24 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 			AND suppliers.supplierid = '$SupplierID'";
 
 	$Result = DB_query($SQL, $ErrMsg);
+	//=========show output============
+	if (sizeof($Errors)==0) {
+		$i=0;
+		while ($MyRow=DB_fetch_array($Result)) {
+			$Answer[$i]=$MyRow;
+			$i++;
+		}
+		return $Answer;
+	} else {
+		return $Errors;
+	}
+	//=========end of show==========
+	/*
 	if (DB_num_rows($Result)==0){
 		$Errors[0] = SupplierCannotbeRetrieved;
 		return $Errors;
 	}
+		\*/
 	$MyRow = DB_fetch_array($Result);
 	
 	/* listdown all the values from the submitted Invoice Header */
