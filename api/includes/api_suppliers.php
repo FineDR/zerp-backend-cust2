@@ -530,6 +530,8 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 	foreach ($Header as $key => $Value) {
 		$HeaderData[$key] = DB_escape_string($Value);
 	}
+	return $HeaderData[$key];
+	
 	$Errors=VerifySupplierNo($HeaderData['supplierid'], sizeof($Errors), $Errors);
 	/*Now retrieve supplier information - name, currency, default ex rate, terms, tax rate etc */
 	$SQL = "SELECT suppliers.suppname,
