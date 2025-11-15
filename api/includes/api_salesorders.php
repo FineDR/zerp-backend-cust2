@@ -676,6 +676,7 @@ function GetSalesOrderValue($OrderNo, $user, $password) {
 		$SQL = "SELECT salesorders.orderno,
 					debtorsmaster.name,
 					custbranch.brname,
+					custbranch.branchcode,
 					salesorders.customerref,
 					salesorders.orddate,
 					salesorders.deliverydate,
