@@ -497,14 +497,16 @@ function Add_GLCodes_To_Trans($GLCode,
  ************ USE ONLY WITH CAUTION********************
  */
 function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
+	$test=ZALONGWA;
+    return $test;
+	
 	$Errors = array();
 	$db = db($user, $password);
 	if (gettype($db)=='integer') {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-$Errors[0] = ZALONGWA;
-return $Errors;
+
 
 	/********************** expected parameters ****************************************  
 	 * (1) InvoiceType (i. Purchase Order
