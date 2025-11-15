@@ -504,69 +504,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 		return $Errors;
 	}
 
-	/********************** expected parameters ****************************************  
-	 * (1) InvoiceType (i. Purchase Order
-	 * 					ii. Shipments
-	 * 					iii. General Ledger (GL)
-	 * 					iv. Contracts
-	 * 					v. Fixed Assets
-	 *                 )
-	 * (2) SupplierID
-	 * (3) InvoiceHeader array (InvoiceNo, Narrative, TransDate, TotalInvoice, TotalTax)
-	 * if (InvoiceType == GL){
-	 * (4) InvoiceLineDetails array (GlCode, Amount, Narrative, Tag)
-	 * }
-	 * Retrive Supplier Information
-	 * (5) SupplierInfo array (i. daysbeforedue
-	 * 						   ii. dayinfollowingmonth
-	 * 						   iii. suppname
-	 * 						   iv. Currcode
-	 *                         v. taxrate
-	 *                         vi. taxgroupid
-	 *                         vii. taxgroupdescription
-	 *                         viii. terms
-	 *                        )
-	 *********************** expected parameters ****************************************  
-	*/
-	foreach ($Header as $key => $Value) {
-		$HeaderData[$key] = DB_escape_string($Value);
-	}
-	$Errors=VerifySupplierNo($HeaderData['supplierid'], sizeof($Errors), $Errors);
-	/*Now retrieve supplier information - name, currency, default ex rate, terms, tax rate etc */
-	$SQL = "SELECT suppliers.suppname,
-				suppliers.supplierid,
-				paymentterms.terms,
-				paymentterms.daysbeforedue,
-				paymentterms.dayinfollowingmonth,
-				suppliers.currcode,
-				currencies.rate AS exrate,
-				currencies.decimalplaces,
-				suppliers.taxgroupid,
-				taxgroups.taxgroupdescription
-			FROM suppliers,
-				taxgroups,
-				currencies,
-				paymentterms,
-				taxauthorities
-			WHERE suppliers.taxgroupid=taxgroups.taxgroupid
-			AND suppliers.currcode=currencies.currabrev
-			AND suppliers.paymentterms=paymentterms.termsindicator
-			AND suppliers.supplierid = '$SupplierID'";
 
-	$Result = DB_query($SQL, $ErrMsg);
-	
-	//=========show output============
-	
-		if (sizeof($Errors)==0) {
-			$i=0;
-			while ($MyRow=DB_fetch_array($Result)) {
-				$Answer[$i]=$MyRow;
-				$i++;
-			}
-			return $Answer;
-		} else {
-			return $Errors;
-		}
 	
 
 }
