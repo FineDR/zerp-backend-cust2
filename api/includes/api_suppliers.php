@@ -556,16 +556,18 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 	$Result = DB_query($SQL, $ErrMsg);
 	
 	//=========show output============
-	if (sizeof($Errors)==0) {
-		$i=0;
-		while ($MyRow=DB_fetch_array($Result)) {
-			$Answer[$i]=$MyRow;
-			$i++;
+	/*
+		if (sizeof($Errors)==0) {
+			$i=0;
+			while ($MyRow=DB_fetch_array($Result)) {
+				$Answer[$i]=$MyRow;
+				$i++;
+			}
+			return $Answer;
+		} else {
+			return $Errors;
 		}
-		return $Answer;
-	} else {
-		return $Errors;
-	}
+	*/
 	//=========end of show==========
 	/*
 	if (DB_num_rows($Result)==0){
