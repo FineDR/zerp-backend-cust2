@@ -3842,8 +3842,8 @@ $ReturnValue = __('This function returns an array of order IDs, which may be int
 	. __('Otherwise an array of error codes is returned and no insertion takes place. ');
 
 $InsertSupplierInvoice_sig = array(
-	array(Value::$xmlrpcArray, Value::$xmlrpcString, Value::$xmlrpcString),
-	array(Value::$xmlrpcArray, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString));
+	array(Value::$xmlrpcArray, Value::$xmlrpcStruct, Value::$xmlrpcStruct),
+	array(Value::$xmlrpcArray, Value::$xmlrpcStruct, Value::$xmlrpcStruct, Value::$xmlrpcString, Value::$xmlrpcString));
 $InsertSupplierInvoice_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
 
 function xmlrpc_InsertSupplierInvoice($request)
