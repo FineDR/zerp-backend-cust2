@@ -33,3 +33,9 @@ WHERE
     AND REFERENCED_COLUMN_NAME = 'categoryid';
 
 
+$GetStockCatProperty_sig = array(
+	array(Value::$xmlrpcValue, Value::$xmlrpcString, Value::$xmlrpcString),
+	array(Value::$xmlrpcValue, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString));
+$GetStockCatProperty_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
+
+

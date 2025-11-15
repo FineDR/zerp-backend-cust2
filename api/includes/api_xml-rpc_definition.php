@@ -3851,13 +3851,13 @@ function xmlrpc_InsertSupplierInvoice($request)
 	ob_start('ob_file_callback');
 	$encoder = new Encoder();
 	if ($request->getNumParams() == 4) {
-		$rtn = new Response($encoder->encode(SearchOrders(
+		$rtn = new Response($encoder->encode(InsertSupplierInvoice(
 			$request->getParam(0)->scalarval(),
 			$request->getParam(1)->scalarval(),
 			$request->getParam(2)->scalarval(),
 			$request->getParam(3)->scalarval())));
 	} else {
-		$rtn = new Response($encoder->encode(SearchOrders($request->getParam(0)->scalarval(),
+		$rtn = new Response($encoder->encode(InsertSupplierInvoice($request->getParam(0)->scalarval(),
 			$request->getParam(1)->scalarval(), '', '')));
 	}
 	ob_end_flush();
