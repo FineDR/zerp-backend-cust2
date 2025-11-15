@@ -503,6 +503,9 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
+$Errors[0] = ZALONGWA;
+return $Errors;
+
 	/********************** expected parameters ****************************************  
 	 * (1) InvoiceType (i. Purchase Order
 	 * 					ii. Shipments
@@ -553,7 +556,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 			AND suppliers.supplierid = '$SupplierID'";
 
 	$Result = DB_query($SQL, $ErrMsg);
-	return $Result;
+	
 	//=========show output============
 	if (sizeof($Errors)==0) {
 		$i=0;
