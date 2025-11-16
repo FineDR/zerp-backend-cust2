@@ -1454,17 +1454,48 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 
 /** Create a Supplier invoice header in webERP. If successful
  * returns $Errors[0]=0 and $Errors[1] will contain the invoice number.
- */
-function InsertSupplierInvoiceHeader($OrderHeader, $user, $password) {
+*/
+function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$Errors = array();
 	$db = db($user, $password);
 	if (gettype($db)=='integer') {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-	foreach ($OrderHeader as $key => $Value) {
-		$OrderHeader[$key] = DB_escape_string($Value);
+	foreach ($SupplierHeader as $key => $Value) {
+		$SupplierHeader[$key] = DB_escape_string($Value);
 	}
+	$Errors=VerifySupplierNo($SupplierHeader['supplierno'], sizeof($Errors), $Errors);
+	if (isset($SupplierHeader['trandate'])){
+		$Errors=VerifyDeliveryDate($SupplierHeader['trandate'], sizeof($Errors), $Errors);
+	}
+	/*Now retrieve supplier information - name, currency, default ex rate, terms, tax rate etc */
+	$SQL = "SELECT suppliers.suppname,
+					suppliers.supplierid,
+					paymentterms.terms,
+					paymentterms.daysbeforedue,
+					paymentterms.dayinfollowingmonth,
+					suppliers.currcode,
+					currencies.rate AS exrate,
+					currencies.decimalplaces,
+					suppliers.taxgroupid,
+					taxgroups.taxgroupdescription
+				FROM suppliers,
+					taxgroups,
+					currencies,
+					paymentterms,
+					taxauthorities
+				WHERE suppliers.taxgroupid=taxgroups.taxgroupid
+				AND suppliers.currcode=currencies.currabrev
+				AND suppliers.paymentterms=paymentterms.termsindicator
+				AND suppliers.supplierid = '" . $SupplierHeader['supplierno']. "'";
+	$Result = api_DB_query($SQL);
+	$SupplierDetails = DB_fetch_array($Result);
+	if (DB_num_rows($Result)==0){
+		$Errors[0] = NoSupplierExist;
+		return $Errors;
+	}
+
 	$Errors=VerifyDebtorExists($OrderHeader['debtorno'], sizeof($Errors), $Errors);
 	$Errors=VerifyBranchNoExists($OrderHeader['debtorno'],$OrderHeader['branchcode'], sizeof($Errors), $Errors);
 	if (isset($OrderHeader['customerref'])){
@@ -1534,7 +1565,7 @@ function InsertSupplierInvoiceHeader($OrderHeader, $user, $password) {
 	foreach ($OrderHeader as $key => $Value) {
 		$FieldNames.=$key.', ';
 		if (in_array($key, $SOH_DateFields) ) {
-			$Value = FormatDateforSQL($Value);	// Fix dates
+			$Value = FormatDateforSQL($Value);
 		}
 		$FieldValues.="'".$Value."', ";
 	}
@@ -1545,7 +1576,6 @@ function InsertSupplierInvoiceHeader($OrderHeader, $user, $password) {
 		$Result = api_DB_Query($SQL);
 
 		if (DB_error_no() != 0) {
-			//$Errors[0] = DatabaseUpdateFailed;
 			$Errors[0] = $SQL;
 		} else {
 			$Errors[0]=0;
