@@ -1465,7 +1465,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	foreach ($SupplierHeader as $key => $Value) {
 		$SupplierHeader[$key] = DB_escape_string($Value);
 	}
-	//$Errors=VerifySupplierNo($SupplierHeader['supplierno'], sizeof($Errors), $Errors);
+
 	$Errors=VerifySupplierNoExists($SupplierHeader['supplierno'], sizeof($Errors), $Errors);
 	if (isset($SupplierHeader['trandate'])){
 		$Errors=VerifyDeliveryDate($SupplierHeader['trandate'], sizeof($Errors), $Errors);
@@ -1495,7 +1495,11 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	if (DB_num_rows($Result)==0){
 		$Errors[0] = NoSupplierExist;
 		return $Errors;
+	}else{
+		$Errors[0] = $SQL;
 	}
+
+
 
 	if (isset($OrderHeader['customerref'])){
 		$Errors=VerifyCustomerRef($OrderHeader['customerref'], sizeof($Errors), $Errors);
