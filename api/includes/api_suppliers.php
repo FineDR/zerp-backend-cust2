@@ -1522,25 +1522,16 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		$MyRow['defaultlocation'] = $SupplierHeader['userlocation'];
 	}
 	
-	$Result = api_DB_query("SELECT taxprovinceid
+	$LocalTaxProvinceResult = api_DB_query("SELECT taxprovinceid
 								FROM locations
 								WHERE loccode = '" . $MyRow['defaultlocation'] . "'");
-	if (DB_num_rows($Result)==0){
+	if (DB_num_rows($LocalTaxProvinceResult)==0){
 		$Errors[0] = UserTaxProvinceNotSet;
 		return $Errors;
 	}
-	return 'defaultlocation ='.$user.' and qqSuppID = '.$SupplierID;
-
-	$LocalTaxProvinceResult = DB_fetch_array($Result);
-
-	if (DB_num_rows($LocalTaxProvinceResult) == 0) {
-		$Errors[0] = UserTaxProvinceNotSet;
-		return $Errors;
-	}
-	return 'defaultlocation ='.$user.' and SuppID = '.$SupplierID;
 
 	$LocalTaxProvinceRow = DB_fetch_row($LocalTaxProvinceResult);
-	$_SESSION['SuppTrans']->LocalTaxProvince = $LocalTaxProvinceRow[0];
+	$LocalTaxProvince = $LocalTaxProvinceRow[0];
 
 	$_SESSION['SuppTrans']->GetTaxes();
 
