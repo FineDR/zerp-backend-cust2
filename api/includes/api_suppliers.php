@@ -1519,7 +1519,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$SQL = "SELECT defaultlocation FROM www_users WHERE userid = '$user'";
 	$Result = api_DB_query($SQL);
 	$MyRow = DB_fetch_array($Result);
-
+	$MyRow['defaultlocation'] = 'MOR';
 	return 'defaultlocation ='.$user.' and qqSuppID = '.$SupplierID.' and location = '.$MyRow['defaultlocation'];
 
 	$Result = api_DB_query("SELECT taxprovinceid
