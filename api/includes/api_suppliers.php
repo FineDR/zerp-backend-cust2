@@ -1516,14 +1516,18 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	}
 	$SupplierID = $SupplierHeader['supplierno'];
 
+	//get user default location
+	$SQL = "SELECT defaultlocation FROM www_users WHERE userid = '$user'";
+	$Result = api_DB_query($SQL);
+	$MyRow = DB_fetch_array($Result);
+
 	$LocalTaxProvinceResult = DB_query("SELECT taxprovinceid
 								FROM locations
-								WHERE loccode = '" . $_SESSION['UserStockLocation'] . "'");
+								WHERE loccode = '" . $MyRow['defaultlocation'] . "'");
 
 	if (DB_num_rows($LocalTaxProvinceResult) == 0) {
-		prnMsg(__('The tax province associated with your user account has not been set up in this database. Tax calculations are based on the tax group of the supplier and the tax province of the user entering the invoice. The system administrator should redefine your account with a valid default stocking location and this location should refer to a valid tax province') , 'error');
-		include('includes/footer.php');
-		exit();
+		$Errors[0] = UserTaxProvinceNotSet;
+		return $Errors;
 	}
 
 	$LocalTaxProvinceRow = DB_fetch_row($LocalTaxProvinceResult);
