@@ -1496,8 +1496,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		return $Errors;
 	}
 
-	$Errors=VerifyDebtorExists($OrderHeader['debtorno'], sizeof($Errors), $Errors);
-	$Errors=VerifyBranchNoExists($OrderHeader['debtorno'],$OrderHeader['branchcode'], sizeof($Errors), $Errors);
 	if (isset($OrderHeader['customerref'])){
 		$Errors=VerifyCustomerRef($OrderHeader['customerref'], sizeof($Errors), $Errors);
 	}
