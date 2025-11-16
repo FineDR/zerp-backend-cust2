@@ -1506,79 +1506,47 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$taxgroupdescription = $MyRow['taxgroupdescription'];
 	$supplierid = $MyRow['supplierid'];
 
+	if ($MyRow['daysbeforedue'] == 0) {
+		$terms = '1' . $MyRow['dayinfollowingmonth'];
+	}
+	else {
+		$terms = '0' . $MyRow['daysbeforedue'];
+	}
+	$SupplierID = $SupplierHeader['supplierno'];
 
+	$LocalTaxProvinceResult = DB_query("SELECT taxprovinceid
+								FROM locations
+								WHERE loccode = '" . $_SESSION['UserStockLocation'] . "'");
+
+	if (DB_num_rows($LocalTaxProvinceResult) == 0) {
+		prnMsg(__('The tax province associated with your user account has not been set up in this database. Tax calculations are based on the tax group of the supplier and the tax province of the user entering the invoice. The system administrator should redefine your account with a valid default stocking location and this location should refer to a valid tax province') , 'error');
+		include('includes/footer.php');
+		exit();
+	}
+
+	$LocalTaxProvinceRow = DB_fetch_row($LocalTaxProvinceResult);
+	$_SESSION['SuppTrans']->LocalTaxProvince = $LocalTaxProvinceRow[0];
+
+	$_SESSION['SuppTrans']->GetTaxes();
+
+	$_SESSION['SuppTrans']->GLLink_Creditors = $_SESSION['CompanyRecord']['gllink_creditors'];
+	$_SESSION['SuppTrans']->GRNAct = $_SESSION['CompanyRecord']['grnact'];
+	$_SESSION['SuppTrans']->CreditorsAct = $_SESSION['CompanyRecord']['creditorsact'];
+
+	$_SESSION['SuppTrans']->InvoiceOrCredit = 'Invoice';
+
+} elseif (!isset($_SESSION['SuppTrans'])) {
+
+	prnMsg(__('To enter a supplier invoice the supplier must first be selected from the supplier selection screen') , 'warn');
+	echo '<br /><a href="' . $RootPath . '/SelectSupplier.php">' . __('Select A Supplier to Enter an Invoice For') . '</a>';
+	include('includes/footer.php');
+	exit();
+
+	/*It all stops here if there ain't no supplier selected */
+}
 	return $suppname;
-	/*
-	$_SESSION['SuppTrans']->SupplierName = $MyRow['suppname'];
-	$_SESSION['SuppTrans']->TermsDescription = $MyRow['terms'];
-	$_SESSION['SuppTrans']->CurrCode = $MyRow['currcode'];
-	$_SESSION['SuppTrans']->ExRate = $MyRow['exrate'];
-	$_SESSION['SuppTrans']->CurrDecimalPlaces = $MyRow['decimalplaces'];
-	$_SESSION['SuppTrans']->TaxGroup = $MyRow['taxgroupid'];
-	$_SESSION['SuppTrans']->TaxGroupDescription = $MyRow['taxgroupdescription'];
-	$_SESSION['SuppTrans']->SupplierID = $MyRow['supplierid'];
-*/
 
-	if (isset($OrderHeader['customerref'])){
-		$Errors=VerifyCustomerRef($OrderHeader['customerref'], sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['buyername'])){
-		$Errors=VerifyBuyerName($OrderHeader['buyername'], sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['comments'])){
-		$Errors=VerifyComments($OrderHeader['comments'], sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['orddate'])){
-		$Errors=VerifyOrderDate($OrderHeader['orddate'], sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['ordertype'])){
-		$Errors=VerifyOrderType($OrderHeader['ordertype'], sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['shipvia'])){
-		$Errors=VerifyShipVia($OrderHeader['shipvia'], sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['deladd1'])){
-		$Errors=VerifyAddressLine($OrderHeader['deladd1'], 40, sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['deladd2'])){
-		$Errors=VerifyAddressLine($OrderHeader['deladd2'], 40, sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['deladd3'])){
-		$Errors=VerifyAddressLine($OrderHeader['deladd3'], 40, sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['deladd4'])){
-		$Errors=VerifyAddressLine($OrderHeader['deladd4'], 40, sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['deladd5'])){
-		$Errors=VerifyAddressLine($OrderHeader['deladd5'], 20, sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['deladd6'])){
-		$Errors=VerifyAddressLine($OrderHeader['deladd6'], 15, sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['contactphone'])){
-		$Errors=VerifyPhoneNumber($OrderHeader['contactphone'], sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['contactemail'])){
-		$Errors=VerifyEmailAddress($OrderHeader['contactemail'], sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['deliverto'])){
-		$Errors=VerifyDeliverTo($OrderHeader['deliverto'], sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['deliverblind'])){
-		$Errors=VerifyDeliverBlind($OrderHeader['deliverblind'], sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['freightcost'])){
-		$Errors=VerifyFreightCost($OrderHeader['freightcost'], sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['fromstkloc'])){
-		$Errors=VerifyFromStockLocation($OrderHeader['fromstkloc'], sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['deliverydate'])){
-		$Errors=VerifyDeliveryDate($OrderHeader['deliverydate'], sizeof($Errors), $Errors);
-	}
-	if (isset($OrderHeader['quotation'])){
-		$Errors=VerifyQuotation($OrderHeader['quotation'], sizeof($Errors), $Errors);
-	}
+
 	$FieldNames='';
 	$FieldValues='';
 	global  $SOH_DateFields;
