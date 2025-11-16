@@ -1506,7 +1506,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$taxgroupdescription = $MyRow['taxgroupdescription'];
 	$supplierid = $MyRow['supplierid'];
 
-	return $user;
+	return 'defaultlocation ='.$user;
 
 	if ($MyRow['daysbeforedue'] == 0) {
 		$terms = '1' . $MyRow['dayinfollowingmonth'];
