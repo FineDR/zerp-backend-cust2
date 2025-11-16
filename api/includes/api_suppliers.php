@@ -1519,7 +1519,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$Result = api_DB_query($SQL);
 	$MyRow = DB_fetch_array($Result);
 	if($MyRow['defaultlocation']==''){
-		$MyRow['defaultlocation'] = $SupplierHeader['supplierno'];
+		$MyRow['defaultlocation'] = $SupplierHeader['userlocation'];
 	}
 	
 	$Result = api_DB_query("SELECT taxprovinceid
