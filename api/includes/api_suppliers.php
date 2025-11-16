@@ -1778,7 +1778,7 @@ function ModifySupplierInvoiceLine($OrderLine, $user, $password) {
 	return $Errors;
 }
 
-/** This function takes a order no and returns an associative array containing
+/** This function takes a supplier invoice no and returns an associative array containing
    the database record for that order. If the order number doesn't exist
    then it returns an $Errors array.
 */
@@ -1826,7 +1826,7 @@ function GetSupplierInvoiceList($user, $password) {
 	return $Errors;
 }
 
-/** This function takes a Order Number and returns an associative array containing
+/** This function takes a Invoice Number and returns an associative array containing
    the database record for that Order. If the Order Header ID doesn't exist
    then it returns an $Errors array.
 */

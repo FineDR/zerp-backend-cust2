@@ -3861,10 +3861,47 @@ unset($Description);
 unset($Parameter);
 unset($ReturnValue);
 
-$Description = __('This function takes an order number and returns an array of key/value pairs.') .
+$Description = __('This function takes a supplier invoive number and returns an array of key/value pairs.') .
 	__('The keys represent the database field names, and the values are the value of that field.');
-$Parameter[0]['name'] = __('Order No');
-$Parameter[0]['description'] = __('The Order No to identify the order in the database.');
+$Parameter[0]['name'] = __('InvoiceNo');
+$Parameter[0]['description'] = __('The Invoice No to identify the invoice in the database.');
+$Parameter[1]['name'] = __('User name');
+$Parameter[1]['description'] = __('A valid weberp username. This user should have security access to this data.');
+$Parameter[2]['name'] = __('User password');
+$Parameter[2]['description'] = __('The weberp password associated with this user name. ');
+$ReturnValue = __('If successful this function returns a set of key/value pairs containing the details of this stock item. ')
+	. __('The key will be identical with field name from the stockmaster table. All fields will be in the set regardless of whether the value was set.') . '<p>'
+	. __('Otherwise an array of error codes is returned. ');
+
+$GetSupplierInvoiceHeaderDetail_sig = array(
+	array(Value::$xmlrpcStruct, Value::$xmlrpcString),
+	array(Value::$xmlrpcStruct, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString));
+$GetSupplierInvoiceHeaderDetail_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
+
+function xmlrpc_GetSupplierInvoiceHeaderDetail($request)
+{
+	ob_start('ob_file_callback');
+	$encoder = new Encoder();
+	if ($request->getNumParams() == 3) {
+		$rtn = new Response($encoder->encode(GetSupplierInvoiceHeaderDetail(
+			$request->getParam(0)->scalarval(),
+			$request->getParam(1)->scalarval(),
+			$request->getParam(2)->scalarval())));
+	} else {
+		$rtn = new Response($encoder->encode(GetSupplierInvoiceHeaderDetail($request->getParam(0)->scalarval(), '', '')));
+	}
+	ob_end_flush();
+	return $rtn;
+}
+
+unset($Description);
+unset($Parameter);
+unset($ReturnValue);
+
+$Description = __('This function takes a supplier invoice number and returns an array of key/value pairs.') .
+	__('The keys represent the database field names, and the values are the value of that field.');
+$Parameter[0]['name'] = __('Invoice Number');
+$Parameter[0]['description'] = __('The Invoice No to identify the invoice in the database.');
 $Parameter[1]['name'] = __('User name');
 $Parameter[1]['description'] = __('A valid weberp username. This user should have security access to this data.');
 $Parameter[2]['name'] = __('User password');
@@ -3873,23 +3910,56 @@ $ReturnValue = __('If successful this function returns a set of key/value pairs 
 	. __('The key will be identical with field name from the salesorders table. All fields will be in the set regardless of whether the value was set.') . '<p>'
 	. __('Otherwise an array of error codes is returned. ');
 
-$GetSalesOrderLineDetails_sig = array(
+$GetSupplierInvoiceLineDetails_sig = array(
 	array(Value::$xmlrpcArray, Value::$xmlrpcStruct),
 	array(Value::$xmlrpcArray, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString));
-$GetSalesOrderLineDetails_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
+$GetSupplierInvoiceLineDetails_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
 
-function xmlrpc_GetSalesOrderLineDetails($request)
+function xmlrpc_GetSupplierInvoiceLineDetails($request)
 {
 	ob_start('ob_file_callback');
 	$encoder = new Encoder();
 	if ($request->getNumParams() == 3) {
-		$rtn = new Response($encoder->encode(GetSalesOrderLineDetails(
+		$rtn = new Response($encoder->encode(GetSupplierInvoiceLineDetails(
 			$request->getParam(0)->scalarval(),
 			$request->getParam(1)->scalarval(),
 		    $request->getParam(2)->scalarval()
 		)));
 	} else {
-		$rtn = new Response($encoder->encode(GetSalesOrderLineDetails($encoder->decode($request->getParam(0)), '', '')));
+		$rtn = new Response($encoder->encode(GetSupplierInvoiceLineDetails($encoder->decode($request->getParam(0)), '', '')));
+	}
+	ob_end_flush();
+	return $rtn;
+}
+
+unset($Description);
+unset($Parameter);
+unset($ReturnValue);
+
+$Description = __('This function returns a list of created supplier invoices.');
+$Parameter[0]['name'] = __('User name');
+$Parameter[0]['description'] = __('A valid weberp username. This user should have security access  to this data.');
+$Parameter[1]['name'] = __('User password');
+$Parameter[1]['description'] = __('The weberp password associated with this user name. ');
+$ReturnValue = __('This function returns an array of one order codes. ')
+	. __('If the first element is zero then the function was successful. ')
+	. __('Otherwise an array of error codes is returned and no insertion takes place. ');
+
+$GetSupplierInvoiceList_sig = array(
+	array(Value::$xmlrpcArray),
+	array(Value::$xmlrpcArray, Value::$xmlrpcString, Value::$xmlrpcString));
+$GetSupplierInvoiceList_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
+
+function xmlrpc_GetSupplierInvoiceList($request)
+{
+	ob_start('ob_file_callback');
+	$encoder = new Encoder();
+	if ($request->getNumParams() == 2) {
+		$rtn = new Response($encoder->encode(GetSupplierInvoiceList(
+			$request->getParam(0)->scalarval(),
+			$request->getParam(1)->scalarval())));
+	} else {
+		$rtn = new Response($encoder->encode(GetSupplierInvoiceList('', '')));
 	}
 	ob_end_flush();
 	return $rtn;
@@ -4517,4 +4587,16 @@ return array(
 		"function" => "xmlrpc_ModifySupplierInvoiceLine",
 		"signature" => $ModifySupplierInvoiceLine_sig,
 		"docstring" => $ModifySupplierInvoiceLine_doc),
+	"weberp.xmlrpc_GetSupplierInvoiceHeaderDetail" => array(
+		"function" => "xmlrpc_GetSupplierInvoiceHeaderDetail",
+		"signature" => $GetSupplierInvoiceHeaderDetail_sig,
+		"docstring" => $GetSupplierInvoiceHeaderDetail_doc),
+	"weberp.xmlrpc_GetSupplierInvoiceList" => array(
+		"function" => "xmlrpc_GetSupplierInvoiceList",
+		"signature" => $GetSupplierInvoiceList_sig,
+		"docstring" => $GetSupplierInvoiceList_doc),
+	"weberp.xmlrpc_GetSupplierInvoiceLineDetails" => array(
+		"function" => "xmlrpc_GetSupplierInvoiceLineDetails",
+		"signature" => $GetSupplierInvoiceLineDetails_sig,
+		"docstring" => $GetSupplierInvoiceLineDetails_doc),
 );
