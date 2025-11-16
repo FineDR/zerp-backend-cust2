@@ -1496,7 +1496,9 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		$Errors[0] = NoSupplierExist;
 		return $Errors;
 	}
-
+    
+	$suppname = $MyRow['suppname'];
+	/*
 	$_SESSION['SuppTrans']->SupplierName = $MyRow['suppname'];
 	$_SESSION['SuppTrans']->TermsDescription = $MyRow['terms'];
 	$_SESSION['SuppTrans']->CurrCode = $MyRow['currcode'];
@@ -1505,7 +1507,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$_SESSION['SuppTrans']->TaxGroup = $MyRow['taxgroupid'];
 	$_SESSION['SuppTrans']->TaxGroupDescription = $MyRow['taxgroupdescription'];
 	$_SESSION['SuppTrans']->SupplierID = $MyRow['supplierid'];
-
+*/
 
 	if (isset($OrderHeader['customerref'])){
 		$Errors=VerifyCustomerRef($OrderHeader['customerref'], sizeof($Errors), $Errors);
