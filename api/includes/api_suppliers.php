@@ -1491,12 +1491,10 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 				AND suppliers.paymentterms=paymentterms.termsindicator
 				AND suppliers.supplierid = '" . $SupplierHeader['supplierno']. "'";
 	$Result = api_DB_query($SQL);
-	$MyRo = DB_fetch_array($Result);
+	$MyRow = DB_fetch_array($Result);
 	if (DB_num_rows($Result)==0){
 		$Errors[0] = NoSupplierExist;
 		return $Errors;
-	}else{
-		$Errors[0] = $SQL;
 	}
 
 	$_SESSION['SuppTrans']->SupplierName = $MyRow['suppname'];
