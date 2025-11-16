@@ -1491,7 +1491,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 				AND suppliers.paymentterms=paymentterms.termsindicator
 				AND suppliers.supplierid = '" . $SupplierHeader['supplierno']. "'";
 	$Result = api_DB_query($SQL);
-	$SupplierDetails = DB_fetch_array($Result);
+	$MyRo = DB_fetch_array($Result);
 	if (DB_num_rows($Result)==0){
 		$Errors[0] = NoSupplierExist;
 		return $Errors;
@@ -1499,6 +1499,14 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		$Errors[0] = $SQL;
 	}
 
+	$_SESSION['SuppTrans']->SupplierName = $MyRow['suppname'];
+	$_SESSION['SuppTrans']->TermsDescription = $MyRow['terms'];
+	$_SESSION['SuppTrans']->CurrCode = $MyRow['currcode'];
+	$_SESSION['SuppTrans']->ExRate = $MyRow['exrate'];
+	$_SESSION['SuppTrans']->CurrDecimalPlaces = $MyRow['decimalplaces'];
+	$_SESSION['SuppTrans']->TaxGroup = $MyRow['taxgroupid'];
+	$_SESSION['SuppTrans']->TaxGroupDescription = $MyRow['taxgroupdescription'];
+	$_SESSION['SuppTrans']->SupplierID = $MyRow['supplierid'];
 
 
 	if (isset($OrderHeader['customerref'])){
