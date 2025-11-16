@@ -1515,8 +1515,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	}
 	$SupplierID = $SupplierHeader['supplierno'];
 	
-	return 'defaultlocation ='.$user.' and SuppID = '.$SupplierID;
-
 	//get user default location
 	$SQL = "SELECT defaultlocation FROM www_users WHERE userid = '$user'";
 	$Result = api_DB_query($SQL);
@@ -1530,6 +1528,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		$Errors[0] = UserTaxProvinceNotSet;
 		return $Errors;
 	}
+	return 'defaultlocation ='.$user.' and SuppID = '.$SupplierID;
 
 	$LocalTaxProvinceRow = DB_fetch_row($LocalTaxProvinceResult);
 	$_SESSION['SuppTrans']->LocalTaxProvince = $LocalTaxProvinceRow[0];
