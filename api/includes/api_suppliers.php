@@ -1506,6 +1506,8 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$taxgroupdescription = $MyRow['taxgroupdescription'];
 	$supplierid = $MyRow['supplierid'];
 
+	return $user;
+
 	if ($MyRow['daysbeforedue'] == 0) {
 		$terms = '1' . $MyRow['dayinfollowingmonth'];
 	}
@@ -1535,15 +1537,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 
 	$_SESSION['SuppTrans']->InvoiceOrCredit = 'Invoice';
 
-} elseif (!isset($_SESSION['SuppTrans'])) {
 
-	prnMsg(__('To enter a supplier invoice the supplier must first be selected from the supplier selection screen') , 'warn');
-	echo '<br /><a href="' . $RootPath . '/SelectSupplier.php">' . __('Select A Supplier to Enter an Invoice For') . '</a>';
-	include('includes/footer.php');
-	exit();
-
-	/*It all stops here if there ain't no supplier selected */
-}
 	return $suppname;
 
 
