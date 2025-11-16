@@ -531,6 +531,9 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 	foreach ($Header as $key => $Value) {
 		$HeaderData[$key] = DB_escape_string($Value);
 	}
+
+	return $HeaderData['supplierid'];
+	
 	$Errors=VerifySupplierNo($HeaderData['supplierid'], sizeof($Errors), $Errors);
 	/*Now retrieve supplier information - name, currency, default ex rate, terms, tax rate etc */
 	$SQL = "SELECT suppliers.suppname,
@@ -1447,4 +1450,445 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 			*/
 		}
 	}
+}
+
+/** Create a Supplier invoice header in webERP. If successful
+ * returns $Errors[0]=0 and $Errors[1] will contain the invoice number.
+ */
+function InsertSupplierInvoiceHeader($OrderHeader, $user, $password) {
+	$Errors = array();
+	$db = db($user, $password);
+	if (gettype($db)=='integer') {
+		$Errors[0]=NoAuthorisation;
+		return $Errors;
+	}
+	foreach ($OrderHeader as $key => $Value) {
+		$OrderHeader[$key] = DB_escape_string($Value);
+	}
+	$Errors=VerifyDebtorExists($OrderHeader['debtorno'], sizeof($Errors), $Errors);
+	$Errors=VerifyBranchNoExists($OrderHeader['debtorno'],$OrderHeader['branchcode'], sizeof($Errors), $Errors);
+	if (isset($OrderHeader['customerref'])){
+		$Errors=VerifyCustomerRef($OrderHeader['customerref'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['buyername'])){
+		$Errors=VerifyBuyerName($OrderHeader['buyername'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['comments'])){
+		$Errors=VerifyComments($OrderHeader['comments'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['orddate'])){
+		$Errors=VerifyOrderDate($OrderHeader['orddate'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['ordertype'])){
+		$Errors=VerifyOrderType($OrderHeader['ordertype'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['shipvia'])){
+		$Errors=VerifyShipVia($OrderHeader['shipvia'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deladd1'])){
+		$Errors=VerifyAddressLine($OrderHeader['deladd1'], 40, sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deladd2'])){
+		$Errors=VerifyAddressLine($OrderHeader['deladd2'], 40, sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deladd3'])){
+		$Errors=VerifyAddressLine($OrderHeader['deladd3'], 40, sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deladd4'])){
+		$Errors=VerifyAddressLine($OrderHeader['deladd4'], 40, sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deladd5'])){
+		$Errors=VerifyAddressLine($OrderHeader['deladd5'], 20, sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deladd6'])){
+		$Errors=VerifyAddressLine($OrderHeader['deladd6'], 15, sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['contactphone'])){
+		$Errors=VerifyPhoneNumber($OrderHeader['contactphone'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['contactemail'])){
+		$Errors=VerifyEmailAddress($OrderHeader['contactemail'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deliverto'])){
+		$Errors=VerifyDeliverTo($OrderHeader['deliverto'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deliverblind'])){
+		$Errors=VerifyDeliverBlind($OrderHeader['deliverblind'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['freightcost'])){
+		$Errors=VerifyFreightCost($OrderHeader['freightcost'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['fromstkloc'])){
+		$Errors=VerifyFromStockLocation($OrderHeader['fromstkloc'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deliverydate'])){
+		$Errors=VerifyDeliveryDate($OrderHeader['deliverydate'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['quotation'])){
+		$Errors=VerifyQuotation($OrderHeader['quotation'], sizeof($Errors), $Errors);
+	}
+	$FieldNames='';
+	$FieldValues='';
+	global  $SOH_DateFields;
+	$OrderHeader['orderno'] = GetNextTransNo(30);
+	foreach ($OrderHeader as $key => $Value) {
+		$FieldNames.=$key.', ';
+		if (in_array($key, $SOH_DateFields) ) {
+			$Value = FormatDateforSQL($Value);	// Fix dates
+		}
+		$FieldValues.="'".$Value."', ";
+	}
+	$SQL = "INSERT INTO salesorders (" . mb_substr($FieldNames,0,-2) . ")
+				VALUES (" . mb_substr($FieldValues,0,-2). ")";
+	if (sizeof($Errors)==0) {
+
+		$Result = api_DB_Query($SQL);
+
+		if (DB_error_no() != 0) {
+			//$Errors[0] = DatabaseUpdateFailed;
+			$Errors[0] = $SQL;
+		} else {
+			$Errors[0]=0;
+			$Errors[1]=$OrderHeader['orderno'];
+		}
+	}
+	return $Errors;
+}
+
+/** Modify a supplier invoice header in webERP.
+ */
+function ModifySupplierInvoiceHeader($OrderHeader, $user, $password) {
+	$Errors = array();
+	$db = db($user, $password);
+	if (gettype($db)=='integer') {
+		$Errors[0]=NoAuthorisation;
+		return $Errors;
+	}
+	foreach ($OrderHeader as $key => $Value) {
+		$OrderHeader[$key] = DB_escape_string($Value);
+	}
+	$Errors=VerifyOrderHeaderExists($OrderHeader['orderno'], sizeof($Errors), $Errors);
+	$Errors=VerifyDebtorExists($OrderHeader['debtorno'], sizeof($Errors), $Errors);
+	$Errors=VerifyBranchNoExists($OrderHeader['debtorno'],$OrderHeader['branchcode'], sizeof($Errors), $Errors);
+	if (isset($OrderHeader['customerref'])){
+		$Errors=VerifyCustomerRef($OrderHeader['customerref'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['buyername'])){
+		$Errors=VerifyBuyerName($OrderHeader['buyername'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['comments'])){
+		$Errors=VerifyComments($OrderHeader['comments'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['orddate'])){
+		$Errors=VerifyOrderDate($OrderHeader['orddate'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['ordertype'])){
+		$Errors=VerifyOrderType($OrderHeader['ordertype'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['shipvia'])){
+		$Errors=VerifyShipVia($OrderHeader['shipvia'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deladd1'])){
+		$Errors=VerifyAddressLine($OrderHeader['deladd1'], 40, sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deladd2'])){
+		$Errors=VerifyAddressLine($OrderHeader['deladd2'], 40, sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deladd3'])){
+		$Errors=VerifyAddressLine($OrderHeader['deladd3'], 40, sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deladd4'])){
+		$Errors=VerifyAddressLine($OrderHeader['deladd4'], 40, sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deladd5'])){
+		$Errors=VerifyAddressLine($OrderHeader['deladd5'], 20, sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deladd6'])){
+		$Errors=VerifyAddressLine($OrderHeader['deladd6'], 15, sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['contactphone'])){
+		$Errors=VerifyPhoneNumber($OrderHeader['contactphone'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['contactemail'])){
+		$Errors=VerifyEmailAddress($OrderHeader['contactemail'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deliverto'])){
+		$Errors=VerifyDeliverTo($OrderHeader['deliverto'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deliverblind'])){
+		$Errors=VerifyDeliverBlind($OrderHeader['deliverblind'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['freightcost'])){
+		$Errors=VerifyFreightCost($OrderHeader['freightcost'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['fromstkloc'])){
+		$Errors=VerifyFromStockLocation($OrderHeader['fromstkloc'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['deliverydate'])){
+		$Errors=VerifyDeliveryDate($OrderHeader['deliverydate'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderHeader['quotation'])){
+		$Errors=VerifyQuotation($OrderHeader['quotation'], sizeof($Errors), $Errors);
+	}
+	global  $SOH_DateFields;
+	$SQL='UPDATE salesorders SET ';
+	foreach ($OrderHeader as $key => $Value) {
+		if (in_array($key, $SOH_DateFields) ) {
+			$Value = FormatDateforSQL($Value);	// Fix dates
+		}
+		$SQL .= $key.'="'.$Value.'", ';
+	}
+	$SQL = mb_substr($SQL,0,-2). " WHERE orderno='" . $OrderHeader['orderno']. "'";
+	if (sizeof($Errors)==0) {
+		$Result = api_DB_Query($SQL);
+		echo DB_error_no();
+		if (DB_error_no() != 0) {
+			$Errors[0] = DatabaseUpdateFailed;
+		} else {
+			$Errors[0]=0;
+		}
+	}
+	return $Errors;
+}
+
+/** Create a supplier invoiceline in webERP. The order header must
+ * already exist in webERP.
+ */
+function InsertSupplierInvoiceLine($OrderLine, $user, $password) {
+
+	$Errors = array();
+	$db = db($user, $password);
+	if (gettype($db)=='integer') {
+		$Errors[0]=NoAuthorisation;
+		return $Errors;
+	}
+	foreach ($OrderLine as $key => $Value) {
+		$OrderLine[$key] = DB_escape_string($Value);
+	}
+	$OrderLine['orderlineno'] = GetOrderLineNumber($OrderLine['orderno'], sizeof($Errors), $Errors);
+	$Errors=VerifyOrderHeaderExists($OrderLine['orderno'], sizeof($Errors), $Errors);
+	$Errors=VerifyStockCodeExists($OrderLine['stkcode'], sizeof($Errors), $Errors);
+	if (isset($OrderLine['unitprice'])){
+		$Errors=VerifyUnitPrice($OrderLine['unitprice'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderLine['quantity'])){
+		$Errors=VerifyQuantity($OrderLine['quantity'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderLine['discountpercent'])){
+		//$OrderLine['discountpercent'] = $OrderLine['discountpercent'] * 100;
+		$Errors=VerifyDiscountPercent($OrderLine['discountpercent'], sizeof($Errors), $Errors);
+		$OrderLine['discountpercent'] = $OrderLine['discountpercent']/100;
+	}
+	if (isset($OrderLine['narrative'])){
+		$Errors=VerifyNarrative($OrderLine['narrative'], sizeof($Errors), $Errors);
+	}
+	// Not sure why the verification of itemdue doesn't work
+	/*
+	if (isset($OrderLine['itemdue'])){
+		$Errors=VerifyItemDueDate($OrderLine['itemdue'], sizeof($Errors), $Errors);
+	}
+	*/
+	if (isset($OrderLine['poline'])){
+		$Errors=VerifyPOLine($OrderLine['poline'], sizeof($Errors), $Errors);
+	}
+	$FieldNames='';
+	$FieldValues='';
+	foreach ($OrderLine as $key => $Value) {
+		$FieldNames.=$key.', ';
+		if ($key == 'actualdispatchdate') {
+			$Value = FormatDateWithTimeForSQL($Value);
+		} elseif ($key == 'itemdue') {
+			$Value = FormatDateForSQL($Value);
+		}
+		$FieldValues.= "'" . $Value . "', ";
+	}
+
+	$SQL = "INSERT INTO salesorderdetails (" . mb_substr($FieldNames,0,-2) . ")
+		VALUES (" . mb_substr($FieldValues,0,-2) . ")";
+
+	if (sizeof($Errors)==0) {
+		$Result = api_DB_Query($SQL);
+		if (DB_error_no() != 0) {
+			$Errors[0] = DatabaseUpdateFailed;
+		} else {
+			$Errors[0]=0;
+		}
+	}
+	return $Errors;
+}
+
+/** Modify a supplier invoice line in webERP. The order header must
+ * already exist in webERP.
+ */
+function ModifySupplierInvoiceLine($OrderLine, $user, $password) {
+	$Errors = array();
+	$db = db($user, $password);
+	if (gettype($db)=='integer') {
+		$Errors[0]=NoAuthorisation;
+		return $Errors;
+	}
+	foreach ($OrderLine as $key => $Value) {
+		$OrderLine[$key] = DB_escape_string($Value);
+	}
+	$Errors=VerifyOrderHeaderExists($OrderLine['orderno'], sizeof($Errors), $Errors);
+	$Errors=VerifyStockCodeExists($OrderLine['stkcode'], sizeof($Errors), $Errors);
+	if (isset($OrderLine['unitprice'])){
+		$Errors=VerifyUnitPrice($OrderLine['unitprice'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderLine['quantity'])){
+		$Errors=VerifyQuantity($OrderLine['quantity'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderLine['discountpercent'])){
+		//$OrderLine['discountpercent'] = $OrderLine['discountpercent'] * 100;
+		$Errors=VerifyDiscountPercent($OrderLine['discountpercent'], sizeof($Errors), $Errors);
+		$OrderLine['discountpercent'] = $OrderLine['discountpercent']/100;
+	}
+	if (isset($OrderLine['narrative'])){
+		$Errors=VerifyNarrative($OrderLine['narrative'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderLine['itemdue'])){
+		$Errors=VerifyItemDueDate($OrderLine['itemdue'], sizeof($Errors), $Errors);
+	}
+	if (isset($OrderLine['poline'])){
+		$Errors=VerifyPOLine($OrderLine['poline'], sizeof($Errors), $Errors);
+	}
+	$SQL='UPDATE salesorderdetails SET ';
+	foreach ($OrderLine as $key => $Value) {
+		if ($key == 'actualdispatchdate') {
+			$Value = FormatDateWithTimeForSQL($Value);
+		}
+		elseif ($key == 'itemdue')
+			$Value = FormatDateForSQL($Value);
+		$SQL .= $key.'="'.$Value.'", ';
+	}
+	//$SQL = mb_substr($SQL,0,-2).' WHERE orderno="'.$OrderLine['orderno'].'" and
+		//	" orderlineno='.$OrderLine['orderlineno'];
+	$SQL = mb_substr($SQL,0,-2)." WHERE orderno='" . $OrderLine['orderno']."' AND stkcode='" . $OrderLine['stkcode']."'";
+			//echo $SQL;
+			//exit();
+	if (sizeof($Errors)==0) {
+		$Result = api_DB_Query($SQL);
+		echo DB_error_no();
+		if (DB_error_no() != 0) {
+			$Errors[0] = DatabaseUpdateFailed;
+		} else {
+			$Errors[0]=0;
+		}
+	}
+	return $Errors;
+}
+
+/** This function takes a order no and returns an associative array containing
+   the database record for that order. If the order number doesn't exist
+   then it returns an $Errors array.
+*/
+function GetSupplierInvoiceHeaderDetail($OrderNo, $user, $password) {
+	$Errors = array();
+	$db = db($user, $password);
+	if (gettype($db)=='integer') {
+		$Errors[0]=NoAuthorisation;
+		return $Errors;
+	}
+	$Errors = VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
+	if (sizeof($Errors)!=0) {
+		return $Errors;
+	}
+	$SQL="SELECT * FROM salesorders WHERE orderno='".$OrderNo."'";
+	$Result = DB_query($SQL);
+	if (sizeof($Errors)==0) {
+		$Errors[0]=0;
+		$Errors[1]=DB_fetch_array($Result);
+		return $Errors;
+	} else {
+		return $Errors;
+	}
+}
+
+function GetSupplierInvoiceList($user, $password) {
+	$Errors = array();
+	$db = db($user, $password);
+	if (gettype($db)=='integer') {
+		$Errors[0]=NoAuthorisation;
+		return $Errors;
+	}
+	$SQL = "SELECT orderno, 
+				   orddate  
+			FROM salesorders ORDER BY orddate DESC;";
+	$Result = DB_query($SQL);
+	$SalesTypeList = array();
+	$i=0;
+	while ($MyRow=DB_fetch_array($Result)) {
+		$SalesTypeList[$i]=$MyRow[0];
+		$i++;
+	}
+	$Errors[0]=0;
+	$Errors[1]=$SalesTypeList;
+	return $Errors;
+}
+
+/** This function takes a Order Number and returns an associative array containing
+   the database record for that Order. If the Order Header ID doesn't exist
+   then it returns an $Errors array.
+*/
+function GetSupplierInvoiceLineDetails($OrderNo, $user = '', $password = '') {
+    $Errors = array();
+    $db = db($user, $password);
+    if (gettype($db)=='integer') {
+        $Errors[0] = NoAuthorisation;
+        return $Errors;
+    }
+
+    $Errors = VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
+    if (sizeof($Errors) != 0) {
+        return $Errors;
+    }
+
+    $SQL = "SELECT stkcode,
+                    stockmaster.description,
+                    stockmaster.longdescription,
+                    stockmaster.controlled,
+                    stockmaster.serialised,
+                    stockmaster.volume,
+                    stockmaster.grossweight,
+                    stockmaster.units,
+                    stockmaster.decimalplaces,
+                    stockmaster.mbflag,
+                    stockmaster.taxcatid,
+                    stockmaster.discountcategory,
+                    salesorderdetails.unitprice,
+                    salesorderdetails.quantity,
+                    salesorderdetails.discountpercent,
+                    salesorderdetails.actualdispatchdate,
+                    salesorderdetails.qtyinvoiced,
+                    salesorderdetails.narrative,
+                    salesorderdetails.orderlineno,
+                    salesorderdetails.poline,
+                    salesorderdetails.itemdue,
+                    stockmaster.actualcost as standardcost
+            FROM salesorderdetails INNER JOIN stockmaster
+                ON salesorderdetails.stkcode = stockmaster.stockid
+            WHERE salesorderdetails.orderno ='" . $OrderNo . "'
+			AND salesorderdetails.quantity - salesorderdetails.qtyinvoiced >0
+			ORDER BY salesorderdetails.orderlineno";
+
+    $Result = api_DB_Query($SQL);
+    $OrderLines = array();
+	$i=0;
+    while ($Row = DB_fetch_array($Result)) {
+        $OrderLines[$i] = array(
+            'stkcode'           => $Row['stkcode'],
+            'description'       => $Row['description'],
+            'longdescription'   => $Row['longdescription'],
+            'quantity'          => $Row['quantity'],
+            'unitprice'         => $Row['unitprice'],
+            'discountpercent'   => $Row['discountpercent'],
+            'qtyinvoiced'       => $Row['qtyinvoiced'],
+            'itemdue'           => $Row['itemdue'],
+            'standardcost'      => $Row['standardcost']
+        );
+        $i++;
+    }
+	$Errors[0]=0;
+	$Errors[1]=$OrderLines;
+	return $Errors;
 }
