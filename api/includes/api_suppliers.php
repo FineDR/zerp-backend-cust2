@@ -1498,9 +1498,16 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	}
     
 	$suppname = $MyRow['suppname'];
-	$_SESSION['SuppTrans']->TermsDescription = $MyRow['terms'];
+	$terms = $MyRow['terms'];
+	$currcode = $MyRow['currcode'];
+	$exrate = $MyRow['exrate'];
+	$decimalplaces = $MyRow['decimalplaces'];
+	$taxgroupid = $MyRow['taxgroupid'];
+	$taxgroupdescription = $MyRow['taxgroupdescription'];
+	$supplierid = $MyRow['supplierid'];
 
-	return $_SESSION['SuppTrans']->TermsDescription;
+
+	return $suppname;
 	/*
 	$_SESSION['SuppTrans']->SupplierName = $MyRow['suppname'];
 	$_SESSION['SuppTrans']->TermsDescription = $MyRow['terms'];
