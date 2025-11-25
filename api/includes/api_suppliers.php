@@ -1533,17 +1533,17 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$LocalTaxProvinceRow = DB_fetch_row($LocalTaxProvinceResult);
 	$LocalTaxProvince = $LocalTaxProvinceRow[0];
 
-	return 'LocalTax Province = '.$LocalTaxProvince;
+	/*
+		$_SESSION['SuppTrans']->GetTaxes();
 
-	$_SESSION['SuppTrans']->GetTaxes();
+		$_SESSION['SuppTrans']->GLLink_Creditors = $_SESSION['CompanyRecord']['gllink_creditors'];
+		$_SESSION['SuppTrans']->GRNAct = $_SESSION['CompanyRecord']['grnact'];
+		$_SESSION['SuppTrans']->CreditorsAct = $_SESSION['CompanyRecord']['creditorsact'];
 
-	$_SESSION['SuppTrans']->GLLink_Creditors = $_SESSION['CompanyRecord']['gllink_creditors'];
-	$_SESSION['SuppTrans']->GRNAct = $_SESSION['CompanyRecord']['grnact'];
-	$_SESSION['SuppTrans']->CreditorsAct = $_SESSION['CompanyRecord']['creditorsact'];
-
-	$_SESSION['SuppTrans']->InvoiceOrCredit = 'Invoice';
-
-
+		$_SESSION['SuppTrans']->InvoiceOrCredit = 'Invoice';
+    */
+	$InvoiceOrCredit = 'Invoice';
+    return 'LocalTax Province = '.$LocalTaxProvince;
 	return $suppname;
 
 
