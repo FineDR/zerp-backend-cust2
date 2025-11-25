@@ -25,7 +25,6 @@ if (isset($_POST['CompanyNameField'])) {
 $Title = __('Main Menu');
 $SQL = "SELECT value FROM session_data WHERE userid='" . $_SESSION['UserID'] . "' AND field='module'";
 $Result = DB_query($SQL);
-$MyRow = DB_fetch_array($Result);
 if (DB_num_rows($Result) > 0) {
 	$MyRow = DB_fetch_array($Result);
 	$_SESSION['Module'] = $MyRow['value'];
@@ -150,7 +149,7 @@ foreach ($MenuItems[$_SESSION['Module']]['Transactions']['Caption'] as $Caption)
 	}
 	if ((in_array($PageSecurity, $_SESSION['AllowedPageSecurityTokens']) and $PageSecurity != '')) {
 		echo '<li class="MenuItem">
-				<a href="', $RootPath, $MenuItems[$_SESSION['Module']]['Transactions']['URL'][$i], '">&bull; ', $Caption, '</a>
+				<a href="', $RootPath, $MenuItems[$_SESSION['Module']]['Transactions']['URL'][$i], '">&bull; ', __($Caption), '</a>
 			</li>';
 	}
 	++$i;
@@ -178,7 +177,7 @@ if (isset($MenuItems[$_SESSION['Module']]['Reports'])) {
 		$PageSecurity = $_SESSION['PageSecurityArray'][$ScriptNameArray[0]];
 		if ((in_array($PageSecurity, $_SESSION['AllowedPageSecurityTokens']) or !isset($PageSecurity))) {
 			echo '<li class="MenuItem">
-				<a href="' . $RootPath . $MenuItems[$_SESSION['Module']]['Reports']['URL'][$i] . '">&bull; ' . $Caption . '</a>
+				<a href="' . $RootPath . $MenuItems[$_SESSION['Module']]['Reports']['URL'][$i] . '">&bull; ' . __($Caption) . '</a>
 			</li>';
 		}
 		++$i;
@@ -210,7 +209,7 @@ if (isset($MenuItems[$_SESSION['Module']]['Maintenance'])) {
 			$PageSecurity = $_SESSION['PageSecurityArray'][$ScriptNameArray[0]];
 			if ((in_array($PageSecurity, $_SESSION['AllowedPageSecurityTokens']) or !isset($PageSecurity))) {
 				echo '<li class="MenuItem">
-						<a href="' . $RootPath . $MenuItems[$_SESSION['Module']]['Maintenance']['URL'][$i] . '">&bull; ' . $Caption . '</a>
+						<a href="' . $RootPath . $MenuItems[$_SESSION['Module']]['Maintenance']['URL'][$i] . '">&bull; ' . __($Caption) . '</a>
 					</li>';
 			}
 		}
