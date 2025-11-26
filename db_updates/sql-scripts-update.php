@@ -33,6 +33,60 @@ WHERE
     AND REFERENCED_COLUMN_NAME = 'categoryid';
 
 
+ALTER TABLE debtorsmaster to have debtorno to 20 VARCHAR
+
+// DROP Constraints
+ALTER TABLE custitem DROP FOREIGN KEY ` custitem _ibfk_2`;
+ALTER TABLE custbranch DROP FOREIGN KEY `custbranch_ibfk_1`;
+ALTER TABLE contracts DROP FOREIGN KEY `contracts_ibfk_1`;
+ALTER TABLE orderdeliverydifferenceslog DROP FOREIGN KEY `orderdeliverydifferenceslog_ibfk_2`;
+ALTER TABLE recurringsalesorders DROP FOREIGN KEY `recurringsalesorders_ibfk_1`;
+ALTER TABLE salesorders DROP FOREIGN KEY `salesorders_ibfk_1`;
+
+//CHANGE Columns
+ALTER TABLE debtorsmaster CHANGE COLUMN debtorno debtorno VARCHAR(20) NOT NULL;
+ALTER TABLE custbranch CHANGE COLUMN debtorno debtorno VARCHAR(20) NOT NULL;
+ALTER TABLE custitem CHANGE COLUMN debtorno debtorno VARCHAR(20) NOT NULL;
+ALTER TABLE contracts CHANGE COLUMN debtorno debtorno VARCHAR(20) NOT NULL;
+ALTER TABLE orderdeliverydifferenceslog CHANGE COLUMN debtorno debtorno VARCHAR(20) NOT NULL;
+ALTER TABLE recurringsalesorders CHANGE COLUMN debtorno debtorno VARCHAR(20) NOT NULL;
+ALTER TABLE salesorders CHANGE COLUMN debtorno debtorno VARCHAR(20) NOT NULL;
+
+//ADD Constraints
+ALTER TABLE salesorders
+ADD CONSTRAINT `salesorders_ibfk_1`
+FOREIGN KEY (`branchcode`, `debtorno`)
+REFERENCES `custbranch` (`branchcode`, `debtorno`);
+
+ALTER TABLE recurringsalesorders
+ADD CONSTRAINT `recurringsalesorders_ibfk_1`
+FOREIGN KEY (`branchcode`, `debtorno`)
+REFERENCES `custbranch` (`branchcode`, `debtorno`);
+
+ALTER TABLE orderdeliverydifferenceslog
+ADD CONSTRAINT `orderdeliverydifferenceslog_ibfk_2`
+FOREIGN KEY (`branch`, `debtorno`) 
+REFERENCES `custbranch` (`branchcode`, `debtorno`);
+
+ALTER TABLE contracts
+ADD CONSTRAINT `contracts_ibfk_1`
+FOREIGN KEY (`branchcode`, `debtorno`)
+REFERENCES `custbranch` (`branchcode`, `debtorno`);
+
+ALTER TABLE custbranch
+ADD CONSTRAINT `custbranch_ibfk_1`
+FOREIGN KEY (`debtorno`)
+REFERENCES `debtorsmaster` (`debtorno`);
+
+ALTER TABLE custitem
+ADD CONSTRAINT ` custitem _ibfk_2`
+FOREIGN KEY (`debtorno`)
+REFERENCES `debtorsmaster` (`debtorno`);
+
+
+
+CONSTRAINT ` custitem _ibfk_2` FOREIGN KEY (`debtorno`) REFERENCES `debtorsmaster` (`debtorno`)
+
 $GetStockCatProperty_sig = array(
 	array(Value::$xmlrpcValue, Value::$xmlrpcString, Value::$xmlrpcString),
 	array(Value::$xmlrpcValue, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString));
