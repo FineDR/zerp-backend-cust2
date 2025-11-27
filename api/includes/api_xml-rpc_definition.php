@@ -136,13 +136,13 @@ function xmlrpc_InsertCustomer($request)
 	ob_start('ob_file_callback');
 	$encoder = new Encoder();
 	if ($request->getNumParams() == 3) {
-		$rtn = new Response($encoder->encode(InsertCustomer(
+		$rtn = new Response($encoder->encode(InsertCustomers(
 			$encoder->decode($request->getParam(0)),
 			$request->getParam(1)->scalarval(),
 			$request->getParam(2)->scalarval()
 		)));
 	} else {
-		$rtn = new Response($encoder->encode(InsertCustomer($encoder->decode($request->getParam(0)), '', '')));
+		$rtn = new Response($encoder->encode(InsertCustomers($encoder->decode($request->getParam(0)), '', '')));
 	}
 	ob_end_flush();
 	return $rtn;

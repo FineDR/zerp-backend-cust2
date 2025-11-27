@@ -256,7 +256,7 @@ function VerifyCustomerType($DebtorType , $i, $Errors) {
    array of one to many error codes.
 */
 //function InsertCustomer($CustomerDetails, $user = '', $password = '') {
-function InsertCustomer($CustomerDetails, $user, $password) {
+function InsertCustomers($CustomerDetails, $user, $password) {
 	$Errors = array();
 	$db = db($user, $password);
 	if (gettype($db)=='integer') {
@@ -275,9 +275,7 @@ function InsertCustomer($CustomerDetails, $user, $password) {
 	} else {
 		$CustomerDetails['debtorno']='';
 	}
-	if (isset($CustomerDetails['name'])){
-		$Errors=VerifyDebtorName($CustomerDetails['name'], sizeof($Errors), $Errors);
-	}
+	$Errors=VerifyDebtorName($CustomerDetails['name'], sizeof($Errors), $Errors);
 	if (isset($CustomerDetails['address1'])){
 		$Errors=VerifyAddressLine($CustomerDetails['address1'], 40, sizeof($Errors), $Errors);
 	}
