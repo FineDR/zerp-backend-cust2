@@ -14,8 +14,6 @@
 
 if (isset($_SESSION['DatabaseName'])) {
 	$api_DatabaseName = $_SESSION['DatabaseName'];
-}else{
-$api_DatabaseName = "zalongwa_weberp";
 }
 
 $AllowAnyone = true;
