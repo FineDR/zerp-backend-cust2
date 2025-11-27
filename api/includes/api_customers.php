@@ -380,12 +380,12 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 					VALUES ('" . mb_substr($FieldValues,0,-2) . "') ";
     */
 	if (sizeof($Errors)==0) {
-		return $SQL;
+	//	return $SQL;
 		//return $SQL.'idadi ya makosa ni: '.sizeof($Errors).' querry status '.$Result;
 
 		$Result = DB_query($SQL);
 		//return $SQL.'idadi ya makosa ni: '.sizeof($Errors).' querry status '.$Result;
-		//return $Result;
+		return $Result;
 		if (DB_error_no() != 0) {
 			$Errors[0] = DatabaseUpdateFailed;
 		} else {
@@ -510,7 +510,7 @@ function ModifyCustomer($CustomerDetails, $user, $password) {
 		$SQL .= $key.'="'.$Value.'", ';
 	}
 	$SQL = mb_substr($SQL,0,-2)." WHERE debtorno='".$CustomerDetails['debtorno']."'";
-	return $SQL;
+
 	if (sizeof($Errors)==0) {
 		$Result = DB_query($SQL);
 		if (DB_error_no() != 0) {
