@@ -373,8 +373,8 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 	  'VALUES ('.mb_substr($FieldValues,0,-2).') ';
 
 	if (sizeof($Errors)==0) {
-		return $SQL.'makosa'.sizeof($Errors);
 		$Result = DB_query($SQL);
+		return $SQL.'idadi ya makosa ni: '.sizeof($Errors).' querry status '.$Result;
 		if (DB_error_no() != 0) {
 			$Errors[0] = DatabaseUpdateFailed;
 		} else {
