@@ -94,7 +94,8 @@ INSERT INTO debtorsmaster (debtorno, name, address1, address2, address3, address
                 address6, currcode, salestype, paymentterms, clientsince) VALUES (&quot;&quot;, &quot;Ludovick
                 Rwabiz&quot;, &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;,
                 &quot;TZS&quot;, &quot;01&quot;, &quot;2&quot;, &quot;2025-11-27&quot;)
-				
+
+UPDATE debtorsmaster SET debtorno=&quot;RAH&quot;, name=&quot;Ludovick Rwabiz&quot;, address1=&quot;1&quot;, address2=&quot;2&quot;, address3=&quot;3&quot;, address4=&quot;4&quot;, address5=&quot;5&quot;, address6=&quot;TZS&quot;, currcode=&quot;TZS&quot;, salestype=&quot;01&quot;, paymentterms=&quot;2&quot;, edireference=&quot;TZS&quot;, clientsince=&quot;2025-11-27&quot; WHERE debtorno=&apos;RAH&apos;<
 
 CONSTRAINT ` custitem _ibfk_2` FOREIGN KEY (`debtorno`) REFERENCES `debtorsmaster` (`debtorno`)
 
