@@ -511,6 +511,7 @@ function ModifyCustomer($CustomerDetails, $user, $password) {
 	$SQL = mb_substr($SQL,0,-2)." WHERE debtorno='".$CustomerDetails['debtorno']."'";
 
 	if (sizeof($Errors)==0) {
+		return $SQL;
 		$Result = DB_query($SQL);
 		if (DB_error_no() != 0) {
 			$Errors[0] = DatabaseUpdateFailed;
