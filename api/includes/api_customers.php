@@ -384,7 +384,6 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 		//return $SQL.'idadi ya makosa ni: '.sizeof($Errors).' querry status '.$Result;
 
 		$Result = DB_query($SQL);
-		//return $SQL.'idadi ya makosa ni: '.sizeof($Errors).' querry status '.$Result;
 		if (DB_error_no() != 0) {
 			$Errors[0] = DatabaseUpdateFailed;
 		} else {
