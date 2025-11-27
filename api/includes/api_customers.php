@@ -369,10 +369,10 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 		$FieldValues.='"'.$Value.'", ';
 	}
 
-	return $CustomerDetails['debtorno'];
-
 	$SQL = 'INSERT INTO debtorsmaster ('.mb_substr($FieldNames,0,-2).') '.
 	  'VALUES ('.mb_substr($FieldValues,0,-2).') ';
+	
+	  return $CustomerDetails['debtorno'];
 	if (sizeof($Errors)==0) {
 		$Result = DB_query($SQL);
 		if (DB_error_no() != 0) {
