@@ -373,6 +373,11 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 	  'VALUES ('.mb_substr($FieldValues,0,-2).') ';
 	
 /*
+		$stocksql = 'INSERT INTO stockmaster ('.mb_substr($FieldNames,0,-2).') '.
+			'VALUES ('.mb_substr($FieldValues,0,-2).') ';
+		$locsql = "INSERT INTO locstock (loccode,stockid)
+			SELECT locations.loccode,'" . $StockItemDetails['stockid'] . "' FROM locations";
+			
 	$SQL = "INSERT INTO debtorsmaster (" . mb_substr($FieldNames,0,-2) . ")
 	  VALUES ('" . mb_substr($FieldValues,0,-2) . "') ";
 	/*
