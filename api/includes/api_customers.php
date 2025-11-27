@@ -372,9 +372,8 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 	$SQL = 'INSERT INTO debtorsmaster ('.mb_substr($FieldNames,0,-2).') '.
 	  'VALUES ('.mb_substr($FieldValues,0,-2).') ';
 
-	return $SQL.'makosa'.sizeof($Errors);
-
 	if (sizeof($Errors)==0) {
+		return $SQL.'makosa'.sizeof($Errors);
 		$Result = DB_query($SQL);
 		if (DB_error_no() != 0) {
 			$Errors[0] = DatabaseUpdateFailed;
