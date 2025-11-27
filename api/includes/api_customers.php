@@ -271,12 +271,13 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 	$autonumberresult=DB_query($autonumbersql);
 	$autonumber=DB_fetch_row($autonumberresult);
 		
-	return $autonumber;
 	if ($autonumber[0]==0) {
 		$Errors=VerifyDebtorNo($CustomerDetails['debtorno'], sizeof($Errors), $Errors);
 	} else {
 		$CustomerDetails['debtorno']='';
 	}
+
+		return $CustomerDetails['debtorno'];
 	$Errors=VerifyDebtorName($CustomerDetails['name'], sizeof($Errors), $Errors);
 	if (isset($CustomerDetails['address1'])){
 		$Errors=VerifyAddressLine($CustomerDetails['address1'], 40, sizeof($Errors), $Errors);
