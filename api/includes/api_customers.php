@@ -373,6 +373,7 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 	  'VALUES ('.mb_substr($FieldValues,0,-2).') ';
 
 	if (sizeof($Errors)==0) {
+		//$Result = DB_query($SQL);
 		$Result = DB_query($SQL);
 		//return $SQL.'idadi ya makosa ni: '.sizeof($Errors).' querry status '.$Result;
 		return $Result;
