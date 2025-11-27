@@ -362,14 +362,15 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 		$Errors=VerifyCustomerType($CustomerDetails['typeid'], sizeof($Errors), $Errors);
 	}
 	
-	return $CustomerDetails['debtorno'];
-	
 	$FieldNames='';
 	$FieldValues='';
 	foreach ($CustomerDetails as $key => $Value) {
 		$FieldNames.=$key.', ';
 		$FieldValues.='"'.$Value.'", ';
 	}
+
+	return $CustomerDetails['debtorno'];
+
 	$SQL = 'INSERT INTO debtorsmaster ('.mb_substr($FieldNames,0,-2).') '.
 	  'VALUES ('.mb_substr($FieldValues,0,-2).') ';
 	if (sizeof($Errors)==0) {
