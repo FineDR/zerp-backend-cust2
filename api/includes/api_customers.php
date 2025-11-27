@@ -258,8 +258,6 @@ function VerifyCustomerType($DebtorType , $i, $Errors) {
 //function InsertCustomer($CustomerDetails, $user = '', $password = '') {
 function InsertCustomers($CustomerDetails, $user, $password) {
 	$Errors = array();
-	$Errors[0]=NoAuthorisation;
-	return $Errors;
 	$db = db($user, $password);
 	if (gettype($db)=='integer') {
 		$Errors[0]=NoAuthorisation;
