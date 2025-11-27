@@ -262,6 +262,9 @@ function InsertCustomer	($CustomerDetails, $user, $password) {
 	if (gettype($db)=='integer') {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
+	}else{
+		$Errors[0]=SUCCESS;
+		return $Errors;
 	}
 	foreach ($CustomerDetails as $key => $Value) {
 		$CustomerDetails[$key] = DB_escape_string($Value);
