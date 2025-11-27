@@ -368,11 +368,11 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 		$FieldNames.=$key.', ';
 		$FieldValues.='"'.$Value.'", ';
 	}
-	/*
+	
 	$SQL = 'INSERT INTO debtorsmaster ('.mb_substr($FieldNames,0,-2).') '.
 	  'VALUES ('.mb_substr($FieldValues,0,-2).') ';
-	*/
-
+	
+/*
 	$SQL = "INSERT INTO debtorsmaster (" . mb_substr($FieldNames,0,-2) . ")
 	  VALUES ('" . mb_substr($FieldValues,0,-2) . "') ";
 	/*

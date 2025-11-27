@@ -85,6 +85,11 @@ REFERENCES `debtorsmaster` (`debtorno`);
 
 
 
+INSERT INTO debtorsmaster (debtorno, name, address1, address2, address3, address4, address5,
+                address6, currcode, salestype, paymentterms, clientsince)&#10;&#9; VALUES (&apos;&quot;&quot;,
+                &quot;Ludovick Rwabiz&quot;, &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;,
+                &quot;6&quot;, &quot;TZS&quot;, &quot;01&quot;, &quot;2&quot;, &quot;2025-11-27&quot;&apos;)
+
 CONSTRAINT ` custitem _ibfk_2` FOREIGN KEY (`debtorno`) REFERENCES `debtorsmaster` (`debtorno`)
 
 $GetStockCatProperty_sig = array(
