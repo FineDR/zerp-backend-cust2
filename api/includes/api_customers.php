@@ -266,6 +266,8 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 	foreach ($CustomerDetails as $key => $Value) {
 		$CustomerDetails[$key] = DB_escape_string($Value);
 	}
+	$Errors[0]=NoAuthorisation;
+	return $Errors;
 	$autonumbersql="SELECT confvalue FROM config
 					 WHERE confname='AutoDebtorNo'";
 	$autonumberresult=DB_query($autonumbersql);
