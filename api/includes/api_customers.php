@@ -503,6 +503,7 @@ function ModifyCustomer($CustomerDetails, $user, $password) {
 		$SQL .= $key.'="'.$Value.'", ';
 	}
 	$SQL = mb_substr($SQL,0,-2)." WHERE debtorno='".$CustomerDetails['debtorno']."'";
+	return $SQL;
 	if (sizeof($Errors)==0) {
 		$Result = DB_query($SQL);
 		if (DB_error_no() != 0) {
