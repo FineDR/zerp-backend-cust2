@@ -267,7 +267,7 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 	foreach ($CustomerDetails as $key => $Value) {
 		$CustomerDetails[$key] = DB_escape_string($Value);
 	}
-	
+
 	$autonumbersql="SELECT confvalue FROM config
 					 WHERE confname='AutoDebtorNo'";
 	$autonumberresult=DB_query($autonumbersql);
@@ -279,7 +279,6 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 		$CustomerDetails['debtorno']='';
 	}
 
-		return $CustomerDetails['debtorno'];
 	$Errors=VerifyDebtorName($CustomerDetails['name'], sizeof($Errors), $Errors);
 	if (isset($CustomerDetails['address1'])){
 		$Errors=VerifyAddressLine($CustomerDetails['address1'], 40, sizeof($Errors), $Errors);
@@ -362,6 +361,9 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 	if (isset($CustomerDetails['typeid'])){
 		$Errors=VerifyCustomerType($CustomerDetails['typeid'], sizeof($Errors), $Errors);
 	}
+	
+	return $CustomerDetails['debtorno'];
+	
 	$FieldNames='';
 	$FieldValues='';
 	foreach ($CustomerDetails as $key => $Value) {
