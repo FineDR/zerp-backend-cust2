@@ -266,12 +266,12 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 	foreach ($CustomerDetails as $key => $Value) {
 		$CustomerDetails[$key] = DB_escape_string($Value);
 	}
-	$Errors[0]=NoAuthorisation;
-	return $Errors;
 	$autonumbersql="SELECT confvalue FROM config
 					 WHERE confname='AutoDebtorNo'";
 	$autonumberresult=DB_query($autonumbersql);
 	$autonumber=DB_fetch_row($autonumberresult);
+		
+	return $autonumber;
 	if ($autonumber[0]==0) {
 		$Errors=VerifyDebtorNo($CustomerDetails['debtorno'], sizeof($Errors), $Errors);
 	} else {
