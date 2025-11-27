@@ -373,7 +373,7 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 	  'VALUES ('.mb_substr($FieldValues,0,-2).') ';
 	*/
 
-	$SQL = "INSERT INTO debtorsmaster (".mb_substr($FieldNames,0,-2) . ")
+	$SQL = "INSERT INTO debtorsmaster (" . mb_substr($FieldNames,0,-2) . ")
 	  VALUES ('" . mb_substr($FieldValues,0,-2) . "') ";
 	/*
 	$SQL = "INSERT INTO locations (" . mb_substr($FieldNames,0,-2) . ")
@@ -382,8 +382,9 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 	if (sizeof($Errors)==0) {
 	//	return $SQL;
 		//return $SQL.'idadi ya makosa ni: '.sizeof($Errors).' querry status '.$Result;
-
+  
 		$Result = DB_query($SQL);
+		return $Result;
 		if (DB_error_no() != 0) {
 			$Errors[0] = DatabaseUpdateFailed;
 		} else {
