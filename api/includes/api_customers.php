@@ -255,8 +255,8 @@ function VerifyCustomerType($DebtorType , $i, $Errors) {
    is only updated if the $Errors is empty, else the function returns an
    array of one to many error codes.
 */
-//function InsertCustomer($CustomerDetails, $user = '', $password = '') {
-function InsertCustomers($CustomerDetails, $user, $password) {
+function InsertCustomer($CustomerDetails, $user = '', $password = '') {
+//function InsertCustomers($CustomerDetails, $user, $password) {
 	$Errors = array();
 	$db = db($user, $password);
 	if (gettype($db)=='integer') {
@@ -377,7 +377,7 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 			'VALUES ('.mb_substr($FieldValues,0,-2).') ';
 		$locsql = "INSERT INTO locstock (loccode,stockid)
 			SELECT locations.loccode,'" . $StockItemDetails['stockid'] . "' FROM locations";
-			
+
 	$SQL = "INSERT INTO debtorsmaster (" . mb_substr($FieldNames,0,-2) . ")
 	  VALUES ('" . mb_substr($FieldValues,0,-2) . "') ";
 	/*
@@ -385,7 +385,7 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 					VALUES ('" . mb_substr($FieldValues,0,-2) . "') ";
     */
 	if (sizeof($Errors)==0) {
-		//return $SQL;
+		return $SQL;
 		//return $SQL.'idadi ya makosa ni: '.sizeof($Errors).' querry status '.$Result;
   
 		$Result = DB_query($SQL);

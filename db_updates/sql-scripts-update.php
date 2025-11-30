@@ -32,6 +32,27 @@ WHERE
     REFERENCED_TABLE_NAME = 'stockcategory'
     AND REFERENCED_COLUMN_NAME = 'categoryid';
 
+6.0 Update SalesTypes
+insert into salestypes values ('01', 'Retail');
+insert into salestypes values ('02', 'Whole sale');
+
+7.0 Update Payment Terms
+insert into paymentterms values (1,'Net 7',0,7);
+
+8.0 Grant Priviledges
+grant all privileges on zerp_backend.* to zerp@localhost;
+flush privileges;
+
+9.0 How to MySQL: Reset the Next Value in AUTO_INCREMENT column ?
+ALTER TABLE taxauthorities AUTO_INCREMENT = 1;
+
+ALTER TABLE taxgroups AUTO_INCREMENT = 1;
+
+ALTER TABLE taxcategories AUTO_INCREMENT = 1;
+
+ALTER TABLE debtortype AUTO_INCREMENT = 1;
+
+ALTER TABLE suppliertype AUTO_INCREMENT = 1;
 
 ALTER TABLE debtorsmaster to have debtorno to 20 VARCHAR
 
