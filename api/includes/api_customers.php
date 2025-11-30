@@ -376,6 +376,7 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 		} else {
 			$Errors[0]=0;
 			$Errors[1]=$CustomerDetails['debtorno'];
+			$Errors[2]=$CustomerDetails['name'];
 		}
 	}
 	return $Errors;
