@@ -375,6 +375,7 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 			$Errors[0] = DatabaseUpdateFailed;
 		} else {
 			$Errors[0]=0;
+			$Errors[1]=$CustomerDetails['debtorno'];
 		}
 	}
 	return $Errors;
