@@ -385,7 +385,7 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 					VALUES ('" . mb_substr($FieldValues,0,-2) . "') ";
     */
 	if (sizeof($Errors)==0) {
-		//return $SQL;
+		return $SQL;
 		//return $SQL.'idadi ya makosa ni: '.sizeof($Errors).' querry status '.$Result;
   
 		$Result = DB_query($SQL);
