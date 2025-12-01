@@ -105,9 +105,8 @@ FOREIGN KEY (`debtorno`)
 REFERENCES `debtorsmaster` (`debtorno`);
 
 
-SELECT cashsalecustomer, cashsalebranch, locationname, taxprovinceid FROM locations WHERE loccode=3
 
-
+MUM2025-06-12345
 INSERT INTO debtorsmaster (debtorno, name, address1, address2, address3, address4, address5,
                 address6, currcode, salestype, paymentterms, clientsince)&#10;&#9; VALUES (&apos;&quot;&quot;,
                Ludovick Rwabiz,1,2,3,4,5,
