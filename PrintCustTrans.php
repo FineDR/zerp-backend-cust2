@@ -586,7 +586,7 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 } else {
 	// Generate PDF with DomPDF
 	$PdfFileName = $_SESSION['DatabaseName'] . '_' . $InvOrCredit . '_' . ($FromTransNo-1) .'_'. date('Y-m-d') . '.pdf';
-	
+
 	// Display PDF in browser
 	$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
 	$DomPDF->loadHtml($HTML);
@@ -672,7 +672,8 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 
 		$Result = DB_query($SQL);
 		$MyRow = DB_fetch_row($Result);
-
+echo 'line 675 '.$MyRow[0] ;
+exit;
 		echo '<div class="page_help_text"><b>' . __('The last invoice created was number') . ' ' . $MyRow[0] . '</b><br />' . __('If only a single invoice is required') . ', ' . __('enter the invoice number') . ' ' . __('as both the start and end numbers') . '.</div>';
 
 		$SQL = "SELECT typeno FROM systypes WHERE typeid=11";
