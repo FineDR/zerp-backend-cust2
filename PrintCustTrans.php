@@ -543,14 +543,11 @@ if (isset($PrintPDF)
 		}
 		$FromTransNo++;
 	}
-
 if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 	include('includes/header.php');
 	echo $HTML;
 	include('includes/footer.php');
 } elseif (isset($_GET['Email'])) {
-										echo "line 53 ".$HTML ;
-								exit;
 	$PdfFileName = $_SESSION['DatabaseName'] . '_' . $InvOrCredit . '_' . ($FromTransNo-1) .'_'. date('Y-m-d') . '.pdf';
 
 	$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
@@ -586,7 +583,8 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 	include('includes/footer.php');
 
 } else {
-
+	echo "line 586 ".$HTML ;
+	exit;
 	// Generate PDF with DomPDF
 	$PdfFileName = $_SESSION['DatabaseName'] . '_' . $InvOrCredit . '_' . ($FromTransNo-1) .'_'. date('Y-m-d') . '.pdf';
 	// Display PDF in browser
