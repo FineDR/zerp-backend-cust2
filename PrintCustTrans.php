@@ -586,11 +586,12 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 
 	// Generate PDF with DomPDF
 	$PdfFileName = $_SESSION['DatabaseName'] . '_' . $InvOrCredit . '_' . ($FromTransNo-1) .'_'. date('Y-m-d') . '.pdf';
+		echo "line 589 ".$PdfFileName ;
+	exit;
 	// Display PDF in browser
 	$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
 	$DomPDF->loadHtml($HTML);
-	echo "line 592 ".$DomPDF ;
-	exit;
+
 	$DomPDF->setPaper($_SESSION['PageSize'], $Orientation);
 
 	// Render the HTML as PDF
