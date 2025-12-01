@@ -105,15 +105,17 @@ FOREIGN KEY (`debtorno`)
 REFERENCES `debtorsmaster` (`debtorno`);
 
 
+SELECT cashsalecustomer, cashsalebranch, locationname, taxprovinceid FROM locations WHERE loccode=3
+
 
 INSERT INTO debtorsmaster (debtorno, name, address1, address2, address3, address4, address5,
                 address6, currcode, salestype, paymentterms, clientsince)&#10;&#9; VALUES (&apos;&quot;&quot;,
-                &quot;Ludovick Rwabiz&quot;, &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;,
-                &quot;6&quot;, &quot;TZS&quot;, &quot;01&quot;, &quot;2&quot;, &quot;2025-11-27&quot;&apos;)
+               Ludovick Rwabiz,1,2,3,4,5,
+               6,TZS,01,2,2025-11-27&apos;)
 
 INSERT INTO debtorsmaster (debtorno, name, address1, address2, address3, address4, address5,
-                address6, currcode, salestype, paymentterms, clientsince) VALUES (&quot;&quot;, &quot;Ludovick
-                Rwabiz&quot;, &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;,
+                address6, currcode, salestype, paymentterms, clientsince) VALUES (&quot;,Ludovick
+                Rwabiz&quot;,1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;,
                 &quot;TZS&quot;, &quot;01&quot;, &quot;2&quot;, &quot;2025-11-27&quot;)
 
 UPDATE debtorsmaster SET debtorno=&quot;RAH&quot;, name=&quot;Ludovick Rwabiz&quot;, address1=&quot;1&quot;, address2=&quot;2&quot;, address3=&quot;3&quot;, address4=&quot;4&quot;, address5=&quot;5&quot;, address6=&quot;TZS&quot;, currcode=&quot;TZS&quot;, salestype=&quot;01&quot;, paymentterms=&quot;2&quot;, edireference=&quot;TZS&quot;, clientsince=&quot;2025-11-27&quot; WHERE debtorno=&apos;RAH&apos;<

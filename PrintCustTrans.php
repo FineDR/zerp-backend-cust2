@@ -8,6 +8,7 @@ include('includes/SetDomPDFOptions.php');
 
 $ViewTopic = 'ARReports';
 $BookMark = 'PrintInvoicesCredits';
+echo $BookMark ;
 
 if (isset($_GET['orientation'])) {
 	$Orientation = $_GET['orientation'];
