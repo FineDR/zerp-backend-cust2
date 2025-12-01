@@ -150,8 +150,7 @@ if (isset($PrintPDF)
 						ON debtorsmaster.currcode=currencies.currabrev
 						WHERE debtortrans.type=10
 						AND debtortrans.transno='" . $FromTransNo . "'";
-								echo "line 53 ".$SQL ;
-								exit;
+
 			if (isset($_POST['PrintEDI']) AND $_POST['PrintEDI']=='No') {
 				$SQL .= ' AND debtorsmaster.ediinvoices=0';
 			}
@@ -207,7 +206,8 @@ if (isset($PrintPDF)
 				$SQL .= ' AND debtorsmaster.ediinvoices=0';
 			}
 		}
-
+								echo "line 53 ".$SQL ;
+								exit;
 		$ErrMsg = __('There was a problem retrieving the invoice or credit note details for note number') . ' ' . $FromTransNo;
 		$Result = DB_query($SQL, $ErrMsg);
 
