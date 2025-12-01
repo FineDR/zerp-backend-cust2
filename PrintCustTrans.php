@@ -1,11 +1,11 @@
 <?php
-require(__DIR__ . '/includes/session.php');
-require_once __DIR__ . '/vendor/autoload.php'; // DomPDF autoload
+require (__DIR__ . '/includes/session.php');
+include ('includes/SQL_CommonFunctions.php');
 
 use Dompdf\Dompdf;
-use Dompdf\Options;
 
 include('includes/SetDomPDFOptions.php');
+use Dompdf\Options;
 
 $ViewTopic = 'ARReports';
 $BookMark = 'PrintInvoicesCredits';
