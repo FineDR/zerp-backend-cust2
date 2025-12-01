@@ -589,9 +589,10 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 	$PdfFileName = $_SESSION['DatabaseName'] . '_' . $InvOrCredit . '_' . ($FromTransNo-1) .'_'. date('Y-m-d') . '.pdf';
 
 	$DomPDFOptions = new Options();
-		echo 'line 592 '.$DomPDF;
-exit;
+
 	$DomPDF = new Dompdf($DomPDFOptions);
+			echo 'line 592 '.$DomPDF;
+exit;
 	$DomPDF->loadHtml($HTML);
 	// Display PDF in browser
 
