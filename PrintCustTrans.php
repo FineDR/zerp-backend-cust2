@@ -3,6 +3,7 @@ require(__DIR__ . '/includes/session.php');
 require_once __DIR__ . '/vendor/autoload.php'; // DomPDF autoload
 
 use Dompdf\Dompdf;
+use Dompdf\Options;
 
 include('includes/SetDomPDFOptions.php');
 
@@ -586,6 +587,10 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 
 	// Generate PDF with DomPDF
 	$PdfFileName = $_SESSION['DatabaseName'] . '_' . $InvOrCredit . '_' . ($FromTransNo-1) .'_'. date('Y-m-d') . '.pdf';
+
+	$DomPDFOptions = new Options();
+	$DomPDF = new Dompdf($DomPDFOptions);
+	$DomPDF->loadHtml($HTML);
 		echo "line 589 ".$PdfFileName ;
 	exit;
 	// Display PDF in browser
