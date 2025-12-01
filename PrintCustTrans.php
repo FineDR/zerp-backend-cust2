@@ -551,12 +551,13 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 } elseif (isset($_GET['Email'])) {
 
 	$PdfFileName = $_SESSION['DatabaseName'] . '_' . $InvOrCredit . '_' . ($FromTransNo-1) .'_'. date('Y-m-d') . '.pdf';
+										echo "line 53 ".$PdfFileName ;
+								exit;
 	$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
 	$DomPDF->loadHtml($HTML);
 	// (Optional) set up the paper size and orientation
 	$DomPDF->setPaper($_SESSION['PageSize'], 'landscape');
-									echo "line 53 ".$DomPDF ;
-								exit;
+
 	// Render the HTML as PDF
 	$DomPDF->render();
 	// Output the generated PDF to a temporary file
