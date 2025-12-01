@@ -206,8 +206,6 @@ if (isset($PrintPDF)
 				$SQL .= ' AND debtorsmaster.ediinvoices=0';
 			}
 		}
-								echo "line 53 ".$SQL ;
-								exit;
 		$ErrMsg = __('There was a problem retrieving the invoice or credit note details for note number') . ' ' . $FromTransNo;
 		$Result = DB_query($SQL, $ErrMsg);
 
@@ -440,6 +438,8 @@ if (isset($PrintPDF)
 						</tr>
 					</table>';
 }
+								echo "line 53 ".$HTML ;
+								exit;
 					$HTML .= '<table class="table1">
 					<tr>
 						<th>' . __('Item Code'). '</th>
