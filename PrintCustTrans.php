@@ -8,7 +8,6 @@ include('includes/SetDomPDFOptions.php');
 
 $ViewTopic = 'ARReports';
 $BookMark = 'PrintInvoicesCredits';
-echo $BookMark ;
 
 if (isset($_GET['orientation'])) {
 	$Orientation = $_GET['orientation'];
@@ -51,6 +50,7 @@ if (isset($PrintPDF)
 	OR isset($_GET['View'])
 	OR isset($_GET['Email'])) {
 
+		echo "line 53 ".$FirstTrans ;
 	$UserLanguage = $_SESSION['Language'];
 
 	while ($FromTransNo <= filter_number_format($_POST['ToTransNo'])) {
