@@ -543,8 +543,7 @@ if (isset($PrintPDF)
 		}
 		$FromTransNo++;
 	}
-								echo "line 53 ".$HTML ;
-								exit;
+
 if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 	include('includes/header.php');
 	echo $HTML;
@@ -556,6 +555,8 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 	$DomPDF->loadHtml($HTML);
 	// (Optional) set up the paper size and orientation
 	$DomPDF->setPaper($_SESSION['PageSize'], 'landscape');
+									echo "line 53 ".$DomPDF ;
+								exit;
 	// Render the HTML as PDF
 	$DomPDF->render();
 	// Output the generated PDF to a temporary file
