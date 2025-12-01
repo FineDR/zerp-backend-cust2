@@ -594,7 +594,8 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 	// Display PDF in browser
 	$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
 	$DomPDF->loadHtml($HTML);
-
+echo 'line 597 '.$DomPDF;
+exit;
 	$DomPDF->setPaper($_SESSION['PageSize'], $Orientation);
 
 	// Render the HTML as PDF
