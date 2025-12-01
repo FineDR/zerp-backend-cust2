@@ -584,9 +584,9 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 	include('includes/footer.php');
 
 } else {
-
 	// Generate PDF with DomPDF
-	$PdfFileName = $_SESSION['DatabaseName'] . '_CustomerStatements_' . date('Y-m-d') . '.pdf';
+	//$PdfFileName = $_SESSION['DatabaseName'] . '_CustomerStatements_' . date('Y-m-d') . '.pdf';
+	$PdfFileName = $_SESSION['DatabaseName'] . '_' . $InvOrCredit . '_' . ($FromTransNo-1) .'_'. date('Y-m-d') . '.pdf';
 	// Display PDF in browser
 	$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
 	$DomPDF->loadHtml($HTML);
@@ -599,6 +599,30 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 
 	// Output the generated PDF to Browser
 	$DomPDF->stream($PdfFileName, array("Attachment" => false));
+	//=======//
+	/*
+	// Generate PDF with DomPDF
+	$PdfFileName = $_SESSION['DatabaseName'] . '_' . $InvOrCredit . '_' . ($FromTransNo-1) .'_'. date('Y-m-d') . '.pdf';
+
+	$DomPDFOptions = new Options();
+
+	$DomPDF = new Dompdf($DomPDFOptions);
+			echo 'line 592 '.$DomPDF;
+exit;
+	$DomPDF->loadHtml($HTML);
+	// Display PDF in browser
+
+	$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
+	$DomPDF->loadHtml($HTML);
+
+	$DomPDF->setPaper($_SESSION['PageSize'], $Orientation);
+
+	// Render the HTML as PDF
+	$DomPDF->render();
+
+	// Output the generated PDF to Browser
+	$DomPDF->stream($PdfFileName, array("Attachment" => false));
+	*/
 }
 
 } else {
