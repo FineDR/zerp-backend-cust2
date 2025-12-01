@@ -49,8 +49,6 @@ if (isset($PrintPDF)
 	&& $FromTransNo!=''
 	OR isset($_GET['View'])
 	OR isset($_GET['Email'])) {
-
-		echo "line 53 ".$FirstTrans ;
 	$UserLanguage = $_SESSION['Language'];
 
 	while ($FromTransNo <= filter_number_format($_POST['ToTransNo'])) {
@@ -152,6 +150,7 @@ if (isset($PrintPDF)
 						ON debtorsmaster.currcode=currencies.currabrev
 						WHERE debtortrans.type=10
 						AND debtortrans.transno='" . $FromTransNo . "'";
+								echo "line 53 ".$SQL ;
 			if (isset($_POST['PrintEDI']) AND $_POST['PrintEDI']=='No') {
 				$SQL .= ' AND debtorsmaster.ediinvoices=0';
 			}
