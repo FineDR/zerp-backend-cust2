@@ -589,11 +589,12 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 	// Display PDF in browser
 	$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
 	$DomPDF->loadHtml($HTML);
-echo 'line 592 '.$Orientation;
-exit;
+	if($Orientation==''){
+		$Orientation = 'portrait';
+	}
 	// (Optional) Setup the paper size and orientation
-	$DomPDF->setPaper($_SESSION['PageSize'], 'portrait');
-	//$DomPDF->setPaper($_SESSION['PageSize'], $Orientation);
+	//$DomPDF->setPaper($_SESSION['PageSize'], 'portrait');
+	$DomPDF->setPaper($_SESSION['PageSize'], $Orientation);
 
 	// Render the HTML as PDF
 	$DomPDF->render();
