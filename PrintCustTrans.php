@@ -438,8 +438,6 @@ if (isset($PrintPDF)
 						</tr>
 					</table>';
 }
-								echo "line 53 ".$HTML ;
-								exit;
 					$HTML .= '<table class="table1">
 					<tr>
 						<th>' . __('Item Code'). '</th>
@@ -545,7 +543,8 @@ if (isset($PrintPDF)
 		}
 		$FromTransNo++;
 	}
-
+								echo "line 53 ".$HTML ;
+								exit;
 if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 	include('includes/header.php');
 	echo $HTML;
