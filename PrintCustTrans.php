@@ -591,8 +591,6 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 	$DomPDFOptions = new Options();
 	$DomPDF = new Dompdf($DomPDFOptions);
 	$DomPDF->loadHtml($HTML);
-		echo "line 589 ".$PdfFileName ;
-	exit;
 	// Display PDF in browser
 	$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
 	$DomPDF->loadHtml($HTML);
