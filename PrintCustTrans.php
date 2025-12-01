@@ -585,14 +585,14 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 
 } else {
 	// Generate PDF with DomPDF
-	//$PdfFileName = $_SESSION['DatabaseName'] . '_CustomerStatements_' . date('Y-m-d') . '.pdf';
 	$PdfFileName = $_SESSION['DatabaseName'] . '_' . $InvOrCredit . '_' . ($FromTransNo-1) .'_'. date('Y-m-d') . '.pdf';
 	// Display PDF in browser
 	$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
 	$DomPDF->loadHtml($HTML);
 
 	// (Optional) Setup the paper size and orientation
-	$DomPDF->setPaper($_SESSION['PageSize'], 'portrait');
+	//$DomPDF->setPaper($_SESSION['PageSize'], 'portrait');
+	$DomPDF->setPaper($_SESSION['PageSize'], $Orientation);
 
 	// Render the HTML as PDF
 	$DomPDF->render();
@@ -620,8 +620,6 @@ exit;
 	// Render the HTML as PDF
 	$DomPDF->render();
 
-	// Output the generated PDF to Browser
-	$DomPDF->stream($PdfFileName, array("Attachment" => false));
 	*/
 }
 
