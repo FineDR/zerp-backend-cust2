@@ -672,8 +672,17 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 
 		$Result = DB_query($SQL);
 		$MyRow = DB_fetch_row($Result);
+
 		echo '<div class="page_help_text"><b>' . __('The last invoice created was number') . ' ' . $MyRow[0] . '</b><br />' . __('If only a single invoice is required') . ', ' . __('enter the invoice number') . ' ' . __('as both the start and end numbers') . '.</div>';
-echo 'line 675 '.$MyRow[0] ;
+echo 'line 677 '.$MyRow[0] ;
+echo '<div class="page_help_text"><b>' 
+    . __('The last invoice created was number') . ' ' . $MyRow[0] 
+    . '</b><br>'
+    . __('If only a single invoice is required') . ', '
+    . __('enter the invoice number') . ' '
+    . __('as both the start and end numbers') 
+    . '.</div>';
+
 exit;
 		$SQL = "SELECT typeno FROM systypes WHERE typeid=11";
 
