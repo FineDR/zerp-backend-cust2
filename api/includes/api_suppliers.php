@@ -1500,6 +1500,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		return $Errors;
 	}
     return 'line 1502: '.$SQL;
+	
 	$_SESSION['SuppTrans']->SupplierName = $MyRow['suppname'];
 	return 'line 1504: '.$_SESSION['SuppTrans']->SupplierName;
 	$suppname = $MyRow['suppname'];
