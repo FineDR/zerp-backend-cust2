@@ -1493,8 +1493,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 				AND suppliers.paymentterms=paymentterms.termsindicator
 				AND suppliers.supplierid = '" . $SupplierHeader['supplierno']. "'";
 	
-	return 'line 1494 '.$SQL;
-
 	$Result = api_DB_query($SQL);
 	$MyRow = DB_fetch_array($Result);
 	if (DB_num_rows($Result)==0){
@@ -1511,6 +1509,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$taxgroupdescription = $MyRow['taxgroupdescription'];
 	$supplierid = $MyRow['supplierid'];
 
+	return $suppname;
 	if ($MyRow['daysbeforedue'] == 0) {
 		$terms = '1' . $MyRow['dayinfollowingmonth'];
 	}
