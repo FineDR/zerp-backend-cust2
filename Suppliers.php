@@ -1079,22 +1079,20 @@ if (!isset($SupplierID)) {
 		<field>
 			<label for="Address6">' . __('Country') . ':</label>
 			<select name="Address6">';
-
-	foreach ($CountriesArray as $CountryEntry => $CountryName) {
-		if (isset($_POST['Address6']) and ($_POST['Address6'] == $CountryName)) {
-			echo '<option selected="selected" value="' . $CountryName . '">' . $CountryName . '</option>';
-		}
-		elseif (!isset($_POST['Address6']) and $CountryName == "") {
-			echo '<option selected="selected" value="' . $CountryName . '">' . $CountryName . '</option>';
-		}
-		else {
-			echo '<option value="' . $CountryName . '">' . $CountryName . '</option>';
-		}
-	}
-	echo '</select>
-		</field>';
-
-	echo '<field>
+			foreach ($CountriesArray as $CountryEntry => $CountryName) {
+				if (isset($_POST['Address6']) and ($_POST['Address6'] == $CountryName)) {
+					echo '<option selected="selected" value="' . $CountryName . '">' . $CountryName . '</option>';
+				}
+				elseif (!isset($_POST['Address6']) and $CountryName == "") {
+					echo '<option selected="selected" value="' . $CountryName . '">' . $CountryName . '</option>';
+				}
+				else {
+					echo '<option value="' . $CountryName . '">' . $CountryName . '</option>';
+				}
+			}
+			echo '</select>
+				</field>';
+			echo '<field>
 			<label for="Phone">' . __('Telephone') . ':</label>
 			<input ' . (in_array('Name', $Errors) ? 'class="inputerror"' : '') . ' type="tel" pattern="[\s\d+()-]{1,40}" placeholder="' . __('Only digit blank ( ) and - allowed') . '" name="Phone" value="' . $_POST['Phone'] . '" size="42" maxlength="40" />
 		</field>
