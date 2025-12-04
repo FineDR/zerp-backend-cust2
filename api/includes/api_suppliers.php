@@ -1526,7 +1526,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	if($MyRow['defaultlocation']==''){
 		$MyRow['defaultlocation'] = $SupplierHeader['userlocation'];
 	}
-
+return $MyRow['defaultlocation'];
 	$SQL = "SELECT taxprovinceid
 			FROM locations
 			WHERE loccode = '" . $MyRow['defaultlocation'] . "'";
