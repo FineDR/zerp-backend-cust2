@@ -1509,7 +1509,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$taxgroupdescription = $MyRow['taxgroupdescription'];
 	$supplierid = $MyRow['supplierid'];
 
-	return $suppname;
 	if ($MyRow['daysbeforedue'] == 0) {
 		$terms = '1' . $MyRow['dayinfollowingmonth'];
 	}
@@ -1526,7 +1525,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		$MyRow['defaultlocation'] = $SupplierHeader['userlocation'];
 	}
 	
-	//return $MyRow['defaultlocation'];
+	return $MyRow['defaultlocation'];
 	$LocalTaxProvinceResult = api_DB_query("SELECT taxprovinceid
 								FROM locations
 								WHERE loccode = '" . $MyRow['defaultlocation'] . "'");
