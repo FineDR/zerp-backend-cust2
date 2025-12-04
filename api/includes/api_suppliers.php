@@ -1518,7 +1518,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$SupplierID = $SupplierHeader['supplierno'];
 	
 	//get user default location
-	$SQL = "SELECT defaultlocation FROM www_users WHERE userid = '$user'";
+	$SQL = "SELECT defaultlocation FROM www_users WHERE userid = $user";
 	return $SQL;
 	$Result = api_DB_query($SQL);
 	$MyRow = DB_fetch_array($Result);
