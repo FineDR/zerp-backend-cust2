@@ -125,7 +125,7 @@ function VerifyFactorCompany($factorco , $i, $Errors) {
 }
 
 /* Common SQL Functions */
-
+/*
 function GetNextTransNo($TransType) {
 
 	/* SQL to get the next transaction number these are maintained in the table SysTypes - Transaction Types
@@ -135,8 +135,6 @@ function GetNextTransNo($TransType) {
 	11 sales credit note
 	12 sales receipt
 	etc
-	*
-	*/
 	api_DB_query("SELECT typeno FROM systypes WHERE typeid='" . $TransType . "' FOR UPDATE");
 	$SQL = "UPDATE systypes SET typeno = typeno + 1 WHERE typeid = '" . $TransType . "'";
 	//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': '
@@ -149,7 +147,7 @@ function GetNextTransNo($TransType) {
 	$MyRow = DB_fetch_array($GetTransNoResult);
 	return $MyRow[0];
 }
-
+*/
 /** Insert a new supplier in the webERP database. This function takes an
    associative array called $SupplierDetails, where the keys are the
    names of the fields in the suppliers table, and the values are the
