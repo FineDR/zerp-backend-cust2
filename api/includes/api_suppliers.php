@@ -1490,6 +1490,9 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 				AND suppliers.currcode=currencies.currabrev
 				AND suppliers.paymentterms=paymentterms.termsindicator
 				AND suppliers.supplierid = '" . $SupplierHeader['supplierno']. "'";
+	
+	return 'line 1494 '.$SQL;
+	
 	$Result = api_DB_query($SQL);
 	$MyRow = DB_fetch_array($Result);
 	if (DB_num_rows($Result)==0){
@@ -1522,8 +1525,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		$MyRow['defaultlocation'] = $SupplierHeader['userlocation'];
 	}
 	
-	return $MyRow['defaultlocation'];
-	
+	//return $MyRow['defaultlocation'];
 	$LocalTaxProvinceResult = api_DB_query("SELECT taxprovinceid
 								FROM locations
 								WHERE loccode = '" . $MyRow['defaultlocation'] . "'");
