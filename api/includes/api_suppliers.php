@@ -1499,7 +1499,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		$Errors[0] = NoSupplierExist;
 		return $Errors;
 	}
-
 	$suppname = $MyRow['suppname'];
 	$terms = $MyRow['terms'];
 	$currcode = $MyRow['currcode'];
@@ -1507,7 +1506,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$decimalplaces = $MyRow['decimalplaces'];
 	$taxgroupid = $MyRow['taxgroupid'];
 	$taxgroupdescription = $MyRow['taxgroupdescription'];
-	$supplierid = $MyRow['supplierid'];
+	$InvoiceNo = $SupplierHeader['suppreference'];
 
 	if ($MyRow['daysbeforedue'] == 0) {
 		$terms = '1' . $MyRow['dayinfollowingmonth'];
@@ -1550,7 +1549,44 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
     */
 	$InvoiceOrCredit = 'Invoice';
    // return 'LocalTax Province = '.$LocalTaxProvince;
-	return $suppname;
+
+   //mpaka hapa tuna kosa vifuatavyo
+   //invoice totals
+   #1 insert the Invoice header in the supplier Trans
+
+		/*Now insert the invoice into the SuppTrans table*/
+				/* SQL to process the postings for purchase invoice */
+		/*Start an SQL transaction */
+		DB_Txn_Begin();
+		/*Get the next transaction number for internal purposes and the period to post GL transactions in based on the invoice date*/
+		$InvoiceNo = GetNextTransNo(20);
+		$PeriodNo = GetPeriod($SupplierHeader['trandate']);
+		$SQLInvoiceDate = FormatDateForSQL($SupplierHeader['trandate']);
+return $InvoiceNo ;
+		$SQL = "INSERT INTO supptrans (transno,
+										type,
+										supplierno,
+										suppreference,
+										trandate,
+										duedate,
+										ovamount,
+										ovgst,
+										rate,
+										transtext,
+										inputdate)
+							VALUES (
+								'" . $InvoiceNo . "',
+								20 ,
+								'" . $SupplierID . "',
+								'" . $SuppReference . "',
+								'" . FormatDateForSQL($SupplierHeader['trandate']) . "',
+								'" . FormatDateForSQL($SupplierHeader['duedate']) . "',
+								'" . $SupplierHeader['ovamount']. "',
+								'" . $SupplierHeader['ovgst']. "',
+								'" . $SupplierHeader['rate']. "',
+								'" . $SupplierHeader['transtext']. "',
+								CURRENT_DATE)";
+		$Result = api_DB_query($SQL);
 
 	$FieldNames='';
 	$FieldValues='';
