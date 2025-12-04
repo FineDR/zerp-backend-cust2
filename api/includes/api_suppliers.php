@@ -1500,6 +1500,8 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		return $Errors;
 	}
     
+	$_SESSION['SuppTrans']->SupplierName = $MyRow['suppname'];
+	return 'line 1504: '.$_SESSION['SuppTrans']->SupplierName;
 	$suppname = $MyRow['suppname'];
 	$terms = $MyRow['terms'];
 	$currcode = $MyRow['currcode'];
@@ -1551,7 +1553,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$InvoiceOrCredit = 'Invoice';
    // return 'LocalTax Province = '.$LocalTaxProvince;
 	return $suppname;
-
 
 	$FieldNames='';
 	$FieldValues='';
