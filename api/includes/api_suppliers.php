@@ -1499,6 +1499,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		$Errors[0] = NoSupplierExist;
 		return $Errors;
 	}
+return 'line 1502: ';
 return 'line 1502: '.$_SESSION['db'] ;
 	$_SESSION['SuppTrans']->SupplierName = $MyRow['suppname'];
 	return 'line 1504: '.$_SESSION['SuppTrans']->SupplierName;
