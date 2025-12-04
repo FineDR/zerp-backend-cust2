@@ -124,6 +124,32 @@ function VerifyFactorCompany($factorco , $i, $Errors) {
 	return $Errors;
 }
 
+/* Common SQL Functions */
+
+function GetNextTransNo($TransType) {
+
+	/* SQL to get the next transaction number these are maintained in the table SysTypes - Transaction Types
+	Also updates the transaction number
+
+	10 sales invoice
+	11 sales credit note
+	12 sales receipt
+	etc
+	*
+	*/
+	DB_query("SELECT typeno FROM systypes WHERE typeid='" . $TransType . "' FOR UPDATE");
+	$SQL = "UPDATE systypes SET typeno = typeno + 1 WHERE typeid = '" . $TransType . "'";
+	//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': '
+	//	. __('The transaction number could not be incremented');
+	DB_query($SQL, $ErrMsg);
+	$SQL = "SELECT typeno FROM systypes WHERE typeid= '" . $TransType . "'";
+//	$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': <BR>'
+//		. __('The next transaction number could not be retrieved from the database because');
+	$GetTransNoResult = DB_query($SQL, $ErrMsg);
+	$MyRow = DB_fetch_row($GetTransNoResult);
+	return $MyRow[0];
+}
+
 /** Insert a new supplier in the webERP database. This function takes an
    associative array called $SupplierDetails, where the keys are the
    names of the fields in the suppliers table, and the values are the
@@ -1558,7 +1584,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 				/* SQL to process the postings for purchase invoice */
 		/*Start an SQL transaction */
 
-		//.DB_Txn_Begin();
+		DB_Txn_Begin();
 		/*Get the next transaction number for internal purposes and the period to post GL transactions in based on the invoice date*/
 		$InvoiceNo = GetNextTransNo(20);
 		$PeriodNo = GetPeriod($SupplierHeader['trandate']);
