@@ -137,16 +137,16 @@ function GetNextTransNo($TransType) {
 	etc
 	*
 	*/
-	DB_query("SELECT typeno FROM systypes WHERE typeid='" . $TransType . "' FOR UPDATE");
+	api_DB_query("SELECT typeno FROM systypes WHERE typeid='" . $TransType . "' FOR UPDATE");
 	$SQL = "UPDATE systypes SET typeno = typeno + 1 WHERE typeid = '" . $TransType . "'";
 	//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': '
 	//	. __('The transaction number could not be incremented');
-	DB_query($SQL, $ErrMsg);
+	api_DB_query($SQL);
 	$SQL = "SELECT typeno FROM systypes WHERE typeid= '" . $TransType . "'";
 //	$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': <BR>'
 //		. __('The next transaction number could not be retrieved from the database because');
-	$GetTransNoResult = DB_query($SQL, $ErrMsg);
-	$MyRow = DB_fetch_row($GetTransNoResult);
+	$GetTransNoResult = api_DB_query($SQL);
+	$MyRow = DB_fetch_array($GetTransNoResult);
 	return $MyRow[0];
 }
 
@@ -716,7 +716,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 			/* SQL to process the postings for purchase invoice */
 			/*Start an SQL transaction */
 
-			DB_Txn_Begin();
+			//DB_Txn_Begin();
 
 			/*Get the next transaction number for internal purposes and the period to post GL transactions in based on the invoice date*/
 			$InvoiceNo = GetNextTransNo(20);
