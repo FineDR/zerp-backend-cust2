@@ -1463,10 +1463,11 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
+	return 'line 1466 '.$SupplierHeader['supplierno'];
 	foreach ($SupplierHeader as $key => $Value) {
 		$SupplierHeader[$key] = DB_escape_string($Value);
 	}
-return 'line 1469 '.$SupplierHeader['supplierno'];
+
 	$Errors=VerifySupplierNoExists($SupplierHeader['supplierno'], sizeof($Errors), $Errors);
 	if (isset($SupplierHeader['trandate'])){
 		$Errors=VerifyDeliveryDate($SupplierHeader['trandate'], sizeof($Errors), $Errors);
