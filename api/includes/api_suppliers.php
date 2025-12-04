@@ -1458,6 +1458,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$Errors = array();
 	$db = db($user, $password);
+	return 'line 1461 '.$db;
 	if (gettype($db)=='integer') {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
@@ -1492,7 +1493,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 				AND suppliers.supplierid = '" . $SupplierHeader['supplierno']. "'";
 	
 	return 'line 1494 '.$SQL;
-	
+
 	$Result = api_DB_query($SQL);
 	$MyRow = DB_fetch_array($Result);
 	if (DB_num_rows($Result)==0){
