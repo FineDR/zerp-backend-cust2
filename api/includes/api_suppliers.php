@@ -720,8 +720,8 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 
 			/*Get the next transaction number for internal purposes and the period to post GL transactions in based on the invoice date*/
 			$InvoiceNo = GetNextTransNo(20);
-			$PeriodNo = GetPeriod($TransDate);
-			$SQLInvoiceDate = FormatDateForSQL($TransDate);
+		//	$PeriodNo = GetPeriod($TransDate);
+			//$SQLInvoiceDate = FormatDateForSQL($TransDate);
 
 			if ($GLLink_Creditors == 1) {
 				/*Loop through the GL Entries and create a debit posting for each of the accounts entered */
