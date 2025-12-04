@@ -1586,8 +1586,9 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		DB_Txn_Begin();
 		/*Get the next transaction number for internal purposes and the period to post GL transactions in based on the invoice date*/
 		$InvoiceNo = GetNextTransNo(20);
-		return 'line 1589: '. $InvoiceNo ;
-		//$PeriodNo = GetPeriod($SupplierHeader['trandate']);
+
+		$PeriodNo = GetPeriod($SupplierHeader['trandate']);
+				return 'line 1591: '. $PeriodNo ;
 		//$SQLInvoiceDate = FormatDateForSQL($SupplierHeader['trandate']);
 
 		$SQL = "INSERT INTO supptrans (transno,
