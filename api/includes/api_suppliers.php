@@ -1589,6 +1589,66 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		$PeriodNo = GetPeriod($SupplierHeader['trandate']);
 		$SQLInvoiceDate = FormatDateForSQL($SupplierHeader['trandate']);
 
+		return $SupplierHeader['gllink_creditors'];
+
+		if ($SupplierHeader['gllink_creditors'] == 1) {
+			/*Loop through the GL Entries and create a debit posting for each of the accounts entered */
+			$LocalTotal = 0;
+
+			/*the postings here are a little tricky, the logic goes like this:
+			if its a shipment entry then the cost must go against the GRN suspense account defined in the company record
+
+			if its a general ledger amount it goes straight to the account specified
+
+			if its a GRN amount invoiced then there are two possibilities:
+
+			1 The PO line is on a shipment.
+			The whole charge goes to the GRN suspense account pending the closure of the
+			shipment where the variance is calculated on the shipment as a whole and the clearing entry to the GRN suspense
+			is created. Also, shipment records are created for the charges in local currency.
+
+			2. The order line item is not on a shipment
+			The cost as originally credited to GRN suspense on arrival of goods is debited to GRN suspense.
+			Depending on the setting of WeightedAverageCosting:
+			If the order line item is a stock item and WeightedAverageCosting set to OFF then use standard costing .....
+				Any difference
+				between the std cost and the currency cost charged as converted at the ex rate of of the invoice is written off
+				to the purchase price variance account applicable to the stock item being invoiced.
+			Otherwise
+				Recalculate the new weighted average cost of the stock and update the cost - post the difference to the appropriate stock code
+
+			Or if its not a stock item
+			but a nominal item then the GL account in the orignal order is used for the price variance account.
+			*/
+
+			foreach ($_SESSION['SuppTrans']->GLCodes as $EnteredGLCode) {
+
+				/*GL Items are straight forward - just do the debit postings to the GL accounts specified -
+				 the credit is to creditors control act  done later for the total invoice value + tax*/
+				//skamnev added tag
+				$SQL = "INSERT INTO gltrans (type,
+											typeno,
+											trandate,
+											periodno,
+											account,
+											narrative,
+											amount)
+									VALUES (20,
+										'" . $InvoiceNo . "',
+										'" . $SQLInvoiceDate . "',
+										'" . $PeriodNo . "',
+										'" . $EnteredGLCode->GLCode . "',
+										'" . mb_substr($_SESSION['SuppTrans']->SupplierID . ' - ' . $EnteredGLCode->Narrative, 0, 200) . "',
+										'" . $EnteredGLCode->Amount / $_SESSION['SuppTrans']->ExRate . "')";
+
+				$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added because');
+
+				$Result = DB_query($SQL, $ErrMsg, '', true);
+				InsertGLTags($EnteredGLCode->Tag);
+
+				$LocalTotal += $EnteredGLCode->Amount / $_SESSION['SuppTrans']->ExRate;
+			}		
+
 		$SQL = "INSERT INTO supptrans (transno,
 										type,
 										supplierno,
@@ -1612,33 +1672,11 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 								'" . $SupplierHeader['rate']. "',
 								'" . $SupplierHeader['transtext']. "',
 								CURRENT_DATE)";
-				return 'line 1615: '. $SQL;
-		$Result = api_DB_query($SQL);
+		//$Result = api_DB_query($SQL);
+		return 'line 1615: '. $SQL;
 
-	$FieldNames='';
-	$FieldValues='';
-	global  $SOH_DateFields;
-	$OrderHeader['orderno'] = GetNextTransNo(30);
-	foreach ($OrderHeader as $key => $Value) {
-		$FieldNames.=$key.', ';
-		if (in_array($key, $SOH_DateFields) ) {
-			$Value = FormatDateforSQL($Value);
-		}
-		$FieldValues.="'".$Value."', ";
-	}
-	$SQL = "INSERT INTO salesorders (" . mb_substr($FieldNames,0,-2) . ")
-				VALUES (" . mb_substr($FieldValues,0,-2). ")";
-	if (sizeof($Errors)==0) {
 
-		$Result = api_DB_Query($SQL);
 
-		if (DB_error_no() != 0) {
-			$Errors[0] = $SQL;
-		} else {
-			$Errors[0]=0;
-			$Errors[1]=$OrderHeader['orderno'];
-		}
-	}
 	return $Errors;
 }
 
