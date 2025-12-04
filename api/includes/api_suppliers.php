@@ -1530,7 +1530,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$SQL = "SELECT taxprovinceid
 			FROM locations
 			WHERE loccode = '" . $MyRow['defaultlocation'] . "'";
-			return $SQL;
     $LocalTaxProvinceResult = api_DB_query($SQL);
 	if (DB_num_rows($LocalTaxProvinceResult)==0){
 		$Errors[0] = UserTaxProvinceNotSet;
