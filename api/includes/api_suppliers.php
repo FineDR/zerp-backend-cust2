@@ -1535,7 +1535,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		$Errors[0] = UserTaxProvinceNotSet;
 		return $Errors;
 	}
-return $MyRow['defaultlocation'];
+
 	$LocalTaxProvinceRow = DB_fetch_row($LocalTaxProvinceResult);
 	$LocalTaxProvince = $LocalTaxProvinceRow[0];
 return $LocalTaxProvince;
