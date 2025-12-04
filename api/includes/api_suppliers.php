@@ -1458,7 +1458,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 	$Errors = array();
 	$db = db($user, $password);
-	
+	return 'line 1461 '.gettype($db);
 	if (gettype($db)=='integer') {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
