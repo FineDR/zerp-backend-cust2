@@ -1463,7 +1463,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-	return 'line 1466 '.$SupplierHeader['supplierno'];
+
 	foreach ($SupplierHeader as $key => $Value) {
 		$SupplierHeader[$key] = DB_escape_string($Value);
 	}
