@@ -1522,6 +1522,8 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		$MyRow['defaultlocation'] = $SupplierHeader['userlocation'];
 	}
 	
+	return $MyRow['defaultlocation'];
+	
 	$LocalTaxProvinceResult = api_DB_query("SELECT taxprovinceid
 								FROM locations
 								WHERE loccode = '" . $MyRow['defaultlocation'] . "'");
