@@ -1588,7 +1588,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 		$InvoiceNo = GetNextTransNo(20);
 		$PeriodNo = GetPeriod($SupplierHeader['trandate']);
 		$SQLInvoiceDate = FormatDateForSQL($SupplierHeader['trandate']);
-		return 'line 1591: '. $SQLInvoiceDate  ;
 
 		$SQL = "INSERT INTO supptrans (transno,
 										type,
@@ -1613,6 +1612,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 								'" . $SupplierHeader['rate']. "',
 								'" . $SupplierHeader['transtext']. "',
 								CURRENT_DATE)";
+				return 'line 1615: '. $SQL;
 		$Result = api_DB_query($SQL);
 
 	$FieldNames='';
