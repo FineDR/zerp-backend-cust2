@@ -1567,7 +1567,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 	$LocalTaxProvinceRow = DB_fetch_row($LocalTaxProvinceResult);
 	$LocalTaxProvince = $LocalTaxProvinceRow[0];
 
-return 'line 1569: ';
 	/*
 		$_SESSION['SuppTrans']->GetTaxes();
 
