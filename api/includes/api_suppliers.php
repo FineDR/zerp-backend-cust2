@@ -1624,9 +1624,9 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 
 			foreach ($SupplierInvoiceLine as $EnteredGLCode => $Value) {
 
-		//	foreach ($SupplierInvoiceLine as $EnteredGLCode => $Value) {
-	//	$SupplierHeader[$key] = DB_escape_string($Value);
-//	}
+							//	foreach ($SupplierInvoiceLine as $EnteredGLCode => $Value) {
+						//	$SupplierHeader[$key] = DB_escape_string($Value);
+					//	}
 				/*GL Items are straight forward - just do the debit postings to the GL accounts specified -
 				 the credit is to creditors control act  done later for the total invoice value + tax*/
 				//skamnev added tag
@@ -1649,13 +1649,13 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 
 				//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added because');
 
-			//	$Result = DB_query($SQL, $ErrMsg, '', true);
+			    //	$Result = DB_query($SQL, $ErrMsg, '', true);
 				InsertGLTags($EnteredGLCode->Tag);
 
 				$LocalTotal +=  $EnteredGLCode['amount'] /$SupplierHeader['exrate'];
 			}		
 
-		$SQL = "INSERT INTO supptrans (transno,
+		    $SQL = "INSERT INTO supptrans (transno,
 										type,
 										supplierno,
 										suppreference,
@@ -1678,11 +1678,9 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 								'" . $SupplierHeader['exrate']. "',
 								'" . $SupplierHeader['transtext']. "',
 								CURRENT_DATE)";
-		//$Result = api_DB_query($SQL);
-		return 'line 1615: '. $SQL;
-
-
-
+			//$Result = api_DB_query($SQL);
+			return 'line 1615: '. $SQL;
+		}
 	return $Errors;
 }
 
