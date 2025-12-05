@@ -1526,7 +1526,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 	if (isset($SupplierHeader['deliverydate'])){
 		//return $SupplierHeader['deliverydate'];
 	//	$Errors=VerifyDeliveryDate($SupplierHeader['deliverydate'], sizeof($Errors), $Errors);
-		$Errors=ConvertToSQLDate($SupplierHeader['deliverydate'], sizeof($Errors), $Errors);
+		$Errors=ConvertToSQLDate($SupplierHeader['deliverydate']);
 	}
 	/*Now retrieve supplier information - name, currency, default ex rate, terms, tax rate etc */
 	$SQL = "SELECT suppliers.suppname,
