@@ -1567,39 +1567,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 	$LocalTaxProvinceRow = DB_fetch_row($LocalTaxProvinceResult);
 	$LocalTaxProvince = $LocalTaxProvinceRow[0];
 
-	function GetTaxes() {
-		/*Gets the Taxes and rates applicable to the tax group of the supplier
-		and SESSION['DefaultTaxCategory'] and the taxprovince of the location that the user is setup to use*/
-
-		$SQL = "SELECT taxgrouptaxes.calculationorder,
-					taxauthorities.description,
-					taxgrouptaxes.taxauthid,
-					taxauthorities.purchtaxglaccount,
-					taxgrouptaxes.taxontax,
-					taxauthrates.taxrate
-			FROM taxauthrates INNER JOIN taxgrouptaxes ON
-				taxauthrates.taxauthority=taxgrouptaxes.taxauthid
-				INNER JOIN taxauthorities ON
-				taxauthrates.taxauthority=taxauthorities.taxid
-			WHERE taxgrouptaxes.taxgroupid=" . yes . "
-			AND taxauthrates.dispatchtaxprovince=" . $LocalTaxProvince. "
-			AND taxauthrates.taxcatid = " . 1 . "
-			ORDER BY taxgrouptaxes.calculationorder";
-
-			return $SQL;
-		$GetTaxRatesResult = DB_query($SQL);
-
-		while ($MyRow = DB_fetch_array($GetTaxRatesResult)){
-
-			$this->Taxes[$MyRow['calculationorder']] = new Tax($MyRow['calculationorder'],
-																$MyRow['taxauthid'],
-																$MyRow['description'],
-																$MyRow['taxrate'],
-																$MyRow['taxontax'],
-																$MyRow['purchtaxglaccount']);
-		}
-	}
-	GetTaxes();
 return 'line 1569: ';
 	/*
 		$_SESSION['SuppTrans']->GetTaxes();
