@@ -1663,7 +1663,18 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				//return $Errors;
 
 			/* Now the control account */
-$GLLink_Creditors = $_SESSION['CompanyRecord']['gllink_creditors'];
+			# get the company creditors accounts
+			$SQL = "SELECT creditorsact FROM companies
+			WHERE gllink_creditors = '" . $SupplierHeader['gllink_creditors'] . "'";
+			$GLLink_CreditorsResult = api_DB_query($SQL);
+			if (DB_num_rows($GLLink_CreditorsResult)==0){
+				$Errors[0] = UserTaxProvinceNotSet;
+				return $Errors;
+			}
+
+			$GLLink_CreditorsRow = DB_fetch_row($GLLink_CreditorsResult);
+			$GLLink_Creditors = $GLLink_CreditorsRow[0];
+
 return $GLLink_Creditors;
 
 			$SQL = "INSERT INTO gltrans (type,
