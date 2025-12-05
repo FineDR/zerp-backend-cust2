@@ -1652,7 +1652,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				if (DB_error_no() != 0) {
 					$Errors[0] = DatabaseUpdateFailed;
 				} else {
-					$Errors[0]=0;
+					//$Errors[0]=0;
 				}
 				//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added because');
 
