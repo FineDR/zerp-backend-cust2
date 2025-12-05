@@ -1679,8 +1679,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 					'" . $SupplierHeader['exrate']. "',
 					'" . $SupplierHeader['transtext']. "',
 					CURRENT_DATE)";
-		//$Result = api_DB_query($SQL);
-		return 'line 1615: '. $SQL;
+		$Result = api_DB_query($SQL);
 		
 	return $Errors;
 }
