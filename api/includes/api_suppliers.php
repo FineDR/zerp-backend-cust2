@@ -1644,6 +1644,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 										'" . $EnteredGLCode['account'] . "',
 										'" . mb_substr($SupplierID . ' - ' . $EnteredGLCode['narrative'], 0, 200) . "',
 										'" . $EnteredGLCode['amount'] /$SupplierHeader['exrate'] . "')";
+				return 'line 1647: '. $SQL;	
 				$Result = api_DB_query($SQL);
 
 				//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added because');
