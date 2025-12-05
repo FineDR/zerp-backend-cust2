@@ -1689,9 +1689,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 									'" . $GLLink_Creditors. "',
 									'" . mb_substr($SupplierID . ' - ' . __('Inv') . ' ' .$SupplierHeader['suppreference']. ' ' . $SupplierHeader['currcode'] . locale_number_format($SupplierHeader['ovamount'] + $SupplierHeader['ovgst'], $CurrDecimalPlaces) . ' @ ' . __('a rate of') . ' ' . $SupplierHeader['exrate'], 0, 200) . "',
 									'" . -($LocalTotal + ($SupplierHeader['ovgst'] / $SupplierHeader['exrate'])) . "')";
-
-			$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction for the control total could not be added because');
-			return $SQL;
 			$Result = api_DB_query($SQL);
 			DB_Txn_Commit();
 			if (DB_error_no() != 0) {
