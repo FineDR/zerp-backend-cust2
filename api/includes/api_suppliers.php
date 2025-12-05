@@ -1661,6 +1661,30 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 
 				$LocalTotal +=  $SupplierInvoiceLine['amount'] /$SupplierHeader['exrate'];
 				//return $Errors;
+
+			/* Now the control account */
+$GLLink_Creditors = $_SESSION['CompanyRecord']['gllink_creditors'];
+return $GLLink_Creditors;
+
+			$SQL = "INSERT INTO gltrans (type,
+										typeno,
+										trandate,
+										periodno,
+										account,
+										narrative,
+										amount)
+								VALUES (20,
+									'" . $InvoiceNo . "',
+									'" . $SQLInvoiceDate . "',
+									'" . $PeriodNo . "',
+									'" . $_SESSION['SuppTrans']->CreditorsAct . "',
+									'" . mb_substr($_SESSION['SuppTrans']->SupplierID . ' - ' . __('Inv') . ' ' . $_SESSION['SuppTrans']->SuppReference . ' ' . $_SESSION['SuppTrans']->CurrCode . locale_number_format($_SESSION['SuppTrans']->OvAmount + $TaxTotal, $_SESSION['SuppTrans']->CurrDecimalPlaces) . ' @ ' . __('a rate of') . ' ' . $_SESSION['SuppTrans']->ExRate, 0, 200) . "',
+									'" . -($LocalTotal + ($TaxTotal / $_SESSION['SuppTrans']->ExRate)) . "')";
+
+			$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction for the control total could not be added because');
+			$Result = DB_query($SQL, $ErrMsg, '', true);
+
+			EnsureGLEntriesBalance(20, $InvoiceNo);				
 			}		
 		}
 		$SQL = "INSERT INTO supptrans (transno,
