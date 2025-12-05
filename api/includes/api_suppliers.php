@@ -1679,7 +1679,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 					'" . $InvoiceNo . "',
 					20 ,
 					'" . $SupplierID . "',
-					'" . $SuppReference . "',
+					'" . $SupplierHeader['suppreference'] . "',
 					'" . FormatDateForSQL($SupplierHeader['trandate']) . "',
 					'" . FormatDateForSQL($SupplierHeader['duedate']) . "',
 					'" . $SupplierHeader['ovamount']. "',
