@@ -124,34 +124,6 @@ function VerifyFactorCompany($factorco , $i, $Errors) {
 	return $Errors;
 }
 
-function ConvertToSQLDate($DateEntry) {
-
-//for MySQL dates are in the format YYYY-mm-dd
-
-	if (mb_strpos($DateEntry,'/')) {
-		$Date_Array = explode('/',$DateEntry);
-	} elseif (mb_strpos ($DateEntry,'-')) {
-		$Date_Array = explode('-',$DateEntry);
-	} elseif (mb_strpos ($DateEntry,'.')) {
-		$Date_Array = explode('.',$DateEntry);
-	}
-
-	if (mb_strlen($Date_Array[2])>4) {  /*chop off the time stuff */
-		$Date_Array[2]= mb_substr($Date_Array[2],0,2);
-	}
-
-
-	if ($_SESSION['DefaultDateFormat']=='d/m/Y'){
-		return $Date_Array[2].'-0'.$Date_Array[1].'-'.$Date_Array[0];
-	} elseif ($_SESSION['DefaultDateFormat']=='m/d/Y'){
-		return $Date_Array[1].'/'.$Date_Array[2].'/'.$Date_Array[0];
-	} elseif ($_SESSION['DefaultDateFormat']=='Y/m/d'){
-		return $Date_Array[0].'/'.$Date_Array[1].'/'.$Date_Array[2];
-	} elseif ($_SESSION['DefaultDateFormat']=='d.m.Y'){
-		return $Date_Array[2].'/'.$Date_Array[1].'/'.$Date_Array[0];
-	}
-
-} // end function ConvertSQLDate
 /* Common SQL Functions */
 /*
 function GetNextTransNo($TransType) {
