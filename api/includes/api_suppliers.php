@@ -1590,7 +1590,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 		$PeriodNo = GetPeriod($SupplierHeader['trandate']);
 		$SQLInvoiceDate = FormatDateForSQL($SupplierHeader['trandate']);
 
-		return $SupplierHeader['gllink_creditors'];
+		//return $SupplierHeader['gllink_creditors'];
 
 		if ($SupplierHeader['gllink_creditors'] == 1) {
 			/*Loop through the GL Entries and create a debit posting for each of the accounts entered */
@@ -1622,7 +1622,8 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 			but a nominal item then the GL account in the orignal order is used for the price variance account.
 			*/
 
-			foreach ($SupplierInvoiceLine as $EnteredGLCode => $Value) {
+			foreach ($SupplierInvoiceLine as $key => $Value) {
+				$SupplierHeader[$key] = DB_escape_string($Value);
 
 							//	foreach ($SupplierInvoiceLine as $EnteredGLCode => $Value) {
 						//	$SupplierHeader[$key] = DB_escape_string($Value);
@@ -1641,18 +1642,18 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 										'" . $InvoiceNo . "',
 										'" . $SQLInvoiceDate . "',
 										'" . $PeriodNo . "',
-										'" . $EnteredGLCode['account'] . "',
-										'" . mb_substr($SupplierID . ' - ' . $EnteredGLCode['narrative'], 0, 200) . "',
-										'" . $EnteredGLCode['amount'] /$SupplierHeader['exrate'] . "')";
-				return 'line 1647: '. $SQL;	
+										'" . $SupplierInvoiceLine['account'] . "',
+										'" . mb_substr($SupplierID . ' - ' . $SupplierInvoiceLine['narrative'], 0, 200) . "',
+										'" . $SupplierInvoiceLine['amount'] /$SupplierHeader['exrate'] . "')";
+				return 'line 1648: '. $SQL;	
 				$Result = api_DB_query($SQL);
 
 				//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added because');
 
 			    //	$Result = DB_query($SQL, $ErrMsg, '', true);
-				InsertGLTags($EnteredGLCode->Tag);
+				//InsertGLTags($EnteredGLCode->Tag);
 
-				$LocalTotal +=  $EnteredGLCode['amount'] /$SupplierHeader['exrate'];
+				$LocalTotal +=  $SupplierInvoiceLine['amount'] /$SupplierHeader['exrate'];
 			}		
 
 		    $SQL = "INSERT INTO supptrans (transno,
