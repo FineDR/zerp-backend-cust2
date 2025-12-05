@@ -1574,7 +1574,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 		$_SESSION['SuppTrans']->InvoiceOrCredit = 'Invoice';
     */
 	$InvoiceOrCredit = 'Invoice';
-   return 'LocalTax Province = '.$LocalTaxProvince;
 
    //mpaka hapa tuna kosa vifuatavyo
    //invoice totals
