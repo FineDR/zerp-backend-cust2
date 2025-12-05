@@ -1620,7 +1620,6 @@ function SearchInvoices($user, $password) {
 	return $InvoiceList;
 }
 
-
 /** This function takes a field name, and a string, and then returns an
    array of Invoice ids that fulfill this criteria.
 */
@@ -1717,4 +1716,406 @@ function GetDebtorInvoiceDetails($TransNo, $user, $password) {
 	} else {
 		return $Errors;
 	}
+}
+
+/** This function takes a field name, and a string, and then returns an
+   array of customers that fulfill this criteria.
+*/
+function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
+	$Errors = array();
+	$db = db($user, $password);
+
+	if (gettype($db)=='integer') {
+		$Errors[0]=NoAuthorisation;
+		return $Errors;
+	}
+
+	foreach ($ReportCriteria as $key => $Value) {
+		$ReportCriteria[$key] = DB_escape_string($Value);
+	}
+
+	foreach ($CustomerCriteria as $key => $Value) {
+		$CustomerCriteria[$key] = DB_escape_string($Value);
+	}
+
+	$Errors=VerifySupplierNoExists($SupplierHeader['supplierno'], sizeof($Errors), $Errors);
+	if (isset($SupplierHeader['deliverydate'])){
+		//return $SupplierHeader['deliverydate'];
+	//	$Errors=VerifyDeliveryDate($SupplierHeader['deliverydate'], sizeof($Errors), $Errors);
+	//	$Errors=VerifySupplierSinceDate($SupplierHeader['deliverydate'], sizeof($Errors), $Errors);
+	}
+    //here are the report criteria
+	$FromCriteria = $ReportCriteria['FromCriteria'];
+	$ToCriteria = $ReportCriteria['ToCriteria'];
+	$All_Or_Overdues = $ReportCriteria['All_Or_Overdues'];
+	$Currency = $ReportCriteria['Currency'];
+	$DetailedReport = $ReportCriteria['DetailedReport'];
+	$Salesman = $ReportCriteria['Salesman'];
+
+	//here are the customer criteria
+
+	if($FromCriteria >= 1 and $ToCriteria >= 1){
+		/*Now figure out the aged analysis for the customer range under review */
+		if ($_SESSION['SalesmanLogin'] !=  '') {
+			$Salesman = $_SESSION['SalesmanLogin'];
+		}
+
+		if (trim($Salesman)!= '') {
+			$SalesLimit = " AND debtorsmaster.debtorno IN (SELECT DISTINCT debtorno FROM custbranch WHERE salesman = '".$Salesman."') ";
+		} else {
+			$SalesLimit = "";
+		}
+
+		if($All_Or_Overdues == 'All'){
+			$SQL = "SELECT debtorsmaster.debtorno,
+				debtorsmaster.name,
+				currencies.currency,
+				currencies.decimalplaces,
+				paymentterms.terms,
+				debtorsmaster.creditlimit,
+				holdreasons.dissallowinvoices,
+				holdreasons.reasondescription,
+				SUM(debtortrans.balance) AS balance,
+				SUM(
+					CASE WHEN (paymentterms.daysbeforedue > 0)
+					THEN
+						CASE WHEN (TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate)) >= paymentterms.daysbeforedue
+						THEN debtortrans.balance
+						ELSE 0 END
+					ELSE
+						CASE WHEN TO_DAYS(Now()) - TO_DAYS(ADDDATE(last_day(debtortrans.trandate),paymentterms.dayinfollowingmonth)) >= 0
+						THEN debtortrans.balance
+						ELSE 0 END
+					END
+				) AS due,
+				SUM(
+					CASE WHEN (paymentterms.daysbeforedue > 0)
+					THEN
+						CASE WHEN (TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate)) > paymentterms.daysbeforedue AND TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) >= (paymentterms.daysbeforedue + " . $_SESSION['PastDueDays1'] . ")
+						THEN debtortrans.balance ELSE 0 END
+					ELSE
+						CASE WHEN TO_DAYS(Now()) - TO_DAYS(ADDDATE(last_day(debtortrans.trandate),paymentterms.dayinfollowingmonth)) >= " . $_SESSION['PastDueDays1'] . "
+						THEN debtortrans.balance
+						ELSE 0 END
+					END
+				) AS overdue1,
+				SUM(
+					CASE WHEN (paymentterms.daysbeforedue > 0)
+					THEN
+						CASE WHEN (TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate)) > paymentterms.daysbeforedue AND TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) >= (paymentterms.daysbeforedue + " . $_SESSION['PastDueDays2'] . ")
+						THEN debtortrans.balance ELSE 0 END
+					ELSE
+						CASE WHEN TO_DAYS(Now()) - TO_DAYS(ADDDATE(last_day(debtortrans.trandate),paymentterms.dayinfollowingmonth)) >= " . $_SESSION['PastDueDays2'] . "
+						THEN debtortrans.balance
+						ELSE 0 END
+					END
+				) AS overdue2
+				FROM debtorsmaster,
+					paymentterms,
+					holdreasons,
+					currencies,
+					debtortrans
+				WHERE debtorsmaster.paymentterms = paymentterms.termsindicator
+					AND debtorsmaster.currcode = currencies.currabrev
+					AND debtorsmaster.holdreason = holdreasons.reasoncode
+					AND debtorsmaster.debtorno = debtortrans.debtorno
+					AND debtorsmaster.debtorno >= '" . $FromCriteria . "'
+					AND debtorsmaster.debtorno <= '" . $ToCriteria . "'
+					AND debtorsmaster.currcode ='" . $Currency . "'
+					" . $SalesLimit . "
+				GROUP BY debtorsmaster.debtorno,
+					debtorsmaster.name,
+					currencies.currency,
+					paymentterms.terms,
+					paymentterms.daysbeforedue,
+					paymentterms.dayinfollowingmonth,
+					debtorsmaster.creditlimit,
+					holdreasons.dissallowinvoices,
+					holdreasons.reasondescription
+				HAVING
+					ROUND(ABS(SUM(debtortrans.balance)),currencies.decimalplaces) > 0";
+		}elseif($All_Or_Overdues=='OverduesOnly') {
+			$SQL = "SELECT debtorsmaster.debtorno,
+					debtorsmaster.name,
+					currencies.currency,
+					currencies.decimalplaces,
+					paymentterms.terms,
+					debtorsmaster.creditlimit,
+					holdreasons.dissallowinvoices,
+					holdreasons.reasondescription,
+					SUM(debtortrans.balance) AS balance,
+					SUM(
+						CASE WHEN (paymentterms.daysbeforedue > 0)
+							THEN
+								CASE WHEN TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) >= paymentterms.daysbeforedue
+									THEN debtortrans.balance
+									ELSE 0 END
+							ELSE
+								CASE WHEN TO_DAYS(Now()) - TO_DAYS(ADDDATE(last_day(debtortrans.trandate),paymentterms.dayinfollowingmonth)) >= 0
+									THEN debtortrans.balance ELSE 0 END
+						END
+					) AS due,
+					SUM(
+						CASE WHEN (paymentterms.daysbeforedue > 0)
+							THEN
+								CASE WHEN TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) > paymentterms.daysbeforedue AND TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) >= (paymentterms.daysbeforedue + " . $_SESSION['PastDueDays1'] . ")
+									THEN debtortrans.balance
+									ELSE 0 END
+							ELSE
+								CASE WHEN TO_DAYS(Now()) - TO_DAYS(ADDDATE(last_day(debtortrans.trandate),paymentterms.dayinfollowingmonth)) >= " . $_SESSION['PastDueDays1'] . "
+									THEN debtortrans.balance
+									ELSE 0 END
+						END
+					) AS overdue1,
+					SUM(
+						CASE WHEN (paymentterms.daysbeforedue > 0)
+							THEN
+								CASE WHEN TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) > paymentterms.daysbeforedue AND TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) >= (paymentterms.daysbeforedue + " . $_SESSION['PastDueDays2'] . ")
+									THEN debtortrans.balance
+									ELSE 0 END
+							ELSE
+								CASE WHEN TO_DAYS(Now()) - TO_DAYS(ADDDATE(last_day(debtortrans.trandate),paymentterms.dayinfollowingmonth)) >= " . $_SESSION['PastDueDays2'] . "
+									THEN debtortrans.balance
+									ELSE 0 END
+						END
+					) AS overdue2
+				FROM debtorsmaster,
+						paymentterms,
+						holdreasons,
+						currencies,
+						debtortrans
+					WHERE debtorsmaster.paymentterms = paymentterms.termsindicator
+					AND debtorsmaster.currcode = currencies.currabrev
+					AND debtorsmaster.holdreason = holdreasons.reasoncode
+					AND debtorsmaster.debtorno = debtortrans.debtorno
+					AND debtorsmaster.debtorno >= '" . $_POST['FromCriteria'] . "'
+					AND debtorsmaster.debtorno <= '" . $_POST['ToCriteria'] . "'
+					AND debtorsmaster.currcode ='" . $_POST['Currency'] . "'
+					" . $SalesLimit . "
+					GROUP BY debtorsmaster.debtorno,
+							debtorsmaster.name,
+							currencies.currency,
+							paymentterms.terms,
+							paymentterms.daysbeforedue,
+							paymentterms.dayinfollowingmonth,
+							debtorsmaster.creditlimit,
+							holdreasons.dissallowinvoices,
+							holdreasons.reasondescription
+					HAVING SUM(
+						CASE WHEN (paymentterms.daysbeforedue > 0)
+							THEN
+								CASE WHEN TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) > paymentterms.daysbeforedue AND TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) >= (paymentterms.daysbeforedue + " . $_SESSION['PastDueDays1'] . ")
+									THEN debtortrans.balance
+									ELSE 0 END
+							ELSE
+								CASE WHEN TO_DAYS(Now()) - TO_DAYS(ADDDATE(last_day(debtortrans.trandate),paymentterms.dayinfollowingmonth)) >= " . $_SESSION['PastDueDays1'] . "
+									THEN debtortrans.balance
+									ELSE 0 END
+						END
+					) > 0.01";
+
+	    } elseif ($All_Or_Overdues=='HeldOnly') {
+			$SQL = "SELECT debtorsmaster.debtorno,
+							debtorsmaster.name,
+							currencies.currency,
+							currencies.decimalplaces,
+							paymentterms.terms,
+							debtorsmaster.creditlimit,
+							holdreasons.dissallowinvoices,
+							holdreasons.reasondescription,
+							SUM(debtortrans.balance) AS balance,
+							SUM(
+								CASE WHEN (paymentterms.daysbeforedue > 0)
+									THEN
+										CASE WHEN TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) >= paymentterms.daysbeforedue
+										THEN debtortrans.balance
+										ELSE 0 END
+									ELSE
+										CASE WHEN TO_DAYS(Now()) - TO_DAYS(ADDDATE(last_day(debtortrans.trandate),paymentterms.dayinfollowingmonth)) >= 0
+										THEN debtortrans.balance
+										ELSE 0 END
+								END
+							) AS due,
+							SUM(
+								CASE WHEN (paymentterms.daysbeforedue > 0)
+									THEN
+										CASE WHEN TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) > paymentterms.daysbeforedue
+										AND TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) >= (paymentterms.daysbeforedue + " . $_SESSION['PastDueDays1'] . ")
+										THEN debtortrans.balance ELSE 0 END
+									ELSE
+										CASE WHEN TO_DAYS(Now()) - TO_DAYS(ADDDATE(last_day(debtortrans.trandate),paymentterms.dayinfollowingmonth)) >= " . $_SESSION['PastDueDays1'] . "
+										THEN debtortrans.balance
+									ELSE 0 END
+								END
+							) AS overdue1,
+							SUM(
+								CASE WHEN (paymentterms.daysbeforedue > 0)
+									THEN
+										CASE WHEN TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) > paymentterms.daysbeforedue
+										AND TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) >= (paymentterms.daysbeforedue + " . $_SESSION['PastDueDays2'] . ")
+										THEN debtortrans.balance
+										ELSE 0 END
+									ELSE
+										CASE WHEN TO_DAYS(Now()) - TO_DAYS(ADDDATE(last_day(debtortrans.trandate),paymentterms.dayinfollowingmonth)) >= " . $_SESSION['PastDueDays2'] . "
+										THEN debtortrans.balance
+									ELSE 0 END
+								END
+							) AS overdue2
+						FROM debtorsmaster,
+							paymentterms,
+							holdreasons,
+							currencies,
+							debtortrans
+						WHERE debtorsmaster.paymentterms = paymentterms.termsindicator
+							AND debtorsmaster.currcode = currencies.currabrev
+							AND debtorsmaster.holdreason = holdreasons.reasoncode
+							AND debtorsmaster.debtorno = debtortrans.debtorno
+							AND holdreasons.dissallowinvoices=1
+							AND debtorsmaster.debtorno >= '" . $_POST['FromCriteria'] . "'
+							AND debtorsmaster.debtorno <= '" . $_POST['ToCriteria'] . "'
+							AND debtorsmaster.currcode ='" . $_POST['Currency'] . "'
+							" . $SalesLimit . "
+						GROUP BY debtorsmaster.debtorno,
+							debtorsmaster.name,
+							currencies.currency,
+							paymentterms.terms,
+							paymentterms.daysbeforedue,
+							paymentterms.dayinfollowingmonth,
+							debtorsmaster.creditlimit,
+							holdreasons.dissallowinvoices,
+							holdreasons.reasondescription
+						HAVING ABS(SUM(debtortrans.balance)) >0.005";
+	    }
+	}
+
+	$CustomerResult = DB_query($SQL);
+    $i=0;
+	if (trim($Salesman)!= ''){
+		$SQL = "SELECT salesmanname FROM salesman WHERE salesmancode='".$_POST['Salesman']."'";
+		$rs = DB_query($SQL, '', '', false, false);
+		$Row = DB_fetch_array($rs);
+		$Answer[$i]['salesman'] = 'And Has at Least 1 Branch Serviced By Sales Person #'. ' '. $Salesman . ' - ' . $Row['salesmanname'] ;
+        $i++;
+	}
+
+	$TotBal=0;
+	$TotCurr=0;
+	$TotDue=0;
+	$TotOD1=0;
+	$TotOD2=0;
+
+	$ListCount = DB_num_rows($CustomerResult);
+	$Answer[$i]['listcount'] = $ListCount;
+	$i++;
+
+	$CurrDecimalPlaces =2; //by default
+
+	while ($AgedAnalysis = DB_fetch_array($CustomerResult)) {
+		$Answer[$i]['CurrDecimalPlaces'] = $AgedAnalysis['decimalplaces']; $i++;
+		$Answer[$i]['DisplayDue'] = locale_number_format($AgedAnalysis['due']-$AgedAnalysis['overdue1'],$CurrDecimalPlaces); $i++;
+		$Answer[$i]['DisplayCurrent'] = locale_number_format($AgedAnalysis['balance']-$AgedAnalysis['due'],$CurrDecimalPlaces); $i++;
+		$Answer[$i]['DisplayBalance'] = locale_number_format($AgedAnalysis['balance'],$CurrDecimalPlaces); $i++;
+		$Answer[$i]['DisplayOverdue1'] = locale_number_format($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2'],$CurrDecimalPlaces);  $i++;
+		$Answer[$i]['DisplayOverdue2'] = locale_number_format($AgedAnalysis['overdue2'],$CurrDecimalPlaces); $i++;
+
+		$Answer[$i]['TotBal'] += $AgedAnalysis['balance']; $i++;
+		$Answer[$i]['TotDue'] += ($AgedAnalysis['due']-$AgedAnalysis['overdue1']); $i++;
+		$Answer[$i]['TotCurr'] += ($AgedAnalysis['balance']-$AgedAnalysis['due']); $i++;
+		$Answer[$i]['TotOD1'] += ($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2']); $i++;
+		$Answer[$i]['TotOD2'] += $AgedAnalysis['overdue2']; $i++;
+
+		if ($_POST['DetailedReport']=='Yes') {
+
+			$SQL = "SELECT systypes.typename,
+						debtortrans.transno,
+						debtortrans.trandate,
+						(debtortrans.balance) as balance,
+						(CASE WHEN (paymentterms.daysbeforedue > 0)
+							THEN
+								CASE WHEN (TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate)) >= paymentterms.daysbeforedue
+								THEN debtortrans.balance
+								ELSE 0 END
+							ELSE
+								CASE WHEN TO_DAYS(Now()) - TO_DAYS(ADDDATE(last_day(debtortrans.trandate),paymentterms.dayinfollowingmonth)) >= 0
+								THEN debtortrans.balance
+								ELSE 0 END
+						END) AS due,
+						(CASE WHEN (paymentterms.daysbeforedue > 0)
+							THEN
+								CASE WHEN TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) > paymentterms.daysbeforedue AND TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) >= (paymentterms.daysbeforedue + " . $_SESSION['PastDueDays1'] . ") THEN debtortrans.balance ELSE 0 END
+							ELSE
+								CASE WHEN TO_DAYS(Now()) - TO_DAYS(ADDDATE(last_day(debtortrans.trandate),paymentterms.dayinfollowingmonth)) >= " . $_SESSION['PastDueDays1'] . "
+								THEN debtortrans.balance
+								ELSE 0 END
+						END) AS overdue1,
+						(CASE WHEN (paymentterms.daysbeforedue > 0)
+							THEN
+								CASE WHEN TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) > paymentterms.daysbeforedue AND TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate) >= (paymentterms.daysbeforedue + " . $_SESSION['PastDueDays2'] . ")
+								THEN debtortrans.balance
+								ELSE 0 END
+							ELSE
+								CASE WHEN TO_DAYS(Now()) - TO_DAYS(ADDDATE(last_day(debtortrans.trandate),paymentterms.dayinfollowingmonth)) >= " . $_SESSION['PastDueDays2'] . "
+								THEN debtortrans.balance
+								ELSE 0 END
+						END) AS overdue2
+				   FROM debtorsmaster,
+						paymentterms,
+						debtortrans,
+						systypes
+				   WHERE systypes.typeid = debtortrans.type
+						AND debtorsmaster.paymentterms = paymentterms.termsindicator
+						AND debtorsmaster.debtorno = debtortrans.debtorno
+						AND debtortrans.debtorno = '" . $AgedAnalysis['debtorno'] . "'
+						AND ABS(debtortrans.balance)>0.004";
+
+			if ($_SESSION['SalesmanLogin'] !=  '') {
+				$SQL .= " AND debtortrans.salesperson='" . $_SESSION['SalesmanLogin'] . "'";
+			}
+
+			$ErrMsg = __('The details of outstanding transactions for customer') . ' - ' . $AgedAnalysis['debtorno'] . ' ' . __('could not be retrieved');
+			$DetailResult = DB_query($SQL, $ErrMsg);
+
+			$HTML .= '<tr>
+						<td colspan="6">
+							<table>';
+
+			while ($DetailTrans = DB_fetch_array($DetailResult)) {
+
+				$DisplayTranDate = ConvertSQLDate($DetailTrans['trandate']);
+				$HTML .= '<tr>
+							<th>' . $DetailTrans['typename'] . '</th>
+							<th>' . $DetailTrans['transno'] . '</th>
+							<th>' . $DisplayTranDate . '</th>
+							<th></th>
+							<th></th>
+							<th></th>
+						</tr>';
+
+				$DisplayDue = locale_number_format($DetailTrans['due']-$DetailTrans['overdue1'],$CurrDecimalPlaces);
+				$DisplayCurrent = locale_number_format($DetailTrans['balance']-$DetailTrans['due'],$CurrDecimalPlaces);
+				$DisplayBalance = locale_number_format($DetailTrans['balance'],$CurrDecimalPlaces);
+				$DisplayOverdue1 = locale_number_format($DetailTrans['overdue1']-$DetailTrans['overdue2'],$CurrDecimalPlaces);
+				$DisplayOverdue2 = locale_number_format($DetailTrans['overdue2'],$CurrDecimalPlaces);
+
+				$HTML .= '<tr class="striped_row">
+							<td class="number">' . $DisplayBalance . '</td>
+							<td class="number">' . $DisplayCurrent . '</td>
+							<td class="number">' . $DisplayDue . '</td>
+							<td class="number">' . $DisplayOverdue1 . '</td>
+							<td class="number">' . $DisplayOverdue2 . '</td>
+						</tr>';
+
+			} /*end while there are detail transactions to show */
+			$HTML .= '</table>
+					</td>
+				</tr>';
+
+			$FontSize=8;
+		} /*Its a detailed report */
+	}/*end customer aged analysis while loop */
+	$DisplayTotBalance = locale_number_format($TotBal,$CurrDecimalPlaces);
+	$DisplayTotDue = locale_number_format($TotDue,$CurrDecimalPlaces);
+	$DisplayTotCurrent = locale_number_format($TotCurr,$CurrDecimalPlaces);
+	$DisplayTotOverdue1 = locale_number_format($TotOD1,$CurrDecimalPlaces);
+	$DisplayTotOverdue2 = locale_number_format($TotOD2,$CurrDecimalPlaces);
 }
