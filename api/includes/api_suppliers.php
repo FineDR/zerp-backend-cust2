@@ -1671,11 +1671,9 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				$Errors[0] = UserTaxProvinceNotSet;
 				return $Errors;
 			}
-
 			$GLLink_CreditorsRow = DB_fetch_row($GLLink_CreditorsResult);
 			$GLLink_Creditors = $GLLink_CreditorsRow[0];
-
-return $GLLink_Creditors;
+			$CurrDecimalPlaces = 2;
 
 			$SQL = "INSERT INTO gltrans (type,
 										typeno,
@@ -1688,12 +1686,19 @@ return $GLLink_Creditors;
 									'" . $InvoiceNo . "',
 									'" . $SQLInvoiceDate . "',
 									'" . $PeriodNo . "',
-									'" . $_SESSION['SuppTrans']->CreditorsAct . "',
-									'" . mb_substr($_SESSION['SuppTrans']->SupplierID . ' - ' . __('Inv') . ' ' . $_SESSION['SuppTrans']->SuppReference . ' ' . $_SESSION['SuppTrans']->CurrCode . locale_number_format($_SESSION['SuppTrans']->OvAmount + $TaxTotal, $_SESSION['SuppTrans']->CurrDecimalPlaces) . ' @ ' . __('a rate of') . ' ' . $_SESSION['SuppTrans']->ExRate, 0, 200) . "',
-									'" . -($LocalTotal + ($TaxTotal / $_SESSION['SuppTrans']->ExRate)) . "')";
+									'" . $GLLink_Creditors. "',
+									'" . mb_substr($SupplierID . ' - ' . __('Inv') . ' ' .$SupplierHeader['suppreference']. ' ' . $SupplierHeader['currcode'] . locale_number_format($SupplierHeader['ovamount'] + $SupplierHeader['ovgst'], $CurrDecimalPlaces) . ' @ ' . __('a rate of') . ' ' . $SupplierHeader['exrate'], 0, 200) . "',
+									'" . -($LocalTotal + ($SupplierHeader['ovgst'] / $SupplierHeader['exrate'])) . "')";
 
 			$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction for the control total could not be added because');
-			$Result = DB_query($SQL, $ErrMsg, '', true);
+			return $SQL;
+			$Result = api_DB_query($SQL);
+			DB_Txn_Commit();
+			if (DB_error_no() != 0) {
+				$Errors[0] = DatabaseUpdateFailed;
+			} else {
+				$Errors[0]=0;
+			}
 
 			EnsureGLEntriesBalance(20, $InvoiceNo);				
 			}		
