@@ -1645,9 +1645,9 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 										'" . $SupplierInvoiceLine['account'] . "',
 										'" . mb_substr($SupplierID . ' - ' . $SupplierInvoiceLine['narrative'], 0, 200) . "',
 										'" . $SupplierInvoiceLine['amount'] /$SupplierHeader['exrate'] . "')";
-			//	return 'line 1648: '. $SQL;	
-			//	$Result = api_DB_query($SQL);
-				$Result = DB_query($SQL);
+		     	//	return 'line 1648: '. $SQL;	
+				$Result = api_DB_query($SQL);
+			    //	$Result = DB_query($SQL);
 				DB_Txn_Commit();
 				if (DB_error_no() != 0) {
 					$Errors[0] = DatabaseUpdateFailed;
@@ -1660,6 +1660,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				//InsertGLTags($EnteredGLCode->Tag);
 
 				$LocalTotal +=  $SupplierInvoiceLine['amount'] /$SupplierHeader['exrate'];
+				return $Errors;
 			}		
 		}
 		$SQL = "INSERT INTO supptrans (transno,
