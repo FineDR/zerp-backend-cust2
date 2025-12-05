@@ -1646,8 +1646,14 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 										'" . mb_substr($SupplierID . ' - ' . $SupplierInvoiceLine['narrative'], 0, 200) . "',
 										'" . $SupplierInvoiceLine['amount'] /$SupplierHeader['exrate'] . "')";
 			//	return 'line 1648: '. $SQL;	
-				$Result = api_DB_query($SQL);
-
+			//	$Result = api_DB_query($SQL);
+				$Result = DB_query($SQL);
+				DB_Txn_Commit();
+				if (DB_error_no() != 0) {
+					$Errors[0] = DatabaseUpdateFailed;
+				} else {
+					$Errors[0]=0;
+				}
 				//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added because');
 
 			    //	$Result = DB_query($SQL, $ErrMsg, '', true);
@@ -1679,8 +1685,15 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 					'" . $SupplierHeader['exrate']. "',
 					'" . $SupplierHeader['transtext']. "',
 					CURRENT_DATE)";
-		$Result = api_DB_query($SQL);
-		
+		//$Result = api_DB_query($SQL);
+		$Result = DB_query($SQL);
+		DB_Txn_Commit();
+		if (DB_error_no() != 0) {
+			$Errors[0] = DatabaseUpdateFailed;
+		} else {
+			$Errors[0]=0;
+		}
+
 	return $Errors;
 }
 
