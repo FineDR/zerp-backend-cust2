@@ -1622,6 +1622,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 			but a nominal item then the GL account in the orignal order is used for the price variance account.
 			*/
             //return FormatDateForSQL($SupplierHeader['trandate']);
+			return $InvoiceNo;
 			foreach ($SupplierInvoiceLine as $key => $Value) {
 				$SupplierHeader[$key] = DB_escape_string($Value);
 
@@ -1652,7 +1653,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				if (DB_error_no() != 0) {
 					$Errors[0] = DatabaseUpdateFailed;
 				} else {
-					//$Errors[0]=0;
+					$Errors[0]=0;
 				}
 				//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added because');
 
