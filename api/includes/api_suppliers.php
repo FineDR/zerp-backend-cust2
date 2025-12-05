@@ -1646,7 +1646,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 										'" . mb_substr($SupplierID . ' - ' . $SupplierInvoiceLine['narrative'], 0, 200) . "',
 										'" . $SupplierInvoiceLine['amount'] /$SupplierHeader['exrate'] . "')";
 			//	return 'line 1648: '. $SQL;	
-				//$Result = api_DB_query($SQL);
+				$Result = api_DB_query($SQL);
 
 				//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added because');
 
@@ -1655,33 +1655,33 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 
 				$LocalTotal +=  $SupplierInvoiceLine['amount'] /$SupplierHeader['exrate'];
 			}		
-
-		    $SQL = "INSERT INTO supptrans (transno,
-										type,
-										supplierno,
-										suppreference,
-										trandate,
-										duedate,
-										ovamount,
-										ovgst,
-										rate,
-										transtext,
-										inputdate)
-							VALUES (
-								'" . $InvoiceNo . "',
-								20 ,
-								'" . $SupplierID . "',
-								'" . $SuppReference . "',
-								'" . FormatDateForSQL($SupplierHeader['trandate']) . "',
-								'" . FormatDateForSQL($SupplierHeader['duedate']) . "',
-								'" . $SupplierHeader['ovamount']. "',
-								'" . $SupplierHeader['ovgst']. "',
-								'" . $SupplierHeader['exrate']. "',
-								'" . $SupplierHeader['transtext']. "',
-								CURRENT_DATE)";
-			//$Result = api_DB_query($SQL);
-			return 'line 1615: '. $SQL;
 		}
+		$SQL = "INSERT INTO supptrans (transno,
+							type,
+							supplierno,
+							suppreference,
+							trandate,
+							duedate,
+							ovamount,
+							ovgst,
+							rate,
+							transtext,
+							inputdate)
+				VALUES (
+					'" . $InvoiceNo . "',
+					20 ,
+					'" . $SupplierID . "',
+					'" . $SuppReference . "',
+					'" . FormatDateForSQL($SupplierHeader['trandate']) . "',
+					'" . FormatDateForSQL($SupplierHeader['duedate']) . "',
+					'" . $SupplierHeader['ovamount']. "',
+					'" . $SupplierHeader['ovgst']. "',
+					'" . $SupplierHeader['exrate']. "',
+					'" . $SupplierHeader['transtext']. "',
+					CURRENT_DATE)";
+		//$Result = api_DB_query($SQL);
+		return 'line 1615: '. $SQL;
+		
 	return $Errors;
 }
 
