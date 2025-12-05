@@ -1480,7 +1480,8 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 /** Create a Supplier invoice header in webERP. If successful
  * returns $Errors[0]=0 and $Errors[1] will contain the invoice number.
 */
-function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
+//function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
+function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $user, $password) {
 	$Errors = array();
 	$db = db($user, $password);
 
@@ -1621,8 +1622,11 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 			but a nominal item then the GL account in the orignal order is used for the price variance account.
 			*/
 
-			foreach ($_SESSION['SuppTrans']->GLCodes as $EnteredGLCode) {
+			foreach ($SupplierInvoiceLine as $EnteredGLCode => $Value) {
 
+		//	foreach ($SupplierInvoiceLine as $EnteredGLCode => $Value) {
+	//	$SupplierHeader[$key] = DB_escape_string($Value);
+//	}
 				/*GL Items are straight forward - just do the debit postings to the GL accounts specified -
 				 the credit is to creditors control act  done later for the total invoice value + tax*/
 				//skamnev added tag
@@ -1637,16 +1641,17 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 										'" . $InvoiceNo . "',
 										'" . $SQLInvoiceDate . "',
 										'" . $PeriodNo . "',
-										'" . $EnteredGLCode->GLCode . "',
-										'" . mb_substr($_SESSION['SuppTrans']->SupplierID . ' - ' . $EnteredGLCode->Narrative, 0, 200) . "',
-										'" . $EnteredGLCode->Amount / $_SESSION['SuppTrans']->ExRate . "')";
+										'" . $EnteredGLCode['account'] . "',
+										'" . mb_substr($SupplierID . ' - ' . $EnteredGLCode['narrative'], 0, 200) . "',
+										'" . $EnteredGLCode['amount'] /$SupplierHeader['exrate'] . "')";
+				$Result = api_DB_query($SQL);
 
-				$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added because');
+				//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added because');
 
-				$Result = DB_query($SQL, $ErrMsg, '', true);
+			//	$Result = DB_query($SQL, $ErrMsg, '', true);
 				InsertGLTags($EnteredGLCode->Tag);
 
-				$LocalTotal += $EnteredGLCode->Amount / $_SESSION['SuppTrans']->ExRate;
+				$LocalTotal +=  $EnteredGLCode['amount'] /$SupplierHeader['exrate'];
 			}		
 
 		$SQL = "INSERT INTO supptrans (transno,
@@ -1669,7 +1674,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $user, $password) {
 								'" . FormatDateForSQL($SupplierHeader['duedate']) . "',
 								'" . $SupplierHeader['ovamount']. "',
 								'" . $SupplierHeader['ovgst']. "',
-								'" . $SupplierHeader['rate']. "',
+								'" . $SupplierHeader['exrate']. "',
 								'" . $SupplierHeader['transtext']. "',
 								CURRENT_DATE)";
 		//$Result = api_DB_query($SQL);
