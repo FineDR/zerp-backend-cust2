@@ -1590,13 +1590,13 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 		$InvoiceNo = GetNextTransNo(20);
 		$PeriodNo = GetPeriod($SupplierHeader['trandate']);
 		$SQLInvoiceDate = FormatDateForSQL($SupplierHeader['trandate']);
-return $PeriodNo;
+
 		//return $SupplierHeader['gllink_creditors'];
 
 		if ($SupplierHeader['gllink_creditors'] == 1) {
 			/*Loop through the GL Entries and create a debit posting for each of the accounts entered */
 			$LocalTotal = 0;
-
+return 'ine 1599: '.$LocalTotal;
 			/*the postings here are a little tricky, the logic goes like this:
 			if its a shipment entry then the cost must go against the GRN suspense account defined in the company record
 
