@@ -1565,7 +1565,8 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 
 	$LocalTaxProvinceRow = DB_fetch_row($LocalTaxProvinceResult);
 	$LocalTaxProvince = $LocalTaxProvinceRow[0];
-
+	GetTaxes();
+return 'line 1569: ';
 	/*
 		$_SESSION['SuppTrans']->GetTaxes();
 
@@ -1631,7 +1632,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				/*GL Items are straight forward - just do the debit postings to the GL accounts specified -
 				 the credit is to creditors control act  done later for the total invoice value + tax*/
 				//skamnev added tag
-				/*
 				$SQL = "INSERT INTO gltrans (type,
 											typeno,
 											trandate,
@@ -1655,7 +1655,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				} else {
 					$Errors[0]=0;
 				}
-					*/
 				//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added because');
 
 			    //	$Result = DB_query($SQL, $ErrMsg, '', true);
@@ -1675,7 +1674,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 			}
 			$GLLink_CreditorsRow = DB_fetch_row($GLLink_CreditorsResult);
 			$GLLink_Creditors = $GLLink_CreditorsRow[0];
-			$CurrDecimalPlaces = 2;
+			$CurrDecimalPlaces = $decimalplaces;
 
 			$SQL = "INSERT INTO gltrans (type,
 										typeno,
@@ -1689,7 +1688,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 									'" . $SQLInvoiceDate . "',
 									'" . $PeriodNo . "',
 									'" . $GLLink_Creditors. "',
-									'" . mb_substr($SupplierID . ' - ' . __('Inv') . ' ' .$SupplierHeader['suppreference']. ' ' . $SupplierHeader['currcode'] . locale_number_format($SupplierHeader['ovamount'] + $SupplierHeader['ovgst'], $CurrDecimalPlaces) . ' @ ' . __('a rate of') . ' ' . $SupplierHeader['exrate'], 0, 200) . "',
+									'" . mb_substr($SupplierID . ' - ' . __('Inv') . ' ' .$SupplierHeader['suppreference']. ' ' .$currcode . locale_number_format($SupplierHeader['ovamount'] + $SupplierHeader['ovgst'], $CurrDecimalPlaces) . ' @ ' . __('a rate of') . ' ' . $SupplierHeader['exrate'], 0, 200) . "',
 									'" . -($LocalTotal + ($SupplierHeader['ovgst'] / $SupplierHeader['exrate'])) . "')";
 			$Result = api_DB_query($SQL);
 			DB_Txn_Commit();
