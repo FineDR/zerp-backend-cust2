@@ -1660,7 +1660,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				//InsertGLTags($EnteredGLCode->Tag);
 
 				$LocalTotal +=  $SupplierInvoiceLine['amount'] /$SupplierHeader['exrate'];
-				return $Errors;
+				//return $Errors;
 			}		
 		}
 		$SQL = "INSERT INTO supptrans (transno,
@@ -1686,15 +1686,14 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 					'" . $SupplierHeader['exrate']. "',
 					'" . $SupplierHeader['transtext']. "',
 					CURRENT_DATE)";
-		//$Result = api_DB_query($SQL);
-		$Result = DB_query($SQL);
+		$Result = api_DB_query($SQL);
+			    //	$Result = DB_query($SQL);
 		DB_Txn_Commit();
 		if (DB_error_no() != 0) {
 			$Errors[0] = DatabaseUpdateFailed;
 		} else {
 			$Errors[0]=0;
 		}
-
 	return $Errors;
 }
 
