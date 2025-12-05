@@ -1581,9 +1581,9 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				taxauthrates.taxauthority=taxgrouptaxes.taxauthid
 				INNER JOIN taxauthorities ON
 				taxauthrates.taxauthority=taxauthorities.taxid
-			WHERE taxgrouptaxes.taxgroupid=" . $this->TaxGroup . "
+			WHERE taxgrouptaxes.taxgroupid=" . yes . "
 			AND taxauthrates.dispatchtaxprovince=" . $LocalTaxProvince. "
-			AND taxauthrates.taxcatid = " . $_SESSION['DefaultTaxCategory'] . "
+			AND taxauthrates.taxcatid = " . 1 . "
 			ORDER BY taxgrouptaxes.calculationorder";
 
 			return $SQL;
