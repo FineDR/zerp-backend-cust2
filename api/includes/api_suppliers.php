@@ -1622,7 +1622,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 			but a nominal item then the GL account in the orignal order is used for the price variance account.
 			*/
             //return FormatDateForSQL($SupplierHeader['trandate']);
-			return $InvoiceNo;
+			return 'line 1625: '.$InvoiceNo;
 			foreach ($SupplierInvoiceLine as $key => $Value) {
 				$SupplierHeader[$key] = DB_escape_string($Value);
 
