@@ -1725,12 +1725,12 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 
 	$Errors = array();
 	$db = db($user, $password);
-	return 'line 1733'.$FromCriteria;
+
 	if (gettype($db)=='integer') {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-
+	return 'line 1733'.$FromCriteria;
 	foreach ($ReportCriteria as $key => $Value) {
 		$ReportCriteria[$key] = DB_escape_string($Value);
 	}
