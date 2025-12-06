@@ -1730,7 +1730,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-	return 'line 1733'.$FromCriteria;
+
 	foreach ($ReportCriteria as $key => $Value) {
 		$ReportCriteria[$key] = DB_escape_string($Value);
 	}
@@ -1753,7 +1753,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	$Currency = $ReportCriteria['Currency'];
 	$DetailedReport = $ReportCriteria['DetailedReport'];
 	$Salesman = $ReportCriteria['Salesman'];
-
+	return 'line 1756'.$FromCriteria;
 	//here are the customer criteria
     $Ayear = $CustomerCriteria['ayear'];
 	$Semester = $CustomerCriteria['semester'];
