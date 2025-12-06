@@ -2079,7 +2079,8 @@ return $FromCriteria;
 
 			$ErrMsg = __('The details of outstanding transactions for customer') . ' - ' . $AgedAnalysis['debtorno'] . ' ' . __('could not be retrieved');
 			$DetailResult = DB_query($SQL, $ErrMsg);
-
+			///weja nucta
+			/*
 			$HTML .= '<tr>
 						<td colspan="6">
 							<table>';
@@ -2111,11 +2112,16 @@ return $FromCriteria;
 						</tr>';
 
 			} /*end while there are detail transactions to show */
+			///weja nucta
+			/*
 			$HTML .= '</table>
 					</td>
 				</tr>';
 
 			$FontSize=8;
+
+			///weja nucta
+			*/
 		} /*Its a detailed report */
 	}/*end customer aged analysis while loop */
 	$DisplayTotBalance = locale_number_format($TotBal,$CurrDecimalPlaces);
