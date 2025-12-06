@@ -1737,13 +1737,14 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	foreach ($CustomerCriteria as $key => $Value) {
 		$CustomerCriteria[$key] = DB_escape_string($Value);
 	}
-
-	$Errors=VerifySupplierNoExists($SupplierHeader['supplierno'], sizeof($Errors), $Errors);
-	if (isset($SupplierHeader['deliverydate'])){
+/*
+	$Errors=VerifySupplierNoExists($CustomerCriteria['program'], sizeof($Errors), $Errors);
+	if (isset($CustomerCriteria['program'])){
 		//return $SupplierHeader['deliverydate'];
 	//	$Errors=VerifyDeliveryDate($SupplierHeader['deliverydate'], sizeof($Errors), $Errors);
 	//	$Errors=VerifySupplierSinceDate($SupplierHeader['deliverydate'], sizeof($Errors), $Errors);
 	}
+*/	
     //here are the report criteria
 	$FromCriteria = $ReportCriteria['FromCriteria'];
 	$ToCriteria = $ReportCriteria['ToCriteria'];
@@ -1751,7 +1752,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	$Currency = $ReportCriteria['Currency'];
 	$DetailedReport = $ReportCriteria['DetailedReport'];
 	$Salesman = $ReportCriteria['Salesman'];
-
+return $FromCriteria;
 	//here are the customer criteria
     $Ayear = $CustomerCriteria['ayear'];
 	$Semester = $CustomerCriteria['semester'];
