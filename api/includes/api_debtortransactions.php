@@ -1753,7 +1753,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	$Currency = $ReportCriteria['Currency'];
 	$DetailedReport = $ReportCriteria['DetailedReport'];
 	$Salesman = $ReportCriteria['Salesman'];
-	return 'line 1756: '.$ReportCriteria['FromCriteria'];
+
 	//here are the customer criteria
     $Ayear = $CustomerCriteria['ayear'];
 	$Semester = $CustomerCriteria['semester'];
@@ -1919,6 +1919,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 									ELSE 0 END
 						END
 					) > 0.01";
+			return 'line 1756: '.$SQL;
 
 	    } elseif ($All_Or_Overdues=='HeldOnly') {
 			$SQL = "SELECT debtorsmaster.debtorno,
