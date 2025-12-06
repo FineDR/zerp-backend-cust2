@@ -1753,6 +1753,10 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	$Salesman = $ReportCriteria['Salesman'];
 
 	//here are the customer criteria
+    $Ayear = $CustomerCriteria['ayear'];
+	$Semester = $CustomerCriteria['semester'];
+	$YoS = $CustomerCriteria['yos'];
+	$Programme = $CustomerCriteria['program'];
 
 	if($FromCriteria >= 1 and $ToCriteria >= 1){
 		/*Now figure out the aged analysis for the customer range under review */
