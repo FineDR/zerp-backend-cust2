@@ -1722,6 +1722,7 @@ function GetDebtorInvoiceDetails($TransNo, $user, $password) {
    array of customers that fulfill this criteria.
 */
 function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
+	return 'line 1725'.$FromCriteria;
 	$Errors = array();
 	$db = db($user, $password);
 
@@ -1752,7 +1753,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	$Currency = $ReportCriteria['Currency'];
 	$DetailedReport = $ReportCriteria['DetailedReport'];
 	$Salesman = $ReportCriteria['Salesman'];
-return $FromCriteria;
+
 	//here are the customer criteria
     $Ayear = $CustomerCriteria['ayear'];
 	$Semester = $CustomerCriteria['semester'];
