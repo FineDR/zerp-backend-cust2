@@ -4654,7 +4654,7 @@ return array(
 		"function" => "xmlrpc_GetSupplierInvoiceLineDetails",
 		"signature" => $GetSupplierInvoiceLineDetails_sig,
 		"docstring" => $GetSupplierInvoiceLineDetails_doc),
-	"weberp.xmlrpc_xmlrpc_GetAgedDebtors" => array(
+	"weberp.xmlrpc_GetAgedDebtors" => array(
 		"function" => "xmlrpc_GetAgedDebtors",
 		"signature" => $GetAgedDebtors_sig,
 		"docstring" => $GetAgedDebtors_doc),
