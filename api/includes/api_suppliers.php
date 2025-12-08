@@ -1666,7 +1666,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 
 				/* Now the control account */
 				# get the company creditors accounts
-	/* toa
 				$SQL = "SELECT creditorsact FROM companies
 				WHERE gllink_creditors = '" . $SupplierHeader['gllink_creditors'] . "'";
 				$GLLink_CreditorsResult = api_DB_query($SQL);
@@ -1700,7 +1699,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				} else {
 					$Errors[0]=0;
 				}
-				*/
 				EnsureGLEntriesBalance(20, $InvoiceNo);				
 			}		
 		}
