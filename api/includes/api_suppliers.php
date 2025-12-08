@@ -1632,6 +1632,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				/*GL Items are straight forward - just do the debit postings to the GL accounts specified -
 				 the credit is to creditors control act  done later for the total invoice value + tax*/
 				//skamnev added tag
+				/* Mwanzo wa kurudia
 				$SQL = "INSERT INTO gltrans (type,
 											typeno,
 											trandate,
@@ -1655,49 +1656,52 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				} else {
 					$Errors[0]=0;
 				}
+
+				mwisho wa kurudia
+				*/ 
 				//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added because');
 
 			    //	$Result = DB_query($SQL, $ErrMsg, '', true);
 				//InsertGLTags($EnteredGLCode->Tag);
 
+								//return $Errors;
+
+				/* Now the control account */
+				# get the company creditors accounts
+				$SQL = "SELECT creditorsact FROM companies
+				WHERE gllink_creditors = '" . $SupplierHeader['gllink_creditors'] . "'";
+				$GLLink_CreditorsResult = api_DB_query($SQL);
+				if (DB_num_rows($GLLink_CreditorsResult)==0){
+					$Errors[0] = UserTaxProvinceNotSet;
+					return $Errors;
+				}
+				$GLLink_CreditorsRow = DB_fetch_row($GLLink_CreditorsResult);
+				$GLLink_Creditors = $GLLink_CreditorsRow[0];
+				$CurrDecimalPlaces = $decimalplaces;
+
+				$SQL = "INSERT INTO gltrans (type,
+											typeno,
+											trandate,
+											periodno,
+											account,
+											narrative,
+											amount)
+									VALUES (20,
+										'" . $InvoiceNo . "',
+										'" . $SQLInvoiceDate . "',
+										'" . $PeriodNo . "',
+										'" . $GLLink_Creditors. "',
+										'" . mb_substr($SupplierID . ' - ' . __('Inv') . ' ' .$SupplierHeader['suppreference']. ' ' .$currcode . locale_number_format($SupplierHeader['ovamount'] + $SupplierHeader['ovgst'], $CurrDecimalPlaces) . ' @ ' . __('a rate of') . ' ' . $SupplierHeader['exrate'], 0, 200) . "',
+										'" . -($LocalTotal + ($SupplierHeader['ovgst'] / $SupplierHeader['exrate'])) . "')";
+				$Result = api_DB_query($SQL);
 				$LocalTotal +=  $SupplierInvoiceLine['amount'] /$SupplierHeader['exrate'];
-				//return $Errors;
-
-			/* Now the control account */
-			# get the company creditors accounts
-			$SQL = "SELECT creditorsact FROM companies
-			WHERE gllink_creditors = '" . $SupplierHeader['gllink_creditors'] . "'";
-			$GLLink_CreditorsResult = api_DB_query($SQL);
-			if (DB_num_rows($GLLink_CreditorsResult)==0){
-				$Errors[0] = UserTaxProvinceNotSet;
-				return $Errors;
-			}
-			$GLLink_CreditorsRow = DB_fetch_row($GLLink_CreditorsResult);
-			$GLLink_Creditors = $GLLink_CreditorsRow[0];
-			$CurrDecimalPlaces = $decimalplaces;
-
-			$SQL = "INSERT INTO gltrans (type,
-										typeno,
-										trandate,
-										periodno,
-										account,
-										narrative,
-										amount)
-								VALUES (20,
-									'" . $InvoiceNo . "',
-									'" . $SQLInvoiceDate . "',
-									'" . $PeriodNo . "',
-									'" . $GLLink_Creditors. "',
-									'" . mb_substr($SupplierID . ' - ' . __('Inv') . ' ' .$SupplierHeader['suppreference']. ' ' .$currcode . locale_number_format($SupplierHeader['ovamount'] + $SupplierHeader['ovgst'], $CurrDecimalPlaces) . ' @ ' . __('a rate of') . ' ' . $SupplierHeader['exrate'], 0, 200) . "',
-									'" . -($LocalTotal + ($SupplierHeader['ovgst'] / $SupplierHeader['exrate'])) . "')";
-			$Result = api_DB_query($SQL);
-			DB_Txn_Commit();
-			if (DB_error_no() != 0) {
-				$Errors[0] = DatabaseUpdateFailed;
-			} else {
-				$Errors[0]=0;
-			}
-			EnsureGLEntriesBalance(20, $InvoiceNo);				
+				DB_Txn_Commit();
+				if (DB_error_no() != 0) {
+					$Errors[0] = DatabaseUpdateFailed;
+				} else {
+					$Errors[0]=0;
+				}
+				EnsureGLEntriesBalance(20, $InvoiceNo);				
 			}		
 		}
 		$SQL = "INSERT INTO supptrans (transno,
@@ -1718,7 +1722,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 					'" . $SupplierHeader['suppreference'] . "',
 					'" . FormatDateForSQL($SupplierHeader['trandate']) . "',
 					'" . FormatDateForSQL($SupplierHeader['duedate']) . "',
-					'" . $SupplierHeader['ovamount']. "',
+					'" . $LocalTotal. "',
 					'" . $SupplierHeader['ovgst']. "',
 					'" . $SupplierHeader['exrate']. "',
 					'" . $SupplierHeader['transtext']. "',
