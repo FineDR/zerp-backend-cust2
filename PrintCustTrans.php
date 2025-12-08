@@ -74,8 +74,7 @@ if (isset($PrintPDF)
 			$DefaultBankAccountNumber = '';
 			$DefaultBankAccountCode = '';
 		}
-						echo 'line 46: '.$FirstTrans.' '.$InvOrCredit ;
-						exit;
+
 		// --- Invoice/Credit Header Query ---
 		if ($InvOrCredit=='Invoice') {
 			$SQL = "SELECT debtortrans.trandate,
