@@ -43,8 +43,6 @@ if (!isset($_POST['ToTransNo'])
 
 $FirstTrans = $FromTransNo;
 
-						echo 'line 46: '.$FirstTrans.' '.$SQL ;
-						exit;
 if (isset($PrintPDF)
 	&& $PrintPDF!=''
 	&& isset($FromTransNo)
@@ -76,7 +74,8 @@ if (isset($PrintPDF)
 			$DefaultBankAccountNumber = '';
 			$DefaultBankAccountCode = '';
 		}
-
+						echo 'line 46: '.$FirstTrans.' '.$InvOrCredit ;
+						exit;
 		// --- Invoice/Credit Header Query ---
 		if ($InvOrCredit=='Invoice') {
 			$SQL = "SELECT debtortrans.trandate,
