@@ -1701,7 +1701,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				} else {
 					$Errors[0]=0;
 				}
-				EnsureGLEntriesBalance(20, $InvoiceNo);				
+			//	EnsureGLEntriesBalance(20, $InvoiceNo);				
 			}		
 		}
 		$SQL = "INSERT INTO supptrans (transno,
