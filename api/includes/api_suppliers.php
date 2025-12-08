@@ -1632,7 +1632,8 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				/*GL Items are straight forward - just do the debit postings to the GL accounts specified -
 				 the credit is to creditors control act  done later for the total invoice value + tax*/
 				//skamnev added tag
-				/* Mwanzo wa kurudia
+return $SupplierInvoiceLine['account'] ;
+
 				$SQL = "INSERT INTO gltrans (type,
 											typeno,
 											trandate,
@@ -1657,8 +1658,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 					$Errors[0]=0;
 				}
 
-				mwisho wa kurudia
-				*/ 
 				//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added because');
 
 			    //	$Result = DB_query($SQL, $ErrMsg, '', true);
@@ -1701,7 +1700,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				} else {
 					$Errors[0]=0;
 				}
-			//	EnsureGLEntriesBalance(20, $InvoiceNo);				
+				EnsureGLEntriesBalance(20, $InvoiceNo);				
 			}		
 		}
 		$SQL = "INSERT INTO supptrans (transno,
