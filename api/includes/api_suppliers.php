@@ -1632,7 +1632,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				/*GL Items are straight forward - just do the debit postings to the GL accounts specified -
 				 the credit is to creditors control act  done later for the total invoice value + tax*/
 				//skamnev added tag
-return $SupplierInvoiceLine['account'] ;
 
 				$SQL = "INSERT INTO gltrans (type,
 											typeno,
@@ -1667,6 +1666,7 @@ return $SupplierInvoiceLine['account'] ;
 
 				/* Now the control account */
 				# get the company creditors accounts
+	/* toa
 				$SQL = "SELECT creditorsact FROM companies
 				WHERE gllink_creditors = '" . $SupplierHeader['gllink_creditors'] . "'";
 				$GLLink_CreditorsResult = api_DB_query($SQL);
@@ -1700,6 +1700,7 @@ return $SupplierInvoiceLine['account'] ;
 				} else {
 					$Errors[0]=0;
 				}
+				*/
 				EnsureGLEntriesBalance(20, $InvoiceNo);				
 			}		
 		}
