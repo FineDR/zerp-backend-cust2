@@ -673,7 +673,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 	$TaxCategory = 1;
 	$GetTaxesResult = GetSupplierTaxes($taxgroupid, $LocalTaxProvince, $TaxCategory);
 	//get company cofiguration data
-	$SQL = "select gllink_creditors, grnact, creditorsact from companies";
+	$SQL = "SELECT gllink_creditors, grnact, creditorsact FROM companies";
     $CompanyRecordResult = api_DB_query($SQL);
 	if (DB_num_rows($CompanyRecordResult)==0){
 		$Errors[0] = CompanyRecordNotSet;
@@ -686,36 +686,30 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 	$CreditorsAct = $CompanyRecord[2];
 	$InvoiceOrCredit = 'Invoice';
 
-	return $SupplierHeader['invoicetype'];
 	if ($SupplierHeader['invoicetype'] == 4) {
 
 		/*Need to check that the user has permission to receive goods */
-		return 'line 692: '.$SupplierHeader['invoicetype'];
+		//return 'line 692: '.$SupplierHeader['invoicetype'];
 
-		return in_array($_SESSION['PageSecurityArray']['GoodsReceived.php'], $_SESSION['AllowedPageSecurityTokens']);
-
+		//return in_array($_SESSION['PageSecurityArray']['GoodsReceived.php'], $_SESSION['AllowedPageSecurityTokens']);
+/*
 		if (!in_array($_SESSION['PageSecurityArray']['GoodsReceived.php'], $_SESSION['AllowedPageSecurityTokens'])) {
 			prnMsg(__('Your permissions do not allow receiving of goods. Automatic receiving of purchase orders is restricted to those only users who are authorised to receive goods/services') , 'error');
 		}
 		else {
-			/* The user has permission to receive goods then lets go */
+			/* The user has permission to receive goods then lets go 
 
 			$_GET['ModifyOrderNumber'] = intval($_GET['ReceivePO']);
 			include('includes/PO_ReadInOrder.php');
 
 			if ($_SESSION['PO' . $identifier]->Status == 'Authorised') {
+*/
 				DB_Txn_Begin();
 				/*Now Get the next GRN - function in SQL_CommonFunctions*/
 				$GRN = GetNextTransNo(25);
-				if (!isset($_GET['DeliveryDate'])) {
-					$DeliveryDate = date($_SESSION['DefaultDateFormat']);
-				}
-				else {
-					$DeliveryDate = $_GET['DeliveryDate'];
-				}
-				$_POST['ExRate'] = $_SESSION['SuppTrans']->ExRate;
-				$_POST['TranDate'] = $DeliveryDate;
-
+				$DeliveryDate = $SupplierHeader['deliverydate'];
+				$ExRate = $exrate;
+				$TranDate = $SupplierHeader['trandate'];
 				$PeriodNo = GetPeriod($DeliveryDate);
 
 				$OrderHasControlledItems = false; //assume the best
@@ -1029,9 +1023,9 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 					}
 				} //end if the order has no controlled items on it
 
-			} //only allow auto receiving of all lines if the PO is authorised
+			//} //only allow auto receiving of all lines if the PO is authorised
 
-		} //only allow auto receiving if the user has permission to receive goods
+		//} //only allow auto receiving if the user has permission to receive goods
 
 	} // Page called with link to receive all the items on a PO
 
