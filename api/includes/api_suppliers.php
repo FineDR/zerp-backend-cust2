@@ -5,6 +5,36 @@ if (!isset($PathPrefix)) {
 	exit();
 }
 
+/** Calculate the supplier taxes */
+function GetSupplierTaxes($TaxGroup, $DispatchTaxProvince, $TaxCategory) {
+
+	$SQL = "SELECT taxgrouptaxes.calculationorder,
+					taxauthorities.description,
+					taxgrouptaxes.taxauthid,
+					taxauthorities.taxglcode,
+					taxgrouptaxes.taxontax,
+					taxauthrates.taxrate
+			FROM taxauthrates
+			INNER JOIN taxgrouptaxes
+				ON taxauthrates.taxauthority=taxgrouptaxes.taxauthid
+			INNER JOIN taxauthorities
+				ON taxauthrates.taxauthority=taxauthorities.taxid
+			WHERE taxgrouptaxes.taxgroupid='" . $TaxGroup . "'
+				AND taxauthrates.dispatchtaxprovince='" . $DispatchTaxProvince . "'
+				AND taxauthrates.taxcatid = '" . $TaxCategory . "'
+			ORDER BY taxgrouptaxes.calculationorder";
+
+	$ErrMsg = __('The taxes and rate for this tax group could not be retrieved because');
+	$GetTaxesResult = DB_query($SQL, $ErrMsg);
+
+	if (DB_num_rows($GetTaxesResult) >= 1) {
+		return $GetTaxesResult;
+	} else {
+		/*The tax group is not defined with rates */
+		return 0;
+	}
+}
+
 /** Verify that the supplier number is valid, and doesn't already
    exist. */
 function VerifySupplierNo($SupplierNumber, $i, $Errors) {
@@ -638,6 +668,12 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 
 	$LocalTaxProvinceRow = DB_fetch_row($LocalTaxProvinceResult);
 	$LocalTaxProvince = $LocalTaxProvinceRow[0];
+
+	//Hardcode TaxCategory
+	$TaxCategory = 1;
+	$GetTaxesResult = GetSupplierTaxes($taxgroupid, $LocalTaxProvince, $TaxCategory);
+
+	return 'line 676: '.$GetTaxesResult;
 
 	/*
 		$_SESSION['SuppTrans']->GetTaxes();

@@ -87,7 +87,7 @@ function GetTaxes($TaxGroup, $DispatchTaxProvince, $TaxCategory) {
 				AND taxauthrates.taxcatid = '" . $TaxCategory . "'
 			ORDER BY taxgrouptaxes.calculationorder";
 
-	$ErrMsg = __('The taxes and rate for this tax group could not be retrieved because');
+	//$ErrMsg = __('The taxes and rate for this tax group could not be retrieved because');
 	$GetTaxesResult = DB_query($SQL, $ErrMsg);
 
 	if (DB_num_rows($GetTaxesResult) >= 1) {
