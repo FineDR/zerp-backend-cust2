@@ -689,7 +689,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 if ($SupplierHeader['invoicetype'] == 4) {
 
 	/*Need to check that the user has permission to receive goods */
-	return $SupplierHeader['invoicetype'];
+	return 'line 692: '.$SupplierHeader['invoicetype'];
 
 	return in_array($_SESSION['PageSecurityArray']['GoodsReceived.php'], $_SESSION['AllowedPageSecurityTokens']);
 
