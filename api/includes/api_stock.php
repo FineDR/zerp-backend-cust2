@@ -277,6 +277,8 @@ function InsertStockItem($StockItemDetails, $user, $password) {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
+
+	return 'line 281: '.$user;
 	$PageSecurity =11; //The authorisation required to go to the stock modification script
 	if ((!in_array($PageSecurity, $_SESSION['AllowedPageSecurityTokens']))) {
 		$Errors[0]=NoAuthorisation;

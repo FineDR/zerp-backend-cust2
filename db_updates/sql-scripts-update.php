@@ -1185,6 +1185,19 @@ INSERT INTO supptrans (transno,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;type
 	sudo ufw deny from 43.173.180.149 to any port 80
 	sudo ufw deny from 43.173.180.149 to any port 443
 
+	sudo ufw deny from 103.59.160.46 to any port 80
+	sudo ufw deny from 103.59.160.46 to any port 443
+	sudo ufw deny from 122.129.107.203 to any port 80
+	sudo ufw deny from 122.129.107.203 to any port 443
+
+	sudo systemctl reload apache2
+
+	sudo systemctl restart php8.1-fpm
+	sudo systemctl restart apache2.service
+	sudo systemctl restart apache2
+	sudo systemctl status apache2
+
+	==== UPDATED -SSL.CONFIG ======
 	# Don't allow direct access to OJS internals
 	<DirectoryMatch "^.*/(classes|lib|controllers|cache)/">
 		Require all denied
@@ -1203,14 +1216,72 @@ INSERT INTO supptrans (transno,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;type
 	# Disable directory listing
 	Options -Indexes
 
-	sudo systemctl reload apache2
+	==== END UPDATED -SSL.CONFIG ======
 
-	sudo systemctl restart php8.1-fpm
-	sudo systemctl restart apache2.service
-	sudo systemctl restart apache2
-	sudo systemctl status apache2
 
-	/** Create a customer invoice in webERP. This function will bypass the
+========= START =================
+<IfModule mod_ssl.c>
+<VirtualHost jgat.udsm.ac.tz:443>
+        # The ServerName directive sets the request scheme, hostname and port that
+        # the server uses to identify itself. This is used when creating
+        # redirection URLs. In the context of virtual hosts, the ServerName
+        # specifies what hostname must appear in the request's Host: header to
+        # match this virtual host. For the default virtual host (this file) this
+        # value is not decisive as it is used as a last resort host regardless.
+        # However, you must set it for any further virtual host explicitly.
+        #ServerName www.example.com
+
+        ServerName jgat.udsm.ac.tz
+        ServerAdmin webmaster@jgat.udsm.ac.tz
+        DocumentRoot /var/www/jgat.udsm.ac.tz
+
+        # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
+        # error, crit, alert, emerg.
+        # It is also possible to configure the loglevel for particular
+        # modules, e.g.
+        #LogLevel info ssl:warn
+
+            # Use PHP 7.3 FPM socket
+        <FilesMatch \.php$>
+           SetHandler "proxy:unix:/run/php/php7.3-fpm.sock|fcgi://localhost/"
+        </FilesMatch>
+
+		# Don't allow direct access to OJS internals
+		<DirectoryMatch "^.*/(classes|lib|controllers|cache)/">
+			Require all denied
+		</DirectoryMatch>
+
+		# Don't allow direct access to plugin PHP files
+		<Directory "/var/www/tjpsd.udsm.ac.tz/plugins/">
+			Require all denied
+		</Directory>
+
+		# Extra safety: no direct execution of *.inc.php files anywhere
+		<FilesMatch "\.inc\.php$">
+			Require all denied
+		</FilesMatch>
+
+		# Disable directory listing
+		Options -Indexes
+
+        ErrorLog ${APACHE_LOG_DIR}/error_jgat.log
+        CustomLog ${APACHE_LOG_DIR}/access_jgat.log combined
+
+        # For most configuration files from conf-available/, which are
+        # enabled or disabled at a global level, it is possible to
+        # include a line for only one particular virtual host. For example the
+        # following line enables the CGI configuration for this host only
+        # after it has been globally disabled with "a2disconf".
+        #Include conf-available/serve-cgi-bin.conf
+
+SSLEngine on
+#Include /etc/letsencrypt/options-ssl-apache.conf
+#SSLCertificateFile /etc/letsencrypt/live/jgat.udsm.ac.tz-0001/fullchain.pem
+#SSLCertificateKeyFile /etc/letsencrypt/live/jgat.udsm.ac.tz-0001/privkey.pem
+
+========== END =================
+
+/** Create a customer invoice in webERP. This function will bypass the
  * normal procedure in webERP for creating a sales order first, and then
  * delivering it.
 
@@ -1218,7 +1289,7 @@ INSERT INTO supptrans (transno,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;type
  * to sales analysis records - no cost of sales entries in GL
 
  ************ USE ONLY WITH CAUTION********************
- */
+*/
 function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
     $Errors = array();
 	$db = db($user, $password);
