@@ -271,7 +271,6 @@ function GetCategoryGLCode($CategoryID, $field) {
    array of one to many error codes.
 */
 function InsertStockItem($StockItemDetails, $user, $password) {
-		return 'line 281: '.$user;
 	$Errors = array();
 	$db = db($user, $password);
 	if (gettype($db)=='integer') {
@@ -279,7 +278,7 @@ function InsertStockItem($StockItemDetails, $user, $password) {
 		return $Errors;
 	}
 
-
+	return 'line 281: '.$user;
 	$PageSecurity =11; //The authorisation required to go to the stock modification script
 	if ((!in_array($PageSecurity, $_SESSION['AllowedPageSecurityTokens']))) {
 		$Errors[0]=NoAuthorisation;
