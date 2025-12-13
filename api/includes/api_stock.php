@@ -366,8 +366,9 @@ function InsertStockItem($StockItemDetails, $user, $password) {
 		DB_Txn_Begin();
 		$stockresult = DB_query($stocksql);
 		$locresult = DB_query($locsql);
+		return $locresult;
 		DB_Txn_Commit();
-			return $locresult;
+			
 		if (DB_error_no() != 0) {
 			$Errors[0] = DatabaseUpdateFailed;
 		} else {
