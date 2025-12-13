@@ -358,13 +358,13 @@ function InsertStockItem($StockItemDetails, $user, $password) {
 		$FieldNames.=$key.', ';
 		$FieldValues.='"'.$Value.'", ';
 	}
-			return 'line 361: '.sizeof($Errors);
 	if (sizeof($Errors)==0) {
 		$stocksql = 'INSERT INTO stockmaster ('.mb_substr($FieldNames,0,-2).') '.
 			'VALUES ('.mb_substr($FieldValues,0,-2).') ';
 		$locsql = "INSERT INTO locstock (loccode,stockid)
 			SELECT locations.loccode,'" . $StockItemDetails['stockid'] . "' FROM locations";
 		DB_Txn_Begin();
+		return $stocksql;
 		$stockresult = DB_query($stocksql);
 		$locresult = DB_query($locsql);
 		DB_Txn_Commit();
