@@ -364,9 +364,10 @@ function InsertStockItem($StockItemDetails, $user, $password) {
 		$locsql = "INSERT INTO locstock (loccode,stockid)
 			SELECT locations.loccode,'" . $StockItemDetails['stockid'] . "' FROM locations";
 		DB_Txn_Begin();
+		return $locresult;
 		$stockresult = DB_query($stocksql);
 		$locresult = DB_query($locsql);
-		return $locresult;
+		
 		DB_Txn_Commit();
 			
 		if (DB_error_no() != 0) {
