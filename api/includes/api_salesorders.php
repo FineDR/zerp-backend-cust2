@@ -175,8 +175,6 @@ function GetOrderLineNumber($OrderNo, $i, $Errors) {
 
 /** Check that the order header already exists */
 function VerifyOrderHeaderExists($OrderNo, $i, $Errors) {
-	$SQL = "SELECT COUNT(orderno) FROM salesorders WHERE orderno='".$OrderNo."'";
-	/*
 	$Searchsql = "SELECT COUNT(orderno)
 				 FROM salesorders
 				  WHERE orderno='".$OrderNo."'";
@@ -185,10 +183,7 @@ function VerifyOrderHeaderExists($OrderNo, $i, $Errors) {
 	if ($Answer[0] == 0) {
 		$Errors[$i] = OrderHeaderNotSetup;
 	}
-		
 	return $Errors;
-	*/
-	return $SQL;
 }
 
 /** Verify that the unit price is numeric */
@@ -817,7 +812,6 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 	if (sizeof($Errors)!=0) {
 		return $Errors;
 	}
-
 	/*Does not deal with assembly items or serialise/lot track items - for use by POS */
 	/*Get Company Defaults */
 	$ReadCoyResult = api_DB_query("SELECT debtorsact,
@@ -856,7 +850,7 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 						INNER JOIN currencies
 						ON debtorsmaster.currcode=currencies.currabrev
 						WHERE salesorders.orderno = '" . $OrderNo . "'";
-return $OrderHeaderSQL;
+
 	$OrderHeaderResult = api_DB_query($OrderHeaderSQL);
 	if (DB_error_no() != 0) {
 		$Errors[] = NoReadOrder;
