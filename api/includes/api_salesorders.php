@@ -183,7 +183,8 @@ function VerifyOrderHeaderExists($OrderNo, $i, $Errors) {
 	if ($Answer[0] == 0) {
 		$Errors[$i] = OrderHeaderNotSetup;
 	}
-	return $Errors;
+	//return $Errors;
+	return $Searchsql;
 }
 
 /** Verify that the unit price is numeric */
