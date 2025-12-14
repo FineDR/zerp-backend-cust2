@@ -812,9 +812,9 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 	// 	$OrderNo[$key] = DB_escape_string($Value);
 	// }
 //hardcode orderno
-//$OrderNo = 7;
+$OrderNo=7;
 
-	$Errors=VerifyOrderHeaderExists(7, sizeof($Errors), $Errors);
+	$Errors=VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
 		return $Errors;
 	}
