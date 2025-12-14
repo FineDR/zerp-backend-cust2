@@ -814,12 +814,23 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 		*/
 	//return 'line 674: '.$OrderNo['orderno'];
 	//$Errors=VerifyOrderHeaderExists($OrderNo['orderno'], sizeof($Errors), $Errors);
-
+/*
 	$Errors=VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
 	//	return $Errors;
 		return $Searchsql;
 	}
+		*/
+
+	$Searchsql = "SELECT COUNT(orderno)
+				 FROM salesorders
+				  WHERE orderno='".$OrderNo."'";
+	$SearchResult=api_DB_query($Searchsql);
+	$Answer = DB_fetch_row($SearchResult);
+	if ($Answer[0] == 0) {
+		$Errors[$i] = OrderHeaderNotSetup;
+	}
+
 	/*Does not deal with assembly items or serialise/lot track items - for use by POS */
 	/*Get Company Defaults */
 	$ReadCoyResult = api_DB_query("SELECT debtorsact,
