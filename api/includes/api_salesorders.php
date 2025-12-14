@@ -811,11 +811,11 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 	// foreach ($OrderNo as $key => $Value) {
 	// 	$OrderNo[$key] = DB_escape_string($Value);
 	// }
-return $OrderNo['orderno'];
-	$Errors=VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
-	if (sizeof($Errors)!=0) {
-		return $Errors;
-	}
+// return $OrderNo['orderno'];
+// 	$Errors=VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
+// 	if (sizeof($Errors)!=0) {
+// 		return $Errors;
+// 	}
 	/*Does not deal with assembly items or serialise/lot track items - for use by POS */
 	/*Get Company Defaults */
 	$ReadCoyResult = api_DB_query("SELECT debtorsact,
@@ -853,8 +853,8 @@ return $OrderNo['orderno'];
 						ON locations.loccode=salesorders.fromstkloc
 						INNER JOIN currencies
 						ON debtorsmaster.currcode=currencies.currabrev
-						WHERE salesorders.orderno = '" . $OrderNo . "'";
-//return $OrderHeaderSQL;
+						WHERE salesorders.orderno = '" . $OrderNo['orderno'] . "'";
+return $OrderHeaderSQL;
 	$OrderHeaderResult = api_DB_query($OrderHeaderSQL);
 	if (DB_error_no() != 0) {
 		$Errors[] = NoReadOrder;
