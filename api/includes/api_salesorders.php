@@ -175,6 +175,8 @@ function GetOrderLineNumber($OrderNo, $i, $Errors) {
 
 /** Check that the order header already exists */
 function VerifyOrderHeaderExists($OrderNo, $i, $Errors) {
+	$OrderNo = "select COUNT(orderno) from salesorders WHERE orderno='7'";
+	return $OrderNo;
 	$Searchsql = "SELECT COUNT(orderno)
 				 FROM salesorders
 				  WHERE orderno='".$OrderNo."'";
