@@ -811,8 +811,9 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 	// foreach ($OrderNo as $key => $Value) {
 	// 	$OrderNo[$key] = DB_escape_string($Value);
 	// }
-//return $OrderNo['orderno'];
+//hardcode orderno
 $OrderNo = 7;
+
 	$Errors=VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
 		return $Errors;
@@ -855,7 +856,7 @@ $OrderNo = 7;
 						INNER JOIN currencies
 						ON debtorsmaster.currcode=currencies.currabrev
 						WHERE salesorders.orderno = '" . $OrderNo . "'";
-return $OrderHeaderSQL;
+
 	$OrderHeaderResult = api_DB_query($OrderHeaderSQL);
 	if (DB_error_no() != 0) {
 		$Errors[] = NoReadOrder;
