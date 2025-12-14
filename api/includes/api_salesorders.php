@@ -807,7 +807,7 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 		$Errors[]=NoAuthorisation;
 		return $Errors;
 	}
-
+return $OrderNo;
 	$Errors=VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
 		return $Errors;
