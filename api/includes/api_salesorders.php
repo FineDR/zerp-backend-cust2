@@ -801,19 +801,16 @@ function GetSalesOrderLine($OrderNo, $user, $password) {
 
 
 function InvoiceSalesOrder($OrderNo, $User, $Password) {
-
 	$Errors = array();
 	$db = db($User, $Password);
 	if (gettype($db)=='integer') {
 		$Errors[]=NoAuthorisation;
 		return $Errors;
 	}
-	/*
 	$Errors=VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
 		return $Errors;
 	}
-		*/
 	/*Does not deal with assembly items or serialise/lot track items - for use by POS */
 	/*Get Company Defaults */
 	$ReadCoyResult = api_DB_query("SELECT debtorsact,
