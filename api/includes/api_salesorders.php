@@ -178,6 +178,7 @@ function VerifyOrderHeaderExists($OrderNo, $i, $Errors) {
 	$Searchsql = "SELECT COUNT(orderno)
 				 FROM salesorders
 				  WHERE orderno='".$OrderNo."'";
+				  return $Searchsql ;
 	$SearchResult=api_DB_query($Searchsql);
 	$Answer = DB_fetch_row($SearchResult);
 	if ($Answer[0] == 0) {
@@ -812,7 +813,7 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 	if (sizeof($Errors)!=0) {
 		return $Errors;
 	}
-	return 'line 823: '.$Errors;
+
 	/*Does not deal with assembly items or serialise/lot track items - for use by POS */
 	/*Get Company Defaults */
 	$ReadCoyResult = api_DB_query("SELECT debtorsact,
