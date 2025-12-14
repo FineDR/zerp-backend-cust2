@@ -808,9 +808,9 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 		return $Errors;
 	}
 
-	foreach ($OrderNo as $key => $Value) {
-		$OrderNo[$key] = DB_escape_string($Value);
-	}
+	// foreach ($OrderNo as $key => $Value) {
+	// 	$OrderNo[$key] = DB_escape_string($Value);
+	// }
 return $OrderNo['orderno'];
 	$Errors=VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
