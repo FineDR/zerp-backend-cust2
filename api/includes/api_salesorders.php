@@ -820,7 +820,7 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 											gllink_stock
 									FROM companies
 									WHERE coycode=1");
-
+return 'line 823: '.$ReadCoyResult;
 	$CompanyRecord = DB_fetch_array($ReadCoyResult);
 	if (DB_error_no() != 0) {
 		$Errors[] = NoCompanyRecord;
