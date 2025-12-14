@@ -810,8 +810,7 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 
 	$Errors=VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
-	//	return $Errors;
-		return $Searchsql;
+		return $Errors;
 	}
 	/*Does not deal with assembly items or serialise/lot track items - for use by POS */
 	/*Get Company Defaults */
