@@ -807,11 +807,11 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 		$Errors[]=NoAuthorisation;
 		return $Errors;
 	}
-/*
+
 	foreach ($OrderNo as $key => $Value) {
 		$OrderNo[$key] = DB_escape_string($Value);
 	}
-		*/
+
 	//return 'line 674: '.$OrderNo['orderno'];
 	//$Errors=VerifyOrderHeaderExists($OrderNo['orderno'], sizeof($Errors), $Errors);
 /*
@@ -824,7 +824,7 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 
 	$Searchsql = "SELECT COUNT(orderno)
 				 FROM salesorders
-				  WHERE orderno='".$OrderNo['orderno']."'";
+				  WHERE orderno='".$OrderNo."'";
 	return $Searchsql;
 	$SearchResult=api_DB_query($Searchsql);
 	$Answer = DB_fetch_row($SearchResult);
