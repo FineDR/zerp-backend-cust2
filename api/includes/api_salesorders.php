@@ -673,7 +673,8 @@ function GetSalesOrderValue($OrderNo, $user, $password) {
 	}
 	$Errors=VerifyOrderHeaderExists($OrderNo['orderno'], sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
-		return $Errors;
+		//return $Errors;
+		return $OrderNo['orderno'];
 	}
 	//$SQL="SELECT * FROM salesorders WHERE orderno='".$OrderNo."'";
 		$SQL = "SELECT salesorders.orderno,
