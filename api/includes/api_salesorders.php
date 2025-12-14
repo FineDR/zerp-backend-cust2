@@ -807,16 +807,18 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 		$Errors[]=NoAuthorisation;
 		return $Errors;
 	}
-
+/*
 	foreach ($OrderNo as $key => $Value) {
 		$OrderNo[$key] = DB_escape_string($Value);
 	}
+		*/
 	//return 'line 674: '.$OrderNo['orderno'];
 	//$Errors=VerifyOrderHeaderExists($OrderNo['orderno'], sizeof($Errors), $Errors);
 
 	$Errors=VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
-		return $Errors;
+	//	return $Errors;
+		return $Searchsql;
 	}
 	/*Does not deal with assembly items or serialise/lot track items - for use by POS */
 	/*Get Company Defaults */
