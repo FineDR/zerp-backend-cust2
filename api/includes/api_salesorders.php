@@ -178,7 +178,6 @@ function VerifyOrderHeaderExists($OrderNo, $i, $Errors) {
 	$Searchsql = "SELECT COUNT(orderno)
 				 FROM salesorders
 				  WHERE orderno='".$OrderNo."'";
-				  return $Searchsql ;
 	$SearchResult=api_DB_query($Searchsql);
 	$Answer = DB_fetch_row($SearchResult);
 	if ($Answer[0] == 0) {
