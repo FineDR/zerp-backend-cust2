@@ -808,8 +808,10 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 		return $Errors;
 	}
 
-
-	return 'line 674: '.$OrderNo;
+	foreach ($OrderNo as $key => $Value) {
+		$OrderNo[$key] = DB_escape_string($Value);
+	}
+	return 'line 674: '.$OrderNo['orderno'];
 	//$Errors=VerifyOrderHeaderExists($OrderNo['orderno'], sizeof($Errors), $Errors);
 
 	$Errors=VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
