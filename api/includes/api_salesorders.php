@@ -671,6 +671,7 @@ function GetSalesOrderValue($OrderNo, $user, $password) {
 	foreach ($OrderNo as $key => $Value) {
 		$OrderNo[$key] = DB_escape_string($Value);
 	}
+	return 'line 674: '.$OrderNo['orderno'];
 	$Errors=VerifyOrderHeaderExists($OrderNo['orderno'], sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
 		//return $Errors;
