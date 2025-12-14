@@ -852,6 +852,7 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 						INNER JOIN currencies
 						ON debtorsmaster.currcode=currencies.currabrev
 						WHERE salesorders.orderno = '" . $OrderNo . "'";
+return $OrderNo;
 return $OrderHeaderSQL;
 	$OrderHeaderResult = api_DB_query($OrderHeaderSQL);
 	if (DB_error_no() != 0) {
