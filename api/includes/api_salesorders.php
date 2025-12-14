@@ -668,7 +668,10 @@ function GetSalesOrderValue($OrderNo, $user, $password) {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-	$Errors=VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
+	foreach ($OrderNo as $key => $Value) {
+		$OrderNo[$key] = DB_escape_string($Value);
+	}
+	$Errors=VerifyOrderHeaderExists($OrderNo['orderno'], sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
 		return $Errors;
 	}
