@@ -809,7 +809,7 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 	}
 
 
-	return 'line 674: '.$OrderNo['orderno'];
+	return 'line 674: '.$OrderNo;
 	//$Errors=VerifyOrderHeaderExists($OrderNo['orderno'], sizeof($Errors), $Errors);
 
 	$Errors=VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
