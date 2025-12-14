@@ -801,7 +801,7 @@ function GetSalesOrderLine($OrderNo, $user, $password) {
 
 
 function InvoiceSalesOrder($OrderNo, $User, $Password) {
-return 'line 823: '.$ReadCoyResult;
+
 	$Errors = array();
 	$db = db($User, $Password);
 	if (gettype($db)=='integer') {
@@ -812,6 +812,7 @@ return 'line 823: '.$ReadCoyResult;
 	if (sizeof($Errors)!=0) {
 		return $Errors;
 	}
+	return 'line 823: '.$Errors;
 	/*Does not deal with assembly items or serialise/lot track items - for use by POS */
 	/*Get Company Defaults */
 	$ReadCoyResult = api_DB_query("SELECT debtorsact,
