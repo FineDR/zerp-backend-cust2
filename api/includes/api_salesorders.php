@@ -814,7 +814,7 @@ function InvoiceSalesOrder($OrderNo, $User, $Password) {
 //hardcode orderno
 //$OrderNo = 7;
 
-	$Errors=VerifyOrderHeaderExists($OrderNo, sizeof($Errors), $Errors);
+	$Errors=VerifyOrderHeaderExists(7, sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
 		return $Errors;
 	}
