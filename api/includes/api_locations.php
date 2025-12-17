@@ -153,6 +153,7 @@ function InsertLocation($Location, $user, $password) {
 		$SQL = "INSERT INTO locations ('" . mb_substr($FieldNames,0,-2) . "')
 					VALUES ('" . mb_substr($FieldValues,0,-2) . "') ";
 		$Result = DB_query($SQL);
+		return $Result;
 		if (DB_error_no() != 0) {
 			$Errors[0] = DatabaseUpdateFailed;
 		} else {
