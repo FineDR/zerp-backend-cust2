@@ -152,8 +152,6 @@ function InsertLocation($Location, $user, $password) {
 	if (sizeof($Errors)==0) {
 		$SQL = "INSERT INTO locations (" . mb_substr($FieldNames,0,-2) . ")
 					VALUES ('" . mb_substr($FieldValues,0,-2) . "') ";
-					return $SQL;
-
 		$Result = DB_query($SQL);
 		if (DB_error_no() != 0) {
 			$Errors[0] = DatabaseUpdateFailed;
@@ -161,6 +159,7 @@ function InsertLocation($Location, $user, $password) {
 			$Errors[0]=0;
 		}
 	}
+						return 'line 162: '. $SQL;
 	return $Errors;
 }
 
