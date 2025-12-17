@@ -150,7 +150,7 @@ function InsertLocation($Location, $user, $password) {
 		$FieldValues.='"'.$Value.'", ';
 	}
 	if (sizeof($Errors)==0) {
-		$SQL = "INSERT INTO locations ('" . mb_substr($FieldNames,0,-2) . "')
+		$SQL = "INSERT INTO locations (" . mb_substr($FieldNames,0,-2) . ")
 					VALUES ('" . mb_substr($FieldValues,0,-2) . "') ";
 					return $SQL;
 		$Result = DB_query($SQL);
