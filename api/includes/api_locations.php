@@ -154,14 +154,13 @@ function InsertLocation($Location, $user, $password) {
 					VALUES ('" . mb_substr($FieldValues,0,-2) . "') ";
 		return 'line 155: '. $SQL;
 		$Result = DB_query($SQL);
-		return 'line 156: '. $SQL;
+	//	return 'line 156: '. $SQL;
 		if (DB_error_no() != 0) {
 			$Errors[0] = DatabaseUpdateFailed;
 		} else {
 			$Errors[0]=0;
 		}
 	}
-						return 'line 162: '. $SQL;
 	return $Errors;
 }
 
