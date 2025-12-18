@@ -1312,7 +1312,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 	$FieldNames='';
 	$FieldValues='';
 	$InvoiceDetails['trandate']=ConvertToSQLDate($InvoiceDetails['trandate']);
-	$InvoiceDetails['trandate']=$InvoiceDetails['trandate'];
+	$InvoiceDetails['trandate']='2025-12-17';
 	return 'date is: '.$InvoiceDetails['trandate'];
 	$InvoiceDetails['prd']=GetPeriodFromTransactionDate($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
 	foreach ($InvoiceDetails as $key => $Value) {
