@@ -24,7 +24,6 @@ function VerifyInvoiceStockCodeExists($StockCode, $i, $Errors) {
 	$Searchsql = "SELECT count(stockid)
 				  FROM stockmaster
 				  WHERE stockid='".$StockCode."'";
-				  return $Searchsql ;
 	$SearchResult = DB_query($Searchsql);
 	$Answer = DB_fetch_array($SearchResult);
 	if ($Answer[0]==0) {
@@ -1243,6 +1242,8 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 		$InvoiceDetails[$key] = DB_escape_string($Value);
 	}
 	$PartCode=$InvoiceDetails['partcode'];
+
+	return $Searchsql;
 	//return $PartCode;
 	//$Errors=VerifyStockCodeExists($PartCode, sizeof($Errors), $Errors );
 	$Errors=VerifyInvoiceStockCodeExists($PartCode, sizeof($Errors), $Errors );
