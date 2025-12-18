@@ -19,6 +19,19 @@ function VerifyTransNo($TransNo, $Type, $i, $Errors) {
 	return $Errors;
 }
 
+/** Check that the stock code exists */
+function VerifyStockCodeExists($StockCode, $i, $Errors) {
+	$Searchsql = "SELECT count(stockid)
+				  FROM stockmaster
+				  WHERE stockid='".$StockCode."'";
+	$SearchResult = DB_query($Searchsql);
+	$Answer = DB_fetch_array($SearchResult);
+	if ($Answer[0]==0) {
+		$Errors[$i] = StockCodeDoesntExist;
+	}
+	return $Errors;
+}
+
 function ConvertToSQLDate($DateEntry) {
 
 //for MySQL dates are in the format YYYY-mm-dd
