@@ -1316,8 +1316,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 	if (sizeof($Errors)==0) {
 		DB_Txn_Begin();
 		$SQL = "INSERT INTO debtortrans (" . mb_substr($FieldNames,0,-2) .")
-								VALUES ('" . mb_substr($FieldValues,0,-2) ."') ";
-																			return $PartCode.' --> '.$SQL;
+								VALUES (" . mb_substr($FieldValues,0,-2) .") ";
 		$Result = DB_query($SQL);
 		$SQL = "UPDATE systypes SET typeno='" . GetNextTransNo(10) . "' WHERE typeid=10";
 		$Result = DB_query($SQL);
