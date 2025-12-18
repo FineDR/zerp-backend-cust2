@@ -152,7 +152,7 @@ if (isset($PrintPDF)
 						WHERE debtortrans.type=10
 						AND debtortrans.transno='" . $FromTransNo . "'";
 
-						echo $SQL;
+						echo $SQL; exit;
 
 			if (isset($_POST['PrintEDI']) AND $_POST['PrintEDI']=='No') {
 				$SQL .= ' AND debtorsmaster.ediinvoices=0';
