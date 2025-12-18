@@ -1320,6 +1320,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 		$Result = DB_query($SQL);
 		$SQL = "UPDATE systypes SET typeno='" . GetNextTransNo(10) . "' WHERE typeid=10";
 		$Result = DB_query($SQL);
+																					return $PartCode.' --> '.$SQL;
 		$SalesGLCode=GetSalesGLCode($SalesArea, $PartCode);
 		$DebtorsGLCode=GetDebtorsGLCode();
 		$SQL="INSERT INTO gltrans VALUES(null,
@@ -1392,7 +1393,6 @@ function AllocateTrans($AllocDetails, $User, $Password) {
 			WHERE debtorno='" . $AllocDetails['debtorno'] . "'
 			AND type='" . $AllocDetails['type'] . "'
 			AND transno='" . $AllocDetails['transno'] . "'";
-																						return $PartCode.' --> '.$SQL;
 	$Result = api_DB_query($SQL);
 	$LeftToAllocRow = DB_fetch_array($Result);
 	if (DB_num_rows($Result)==0){
