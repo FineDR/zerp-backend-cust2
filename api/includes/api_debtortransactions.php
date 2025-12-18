@@ -1243,7 +1243,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 	}
 	$PartCode=$InvoiceDetails['partcode'];
 
-	return $Searchsql;
+	return $PartCode.' --> '.$Searchsql;
 	//return $PartCode;
 	//$Errors=VerifyStockCodeExists($PartCode, sizeof($Errors), $Errors );
 	$Errors=VerifyInvoiceStockCodeExists($PartCode, sizeof($Errors), $Errors );
