@@ -20,7 +20,7 @@ function VerifyTransNo($TransNo, $Type, $i, $Errors) {
 }
 
 /** Check that the stock code exists */
-function VerifyStockCodeExists($StockCode, $i, $Errors) {
+function VerifyInvoiceStockCodeExists($StockCode, $i, $Errors) {
 	$Searchsql = "SELECT count(stockid)
 				  FROM stockmaster
 				  WHERE stockid='".$StockCode."'";
@@ -1243,7 +1243,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 	}
 	$PartCode=$InvoiceDetails['partcode'];
 	//return $PartCode;
-	$Errors=VerifyStockCodeExists($PartCode, sizeof($Errors), $Errors );
+	$Errors=VerifyInvoiceStockCodeExists($PartCode, sizeof($Errors), $Errors );
 	unset($InvoiceDetails['partcode']);
 	$SalesArea=$InvoiceDetails['salesarea'];
 	unset($InvoiceDetails['salesarea']);
