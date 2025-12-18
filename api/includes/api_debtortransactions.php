@@ -1242,11 +1242,13 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 		$InvoiceDetails[$key] = DB_escape_string($Value);
 	}
 	$PartCode=$InvoiceDetails['partcode'];
-$PartCode = 'ZTL001';
-	return $PartCode.' --> '.$Searchsql.' -->'.$InvoiceDetails['partcode'];
+
+	//hardcoded for testing purposes
+    $PartCode = 'ZTL001';
+	//return $PartCode.' --> '.$Searchsql.' -->'.$InvoiceDetails['partcode'];
 	//return $PartCode;
-	//$Errors=VerifyStockCodeExists($PartCode, sizeof($Errors), $Errors );
-	$Errors=VerifyInvoiceStockCodeExists($PartCode, sizeof($Errors), $Errors );
+	$Errors=VerifyStockCodeExists($PartCode, sizeof($Errors), $Errors );
+	//$Errors=VerifyInvoiceStockCodeExists($PartCode, sizeof($Errors), $Errors );
 	unset($InvoiceDetails['partcode']);
 	$SalesArea=$InvoiceDetails['salesarea'];
 	unset($InvoiceDetails['salesarea']);
