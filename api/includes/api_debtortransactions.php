@@ -51,6 +51,8 @@ function ConvertToSQLDate($DateEntry) {
 /** Check that the transaction date and Delivery date are  valid dates. The date
  * must be in the same format as the date format specified in the
  * target webERP company */
+
+/*
 function VerifyDateFormat($TranDate, $i, $Errors) {
 	$SQL="SELECT confvalue FROM config where confname='DefaultDateFormat'";
 	$Result = DB_query($SQL);
@@ -83,7 +85,7 @@ function VerifyDateFormat($TranDate, $i, $Errors) {
 	}
 	return $Errors;
 }
-
+*/
 /** Check that the transaction date is a valid date. The date
  * must be in the same format as the date format specified in the
  * target webERP company */
