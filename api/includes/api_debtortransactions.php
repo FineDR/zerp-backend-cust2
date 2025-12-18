@@ -1313,6 +1313,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 		$FieldNames.=$key.', ';
 		$FieldValues.='"'.$Value.'", ';
 	}
+	return $PartCode;
 	if (sizeof($Errors)==0) {
 		DB_Txn_Begin();
 		$SQL = "INSERT INTO debtortrans (" . mb_substr($FieldNames,0,-2) .")
