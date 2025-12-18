@@ -87,6 +87,10 @@ function VerifyInvoiceTransactionDate($TranDate, $i, $Errors) {
 		$Day=$DateArray[2];
 		$Month=$DateArray[1];
 		$Year=$DateArray[0];
+	} elseif ($DateFormat=='Y-m-d') {
+		$Day=$DateArray[2];
+		$Month=$DateArray[1];
+		$Year=$DateArray[0];
 	} elseif ($DateFormat=='d.m.Y') {
 		$Day=$DateArray[0];
 		$Month=$DateArray[1];
