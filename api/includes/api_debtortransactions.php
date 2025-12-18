@@ -1315,6 +1315,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 	//hardcodedate for testing
 	$InvoiceDetails['trandate']='2025-12-17';
 	$InvoiceDetails['prd']=GetPeriodFromTransactionDate($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
+	return $InvoiceDetails['prd'];
 	foreach ($InvoiceDetails as $key => $Value) {
 		$FieldNames.=$key.', ';
 		$FieldValues.='"'.$Value.'", ';
