@@ -1260,6 +1260,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 	$Errors=VerifyDebtorExists($InvoiceDetails['debtorno'], sizeof($Errors), $Errors);
 	$Errors=VerifyBranchNoExists($InvoiceDetails['debtorno'],$InvoiceDetails['branchcode'], sizeof($Errors), $Errors);
 	$Errors=VerifyTransNO($InvoiceDetails['transno'], 10, sizeof($Errors), $Errors);
+	$InvoiceDetails['trandate']=$InvoiceDetails['trandate'];
 	//return $InvoiceDetails['trandate'];
 	//$Errors=VerifyDateFormat($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
 	//$Errors=VerifyInvoiceTransactionDate($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
