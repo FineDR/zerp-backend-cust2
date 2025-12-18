@@ -1392,6 +1392,7 @@ function AllocateTrans($AllocDetails, $User, $Password) {
 			WHERE debtorno='" . $AllocDetails['debtorno'] . "'
 			AND type='" . $AllocDetails['type'] . "'
 			AND transno='" . $AllocDetails['transno'] . "'";
+																						return $PartCode.' --> '.$SQL;
 	$Result = api_DB_query($SQL);
 	$LeftToAllocRow = DB_fetch_array($Result);
 	if (DB_num_rows($Result)==0){
