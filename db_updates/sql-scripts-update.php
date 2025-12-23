@@ -131,6 +131,33 @@ $GetStockCatProperty_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValu
 INSERT INTO supptrans (transno,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;type,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;supplierno,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;suppreference,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;trandate,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;duedate,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;ovamount,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;ovgst,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;rate,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;transtext,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;inputdate)&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;VALUES (&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;5&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;20 ,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;104824986&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;2025-12-03&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;2025-12-03&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;11000&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;0&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;1&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;CURRENT_DATE)
 
 
+SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debtortrans.ovfreight, debtortrans.ovgst, debtortrans.rate, 
+debtortrans.invtext, debtortrans.consignment, debtortrans.packages, debtorsmaster.name, debtorsmaster.address1, debtorsmaster.address2, 
+debtorsmaster.address3, debtorsmaster.address4, debtorsmaster.address5, debtorsmaster.address6, debtorsmaster.currcode, 
+debtorsmaster.invaddrbranch, debtorsmaster.taxref, debtorsmaster.language_id, paymentterms.terms, paymentterms.dayinfollowingmonth, 
+paymentterms.daysbeforedue, locations.locationname, 
+shippers.shippername, custbranch.brname, custbranch.braddress1, custbranch.braddress2, custbranch.braddress3, custbranch.braddress4, 
+custbranch.braddress5, custbranch.braddress6, custbranch.brpostaddr1, custbranch.brpostaddr2, custbranch.brpostaddr3, custbranch.brpostaddr4, 
+custbranch.brpostaddr5, custbranch.brpostaddr6, custbranch.salesman, salesman.salesmanname, debtortrans.debtorno, debtortrans.branchcode, 
+currencies.decimalplaces FROM debtortrans INNER JOIN debtorsmaster ON debtortrans.debtorno=debtorsmaster.debtorno INNER JOIN custbranch ON 
+debtortrans.debtorno=custbranch.debtorno AND debtortrans.branchcode=custbranch.branchcode INNER JOIN shippers ON debtortrans.shipvia=shippers.shipper_id 
+		INNER JOIN salesman ON custbranch.salesman=salesman.salesmancode 
+		INNER JOIN locationusers ON locationusers.loccode=locations.loccode 
+		AND 
+		locationusers.userid='amran' 
+		AND 
+		locationusers.canview=1 
+		INNER JOIN paymentterms ON debtorsmaster.paymentterms=paymentterms.termsindicator 
+		INNER JOIN currencies ON debtorsmaster.currcode=currencies.currabrev 
+		WHERE debtortrans.type=10 
+		AND 
+		debtortrans.transno='2'
+
+
+Tausi Credential:                                                   Username: 19741117-11485-00001-29                                             Password: ZZalongwa@2025
+
+SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debtortrans.ovfreight, debtortrans.ovgst, debtortrans.rate, debtortrans.invtext, debtortrans.consignment, debtortrans.packages, debtorsmaster.name, debtorsmaster.address1, debtorsmaster.address2, debtorsmaster.address3, debtorsmaster.address4, debtorsmaster.address5, debtorsmaster.address6, debtorsmaster.currcode, debtorsmaster.invaddrbranch, debtorsmaster.taxref, debtorsmaster.language_id, paymentterms.terms, paymentterms.dayinfollowingmonth, paymentterms.daysbeforedue, salesorders.deliverto, salesorders.deladd1, salesorders.deladd2, salesorders.deladd3, salesorders.deladd4, salesorders.deladd5, salesorders.deladd6, salesorders.customerref, salesorders.orderno, salesorders.orddate, locations.locationname, shippers.shippername, custbranch.brname, custbranch.braddress1, custbranch.braddress2, custbranch.braddress3, custbranch.braddress4, custbranch.braddress5, custbranch.braddress6, custbranch.brpostaddr1, custbranch.brpostaddr2, custbranch.brpostaddr3, custbranch.brpostaddr4, custbranch.brpostaddr5, custbranch.brpostaddr6, custbranch.salesman, salesman.salesmanname, debtortrans.debtorno, debtortrans.branchcode, currencies.decimalplaces FROM debtortrans INNER JOIN debtorsmaster ON debtortrans.debtorno=debtorsmaster.debtorno INNER JOIN custbranch ON debtortrans.debtorno=custbranch.debtorno AND debtortrans.branchcode=custbranch.branchcode INNER JOIN shippers ON debtortrans.shipvia=shippers.shipper_id INNER JOIN salesman ON custbranch.salesman=salesman.salesmancode INNER JOIN locations ON salesorders.fromstkloc=locations.loccode INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='amran' AND locationusers.canview=1 INNER JOIN paymentterms ON debtorsmaster.paymentterms=paymentterms.termsindicator INNER JOIN currencies ON debtorsmaster.currcode=currencies.currabrev WHERE debtortrans.type=10 AND debtortrans.transno='1';
+
 <?xml version="1.0"?>
 <methodCall>
     <methodName>weberp.xmlrpc_InsertSupplierInvoice</methodName>
