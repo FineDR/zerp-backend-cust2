@@ -1256,6 +1256,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 	$SalesArea=$InvoiceDetails['salesarea'];
 	unset($InvoiceDetails['salesarea']);
 	$InvoiceDetails['transno']=GetNextTransNo(10);
+	$InvoiceDetails['order_']=$InvoiceDetails['transno'];
 	$InvoiceDetails['type'] = 10;
 	$Errors=VerifyDebtorExists($InvoiceDetails['debtorno'], sizeof($Errors), $Errors);
 	$Errors=VerifyBranchNoExists($InvoiceDetails['debtorno'],$InvoiceDetails['branchcode'], sizeof($Errors), $Errors);
