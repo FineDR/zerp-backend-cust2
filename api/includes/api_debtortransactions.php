@@ -1361,7 +1361,8 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 										0,
 										'" . $InvoiceDetails['jobref'] . "',
 										1)";
-		$Result = DB_query($SQL);
+										return $SQL;
+		$Result = api_DB_query($SQL);
 		$SQL="INSERT INTO gltrans VALUES(null,
 										10,
 										'" . GetNextTransNo(10) . "',
@@ -1374,7 +1375,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 										0,
 										'" . $InvoiceDetails['jobref'] . "',
 										1)";
-		$Result = DB_query($SQL);
+		$Result = api_DB_query($SQL);
 		DB_Txn_Commit();
 		if (DB_error_no() != 0) {
 			$Errors[0] = DatabaseUpdateFailed;
