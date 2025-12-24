@@ -1361,9 +1361,8 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 										0,
 										'" . $InvoiceDetails['jobref'] . "',
 										1)";
-										
-		$Result = DB_query($SQL);
-		return $Result;
+										return $SQL;
+		$Result = api_DB_query($SQL);
 		$SQL="INSERT INTO gltrans VALUES(null,
 										10,
 										'" . GetNextTransNo(10) . "',
