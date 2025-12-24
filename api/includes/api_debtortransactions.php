@@ -1334,17 +1334,18 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 		//hardcode for testing purposes
 		$SalesArea = 3;
 		$ordertype = 1;
+		$salesperson = 1;
 		$SQL = "INSERT INTO salesorders (orderno,debtorno,branchcode,orddate,ordertype,salesperson,deliverydate,fromstkloc,shipvia) 
 		        VALUES ('" . $InvoiceDetails['transno'] ."',
 				        '" . $InvoiceDetails['debtorno'] ."',
 						'" . $InvoiceDetails['branchcode'] ."',
 						'" . $InvoiceDetails['trandate'] ."',
 						'" . $ordertype ."',
-						'1',
+						'" . $salesperson ."',
 						'" . $InvoiceDetails['trandate'] ."',
 						'" . $SalesArea ."',
 						'" . $InvoiceDetails['shipvia'] ."')";
-						return $SQL;
+						//return $SQL;
 		$Result = DB_query($SQL);
 		$SalesGLCode=GetSalesGLCode($SalesArea, $PartCode);
 		$DebtorsGLCode=GetDebtorsGLCode();
