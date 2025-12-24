@@ -1331,12 +1331,15 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 		$SQL = "UPDATE systypes SET typeno='" . GetNextTransNo(10) . "' WHERE typeid=10";
 		$Result = DB_query($SQL);
 		//update salesorder table
+		//hardcode for testing purposes
+		$SalesArea = 3;
+		$ordertype = 1;
 		$SQL = "INSERT INTO salesorders (orderno,debtorno,branchcode,orddate,ordertype,salesperson,deliverydate,fromstkloc,shipvia) 
 		        VALUES ('" . $InvoiceDetails['transno'] ."',
 				        '" . $InvoiceDetails['debtorno'] ."',
 						'" . $InvoiceDetails['branchcode'] ."',
 						'" . $InvoiceDetails['trandate'] ."',
-						'" . $InvoiceDetails['tpe'] ."',
+						'" . $ordertype ."',
 						'1',
 						'" . $InvoiceDetails['trandate'] ."',
 						'" . $SalesArea ."',
