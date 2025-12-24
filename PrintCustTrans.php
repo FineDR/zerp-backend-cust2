@@ -668,8 +668,8 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 				<input type="submit" name="PrintPDF" value="' . __('Print PDF') . '" />
 			</div>';
 
-		//$SQL = "SELECT typeno FROM systypes WHERE typeid=10";
-		$SQL = "SELECT max(transno) FROM debtortrans WHERE type=10";
+		$SQL = "SELECT typeno FROM systypes WHERE typeid=10";
+		//$SQL = "SELECT max(transno) FROM debtortrans WHERE type=10";
 
 		$Result = DB_query($SQL);
 		$MyRow = DB_fetch_row($Result);
