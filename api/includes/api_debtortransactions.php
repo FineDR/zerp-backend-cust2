@@ -1340,8 +1340,8 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 				        '" . $InvoiceDetails['debtorno'] ."',
 						'" . $InvoiceDetails['branchcode'] ."',
 						'" . $InvoiceDetails['trandate'] ."',
-						'" . $ordertype ."',
-						'" . $salesperson ."',
+						'" . $InvoiceDetails['type'] ."',
+						'" . $InvoiceDetails['salesperson'] ."',
 						'" . $InvoiceDetails['trandate'] ."',
 						'" . $SalesArea ."',
 						'" . $InvoiceDetails['shipvia'] ."')";
