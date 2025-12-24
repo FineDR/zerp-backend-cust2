@@ -1328,7 +1328,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 								VALUES (" . mb_substr($FieldValues,0,-2) .") ";
 								//return $SQL;
 		$Result = DB_query($SQL);
-		$SQL = "UPDATE systypes SET typeno='" . GetNextTransNo(10) . "' WHERE typeid=10";
+		$SQL = "UPDATE systypes SET typeno='" . $InvoiceDetails['transno'] . "' WHERE typeid=10";
 		$Result = DB_query($SQL);
 		//update salesorder table
 		//hardcode for testing purposes
@@ -1351,7 +1351,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 		$DebtorsGLCode=GetDebtorsGLCode();
 		$SQL="INSERT INTO gltrans VALUES(null,
 										10,
-										'" . GetNextTransNo(10) . "',
+										'" . $InvoiceDetails['transno'] . "',
 										0,
 										'" . $InvoiceDetails['trandate'] ."',
 										'" . $InvoiceDetails['prd'] . "',
@@ -1364,7 +1364,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 		$Result = api_DB_query($SQL);
 		$SQL="INSERT INTO gltrans VALUES(null,
 										10,
-										'" . GetNextTransNo(10) . "',
+										'" . $InvoiceDetails['transno'] . "',
 										0,
 										'" . $InvoiceDetails['trandate'] ."',
 										'" . $InvoiceDetails['prd'] . "',
