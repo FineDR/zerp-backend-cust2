@@ -1358,11 +1358,9 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 										'" . $DebtorsGLCode. "',
 										'". __('Invoice for') .' -' . $InvoiceDetails['debtorno'] .' ' . __('Total') . ' - '. $InvoiceDetails['ovamount'] . "',
 										'" . $InvoiceDetails['ovamount'] . "',
-										0,
-										'" . $InvoiceDetails['jobref'] . "',
-										1)";
-        $SQL="INSERT INTO gltrans VALUES(null,10,'" . GetNextTransNo(10) . "',0,'" . $InvoiceDetails['trandate'] ."','" . $InvoiceDetails['prd'] . "','" . $DebtorsGLCode. "','". __('Invoice for') .' -' . $InvoiceDetails['debtorno'] .' ' . __('Total') . ' - '. $InvoiceDetails['ovamount'] . "','" . $InvoiceDetails['ovamount'] . "',0,'" . $InvoiceDetails['jobref'] . "',1)";								
-										return $SQL;
+										'" . $InvoiceDetails['jobref'] . "')";
+      //  $SQL="INSERT INTO gltrans VALUES(null,10,'" . GetNextTransNo(10) . "',0,'" . $InvoiceDetails['trandate'] ."','" . $InvoiceDetails['prd'] . "','" . $DebtorsGLCode. "','". __('Invoice for') .' -' . $InvoiceDetails['debtorno'] .' ' . __('Total') . ' - '. $InvoiceDetails['ovamount'] . "','" . $InvoiceDetails['ovamount'] . "',0,'" . $InvoiceDetails['jobref'] . "',1)";								
+		//								return $SQL;
 		$Result = api_DB_query($SQL);
 		$SQL="INSERT INTO gltrans VALUES(null,
 										10,
@@ -1373,9 +1371,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 										'" . $SalesGLCode . "',
 										'" . __('Invoice for') . ' -' . $InvoiceDetails['debtorno'] . ' ' . __('Total') .' - '. $InvoiceDetails['ovamount'] ."',
 										'" . (-intval($InvoiceDetails['ovamount'])) ."',
-										0,
-										'" . $InvoiceDetails['jobref'] . "',
-										1)";
+										'" . $InvoiceDetails['jobref'] . "')";
 		$Result = api_DB_query($SQL);
 		DB_Txn_Commit();
 		if (DB_error_no() != 0) {
