@@ -668,7 +668,8 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 				<input type="submit" name="PrintPDF" value="' . __('Print PDF') . '" />
 			</div>';
 
-		$SQL = "SELECT typeno FROM systypes WHERE typeid=10";
+		//$SQL = "SELECT typeno FROM systypes WHERE typeid=10";
+		$SQL = "SELECT max(transno) FROM debtortrans WHERE type=10";
 
 		$Result = DB_query($SQL);
 		$MyRow = DB_fetch_row($Result);
@@ -676,7 +677,7 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 	    //	echo '<div class="page_help_text"><b>' . __('The last invoice created was number') . ' ' . $MyRow[0] . '</b><br />' . __('If only a single invoice is required') . ', ' . __('enter the invoice number') . ' ' . __('as both the start and end numbers') . '.</div>';
         echo 'The last invoice created was number: '.$MyRow[0] ;
 		$SQL = "SELECT typeno FROM systypes WHERE typeid=11";
-
+		
 		$Result = DB_query($SQL);
 		$MyRow = DB_fetch_row($Result);
 
