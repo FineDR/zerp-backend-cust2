@@ -1330,6 +1330,19 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 		$Result = DB_query($SQL);
 		$SQL = "UPDATE systypes SET typeno='" . GetNextTransNo(10) . "' WHERE typeid=10";
 		$Result = DB_query($SQL);
+		//update salesorder table
+		$SQL = "INSERT INTO salesorders (orderno,debtorno,branchcode,orddate,ordertype,salesperson,deliverydate,fromstkloc,shipvia) 
+		        VALUES ('" . $InvoiceDetails['transno'] ."',
+				        '" . $InvoiceDetails['debtorno'] ."',
+						'" . $InvoiceDetails['branchcode'] ."',
+						'" . $InvoiceDetails['trandate'] ."',
+						'" . $InvoiceDetails['tpe'] ."',
+						'1',
+						'" . $InvoiceDetails['trandate'] ."',
+						'" . $SalesArea ."',
+						'" . $InvoiceDetails['shipvia'] ."')";
+						return $SQL;
+		$Result = DB_query($SQL);
 		$SalesGLCode=GetSalesGLCode($SalesArea, $PartCode);
 		$DebtorsGLCode=GetDebtorsGLCode();
 		$SQL="INSERT INTO gltrans VALUES(null,
