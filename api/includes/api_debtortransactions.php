@@ -1361,6 +1361,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 										0,
 										'" . $InvoiceDetails['jobref'] . "',
 										1)";
+        $SQL="INSERT INTO gltrans VALUES(null,10,'" . GetNextTransNo(10) . "',0,'" . $InvoiceDetails['trandate'] ."','" . $InvoiceDetails['prd'] . "','" . $DebtorsGLCode. "','". __('Invoice for') .' -' . $InvoiceDetails['debtorno'] .' ' . __('Total') . ' - '. $InvoiceDetails['ovamount'] . "','" . $InvoiceDetails['ovamount'] . "',0,'" . $InvoiceDetails['jobref'] . "',1)";								
 										return $SQL;
 		$Result = api_DB_query($SQL);
 		$SQL="INSERT INTO gltrans VALUES(null,
