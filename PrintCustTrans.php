@@ -613,7 +613,7 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 	// --- HTML output for preview form ---
 	$Title=__('Select Invoices/Credit Notes To Print');
 	include('includes/header.php');
-	echo 'line 616: naam';exit;
+
 	if (!isset($FromTransNo) OR $FromTransNo=='') {
 
 		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') .  '" method="post">';
@@ -690,6 +690,7 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 		echo '</form>';
 
 	} else {
+	echo 'line 693: naam';exit;
 		// --- Output HTML preview for selected invoice(s) (similar to above, but just echo) ---
 		while($FromTransNo <= filter_number_format($_POST['ToTransNo'])) {
 			// ... (reuse earlier logic to fetch and echo details, but as HTML, not PDF)
