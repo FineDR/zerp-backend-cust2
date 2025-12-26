@@ -439,6 +439,7 @@ if (isset($PrintPDF)
 						</tr>
 					</table>';
 }
+echo 'Naam!';
 					$HTML .= '<table class="table1">
 					<tr>
 						<th>' . __('Item Code'). '</th>
