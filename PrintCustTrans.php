@@ -697,9 +697,8 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 			// You can copy the above HTML for invoice preview, replacing $HTML .= ob_get_clean(); with echo.
 			// (Omitted for brevity here, but you can copy-paste the HTML/PHP above)
 			$FromTransNo++;
-
-			echo $HTML;
-	        echo '<br> line 693: naam';exit;
+			
+	        echo '<br> line 702: naam';exit;
 		}
 	}
 	include('includes/footer.php');
