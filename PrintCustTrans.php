@@ -610,6 +610,7 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 }
 
 } else {
+	echo 'line 613: naam';exit;
 	// --- HTML output for preview form ---
 	$Title=__('Select Invoices/Credit Notes To Print');
 	include('includes/header.php');
