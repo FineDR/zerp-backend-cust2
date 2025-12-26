@@ -690,7 +690,8 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 		echo '</form>';
 
 	} else {
-	echo 'line 693: naam';exit;
+		echo $HTML;
+	echo '<br> line 693: naam';exit;
 		// --- Output HTML preview for selected invoice(s) (similar to above, but just echo) ---
 		while($FromTransNo <= filter_number_format($_POST['ToTransNo'])) {
 			// ... (reuse earlier logic to fetch and echo details, but as HTML, not PDF)
