@@ -438,9 +438,9 @@ if (isset($PrintPDF)
 							<td>' . $MyRow['salesmanname']. '</td>
 						</tr>
 					</table>';  
-      }
-
-					$HTML .= '<table class="table1">
+				    }
+ 
+	 				$HTML .= '<table class="table1">
 					<tr>
 						<th>' . __('Item Code'). '</th>
 						<th>' . __('Item Description'). '</th>
@@ -460,6 +460,9 @@ if (isset($PrintPDF)
 						$HTML .= '<tr class="striped_row">
 							<td>' . $MyRow2['stockid'] . '</td>
 							<td>';
+
+								echo 'line 464 Naam!'; exit;
+
 						// Get translation if available
 						$TranslationResult = DB_query("SELECT descriptiontranslation
 									FROM stockdescriptiontranslations
@@ -546,7 +549,6 @@ if (isset($PrintPDF)
 		$FromTransNo++;
 	}
 if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
-	echo 'Naam!'; exit;
 	include('includes/header.php');
 	echo $HTML;
 	include('includes/footer.php');
