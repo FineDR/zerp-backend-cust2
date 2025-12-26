@@ -437,9 +437,9 @@ if (isset($PrintPDF)
 							<td>' . ConvertSQLDate($MyRow['trandate']). '</td>
 							<td>' . $MyRow['salesmanname']. '</td>
 						</tr>
-					</table>';
-}
-echo 'Naam!'; exit;
+					</table>';  
+      }
+
 					$HTML .= '<table class="table1">
 					<tr>
 						<th>' . __('Item Code'). '</th>
@@ -546,6 +546,7 @@ echo 'Naam!'; exit;
 		$FromTransNo++;
 	}
 if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
+	echo 'Naam!'; exit;
 	include('includes/header.php');
 	echo $HTML;
 	include('includes/footer.php');
