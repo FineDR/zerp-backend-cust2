@@ -5,6 +5,35 @@ if (!isset($PathPrefix)) {
 	exit();
 }
 
+function ConvertToSupplierSQLDate($DateEntry) {
+
+//for MySQL dates are in the format YYYY-mm-dd
+
+	if (mb_strpos($DateEntry,'/')) {
+		$Date_Array = explode('/',$DateEntry);
+	} elseif (mb_strpos ($DateEntry,'-')) {
+		$Date_Array = explode('-',$DateEntry);
+	} elseif (mb_strpos ($DateEntry,'.')) {
+		$Date_Array = explode('.',$DateEntry);
+	}
+
+	if (mb_strlen($Date_Array[2])>4) {  /*chop off the time stuff */
+		$Date_Array[2]= mb_substr($Date_Array[2],0,2);
+	}
+
+
+	if ($_SESSION['DefaultDateFormat']=='d/m/Y'){
+		return $Date_Array[2].'-0'.$Date_Array[1].'-'.$Date_Array[0];
+	} elseif ($_SESSION['DefaultDateFormat']=='m/d/Y'){
+		return $Date_Array[1].'/'.$Date_Array[2].'/'.$Date_Array[0];
+	} elseif ($_SESSION['DefaultDateFormat']=='Y/m/d'){
+		return $Date_Array[0].'/'.$Date_Array[1].'/'.$Date_Array[2];
+	} elseif ($_SESSION['DefaultDateFormat']=='d.m.Y'){
+		return $Date_Array[2].'/'.$Date_Array[1].'/'.$Date_Array[0];
+	}
+
+} // end function ConvertToSupplierSQLDate
+
 /** Calculate the supplier taxes */
 function GetSupplierTaxes($TaxGroup, $DispatchTaxProvince, $TaxCategory) {
 
@@ -595,6 +624,8 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 		$SupplierHeader[$key] = DB_escape_string($Value);
 	}
 
+	$SupplierHeader['trandate'] = ConvertToSupplierSQLDate($SupplierHeader['trandate']);
+
 	$Errors=VerifySupplierNoExists($SupplierHeader['supplierno'], sizeof($Errors), $Errors);
 	if (isset($SupplierHeader['trandate'])){
 		$Errors=VerifyDateFormat($SupplierHeader['trandate'], sizeof($Errors), $Errors);
@@ -648,7 +679,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 	
 	//get user default location
 	//tempo soln: hardcode user
-	$SQL = "SELECT defaultlocation FROM www_users WHERE userid = 'admin'";
+	$SQL = "SELECT defaultlocation FROM www_users WHERE userid = 'amran'";
 	//$SQL = "SELECT defaultlocation FROM www_users WHERE userid = '".$user."'";
 
 	$Result = DB_query($SQL);
@@ -661,7 +692,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 			FROM locations
 			WHERE loccode = '" . $MyRow['defaultlocation'] . "'";
     $LocalTaxProvinceResult = api_DB_query($SQL);
-				return $LocalTaxProvinceResult;
 	if (DB_num_rows($LocalTaxProvinceResult)==0){
 		$Errors[0] = UserTaxProvinceNotSet;
 		return $Errors;
