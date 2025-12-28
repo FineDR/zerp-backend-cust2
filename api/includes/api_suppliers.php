@@ -624,7 +624,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 		$SupplierHeader[$key] = DB_escape_string($Value);
 	}
 
-	//$SupplierHeader['trandate'] = ConvertToSupplierSQLDate($SupplierHeader['trandate']);
+	$SupplierHeader['trandate'] = ConvertToSupplierSQLDate($SupplierHeader['trandate']);
 return $SupplierHeader['trandate'];
 	$Errors=VerifySupplierNoExists($SupplierHeader['supplierno'], sizeof($Errors), $Errors);
 	if (isset($SupplierHeader['trandate'])){
