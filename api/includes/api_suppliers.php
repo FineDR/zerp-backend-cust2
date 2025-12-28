@@ -652,12 +652,12 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 	//$SQL = "SELECT defaultlocation FROM www_users WHERE userid = '".$user."'";
 
 	$Result = DB_query($SQL);
-		return $Result;
 	$MyRow = DB_fetch_array($Result);
 	if($MyRow['defaultlocation']==''){
 		$MyRow['defaultlocation'] = $SupplierHeader['userlocation'];
 	}
     $loccode = $MyRow['defaultlocation'];
+			return $loccode;
 	$SQL = "SELECT taxprovinceid
 			FROM locations
 			WHERE loccode = '" . $MyRow['defaultlocation'] . "'";
