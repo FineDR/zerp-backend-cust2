@@ -1063,9 +1063,8 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 							stat_comment='" . $StatusComment . "'
 							WHERE orderno='" .'PO' . $OrderNo . "'";
 					$Result = DB_query($SQL);
-						return 'line 1061 GL '. $GLLink  .' && GL code:  '. $GLCode .' SQL: '.$SQL  ;
 
-					if ($_SESSION['PO' . $identifier]->GLLink == 1) {
+					if ($GLLink == 1) {
 						EnsureGLEntriesBalance(25, $GRN);
 					}
 
@@ -1073,6 +1072,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 
 					//Now add all these deliveries to this purchase invoice
 
+						return 'line 1075 GL '. $GLLink  .' && GL code:  '. $GLCode .' SQL: '.$SQL  ;
 
 					$SQL = "SELECT grnbatch,
 									grnno,
