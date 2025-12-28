@@ -934,6 +934,14 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 						/* Check to see if the line item was flagged as the purchase of an asset */
 						if ($SupplierInvoiceLine['assetid'] != '' AND $SupplierInvoiceLine['assetid'] != '0') { //then it is an asset
 							/*first validate the AssetID and if it doesn't exist treat it like a normal nominal item  */
+							$SQL = "SELECT assetid,
+										   datepurchased					
+											costact
+											FROM fixedassets
+										INNER JOIN fixedassetcategories
+										ON fixedassets.assetcategoryid=fixedassetcategories.categoryid WHERE assetid='" . $SupplierInvoiceLine['assetid'] . "'";																
+							$CheckAssetExistsResult = api_DB_query($SQL);	
+							/*								
 							$CheckAssetExistsResult = api_DB_query("SELECT assetid,
 																		datepurchased,
 																		costact
@@ -941,6 +949,8 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 																INNER JOIN fixedassetcategories
 																ON fixedassets.assetcategoryid=fixedassetcategories.categoryid
 																WHERE assetid='" . $SupplierInvoiceLine['assetid'] . "'");
+																*/
+
 							if (DB_num_rows($CheckAssetExistsResult) == 1) { //then work with the assetid provided
 								/*Need to add a fixedassettrans for the cost of the asset being received */
 								$SQL = "INSERT INTO fixedassettrans (assetid,
@@ -997,7 +1007,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 
 						// HARD CODE GLLINK VALUE for testing
 						$GLLink = 1;
-return 'line 1000 GL '. $GLLink  .' &&'. $GLCode  ;
+return 'line 1000 GL '. $GLLink  .' && GL code:  '. $GLCode  ;
 
 						if ($GLLink == 1 AND $GLCode != 0) {
 							/*GLCode is set to 0 when the GLLink is not activated this covers a situation where the GLLink is now active but it wasn't when this PO was entered */
