@@ -645,12 +645,12 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 		$terms = '0' . $MyRow['daysbeforedue'];
 	}
 	$SupplierID = $SupplierHeader['supplierno'];
-		return $SupplierID;
+	
 	//get user default location
 	//tempo soln: hardcode user
 	$SQL = "SELECT defaultlocation FROM www_users WHERE userid = 'admin'";
 	//$SQL = "SELECT defaultlocation FROM www_users WHERE userid = '".$user."'";
-
+	return $SQL;
 	$Result = api_DB_query($SQL);
 	$MyRow = DB_fetch_array($Result);
 	if($MyRow['defaultlocation']==''){
