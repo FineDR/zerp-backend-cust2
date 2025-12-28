@@ -657,7 +657,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 		$MyRow['defaultlocation'] = $SupplierHeader['userlocation'];
 	}
     $loccode = $MyRow['defaultlocation'];
-			return $loccode;
 	$SQL = "SELECT taxprovinceid
 			FROM locations
 			WHERE loccode = '" . $MyRow['defaultlocation'] . "'";
@@ -669,7 +668,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 
 	$LocalTaxProvinceRow = DB_fetch_row($LocalTaxProvinceResult);
 	$LocalTaxProvince = $LocalTaxProvinceRow[0];
-
+			return $LocalTaxProvince;
 	//Hardcode TaxCategory
 	$TaxCategory = 1;
 	$GetTaxesResult = GetSupplierTaxes($taxgroupid, $LocalTaxProvince, $TaxCategory);
