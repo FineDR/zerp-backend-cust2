@@ -768,8 +768,9 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 						$OrderHasControlledItems = true;
 					}
 				}
-				return $OrderHasControlledItems;
-				if ($OrderHasControlledItems == false) {
+
+				//if ($OrderHasControlledItems == false) {
+				if ($OrderHasControlledItems == 1) {
 					
 					foreach ($SupplierInvoiceLine as $key => $Value) {
 						$SupplierInvoiceLine[$key] = DB_escape_string($Value);
