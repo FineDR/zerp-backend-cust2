@@ -674,6 +674,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 	$GetTaxesResult = GetSupplierTaxes($taxgroupid, $LocalTaxProvince, $TaxCategory);
 	//get company cofiguration data
 	$SQL = "SELECT gllink_creditors, grnact, creditorsact FROM companies";
+	return $SQL;
     $CompanyRecordResult = api_DB_query($SQL);
 	if (DB_num_rows($CompanyRecordResult)==0){
 		$Errors[0] = CompanyRecordNotSet;
@@ -713,7 +714,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				$ExRate = $exrate;
 				$TranDate = $SupplierHeader['trandate'];
 				$PeriodNo = GetPeriod($DeliveryDate);
-return $TranDate;
+
 				$OrderHasControlledItems = false; //assume the best
 				foreach ($SupplierInvoiceLine as $key => $Value) {
 		           $SupplierInvoiceLine[$key] = DB_escape_string($Value);
