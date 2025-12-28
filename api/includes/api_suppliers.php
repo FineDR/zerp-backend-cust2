@@ -755,6 +755,8 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				   $price = $SupplierInvoiceLine['price'];
 				   $controlled = $SupplierInvoiceLine['controlled'];
 				   $ReceivedQty = $quantity - $qtyreceived ;
+
+				   return $PeriodNo;
 			       //	foreach ($_SESSION['PO' . $identifier]->LineItems as $OrderLine) {
 					//Set the quantity to receive with this auto delivery assuming all is well
 					/*
