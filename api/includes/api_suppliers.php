@@ -638,8 +638,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 	$taxgroupdescription = $MyRow['taxgroupdescription'];
 	$InvoiceNo = $SupplierHeader['suppreference'];
 
-	return $suppname;
-	
 	if ($MyRow['daysbeforedue'] == 0) {
 		$terms = '1' . $MyRow['dayinfollowingmonth'];
 	}
@@ -647,7 +645,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 		$terms = '0' . $MyRow['daysbeforedue'];
 	}
 	$SupplierID = $SupplierHeader['supplierno'];
-	
+		return $SupplierID;
 	//get user default location
 	//tempo soln: hardcode user
 	$SQL = "SELECT defaultlocation FROM www_users WHERE userid = 'admin'";
