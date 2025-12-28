@@ -625,7 +625,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 	}
 
 	$SupplierHeader['trandate'] = ConvertToSupplierSQLDate($SupplierHeader['trandate']);
-
+return $SupplierHeader['trandate'];
 	$Errors=VerifySupplierNoExists($SupplierHeader['supplierno'], sizeof($Errors), $Errors);
 	if (isset($SupplierHeader['trandate'])){
 		$Errors=VerifyDateFormat($SupplierHeader['trandate'], sizeof($Errors), $Errors);
@@ -653,7 +653,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				AND suppliers.currcode=currencies.currabrev
 				AND suppliers.paymentterms=paymentterms.termsindicator
 				AND suppliers.supplierid = '" . $SupplierHeader['supplierno']. "'";
-	return $SQL;
+	
 	$Result = api_DB_query($SQL);
 	$MyRow = DB_fetch_array($Result);
 	if (DB_num_rows($Result)==0){
