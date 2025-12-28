@@ -629,7 +629,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 		$Errors[0] = NoSupplierExist;
 		return $Errors;
 	}
-		return $SQL;
 	$suppname = $MyRow['suppname'];
 	$terms = $MyRow['terms'];
 	$currcode = $MyRow['currcode'];
@@ -639,6 +638,8 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 	$taxgroupdescription = $MyRow['taxgroupdescription'];
 	$InvoiceNo = $SupplierHeader['suppreference'];
 
+	return $suppname;
+	
 	if ($MyRow['daysbeforedue'] == 0) {
 		$terms = '1' . $MyRow['dayinfollowingmonth'];
 	}
