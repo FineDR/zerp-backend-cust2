@@ -717,7 +717,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 	$GRNAct = $CompanyRecord[1];
 	$CreditorsAct = $CompanyRecord[2];
 	$InvoiceOrCredit = 'Invoice';
-return $SupplierHeader['trandate'];
 	if ($SupplierHeader['invoicetype'] == 4) {
 
 		/*Need to check that the user has permission to receive goods */
@@ -777,7 +776,7 @@ return $SupplierHeader['trandate'];
 							$SQL = "SELECT actualcost as stdcost
 										FROM stockmaster
 										WHERE stockid='" . $SupplierInvoiceLine['itemcode'] . "'";
-										//return $SQL;
+										return $SQL;
 							$Result = api_DB_query($SQL);
 							//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The standard cost of the item being received cannot be retrieved because');
 							//$Result = DB_query($SQL, $ErrMsg, '', true);
