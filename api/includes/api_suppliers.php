@@ -768,14 +768,14 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 						$OrderHasControlledItems = true;
 					}
 				}
-				
+				return $OrderHasControlledItems;
 				if ($OrderHasControlledItems == false) {
-					return $PeriodNo;
+					
 					foreach ($SupplierInvoiceLine as $key => $Value) {
 						$SupplierInvoiceLine[$key] = DB_escape_string($Value);
 					    //foreach ($_SESSION['PO' . $identifier]->LineItems as $OrderLine) {
 						$LocalCurrencyPrice = ($SupplierInvoiceLine['price'] / $exrate);
-						return $PeriodNo;
+						//
 						if ($SupplierInvoiceLine['itemcode'] != '') { //Its a stock item line
 							/*Need to get the current standard cost as it is now so we can process GL jorunals later*/
 							$SQL = "SELECT actualcost as stdcost
