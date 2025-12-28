@@ -622,7 +622,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				AND suppliers.currcode=currencies.currabrev
 				AND suppliers.paymentterms=paymentterms.termsindicator
 				AND suppliers.supplierid = '" . $SupplierHeader['supplierno']. "'";
-	return $SQL;
+	
 	$Result = api_DB_query($SQL);
 	$MyRow = DB_fetch_array($Result);
 	if (DB_num_rows($Result)==0){
@@ -745,6 +745,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 							$SQL = "SELECT actualcost as stdcost
 										FROM stockmaster
 										WHERE stockid='" . $SupplierInvoiceLine['itemcode'] . "'";
+										return $SQL;
 							$Result = api_DB_query($SQL);
 							//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The standard cost of the item being received cannot be retrieved because');
 							//$Result = DB_query($SQL, $ErrMsg, '', true);
