@@ -1061,7 +1061,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 					$SQL = "UPDATE purchorders
 							SET status='Completed',
 							stat_comment='" . $StatusComment . "'
-							WHERE orderno='" . $_SESSION['PO' . $identifier]->OrderNo . "'";
+							WHERE orderno='" .'PO' . $OrderNo . "'";
 					$Result = DB_query($SQL);
 						return 'line 1061 GL '. $GLLink  .' && GL code:  '. $GLCode .' SQL: '.$SQL  ;
 
