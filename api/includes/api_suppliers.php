@@ -771,7 +771,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 
 				//if ($OrderHasControlledItems == false) {
 				if ($OrderHasControlledItems == 1) {
-					
 					foreach ($SupplierInvoiceLine as $key => $Value) {
 						$SupplierInvoiceLine[$key] = DB_escape_string($Value);
 					    //foreach ($_SESSION['PO' . $identifier]->LineItems as $OrderLine) {
@@ -782,7 +781,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 							$SQL = "SELECT actualcost as stdcost
 										FROM stockmaster
 										WHERE stockid='" . $SupplierInvoiceLine['itemcode'] . "'";
-										return $SQL;
 							$Result = api_DB_query($SQL);
 							//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The standard cost of the item being received cannot be retrieved because');
 							//$Result = DB_query($SQL, $ErrMsg, '', true);
@@ -832,7 +830,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 															stdcostunit='" . $StandardCost . "',
 															completed='1'
 													WHERE podetailitem = '" . $SupplierInvoiceLine['podetailrec'] . "'";
-
+						return $SQL;
 						//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The purchase order detail record could not be updated with the quantity received because');
 						//$Result = DB_query($SQL, $ErrMsg, '', true);
 						$Result = api_DB_query($SQL);
