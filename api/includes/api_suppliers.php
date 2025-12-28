@@ -1056,8 +1056,8 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 							$Result = api_DB_query($SQL);
 
 						} /* end of if GL and stock integrated and standard cost !=0 */
-						return 'line 1059 GL '. $GLLink  .' && GL code:  '. $GLCode  ;
 					} /*end of OrderLine loop */
+						return 'line 1061 GL '. $GLLink  .' && GL code:  '. $GLCode  ;
 
 					$StatusComment = date($_SESSION['DefaultDateFormat']) . ' - ' . __('Order Completed on entry of GRN') . '<br />' . $_SESSION['PO' . $identifier]->StatusComments;
 					$SQL = "UPDATE purchorders
