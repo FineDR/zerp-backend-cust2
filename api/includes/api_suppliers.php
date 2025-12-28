@@ -1072,8 +1072,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 
 					//Now add all these deliveries to this purchase invoice
 
-						return 'line 1075 GL '. $GLLink  .' && GL code:  '. $GLCode .' SQL: '.$SQL  ;
-
 					$SQL = "SELECT grnbatch,
 									grnno,
 									purchorderdetails.orderno,
@@ -1094,11 +1092,12 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 							FROM grns INNER JOIN purchorderdetails
 								ON  grns.podetailitem=purchorderdetails.podetailitem
 							LEFT JOIN stockmaster ON grns.itemcode=stockmaster.stockid
-							WHERE grns.supplierid ='" . $_SESSION['SuppTrans']->SupplierID . "'
+							WHERE grns.supplierid ='" . $SupplierID . "'
 							AND purchorderdetails.orderno = '" . intval($_GET['ReceivePO']) . "'
 							AND grns.qtyrecd - grns.quantityinv > 0
 							ORDER BY grns.grnno";
 					$GRNResults = DB_query($SQL);
+						return 'line 1100 GL '. $GLLink  .' && GL code:  '. $GLCode .' SQL: '.$SQL  ;
 
 					while ($MyRow = DB_fetch_array($GRNResults)) {
 
