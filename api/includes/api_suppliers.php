@@ -930,7 +930,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 							$Result = api_DB_query($SQL);
 
 						} /*end of its a stock item - updates to locations and insert movements*/
-return $SQL;
+return $SupplierInvoiceLine['assetid'] ;
 						/* Check to see if the line item was flagged as the purchase of an asset */
 						if ($SupplierInvoiceLine['assetid'] != '' AND $SupplierInvoiceLine['assetid'] != '0') { //then it is an asset
 							/*first validate the AssetID and if it doesn't exist treat it like a normal nominal item  */
