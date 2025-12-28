@@ -696,7 +696,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 		$Errors[0] = UserTaxProvinceNotSet;
 		return $Errors;
 	}
-return $SupplierHeader['trandate'];
+
 	$LocalTaxProvinceRow = DB_fetch_row($LocalTaxProvinceResult);
 	$LocalTaxProvince = $LocalTaxProvinceRow[0];
 			
@@ -717,7 +717,7 @@ return $SupplierHeader['trandate'];
 	$GRNAct = $CompanyRecord[1];
 	$CreditorsAct = $CompanyRecord[2];
 	$InvoiceOrCredit = 'Invoice';
-
+return $SupplierHeader['trandate'];
 	if ($SupplierHeader['invoicetype'] == 4) {
 
 		/*Need to check that the user has permission to receive goods */
