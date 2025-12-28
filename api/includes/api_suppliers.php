@@ -724,7 +724,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				   $price = $SupplierInvoiceLine['price'];
 				   $controlled = $SupplierInvoiceLine['controlled'];
 				   $ReceivedQty = $quantity - $qtyreceived ;
-			//	foreach ($_SESSION['PO' . $identifier]->LineItems as $OrderLine) {
+			       //	foreach ($_SESSION['PO' . $identifier]->LineItems as $OrderLine) {
 					//Set the quantity to receive with this auto delivery assuming all is well
 					/*
 					$_SESSION['PO' . $identifier]->LineItems[$OrderLine
@@ -734,6 +734,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 						//prnMsg(__('Auto receiving of controlled stock items that require serial number or batch number entry is not currently catered for. Only orders with normal non-serial numbered items can be received automatically') , 'error');
 						$OrderHasControlledItems = true;
 					}
+				return $controlled;
 				}
 				if ($OrderHasControlledItems == false) {
 					foreach ($SupplierInvoiceLine as $key => $Value) {
@@ -745,7 +746,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 							$SQL = "SELECT actualcost as stdcost
 										FROM stockmaster
 										WHERE stockid='" . $SupplierInvoiceLine['itemcode'] . "'";
-										return $SQL;
+										
 							$Result = api_DB_query($SQL);
 							//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The standard cost of the item being received cannot be retrieved because');
 							//$Result = DB_query($SQL, $ErrMsg, '', true);
