@@ -995,6 +995,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 									$SQL = "UPDATE fixedassets SET cost = cost + " . ($CurrentStandardCost * $receivedqty) . "
 												WHERE assetid = '" . $SupplierInvoiceLine['assetid'] . "'";
 								}
+								return $SQL;
 								//$ErrMsg = __('CRITICAL ERROR! NOTE DOWN THIS ERROR AND SEEK ASSISTANCE. The fixed asset cost and date purchased was not able to be updated because:');
 								//$Result = DB_query($SQL, $ErrMsg, '', true);
 								$Result = api_DB_query($SQL);
