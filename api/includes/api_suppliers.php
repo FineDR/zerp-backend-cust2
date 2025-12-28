@@ -930,7 +930,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 							$Result = api_DB_query($SQL);
 
 						} /*end of its a stock item - updates to locations and insert movements*/
-return $SupplierInvoiceLine['assetid'] ;
+
 						/* Check to see if the line item was flagged as the purchase of an asset */
 						if ($SupplierInvoiceLine['assetid'] != '' AND $SupplierInvoiceLine['assetid'] != '0') { //then it is an asset
 							/*first validate the AssetID and if it doesn't exist treat it like a normal nominal item  */
@@ -941,6 +941,7 @@ return $SupplierInvoiceLine['assetid'] ;
 																INNER JOIN fixedassetcategories
 																ON fixedassets.assetcategoryid=fixedassetcategories.categoryid
 																WHERE assetid='" . $SupplierInvoiceLine['assetid'] . "'");
+return DB_num_rows($CheckAssetExistsResult)  ;
 							if (DB_num_rows($CheckAssetExistsResult) == 1) { //then work with the assetid provided
 								/*Need to add a fixedassettrans for the cost of the asset being received */
 								$SQL = "INSERT INTO fixedassettrans (assetid,
