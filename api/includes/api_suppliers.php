@@ -622,7 +622,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				AND suppliers.currcode=currencies.currabrev
 				AND suppliers.paymentterms=paymentterms.termsindicator
 				AND suppliers.supplierid = '" . $SupplierHeader['supplierno']. "'";
-	
+	return $SQL;
 	$Result = api_DB_query($SQL);
 	$MyRow = DB_fetch_array($Result);
 	if (DB_num_rows($Result)==0){

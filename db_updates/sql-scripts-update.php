@@ -64,6 +64,7 @@ ALTER TABLE orderdeliverydifferenceslog DROP FOREIGN KEY `orderdeliverydifferenc
 ALTER TABLE recurringsalesorders DROP FOREIGN KEY `recurringsalesorders_ibfk_1`;
 ALTER TABLE salesorders DROP FOREIGN KEY `salesorders_ibfk_1`;
 
+
 //CHANGE Columns
 ALTER TABLE debtorsmaster CHANGE COLUMN debtorno debtorno VARCHAR(20) NOT NULL;
 ALTER TABLE custbranch CHANGE COLUMN debtorno debtorno VARCHAR(20) NOT NULL;
@@ -72,6 +73,13 @@ ALTER TABLE contracts CHANGE COLUMN debtorno debtorno VARCHAR(20) NOT NULL;
 ALTER TABLE orderdeliverydifferenceslog CHANGE COLUMN debtorno debtorno VARCHAR(20) NOT NULL;
 ALTER TABLE recurringsalesorders CHANGE COLUMN debtorno debtorno VARCHAR(20) NOT NULL;
 ALTER TABLE salesorders CHANGE COLUMN debtorno debtorno VARCHAR(20) NOT NULL;
+ALTER TABLE debtortrans CHANGE COLUMN debtorno debtorno VARCHAR(20) NOT NULL;
+ALTER TABLE debtortrans CHANGE COLUMN branchcode branchcode VARCHAR(20) NOT NULL;
+ALTER TABLE custbranch CHANGE COLUMN branchcode branchcode VARCHAR(20) NOT NULL;
+ALTER TABLE salesorders CHANGE COLUMN branchcode branchcode VARCHAR(20) NOT NULL;
+ALTER TABLE recurringsalesorders CHANGE COLUMN branchcode branchcode VARCHAR(20) NOT NULL;
+ALTER TABLE orderdeliverydifferenceslog CHANGE COLUMN branch branchcode VARCHAR(20) NOT NULL;
+ALTER TABLE contracts CHANGE COLUMN branchcode branchcode VARCHAR(20) NOT NULL;
 
 //ADD Constraints
 ALTER TABLE salesorders
@@ -103,6 +111,20 @@ ALTER TABLE custitem
 ADD CONSTRAINT ` custitem _ibfk_2`
 FOREIGN KEY (`debtorno`)
 REFERENCES `debtorsmaster` (`debtorno`);
+
+// Grant TRIGGER command
+GRANT TRIGGER ON zerp_backend.* TO mum@localhost;
+FLUSH PRIVILEGES;
+
+
+
+//Scripts to update the database
+ALTER TABLE salesorders MODIFY deladd6 VARCHAR(32);
+
+INSERT INTO debtortrans (debtorno, branchcode, trandate, transno, type, ovamount, ovgst, salesperson, prd)
+VALUES ('NS1369/005', 'NS1369/005','', '38', '10', '5000', '150', 'SP001', '');
+
+
 
 
 
