@@ -992,12 +992,13 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 							} //assetid provided doesn't exist so ignore it and treat as a normal nominal item
 
 						} //assetid is set so the nominal item is an asset
-return 'line 995 '. DB_num_rows($CheckAssetExistsResult)  ;
 						/* If GLLink_Stock then insert GLTrans to debit the GL Code  and credit GRN Suspense account at standard cost*/
 						//if ($_SESSION['PO' . $identifier]->GLLink == 1 AND $OrderLine->GLCode != 0) {
 
 						// HARD CODE GLLINK VALUE for testing
 						$GLLink = 1;
+return 'line 995 '. $GLCode .' &&'. $GLCode  ;
+
 						if ($GLLink == 1 AND $GLCode != 0) {
 							/*GLCode is set to 0 when the GLLink is not activated this covers a situation where the GLLink is now active but it wasn't when this PO was entered */
 
