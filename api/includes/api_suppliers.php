@@ -928,7 +928,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 							//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('stock movement records could not be inserted because');
 							//$Result = DB_query($SQL, $ErrMsg, '', true);
 							$Result = api_DB_query($SQL);
-
+return $SQL;
 						} /*end of its a stock item - updates to locations and insert movements*/
 
 						/* Check to see if the line item was flagged as the purchase of an asset */
@@ -1018,7 +1018,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 													'" . mb_substr('PO: ' . $OrderNo . ' ' . $SupplierID . ' - ' . $StockID . ' - ' . DB_escape_string($ItemDescription) . ' x ' . $ReceiveQty . ' @ ' . locale_number_format($decimalplaces), 0, 200) . "',
 													'" . $CurrentStandardCost * $ReceiveQty . "'
 													)";
-return $SQL;
+
 							//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The purchase GL posting could not be inserted because');
 							//$Result = DB_query($SQL, $ErrMsg, '', true);
 							$Result = api_DB_query($SQL);
