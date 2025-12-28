@@ -770,6 +770,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				}
 				
 				if ($OrderHasControlledItems == false) {
+					return $PeriodNo;
 					foreach ($SupplierInvoiceLine as $key => $Value) {
 						$SupplierInvoiceLine[$key] = DB_escape_string($Value);
 					    //foreach ($_SESSION['PO' . $identifier]->LineItems as $OrderLine) {
