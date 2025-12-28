@@ -696,7 +696,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 		$Errors[0] = UserTaxProvinceNotSet;
 		return $Errors;
 	}
-
+return $SupplierHeader['trandate'];
 	$LocalTaxProvinceRow = DB_fetch_row($LocalTaxProvinceResult);
 	$LocalTaxProvince = $LocalTaxProvinceRow[0];
 			
