@@ -756,7 +756,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				   $controlled = $SupplierInvoiceLine['controlled'];
 				   $ReceivedQty = $quantity - $qtyreceived ;
 
-				   return $PeriodNo;
+				  // return $PeriodNo;
 			       //	foreach ($_SESSION['PO' . $identifier]->LineItems as $OrderLine) {
 					//Set the quantity to receive with this auto delivery assuming all is well
 					/*
@@ -768,6 +768,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 						$OrderHasControlledItems = true;
 					}
 				}
+				return $PeriodNo;
 				if ($OrderHasControlledItems == false) {
 					foreach ($SupplierInvoiceLine as $key => $Value) {
 						$SupplierInvoiceLine[$key] = DB_escape_string($Value);
