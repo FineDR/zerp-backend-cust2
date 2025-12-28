@@ -874,7 +874,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 											FROM locstock
 											WHERE locstock.stockid='" . $SupplierInvoiceLine['itemcode']  . "'
 											AND loccode= '" . $loccode . "'";
-return $SQL;
+
 							$Result = api_DB_query($SQL);
 							if (DB_num_rows($Result) == 1) {
 								$LocQtyRow = DB_fetch_row($Result);
@@ -924,7 +924,7 @@ return $SQL;
 								->LineNo]->StandardCost . "',
 													'" . ($QtyOnHandPrior + $OrderLine->ReceiveQty) . "'
 													)";
-
+return $SQL;
 							//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('stock movement records could not be inserted because');
 							//$Result = DB_query($SQL, $ErrMsg, '', true);
 							$Result = api_DB_query($SQL);
