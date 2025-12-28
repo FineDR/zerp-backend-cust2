@@ -830,7 +830,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 															stdcostunit='" . $StandardCost . "',
 															completed='1'
 													WHERE podetailitem = '" . $SupplierInvoiceLine['podetailrec'] . "'";
-						return $SQL;
+						
 						//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The purchase order detail record could not be updated with the quantity received because');
 						//$Result = DB_query($SQL, $ErrMsg, '', true);
 						$Result = api_DB_query($SQL);
@@ -860,7 +860,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 											'" . $ReceivedQty . "',
 											'" . $SupplierID . "',
 											'" . $CurrentStandardCost . "')";
-
+return $SQL;
 					    //	$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('A GRN record could not be inserted') . '. ' . __('This receipt of goods has not been processed because');
 						//$Result = DB_query($SQL, $ErrMsg, '', true);
 						$Result = api_DB_query($SQL);
