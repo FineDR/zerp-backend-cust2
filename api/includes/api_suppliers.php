@@ -713,7 +713,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 				$ExRate = $exrate;
 				$TranDate = $SupplierHeader['trandate'];
 				$PeriodNo = GetPeriod($DeliveryDate);
-
+return $TranDate;
 				$OrderHasControlledItems = false; //assume the best
 				foreach ($SupplierInvoiceLine as $key => $Value) {
 		           $SupplierInvoiceLine[$key] = DB_escape_string($Value);
@@ -734,7 +734,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 						//prnMsg(__('Auto receiving of controlled stock items that require serial number or batch number entry is not currently catered for. Only orders with normal non-serial numbered items can be received automatically') , 'error');
 						$OrderHasControlledItems = true;
 					}
-				return $controlled;
 				}
 				if ($OrderHasControlledItems == false) {
 					foreach ($SupplierInvoiceLine as $key => $Value) {
