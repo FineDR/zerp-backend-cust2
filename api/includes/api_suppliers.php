@@ -650,8 +650,9 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 	//tempo soln: hardcode user
 	$SQL = "SELECT defaultlocation FROM www_users WHERE userid = 'admin'";
 	//$SQL = "SELECT defaultlocation FROM www_users WHERE userid = '".$user."'";
-	return $SQL;
+
 	$Result = api_DB_query($SQL);
+		return $Result;
 	$MyRow = DB_fetch_array($Result);
 	if($MyRow['defaultlocation']==''){
 		$MyRow['defaultlocation'] = $SupplierHeader['userlocation'];
