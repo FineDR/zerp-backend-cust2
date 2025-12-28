@@ -928,9 +928,9 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 							//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('stock movement records could not be inserted because');
 							//$Result = DB_query($SQL, $ErrMsg, '', true);
 							$Result = api_DB_query($SQL);
-return $SQL;
-						} /*end of its a stock item - updates to locations and insert movements*/
 
+						} /*end of its a stock item - updates to locations and insert movements*/
+return $SQL;
 						/* Check to see if the line item was flagged as the purchase of an asset */
 						if ($SupplierInvoiceLine['assetid'] != '' AND $SupplierInvoiceLine['assetid'] != '0') { //then it is an asset
 							/*first validate the AssetID and if it doesn't exist treat it like a normal nominal item  */
