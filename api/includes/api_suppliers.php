@@ -997,7 +997,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 
 						// HARD CODE GLLINK VALUE for testing
 						$GLLink = 1;
-return 'line 995 '. $GLCode .' &&'. $GLCode  ;
+return 'line 1000 GL '. $GLLink  .' &&'. $GLCode  ;
 
 						if ($GLLink == 1 AND $GLCode != 0) {
 							/*GLCode is set to 0 when the GLLink is not activated this covers a situation where the GLLink is now active but it wasn't when this PO was entered */
