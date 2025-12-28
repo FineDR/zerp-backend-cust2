@@ -924,7 +924,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 								->LineNo]->StandardCost . "',
 													'" . ($QtyOnHandPrior + $OrderLine->ReceiveQty) . "'
 													)";
-return $SQL;
+
 							//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('stock movement records could not be inserted because');
 							//$Result = DB_query($SQL, $ErrMsg, '', true);
 							$Result = api_DB_query($SQL);
@@ -996,7 +996,7 @@ return $SQL;
 						/* If GLLink_Stock then insert GLTrans to debit the GL Code  and credit GRN Suspense account at standard cost*/
 						//if ($_SESSION['PO' . $identifier]->GLLink == 1 AND $OrderLine->GLCode != 0) {
 
-						// HARD CODE GLLINK VALUE TEMPORARILY
+						// HARD CODE GLLINK VALUE for testing
 						$GLLink = 1;
 						if ($GLLink == 1 AND $GLCode != 0) {
 							/*GLCode is set to 0 when the GLLink is not activated this covers a situation where the GLLink is now active but it wasn't when this PO was entered */
@@ -1018,7 +1018,7 @@ return $SQL;
 													'" . mb_substr('PO: ' . $OrderNo . ' ' . $SupplierID . ' - ' . $StockID . ' - ' . DB_escape_string($ItemDescription) . ' x ' . $ReceiveQty . ' @ ' . locale_number_format($decimalplaces), 0, 200) . "',
 													'" . $CurrentStandardCost * $ReceiveQty . "'
 													)";
-
+return $SQL;
 							//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The purchase GL posting could not be inserted because');
 							//$Result = DB_query($SQL, $ErrMsg, '', true);
 							$Result = api_DB_query($SQL);
