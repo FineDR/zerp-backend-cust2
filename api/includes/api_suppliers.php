@@ -941,7 +941,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 																INNER JOIN fixedassetcategories
 																ON fixedassets.assetcategoryid=fixedassetcategories.categoryid
 																WHERE assetid='" . $SupplierInvoiceLine['assetid'] . "'");
-return DB_num_rows($CheckAssetExistsResult)  ;
 							if (DB_num_rows($CheckAssetExistsResult) == 1) { //then work with the assetid provided
 								/*Need to add a fixedassettrans for the cost of the asset being received */
 								$SQL = "INSERT INTO fixedassettrans (assetid,
@@ -993,7 +992,7 @@ return DB_num_rows($CheckAssetExistsResult)  ;
 							} //assetid provided doesn't exist so ignore it and treat as a normal nominal item
 
 						} //assetid is set so the nominal item is an asset
-
+return 'line 995 '. DB_num_rows($CheckAssetExistsResult)  ;
 						/* If GLLink_Stock then insert GLTrans to debit the GL Code  and credit GRN Suspense account at standard cost*/
 						//if ($_SESSION['PO' . $identifier]->GLLink == 1 AND $OrderLine->GLCode != 0) {
 
