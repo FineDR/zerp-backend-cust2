@@ -1027,7 +1027,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 													'" . mb_substr('PO: ' . $OrderNo . ' ' . $SupplierID . ' - ' . $StockID . ' - ' . DB_escape_string($ItemDescription) . ' x ' . $ReceiveQty . ' @ ' . locale_number_format($decimalplaces), 0, 200) . "',
 													'" . $CurrentStandardCost * $ReceiveQty . "'
 													)";
-
+return 'line 1030: '.$SQL;
 							//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The purchase GL posting could not be inserted because');
 							//$Result = DB_query($SQL, $ErrMsg, '', true);
 							$Result = api_DB_query($SQL);
