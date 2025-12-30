@@ -1097,7 +1097,6 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 							AND grns.qtyrecd - grns.quantityinv > 0
 							ORDER BY grns.grnno";
 					$GRNResults = DB_query($SQL);
-						return 'line 1100 GL '. $GLLink  .' && GL code:  '. $GLCode .' SQL: '.$SQL  ;
 
 					while ($MyRow = DB_fetch_array($GRNResults)) {
 
