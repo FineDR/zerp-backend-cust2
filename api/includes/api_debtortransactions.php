@@ -2080,52 +2080,52 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 						HAVING ABS(SUM(debtortrans.balance)) >0.005";
 	    }
 		$CustomerResult = DB_query($SQL);
-	}
-	//return 'line 2083: '.$SQL;	
-	//$CustomerResult = DB_query($SQL);
-	//return 'line 2085: '.$CustomerResult;	
-    $i=0;
-	if (trim($Salesman)!= ''){
-		$SQL = "SELECT salesmanname FROM salesman WHERE salesmancode='".$_POST['Salesman']."'";
-		$rs = DB_query($SQL, '', '', false, false);
-		$Row = DB_fetch_array($rs);
-		$Answer[$i]['salesman'] = 'And Has at Least 1 Branch Serviced By Sales Person #'. ' '. $Salesman . ' - ' . $Row['salesmanname'] ;
-        $i++;
-	}
+	
+		//return 'line 2083: '.$SQL;	
+		//$CustomerResult = DB_query($SQL);
+		//return 'line 2085: '.$CustomerResult;	
+		$i=0;
+		if (trim($Salesman)!= ''){
+			$SQL = "SELECT salesmanname FROM salesman WHERE salesmancode='".$_POST['Salesman']."'";
+			$rs = DB_query($SQL, '', '', false, false);
+			$Row = DB_fetch_array($rs);
+			$Answer[$i]['salesman'] = 'And Has at Least 1 Branch Serviced By Sales Person #'. ' '. $Salesman . ' - ' . $Row['salesmanname'] ;
+			$i++;
+		}
 
-	$TotBal=0;
-	$TotCurr=0;
-	$TotDue=0;
-	$TotOD1=0;
-	$TotOD2=0;
+		$TotBal=0;
+		$TotCurr=0;
+		$TotDue=0;
+		$TotOD1=0;
+		$TotOD2=0;
 
-	$ListCount = DB_num_rows($CustomerResult);
-	$Answer[$i]['listcount'] = $ListCount;
-	$i++;
+		$ListCount = DB_num_rows($CustomerResult);
+		$Answer[$i]['listcount'] = $ListCount;
+		$i++;
 
-	$CurrDecimalPlaces =2; //by default
-    $j=1;
-	//while ($AgedAnalysis = DB_fetch_array($CustomerResult)) {
-	//while ($j>=$ListCount) {
-	while ($AgedAnalysis = DB_fetch_array($CustomerResult)) {
-		//$Answer[$i]['CurrDecimalPlaces'] = $AgedAnalysis['decimalplaces']; $i++;
-		//$AgedAnalysis['debtorno'] . ' - ' . $AgedAnalysis['name'] .
-		$AgedAnalysis = DB_fetch_array($CustomerResult);
-		$Answer[$i]['name'] = $AgedAnalysis['debtorno'] . ' - ' . $AgedAnalysis['name']; $i++;
-		$Answer[$i]['DisplayBalance'] = locale_number_format($AgedAnalysis['balance'],$CurrDecimalPlaces); $i++;
-		$Answer[$i]['DisplayCurrent'] = locale_number_format($AgedAnalysis['balance']-$AgedAnalysis['due'],$CurrDecimalPlaces); $i++;
-		$Answer[$i]['DisplayDue'] = locale_number_format($AgedAnalysis['due']-$AgedAnalysis['overdue1'],$CurrDecimalPlaces); $i++;
-		$Answer[$i]['DisplayOverdue1'] = locale_number_format($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2'],$CurrDecimalPlaces);  $i++;
-		$Answer[$i]['DisplayOverdue2'] = locale_number_format($AgedAnalysis['overdue2'],$CurrDecimalPlaces); $i++;
-		// $Answer[$i]['TotBal'] += locale_number_format($AgedAnalysis['balance'], $CurrDecimalPlaces); $i++;
-		// $Answer[$i]['TotDue'] += ($AgedAnalysis['due']-$AgedAnalysis['overdue1']); $i++;
-		// $Answer[$i]['TotCurr'] += ($AgedAnalysis['balance']-$AgedAnalysis['due']); $i++;
-		// $Answer[$i]['TotOD1'] += ($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2']); $i++;
-		// $Answer[$i]['TotOD2'] += $AgedAnalysis['overdue2']; $i++;
+		$CurrDecimalPlaces =2; //by default
+		$j=1;
+		//while ($AgedAnalysis = DB_fetch_array($CustomerResult)) {
+		//while ($j>=$ListCount) {
+		while ($AgedAnalysis = DB_fetch_array($CustomerResult)) {
+			//$Answer[$i]['CurrDecimalPlaces'] = $AgedAnalysis['decimalplaces']; $i++;
+			//$AgedAnalysis['debtorno'] . ' - ' . $AgedAnalysis['name'] .
+			$AgedAnalysis = DB_fetch_array($CustomerResult);
+			$Answer[$i]['name'] = $AgedAnalysis['debtorno'] . ' - ' . $AgedAnalysis['name']; $i++;
+			$Answer[$i]['DisplayBalance'] = locale_number_format($AgedAnalysis['balance'],$CurrDecimalPlaces); $i++;
+			$Answer[$i]['DisplayCurrent'] = locale_number_format($AgedAnalysis['balance']-$AgedAnalysis['due'],$CurrDecimalPlaces); $i++;
+			$Answer[$i]['DisplayDue'] = locale_number_format($AgedAnalysis['due']-$AgedAnalysis['overdue1'],$CurrDecimalPlaces); $i++;
+			$Answer[$i]['DisplayOverdue1'] = locale_number_format($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2'],$CurrDecimalPlaces);  $i++;
+			$Answer[$i]['DisplayOverdue2'] = locale_number_format($AgedAnalysis['overdue2'],$CurrDecimalPlaces); $i++;
+			// $Answer[$i]['TotBal'] += locale_number_format($AgedAnalysis['balance'], $CurrDecimalPlaces); $i++;
+			// $Answer[$i]['TotDue'] += ($AgedAnalysis['due']-$AgedAnalysis['overdue1']); $i++;
+			// $Answer[$i]['TotCurr'] += ($AgedAnalysis['balance']-$AgedAnalysis['due']); $i++;
+			// $Answer[$i]['TotOD1'] += ($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2']); $i++;
+			// $Answer[$i]['TotOD2'] += $AgedAnalysis['overdue2']; $i++;
 
-		if ($DetailedReport=='Yes') {
+			if ($DetailedReport=='Yes') {
 
-			$SQL = "SELECT systypes.typename,
+				$SQL = "SELECT systypes.typename,
 						debtortrans.transno,
 						debtortrans.trandate,
 						(debtortrans.balance) as balance,
@@ -2225,4 +2225,5 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	$DisplayTotOverdue1 = locale_number_format($TotOD1,$CurrDecimalPlaces);
 	$DisplayTotOverdue2 = locale_number_format($TotOD2,$CurrDecimalPlaces);
 //	return 'line 2120: '.$DisplayTotBalance;
+}
 }
