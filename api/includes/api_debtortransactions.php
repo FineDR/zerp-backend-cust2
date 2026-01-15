@@ -2105,7 +2105,9 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	$CurrDecimalPlaces =2; //by default
 
 	while ($AgedAnalysis = DB_fetch_array($CustomerResult)) {
-		$Answer[$i]['CurrDecimalPlaces'] = $AgedAnalysis['decimalplaces']; $i++;
+		//$Answer[$i]['CurrDecimalPlaces'] = $AgedAnalysis['decimalplaces']; $i++;
+		//$AgedAnalysis['debtorno'] . ' - ' . $AgedAnalysis['name'] .
+		$Answer[$i]['name'] = $AgedAnalysis['debtorno'] . ' - ' . $AgedAnalysis['name']; $i++;
 		$Answer[$i]['DisplayDue'] = locale_number_format($AgedAnalysis['due']-$AgedAnalysis['overdue1'],$CurrDecimalPlaces); $i++;
 		$Answer[$i]['DisplayCurrent'] = locale_number_format($AgedAnalysis['balance']-$AgedAnalysis['due'],$CurrDecimalPlaces); $i++;
 		$Answer[$i]['DisplayBalance'] = locale_number_format($AgedAnalysis['balance'],$CurrDecimalPlaces); $i++;
