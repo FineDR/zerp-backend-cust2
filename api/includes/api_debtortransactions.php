@@ -2082,7 +2082,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	}
 	//return 'line 2083: '.$SQL;	
 	$CustomerResult = DB_query($SQL);
-	return 'line 2085: '.$CustomerResult;	
+	//return 'line 2085: '.$CustomerResult;	
     $i=0;
 	if (trim($Salesman)!= ''){
 		$SQL = "SELECT salesmanname FROM salesman WHERE salesmancode='".$_POST['Salesman']."'";
@@ -2103,10 +2103,12 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	$i++;
 
 	$CurrDecimalPlaces =2; //by default
-
-	while ($AgedAnalysis = DB_fetch_array($CustomerResult)) {
+    $j=1;
+	//while ($AgedAnalysis = DB_fetch_array($CustomerResult)) {
+	while ($j>=$ListCount) {
 		//$Answer[$i]['CurrDecimalPlaces'] = $AgedAnalysis['decimalplaces']; $i++;
 		//$AgedAnalysis['debtorno'] . ' - ' . $AgedAnalysis['name'] .
+		$AgedAnalysis = DB_fetch_array($CustomerResult);
 		$Answer[$i]['name'] = $AgedAnalysis['debtorno'] . ' - ' . $AgedAnalysis['name']; $i++;
 		$Answer[$i]['DisplayBalance'] = locale_number_format($AgedAnalysis['balance'],$CurrDecimalPlaces); $i++;
 		$Answer[$i]['DisplayCurrent'] = locale_number_format($AgedAnalysis['balance']-$AgedAnalysis['due'],$CurrDecimalPlaces); $i++;
