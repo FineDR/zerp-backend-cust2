@@ -2082,7 +2082,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	}
 	//return 'line 2083: '.$SQL;	
 	$CustomerResult = DB_query($SQL);
-	//return 'line 1928: '.$CustomerResult;	
+	return 'line 2085: '.$CustomerResult;	
     $i=0;
 	if (trim($Salesman)!= ''){
 		$SQL = "SELECT salesmanname FROM salesman WHERE salesmancode='".$_POST['Salesman']."'";
