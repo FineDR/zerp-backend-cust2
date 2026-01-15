@@ -1822,15 +1822,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	foreach ($CustomerCriteria as $key => $Value) {
 		$CustomerCriteria[$key] = DB_escape_string($Value);
 	}
-
-	/*
-		$Errors=VerifySupplierNoExists($CustomerCriteria['program'], sizeof($Errors), $Errors);
-		if (isset($CustomerCriteria['program'])){
-			//return $SupplierHeader['deliverydate'];
-		//	$Errors=VerifyDeliveryDate($SupplierHeader['deliverydate'], sizeof($Errors), $Errors);
-		//	$Errors=VerifySupplierSinceDate($SupplierHeader['deliverydate'], sizeof($Errors), $Errors);
-		}
-	*/	
+	
     //here are the report criteria
 	$FromCriteria = $ReportCriteria['fromcriteria'];
 	$ToCriteria = $ReportCriteria['tocriteria'];
@@ -2081,9 +2073,6 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	    }
 		$CustomerResult = DB_query($SQL);
 	
-		//return 'line 2083: '.$SQL;	
-		//$CustomerResult = DB_query($SQL);
-		//return 'line 2085: '.$CustomerResult;	
 		$i=0;
 		if (trim($Salesman)!= ''){
 			$SQL = "SELECT salesmanname FROM salesman WHERE salesmancode='".$_POST['Salesman']."'";
@@ -2112,12 +2101,6 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 			$Answer[$i]['DisplayDue'] = locale_number_format($AgedAnalysis['due']-$AgedAnalysis['overdue1'],$CurrDecimalPlaces); $i++;
 			$Answer[$i]['DisplayOverdue1'] = locale_number_format($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2'],$CurrDecimalPlaces);  $i++;
 			$Answer[$i]['DisplayOverdue2'] = locale_number_format($AgedAnalysis['overdue2'],$CurrDecimalPlaces); $i++;
-
-			// $Answer[$i]['TotBal'] += $AgedAnalysis['balance']; $i++;
-			// $Answer[$i]['TotDue'] += ($AgedAnalysis['due']-$AgedAnalysis['overdue1']); $i++;
-			// $Answer[$i]['TotCurr'] += ($AgedAnalysis['balance']-$AgedAnalysis['due']); $i++;
-			// $Answer[$i]['TotOD1'] += ($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2']); $i++;
-			// $Answer[$i]['TotOD2'] += $AgedAnalysis['overdue2']; $i++;
 
 			$TotBal += $AgedAnalysis['balance']; $i++;
 			$TotDue += ($AgedAnalysis['due']-$AgedAnalysis['overdue1']); $i++;
@@ -2172,52 +2155,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 				if ($_SESSION['SalesmanLogin'] !=  '') {
 					$SQL .= " AND debtortrans.salesperson='" . $_SESSION['SalesmanLogin'] . "'";
 				}
-
-				//$ErrMsg = __('The details of outstanding transactions for customer') . ' - ' . $AgedAnalysis['debtorno'] . ' ' . __('could not be retrieved');
 				$DetailResult = DB_query($SQL);
-				///weja nucta
-				/*
-				$HTML .= '<tr>
-							<td colspan="6">
-								<table>';
-
-				while ($DetailTrans = DB_fetch_array($DetailResult)) {
-
-				$DisplayTranDate = ConvertSQLDate($DetailTrans['trandate']);
-				$HTML .= '<tr>
-							<th>' . $DetailTrans['typename'] . '</th>
-							<th>' . $DetailTrans['transno'] . '</th>
-							<th>' . $DisplayTranDate . '</th>
-							<th></th>
-							<th></th>
-							<th></th>
-						</tr>';
-
-				$DisplayDue = locale_number_format($DetailTrans['due']-$DetailTrans['overdue1'],$CurrDecimalPlaces);
-				$DisplayCurrent = locale_number_format($DetailTrans['balance']-$DetailTrans['due'],$CurrDecimalPlaces);
-				$DisplayBalance = locale_number_format($DetailTrans['balance'],$CurrDecimalPlaces);
-				$DisplayOverdue1 = locale_number_format($DetailTrans['overdue1']-$DetailTrans['overdue2'],$CurrDecimalPlaces);
-				$DisplayOverdue2 = locale_number_format($DetailTrans['overdue2'],$CurrDecimalPlaces);
-
-				$HTML .= '<tr class="striped_row">
-							<td class="number">' . $DisplayBalance . '</td>
-							<td class="number">' . $DisplayCurrent . '</td>
-							<td class="number">' . $DisplayDue . '</td>
-							<td class="number">' . $DisplayOverdue1 . '</td>
-							<td class="number">' . $DisplayOverdue2 . '</td>
-						</tr>';
-
-				} /*end while there are detail transactions to show */
-				///weja nucta
-				/*
-				$HTML .= '</table>
-						</td>
-					</tr>';
-
-				$FontSize=8;
-
-				///weja nucta
-				*/
 			} /*Its a detailed report */
 	}/*end customer aged analysis while loop */
 	$DisplayTotBalance = locale_number_format($TotBal,$CurrDecimalPlaces);
@@ -2230,15 +2168,6 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	$Answer[$i]['TotCurr'] = $DisplayTotCurrent; $i++;
 	$Answer[$i]['TotOD1'] = $DisplayTotOverdue1; $i++;
 	$Answer[$i]['TotOD2']  = $DisplayTotOverdue2;
-
-
-
-
-			// $Answer[$i]['TotBal'] += $AgedAnalysis['balance']; $i++;
-			// $Answer[$i]['TotDue'] += ($AgedAnalysis['due']-$AgedAnalysis['overdue1']); $i++;
-			// $Answer[$i]['TotCurr'] += ($AgedAnalysis['balance']-$AgedAnalysis['due']); $i++;
-			// $Answer[$i]['TotOD1'] += ($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2']); $i++;
-			// $Answer[$i]['TotOD2'] += $AgedAnalysis['overdue2']; $i++;
 
   return $Answer;
 }
