@@ -2108,12 +2108,11 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 		//$Answer[$i]['CurrDecimalPlaces'] = $AgedAnalysis['decimalplaces']; $i++;
 		//$AgedAnalysis['debtorno'] . ' - ' . $AgedAnalysis['name'] .
 		$Answer[$i]['name'] = $AgedAnalysis['debtorno'] . ' - ' . $AgedAnalysis['name']; $i++;
-		$Answer[$i]['DisplayDue'] = locale_number_format($AgedAnalysis['due']-$AgedAnalysis['overdue1'],$CurrDecimalPlaces); $i++;
-		$Answer[$i]['DisplayCurrent'] = locale_number_format($AgedAnalysis['balance']-$AgedAnalysis['due'],$CurrDecimalPlaces); $i++;
 		$Answer[$i]['DisplayBalance'] = locale_number_format($AgedAnalysis['balance'],$CurrDecimalPlaces); $i++;
+		$Answer[$i]['DisplayCurrent'] = locale_number_format($AgedAnalysis['balance']-$AgedAnalysis['due'],$CurrDecimalPlaces); $i++;
+		$Answer[$i]['DisplayDue'] = locale_number_format($AgedAnalysis['due']-$AgedAnalysis['overdue1'],$CurrDecimalPlaces); $i++;
 		$Answer[$i]['DisplayOverdue1'] = locale_number_format($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2'],$CurrDecimalPlaces);  $i++;
 		$Answer[$i]['DisplayOverdue2'] = locale_number_format($AgedAnalysis['overdue2'],$CurrDecimalPlaces); $i++;
-
 		$Answer[$i]['TotBal'] += $AgedAnalysis['balance']; $i++;
 		$Answer[$i]['TotDue'] += ($AgedAnalysis['due']-$AgedAnalysis['overdue1']); $i++;
 		$Answer[$i]['TotCurr'] += ($AgedAnalysis['balance']-$AgedAnalysis['due']); $i++;
