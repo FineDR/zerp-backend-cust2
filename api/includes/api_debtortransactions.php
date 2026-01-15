@@ -2079,9 +2079,10 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 							holdreasons.reasondescription
 						HAVING ABS(SUM(debtortrans.balance)) >0.005";
 	    }
+		$CustomerResult = DB_query($SQL);
 	}
 	//return 'line 2083: '.$SQL;	
-	$CustomerResult = DB_query($SQL);
+	//$CustomerResult = DB_query($SQL);
 	//return 'line 2085: '.$CustomerResult;	
     $i=0;
 	if (trim($Salesman)!= ''){
@@ -2105,7 +2106,8 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	$CurrDecimalPlaces =2; //by default
     $j=1;
 	//while ($AgedAnalysis = DB_fetch_array($CustomerResult)) {
-	while ($j>=$ListCount) {
+	//while ($j>=$ListCount) {
+	while ($AgedAnalysis = DB_fetch_array($CustomerResult)) {
 		//$Answer[$i]['CurrDecimalPlaces'] = $AgedAnalysis['decimalplaces']; $i++;
 		//$AgedAnalysis['debtorno'] . ' - ' . $AgedAnalysis['name'] .
 		$AgedAnalysis = DB_fetch_array($CustomerResult);
