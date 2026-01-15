@@ -1822,7 +1822,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	foreach ($CustomerCriteria as $key => $Value) {
 		$CustomerCriteria[$key] = DB_escape_string($Value);
 	}
-	
+
     //here are the report criteria
 	$FromCriteria = $ReportCriteria['fromcriteria'];
 	$ToCriteria = $ReportCriteria['tocriteria'];
@@ -2102,11 +2102,11 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 			$Answer[$i]['DisplayOverdue1'] = locale_number_format($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2'],$CurrDecimalPlaces);  $i++;
 			$Answer[$i]['DisplayOverdue2'] = locale_number_format($AgedAnalysis['overdue2'],$CurrDecimalPlaces); $i++;
 
-			$TotBal += $AgedAnalysis['balance']; $i++;
-			$TotDue += ($AgedAnalysis['due']-$AgedAnalysis['overdue1']); $i++;
-			$TotCurr += ($AgedAnalysis['balance']-$AgedAnalysis['due']); $i++;
-			$TotOD1 += ($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2']); $i++;
-			$TotOD2 += $AgedAnalysis['overdue2']; $i++;
+			$TotBal += $AgedAnalysis['balance'];
+			$TotDue += ($AgedAnalysis['due']-$AgedAnalysis['overdue1']);
+			$TotCurr += ($AgedAnalysis['balance']-$AgedAnalysis['due']);
+			$TotOD1 += ($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2']);
+			$TotOD2 += $AgedAnalysis['overdue2'];
 
 			if ($DetailedReport=='Yes') {
 
