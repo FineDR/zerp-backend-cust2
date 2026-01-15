@@ -1818,10 +1818,11 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	foreach ($ReportCriteria as $key => $Value) {
 		$ReportCriteria[$key] = DB_escape_string($Value);
 	}
-return 'line 1840: '.$ToCriteria;
+
 	foreach ($CustomerCriteria as $key => $Value) {
 		$CustomerCriteria[$key] = DB_escape_string($Value);
 	}
+	return 'line 1840: '.$ToCriteria;
 	/*
 		$Errors=VerifySupplierNoExists($CustomerCriteria['program'], sizeof($Errors), $Errors);
 		if (isset($CustomerCriteria['program'])){
