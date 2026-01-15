@@ -2097,7 +2097,6 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	$TotDue=0;
 	$TotOD1=0;
 	$TotOD2=0;
-	return 'line 2083: '.$SQL;
 
 	$ListCount = DB_num_rows($CustomerResult);
 	$Answer[$i]['listcount'] = $ListCount;
@@ -2118,6 +2117,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 		$Answer[$i]['TotCurr'] += ($AgedAnalysis['balance']-$AgedAnalysis['due']); $i++;
 		$Answer[$i]['TotOD1'] += ($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2']); $i++;
 		$Answer[$i]['TotOD2'] += $AgedAnalysis['overdue2']; $i++;
+	return 'line 2120: '.$SQL;
 
 		if ($_POST['DetailedReport']=='Yes') {
 
