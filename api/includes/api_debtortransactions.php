@@ -1814,11 +1814,11 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-return 'line 1840: '.$ToCriteria;
+
 	foreach ($ReportCriteria as $key => $Value) {
 		$ReportCriteria[$key] = DB_escape_string($Value);
 	}
-
+return 'line 1840: '.$ToCriteria;
 	foreach ($CustomerCriteria as $key => $Value) {
 		$CustomerCriteria[$key] = DB_escape_string($Value);
 	}
