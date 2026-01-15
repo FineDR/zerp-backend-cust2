@@ -2212,8 +2212,8 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 				///weja nucta
 				*/
 			} /*Its a detailed report */
-		return $Answer;
 	}/*end customer aged analysis while loop */
+	return $Answer;
 	$DisplayTotBalance = locale_number_format($TotBal,$CurrDecimalPlaces);
 	$DisplayTotDue = locale_number_format($TotDue,$CurrDecimalPlaces);
 	$DisplayTotCurrent = locale_number_format($TotCurr,$CurrDecimalPlaces);
