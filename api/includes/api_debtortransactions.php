@@ -2117,7 +2117,6 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 		$Answer[$i]['TotCurr'] += ($AgedAnalysis['balance']-$AgedAnalysis['due']); $i++;
 		$Answer[$i]['TotOD1'] += ($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2']); $i++;
 		$Answer[$i]['TotOD2'] += $AgedAnalysis['overdue2']; $i++;
-	return 'line 2120: '.$i;
 
 		if ($_POST['DetailedReport']=='Yes') {
 
@@ -2219,4 +2218,5 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	$DisplayTotCurrent = locale_number_format($TotCurr,$CurrDecimalPlaces);
 	$DisplayTotOverdue1 = locale_number_format($TotOD1,$CurrDecimalPlaces);
 	$DisplayTotOverdue2 = locale_number_format($TotOD2,$CurrDecimalPlaces);
+	return 'line 2120: '.$DisplayTotBalance;
 }
