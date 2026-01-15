@@ -2118,7 +2118,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 		$Answer[$i]['TotOD1'] += ($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2']); $i++;
 		$Answer[$i]['TotOD2'] += $AgedAnalysis['overdue2']; $i++;
 
-		if ($_POST['DetailedReport']=='Yes') {
+		if ($DetailedReport=='Yes') {
 
 			$SQL = "SELECT systypes.typename,
 						debtortrans.transno,
