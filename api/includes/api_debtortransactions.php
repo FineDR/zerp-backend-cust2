@@ -1844,13 +1844,13 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	$Semester = $CustomerCriteria['semester'];
 	$YoS = $CustomerCriteria['yos'];
 	$Programme = $CustomerCriteria['program'];
-    return 'line 1840: '.$Ayear;
-	if($FromCriteria >= 1 and $ToCriteria >= 1){
+
+	if($FromCriteria >= 0 and $ToCriteria >= 1){
 		/*Now figure out the aged analysis for the customer range under review */
 		if ($_SESSION['SalesmanLogin'] !=  '') {
 			$Salesman = $_SESSION['SalesmanLogin'];
 		}
-
+    return 'line 1840: '.$Ayear;
 		if (trim($Salesman)!= '') {
 			$SalesLimit = " AND debtorsmaster.debtorno IN (SELECT DISTINCT debtorno FROM custbranch WHERE salesman = '".$Salesman."') ";
 		} else {
