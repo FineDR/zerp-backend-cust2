@@ -1925,7 +1925,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 					holdreasons.reasondescription
 				HAVING
 					ROUND(ABS(SUM(debtortrans.balance)),currencies.decimalplaces) > 0";
-				    return 'line 1928: '.$SQL;	
+
 		}elseif($All_Or_Overdues=='OverduesOnly') {
 			$SQL = "SELECT debtorsmaster.debtorno,
 					debtorsmaster.name,
