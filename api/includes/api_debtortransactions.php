@@ -2080,8 +2080,9 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 						HAVING ABS(SUM(debtortrans.balance)) >0.005";
 	    }
 	}
-				    return 'line 2083: '.$SQL;	
+	//return 'line 2083: '.$SQL;	
 	$CustomerResult = DB_query($SQL);
+	return 'line 1928: '.$CustomerResult;	
     $i=0;
 	if (trim($Salesman)!= ''){
 		$SQL = "SELECT salesmanname FROM salesman WHERE salesmancode='".$_POST['Salesman']."'";
