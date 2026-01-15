@@ -1809,7 +1809,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 
 	$Errors = array();
 	$db = db($user, $password);
-
+return 'line 184990: '.$ToCriteria;
 	if (gettype($db)=='integer') {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
