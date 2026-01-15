@@ -1806,7 +1806,7 @@ function GetDebtorInvoiceDetails($TransNo, $user, $password) {
    array of customers that fulfill this criteria.
 */
 function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
-return 'line 1840: '.$ToCriteria;
+
 	$Errors = array();
 	$db = db($user, $password);
 
@@ -1814,7 +1814,7 @@ return 'line 1840: '.$ToCriteria;
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-
+return 'line 1840: '.$ToCriteria;
 	foreach ($ReportCriteria as $key => $Value) {
 		$ReportCriteria[$key] = DB_escape_string($Value);
 	}
