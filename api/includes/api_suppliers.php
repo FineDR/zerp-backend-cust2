@@ -1110,7 +1110,7 @@ function InsertSupplierInvoiceHeader($SupplierHeader, $SupplierInvoiceLine, $use
 			//} //only allow auto receiving of all lines if the PO is authorised
 
 		//} //only allow auto receiving if the user has permission to receive goods
-return 'line 1113: '.$SQL;
+
 	} // Page called with link to receive all the items on a PO
 
 	//=========mwisho wa PO ====================//

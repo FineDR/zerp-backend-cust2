@@ -1822,14 +1822,14 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	foreach ($CustomerCriteria as $key => $Value) {
 		$CustomerCriteria[$key] = DB_escape_string($Value);
 	}
-/*
-	$Errors=VerifySupplierNoExists($CustomerCriteria['program'], sizeof($Errors), $Errors);
-	if (isset($CustomerCriteria['program'])){
-		//return $SupplierHeader['deliverydate'];
-	//	$Errors=VerifyDeliveryDate($SupplierHeader['deliverydate'], sizeof($Errors), $Errors);
-	//	$Errors=VerifySupplierSinceDate($SupplierHeader['deliverydate'], sizeof($Errors), $Errors);
-	}
-*/	
+	/*
+		$Errors=VerifySupplierNoExists($CustomerCriteria['program'], sizeof($Errors), $Errors);
+		if (isset($CustomerCriteria['program'])){
+			//return $SupplierHeader['deliverydate'];
+		//	$Errors=VerifyDeliveryDate($SupplierHeader['deliverydate'], sizeof($Errors), $Errors);
+		//	$Errors=VerifySupplierSinceDate($SupplierHeader['deliverydate'], sizeof($Errors), $Errors);
+		}
+	*/	
     //here are the report criteria
 	$FromCriteria = $ReportCriteria['FromCriteria'];
 	$ToCriteria = $ReportCriteria['ToCriteria'];
@@ -1837,7 +1837,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 	$Currency = $ReportCriteria['Currency'];
 	$DetailedReport = $ReportCriteria['DetailedReport'];
 	$Salesman = $ReportCriteria['Salesman'];
-
+return 'line 1840: '.$FromCriteria;
 	//here are the customer criteria
     $Ayear = $CustomerCriteria['ayear'];
 	$Semester = $CustomerCriteria['semester'];
@@ -1924,7 +1924,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 					holdreasons.reasondescription
 				HAVING
 					ROUND(ABS(SUM(debtortrans.balance)),currencies.decimalplaces) > 0";
-					return 'line 1756: '.$SQL;
+					
 		}elseif($All_Or_Overdues=='OverduesOnly') {
 			$SQL = "SELECT debtorsmaster.debtorno,
 					debtorsmaster.name,
