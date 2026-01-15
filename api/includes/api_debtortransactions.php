@@ -1850,7 +1850,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 		if ($_SESSION['SalesmanLogin'] !=  '') {
 			$Salesman = $_SESSION['SalesmanLogin'];
 		}
-    return 'line 1840: '.$Ayear;
+
 		if (trim($Salesman)!= '') {
 			$SalesLimit = " AND debtorsmaster.debtorno IN (SELECT DISTINCT debtorno FROM custbranch WHERE salesman = '".$Salesman."') ";
 		} else {
@@ -1925,7 +1925,7 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 					holdreasons.reasondescription
 				HAVING
 					ROUND(ABS(SUM(debtortrans.balance)),currencies.decimalplaces) > 0";
-					
+				    return 'line 1928: '.$SQL;	
 		}elseif($All_Or_Overdues=='OverduesOnly') {
 			$SQL = "SELECT debtorsmaster.debtorno,
 					debtorsmaster.name,
