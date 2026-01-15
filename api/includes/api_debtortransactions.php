@@ -2212,11 +2212,12 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 			///weja nucta
 			*/
 		} /*Its a detailed report */
+		return $Answer;
 	}/*end customer aged analysis while loop */
 	$DisplayTotBalance = locale_number_format($TotBal,$CurrDecimalPlaces);
 	$DisplayTotDue = locale_number_format($TotDue,$CurrDecimalPlaces);
 	$DisplayTotCurrent = locale_number_format($TotCurr,$CurrDecimalPlaces);
 	$DisplayTotOverdue1 = locale_number_format($TotOD1,$CurrDecimalPlaces);
 	$DisplayTotOverdue2 = locale_number_format($TotOD2,$CurrDecimalPlaces);
-	return 'line 2120: '.$DisplayTotBalance;
+//	return 'line 2120: '.$DisplayTotBalance;
 }
