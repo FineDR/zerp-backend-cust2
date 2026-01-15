@@ -2162,19 +2162,19 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 						AND debtortrans.debtorno = '" . $AgedAnalysis['debtorno'] . "'
 						AND ABS(debtortrans.balance)>0.004";
 
-			if ($_SESSION['SalesmanLogin'] !=  '') {
-				$SQL .= " AND debtortrans.salesperson='" . $_SESSION['SalesmanLogin'] . "'";
-			}
+				if ($_SESSION['SalesmanLogin'] !=  '') {
+					$SQL .= " AND debtortrans.salesperson='" . $_SESSION['SalesmanLogin'] . "'";
+				}
 
-			$ErrMsg = __('The details of outstanding transactions for customer') . ' - ' . $AgedAnalysis['debtorno'] . ' ' . __('could not be retrieved');
-			$DetailResult = DB_query($SQL, $ErrMsg);
-			///weja nucta
-			/*
-			$HTML .= '<tr>
-						<td colspan="6">
-							<table>';
+				//$ErrMsg = __('The details of outstanding transactions for customer') . ' - ' . $AgedAnalysis['debtorno'] . ' ' . __('could not be retrieved');
+				$DetailResult = DB_query($SQL);
+				///weja nucta
+				/*
+				$HTML .= '<tr>
+							<td colspan="6">
+								<table>';
 
-			while ($DetailTrans = DB_fetch_array($DetailResult)) {
+				while ($DetailTrans = DB_fetch_array($DetailResult)) {
 
 				$DisplayTranDate = ConvertSQLDate($DetailTrans['trandate']);
 				$HTML .= '<tr>
@@ -2200,18 +2200,18 @@ function GetAgedDebtors($ReportCriteria, $CustomerCriteria, $user, $password) {
 							<td class="number">' . $DisplayOverdue2 . '</td>
 						</tr>';
 
-			} /*end while there are detail transactions to show */
-			///weja nucta
-			/*
-			$HTML .= '</table>
-					</td>
-				</tr>';
+				} /*end while there are detail transactions to show */
+				///weja nucta
+				/*
+				$HTML .= '</table>
+						</td>
+					</tr>';
 
-			$FontSize=8;
+				$FontSize=8;
 
-			///weja nucta
-			*/
-		} /*Its a detailed report */
+				///weja nucta
+				*/
+			} /*Its a detailed report */
 		return $Answer;
 	}/*end customer aged analysis while loop */
 	$DisplayTotBalance = locale_number_format($TotBal,$CurrDecimalPlaces);
