@@ -989,7 +989,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 		prnMsg(__('The amount entered as payment does not equal the amount of the invoice. Please ensure the customer has paid the correct amount and re-enter'),'error');
 		$InputError = true;
 	}
-
+echo 'Line 982 <br>'.$_SESSION['ProhibitNegativeStock']; exit;
 	if ($_SESSION['ProhibitNegativeStock']==1) { // checks for negative stock after processing invoice
 	//sadly this check does not combine quantities occuring twice on and order and each line is considered individually :-(
 		$NegativesFound = false;
@@ -1002,7 +1002,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 					ON stockmaster.stockid=locstock.stockid
 					WHERE stockmaster.stockid='" . $OrderLine->StockID . "'
 					AND locstock.loccode='" . $_SESSION['Items'.$identifier]->Location . "'";
-echo 'Line 982 <br>'.$SQL ; exit;
+
 			$ErrMsg = __('Could not retrieve the quantity left at the location once this order is invoiced (for the purposes of checking that stock will not go negative because)');
 			$Result = DB_query($SQL, $ErrMsg);
 			$CheckNegRow = DB_fetch_array($Result);
