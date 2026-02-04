@@ -1341,7 +1341,6 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 			$ErrMsg =__('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The debtor transaction taxes records could not be inserted because');
 			$Result = DB_query($SQL, $ErrMsg, '', true);
 		}
-echo 'Line 1344 <br>'.$SQL; exit;
 
 		//Loop around each item on the sale and process each in turn
 		foreach ($_SESSION['Items'.$identifier]->LineItems as $OrderLine) {
@@ -1369,6 +1368,7 @@ echo 'Line 1344 <br>'.$SQL; exit;
 					/* There must be some error this should never happen */
 					$QtyOnHandPrior = 0;
 				}
+echo 'Line 1371 <br>'.$SQL; exit;
 
 				$SQL = "UPDATE locstock
 							SET quantity = locstock.quantity - " . $OrderLine->Quantity . "
