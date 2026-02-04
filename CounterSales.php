@@ -989,7 +989,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 		prnMsg(__('The amount entered as payment does not equal the amount of the invoice. Please ensure the customer has paid the correct amount and re-enter'),'error');
 		$InputError = true;
 	}
-echo 'Line 982 <br>'.$_SESSION['ProhibitNegativeStock']; exit;
+echo 'Line 992 <br>'.$_SESSION['ProhibitNegativeStock']; exit;
 	if ($_SESSION['ProhibitNegativeStock']==1) { // checks for negative stock after processing invoice
 	//sadly this check does not combine quantities occuring twice on and order and each line is considered individually :-(
 		$NegativesFound = false;
