@@ -1601,7 +1601,6 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 			if ($ExRate>0) {
 				$SalesValue = $OrderLine->Price * $OrderLine->Quantity / $ExRate;
 			}
-echo 'Line 1604 <br>'.$SQL; exit;
 
 		/*Insert Sales Analysis records */
 
@@ -1642,7 +1641,7 @@ echo 'Line 1604 <br>'.$SQL; exit;
 			$Result = DB_query($SQL, $ErrMsg, '', true);
 
 			$MyRow = DB_fetch_row($Result);
-
+echo 'Line 1664 <br>'.$SQL; exit;
 			if ($MyRow[0]>0) {  /*Update the existing record that already exists */
 
 				$SQL = "UPDATE salesanalysis
