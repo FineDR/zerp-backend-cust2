@@ -1368,7 +1368,6 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 					/* There must be some error this should never happen */
 					$QtyOnHandPrior = 0;
 				}
-echo 'Line 1371 <br>'.$SQL; exit;
 
 				$SQL = "UPDATE locstock
 							SET quantity = locstock.quantity - " . $OrderLine->Quantity . "
@@ -1462,6 +1461,7 @@ echo 'Line 1371 <br>'.$SQL; exit;
 				$_SESSION['Items'.$identifier]->LineItems[$OrderLine->LineNumber]->StandardCost = $StandardCost;
 				$OrderLine->StandardCost = $StandardCost;
 			} /* end of its an assembly */
+echo 'Line 1464 <br>'.$SQL; exit;
 
 			// Insert stock movements - with unit cost
 			$LocalCurrencyPrice = ($OrderLine->Price / $ExRate);
