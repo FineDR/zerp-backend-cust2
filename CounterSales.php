@@ -665,6 +665,8 @@ if (isset($NewItemArray) AND isset($_POST['SelectingOrderItems'])) {
                             AND bom.effectiveafter <= CURRENT_DATE
                             AND bom.effectiveto > CURRENT_DATE";
 
+							echo 'line 668'.$SQL; exit;
+
 					$ErrMsg = __('Could not retrieve kitset components from the database because');
 					$KitResult = DB_query($SQL, $ErrMsg);
 
