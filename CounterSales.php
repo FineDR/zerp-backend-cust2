@@ -1322,7 +1322,6 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 				'" . ($_SESSION['Items'.$identifier]->total + filter_number_format($_POST['TaxTotal'])) . "',
 				'1',
 				'" . $_SESSION['Items'.$identifier]->SalesPerson . "')";
-echo 'Line 1325 <br>'.$SQL; exit;
 
 		$ErrMsg =__('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The debtor transaction record could not be inserted because');
 		$Result = DB_query($SQL, $ErrMsg, '', true);
@@ -1342,6 +1341,7 @@ echo 'Line 1325 <br>'.$SQL; exit;
 			$ErrMsg =__('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The debtor transaction taxes records could not be inserted because');
 			$Result = DB_query($SQL, $ErrMsg, '', true);
 		}
+echo 'Line 1344 <br>'.$SQL; exit;
 
 		//Loop around each item on the sale and process each in turn
 		foreach ($_SESSION['Items'.$identifier]->LineItems as $OrderLine) {
