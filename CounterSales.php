@@ -1267,7 +1267,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 				} //end if with this sales order there is a shortfall of stock - need to create the WO
 			}//end if auto create WOs in on
 		} /* end inserted line items into sales order details */
-echo 'Line 1270 <br>'.$SQL; exit;
+
 		prnMsg(__('Order Number') . ' ' . $OrderNo . ' ' . __('has been entered'),'success');
 
 	/* End of insertion of new sales order */
@@ -1391,7 +1391,7 @@ echo 'Line 1270 <br>'.$SQL; exit;
 						AND bom.parent='" . $OrderLine->StockID . "'
                         AND bom.effectiveafter <= CURRENT_DATE
                         AND bom.effectiveto > CURRENT_DATE";
-
+echo 'Line 1394 <br>'.$SQL; exit;
 				$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('Could not retrieve assembly components from the database for'). ' '. $OrderLine->StockID . __('because').' ';
 				$AssResult = DB_query($SQL, $ErrMsg, '', true);
 
