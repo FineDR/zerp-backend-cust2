@@ -461,8 +461,6 @@ if (isset($PrintPDF)
 							<td>' . $MyRow2['stockid'] . '</td>
 							<td>';
 
-								echo 'line 464 Naam!'; exit;
-
 						// Get translation if available
 						$TranslationResult = DB_query("SELECT descriptiontranslation
 									FROM stockdescriptiontranslations

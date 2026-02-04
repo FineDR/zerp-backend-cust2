@@ -979,7 +979,7 @@ if (count($_SESSION['Items'.$identifier]->LineItems)>0 ) { /*only show order lin
  * **********************************
  * */
 if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
-
+echo 'line 982'. exit;
 	$InputError = false; //always assume the best
 	//but check for the worst
 	if ($_SESSION['Items'.$identifier]->LineCounter == 0) {
