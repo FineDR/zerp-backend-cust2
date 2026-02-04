@@ -665,8 +665,6 @@ if (isset($NewItemArray) AND isset($_POST['SelectingOrderItems'])) {
                             AND bom.effectiveafter <= CURRENT_DATE
                             AND bom.effectiveto > CURRENT_DATE";
 
-							echo 'line 668'.$SQL; exit;
-
 					$ErrMsg = __('Could not retrieve kitset components from the database because');
 					$KitResult = DB_query($SQL, $ErrMsg);
 
@@ -981,7 +979,6 @@ if (count($_SESSION['Items'.$identifier]->LineItems)>0 ) { /*only show order lin
  * **********************************
  * */
 if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
-echo 'line 982'. exit;
 	$InputError = false; //always assume the best
 	//but check for the worst
 	if ($_SESSION['Items'.$identifier]->LineCounter == 0) {
