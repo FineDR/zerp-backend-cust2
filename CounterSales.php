@@ -979,7 +979,6 @@ if (count($_SESSION['Items'.$identifier]->LineItems)>0 ) { /*only show order lin
  * **********************************
  * */
 if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
-	echo 'Line 982'; exit;
 	$InputError = false; //always assume the best
 	//but check for the worst
 	if ($_SESSION['Items'.$identifier]->LineCounter == 0) {
@@ -1003,7 +1002,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 					ON stockmaster.stockid=locstock.stockid
 					WHERE stockmaster.stockid='" . $OrderLine->StockID . "'
 					AND locstock.loccode='" . $_SESSION['Items'.$identifier]->Location . "'";
-
+echo 'Line 982 <br>'.$SQL ; exit;
 			$ErrMsg = __('Could not retrieve the quantity left at the location once this order is invoiced (for the purposes of checking that stock will not go negative because)');
 			$Result = DB_query($SQL, $ErrMsg);
 			$CheckNegRow = DB_fetch_array($Result);
