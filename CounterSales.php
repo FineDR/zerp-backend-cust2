@@ -1062,7 +1062,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 				FROM custbranch
 				WHERE custbranch.debtorno ='". $_SESSION['Items'.$identifier]->DebtorNo . "'
 				AND custbranch.branchcode = '" . $_SESSION['Items'.$identifier]->Branch . "'";
-echo 'Line 1065 <br>'.$SQL; exit;
+
 		$ErrMsg = __('We were unable to load the area from the custbranch table where the sale is to ');
 		$Result = DB_query($SQL, $ErrMsg);
 		$MyRow = DB_fetch_row($Result);
@@ -1267,7 +1267,7 @@ echo 'Line 1065 <br>'.$SQL; exit;
 				} //end if with this sales order there is a shortfall of stock - need to create the WO
 			}//end if auto create WOs in on
 		} /* end inserted line items into sales order details */
-
+echo 'Line 1270 <br>'.$SQL; exit;
 		prnMsg(__('Order Number') . ' ' . $OrderNo . ' ' . __('has been entered'),'success');
 
 	/* End of insertion of new sales order */
