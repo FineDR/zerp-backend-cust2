@@ -989,9 +989,9 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 		prnMsg(__('The amount entered as payment does not equal the amount of the invoice. Please ensure the customer has paid the correct amount and re-enter'),'error');
 		$InputError = true;
 	}
-echo 'Line 992 <br>'.$_SESSION['ProhibitNegativeStock']; exit;
+
 	if ($_SESSION['ProhibitNegativeStock']==1) { // checks for negative stock after processing invoice
-	//sadly this check does not combine quantities occuring twice on and order and each line is considered individually :-(
+	    //sadly this check does not combine quantities occuring twice on and order and each line is considered individually :-(
 		$NegativesFound = false;
 		foreach ($_SESSION['Items'.$identifier]->LineItems as $OrderLine) {
 			$SQL = "SELECT stockmaster.description,
@@ -1062,7 +1062,7 @@ echo 'Line 992 <br>'.$_SESSION['ProhibitNegativeStock']; exit;
 				FROM custbranch
 				WHERE custbranch.debtorno ='". $_SESSION['Items'.$identifier]->DebtorNo . "'
 				AND custbranch.branchcode = '" . $_SESSION['Items'.$identifier]->Branch . "'";
-
+echo 'Line 1065 <br>'.$SQL; exit;
 		$ErrMsg = __('We were unable to load the area from the custbranch table where the sale is to ');
 		$Result = DB_query($SQL, $ErrMsg);
 		$MyRow = DB_fetch_row($Result);
