@@ -1322,6 +1322,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 				'" . ($_SESSION['Items'.$identifier]->total + filter_number_format($_POST['TaxTotal'])) . "',
 				'1',
 				'" . $_SESSION['Items'.$identifier]->SalesPerson . "')";
+echo 'Line 1325 <br>'.$SQL; exit;
 
 		$ErrMsg =__('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The debtor transaction record could not be inserted because');
 		$Result = DB_query($SQL, $ErrMsg, '', true);
@@ -1391,7 +1392,6 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 						AND bom.parent='" . $OrderLine->StockID . "'
                         AND bom.effectiveafter <= CURRENT_DATE
                         AND bom.effectiveto > CURRENT_DATE";
-echo 'Line 1394 <br>'.$SQL; exit;
 				$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('Could not retrieve assembly components from the database for'). ' '. $OrderLine->StockID . __('because').' ';
 				$AssResult = DB_query($SQL, $ErrMsg, '', true);
 
