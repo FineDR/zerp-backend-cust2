@@ -1461,7 +1461,6 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 				$_SESSION['Items'.$identifier]->LineItems[$OrderLine->LineNumber]->StandardCost = $StandardCost;
 				$OrderLine->StandardCost = $StandardCost;
 			} /* end of its an assembly */
-echo 'Line 1464 <br>'.$SQL; exit;
 
 			// Insert stock movements - with unit cost
 			$LocalCurrencyPrice = ($OrderLine->Price / $ExRate);
@@ -1602,6 +1601,7 @@ echo 'Line 1464 <br>'.$SQL; exit;
 			if ($ExRate>0) {
 				$SalesValue = $OrderLine->Price * $OrderLine->Quantity / $ExRate;
 			}
+echo 'Line 1604 <br>'.$SQL; exit;
 
 		/*Insert Sales Analysis records */
 
