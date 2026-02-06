@@ -630,10 +630,22 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 			$SupplierInvoiceLine[$key] = DB_escape_string($value);
 		}
 	}
-		return $Errors; exit;
-
-	$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
-		return $Errors; exit;
+	function VerifySupplierNoExistsToday($SupplierNumber, $i, $Errors) {
+		if ((mb_strlen($SupplierNumber)<1) or (mb_strlen($SupplierNumber)>20)) {
+			$Errors[$i] = IncorrectDebtorNumberLength;
+		}
+		$Searchsql = "SELECT count(supplierid)
+					FROM suppliers
+					WHERE supplierid='".$SupplierNumber."'";
+		$SearchResult = DB_query($Searchsql);
+		$Answer = DB_fetch_row($SearchResult);
+		if ($Answer[0] == 0) {
+			$Errors[$i] = SupplierNoDoesntExists;
+		}
+		return $Errors;
+	}
+	$Errors=VerifySupplierNoExistsToday($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
+	return $SupplierInvoiceHeader['supplierno']; exit;
 
 	if (isset($SupplierInvoiceHeader['trandate'])){
 		$Errors=VerifyDateFormat($SupplierInvoiceHeader['trandate'], sizeof($Errors), $Errors);
