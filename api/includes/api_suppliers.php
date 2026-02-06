@@ -630,6 +630,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 			$SupplierInvoiceLine[$key] = DB_escape_string($value);
 		}
 	}
+		return $Errors; exit;
 
 	$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
 		return $Errors; exit;
