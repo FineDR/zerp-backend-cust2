@@ -632,7 +632,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	}
 	function VerifySupplierNoExistsToday($SupplierNumber, $i, $Errors) {
 		if ((mb_strlen($SupplierNumber)<1) or (mb_strlen($SupplierNumber)>20)) {
-			$Errors[$i] = IncorrectDebtorNumberLength;
+			$Errors[$i] = 'IncorrectDebtorNumberLength';
 		}
 		$Searchsql = "SELECT count(supplierid)
 					FROM suppliers
@@ -640,7 +640,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$SearchResult = DB_query($Searchsql);
 		$Answer = DB_fetch_row($SearchResult);
 		if ($Answer[0] == 0) {
-			$Errors[$i] = SupplierNoDoesntExists;
+			$Errors[$i] = 'SupplierNoDoesntExists';
 		}
 		return $Errors;
 	}
