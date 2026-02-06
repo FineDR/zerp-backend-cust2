@@ -640,7 +640,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	if (isset($SupplierInvoiceHeader['deliverydate'])){
 		$Errors=VerifyDateFormat($SupplierInvoiceHeader['deliverydate'], sizeof($Errors), $Errors);
 	}
-			return $SupplierInvoiceHeader['supplierno']; exit;
 
 	/*
 	CREATE TABLE IF NOT EXISTS api_supplier_invoice_drafts (
@@ -735,6 +734,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		echo "Unauthorized (no session)";
 		exit;
 	}
+			return $SupplierInvoiceHeader['supplierno']; exit;
 
 	function ok(array $data = []): array { return ['ok'=>true,'data'=>$data]; }
 	function fail(string $msg, array $extra=[]): array { return ['ok'=>false,'error'=>$msg,'extra'=>$extra]; }
