@@ -722,8 +722,9 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	 * Stateless Supplier Invoice XML-RPC API for webERP
 	 * Auth: cookie session (must be logged-in); API stores drafts in MySQL.
 	 */
-return getcwd(); exit;
-	require_once(__DIR__ . '/../includes/session.php');
+	require_once(__DIR__ . '../includes/session.php');
+	return getcwd(); exit;
+
 	require_once(__DIR__ . '/../includes/DefineSuppTransClass.php');
 	require_once(__DIR__ . '/../includes/SQL_CommonFunctions.php');
 	require_once(__DIR__ . '/../includes/StockFunctions.php');
