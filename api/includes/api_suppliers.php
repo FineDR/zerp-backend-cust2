@@ -631,26 +631,15 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		}
 	}
 
-	$Errors = VerifySupplierNoExists(
-		$SupplierInvoiceHeader['supplierno'],
-		$Errors
-	);
+	$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
+		return $SupplierInvoiceHeader['supplierno']; exit;
 
-	if (isset($SupplierInvoiceHeader['trandate'])) {
-		$Errors = VerifyDateFormat(
-			$SupplierInvoiceHeader['trandate'],
-			$Errors
-		);
+	if (isset($SupplierInvoiceHeader['trandate'])){
+		$Errors=VerifyDateFormat($SupplierInvoiceHeader['trandate'], sizeof($Errors), $Errors);
 	}
-
-	function VerifyDateFormat($date, array $Errors): array {
-    if (!ValidDate($date)) {
-        $Errors[] = _('Invalid date format');
-    }
-    return $Errors;
-    }
-
-
+	if (isset($SupplierInvoiceHeader['deliverydate'])){
+		$Errors=VerifyDateFormat($SupplierInvoiceHeader['deliverydate'], sizeof($Errors), $Errors);
+	}
 	return $SupplierInvoiceHeader['supplierno']; exit;
 	/*
 	CREATE TABLE IF NOT EXISTS api_supplier_invoice_drafts (
