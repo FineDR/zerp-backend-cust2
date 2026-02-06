@@ -643,6 +643,14 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		);
 	}
 
+	function VerifyDateFormat($date, array $Errors): array {
+    if (!ValidDate($date)) {
+        $Errors[] = _('Invalid date format');
+    }
+    return $Errors;
+    }
+
+
 	return $SupplierInvoiceHeader['supplierno']; exit;
 	/*
 	CREATE TABLE IF NOT EXISTS api_supplier_invoice_drafts (
