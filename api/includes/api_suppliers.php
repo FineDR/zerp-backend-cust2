@@ -619,6 +619,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
+	$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
 
 	foreach ($SupplierInvoiceHeader as $key => $value) {
 		if (is_string($value)) {
@@ -814,7 +815,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$res = DB_query($sql, 'Supplier lookup failed');
 		if (DB_num_rows($res) !== 1) return fail("Supplier not found", ['supplierid'=>$supplierID]);
 		$row = DB_fetch_array($res);
-			return $_SESSION['UserID']; exit;
 
 		// Local tax province from user location
 		$res2 = DB_query("SELECT taxprovinceid FROM locations WHERE loccode='" . DB_escape_string($_SESSION['UserStockLocation']) . "'");
