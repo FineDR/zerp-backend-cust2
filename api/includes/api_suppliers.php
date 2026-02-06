@@ -619,11 +619,11 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-return $SupplierInvoiceHeader['supplierno']; exit;
 
 	foreach ($SupplierInvoiceHeader as $key => $Value) {
 		$SupplierInvoiceHeader[$key] = DB_escape_string($Value);
 	}
+return $SupplierInvoiceHeader['supplierno']; exit;
 
 	$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
 	if (isset($SupplierInvoiceHeader['trandate'])){
