@@ -619,7 +619,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-/*
+
 	foreach ($SupplierInvoiceHeader as $key => $value) {
 		if (is_string($value)) {
 			$SupplierInvoiceHeader[$key] = DB_escape_string($value);
@@ -630,12 +630,21 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 			$SupplierInvoiceLine[$key] = DB_escape_string($value);
 		}
 	}
-		*/
-	$SupplierNumber = $SupplierInvoiceHeader['supplierno'];
-	$Searchsql = "SELECT count(supplierid)
-				  FROM suppliers
-				  WHERE supplierid='$SupplierNumber'";
-				  return $Searchsql; exit;
+	$SupplierNumber = trim($SupplierInvoiceHeader['supplierno'] ?? '');
+
+	if ($SupplierNumber === '' || mb_strlen($SupplierNumber) > 20) {
+		$Errors[] = 'InvalidSupplierNumber';
+	} else {
+		$SupplierNumber = DB_escape_string($SupplierNumber);
+
+		$Searchsql = "
+			SELECT COUNT(*)
+			FROM suppliers
+			WHERE supplierid = '".$SupplierNumber."'
+		";
+	}
+
+	return $Searchsql; exit;
 	$SearchResult = DB_query($Searchsql);
 	$Answer = DB_fetch_row($SearchResult);
 	if ($Answer[0] == 0) {
