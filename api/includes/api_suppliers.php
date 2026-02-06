@@ -633,7 +633,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	$SupplierNumber = trim($SupplierInvoiceHeader['supplierno'] ?? '');
 
 	if ($SupplierNumber === '' || mb_strlen($SupplierNumber) > 20) {
-		$Errors[] = 'InvalidSupplierNumber';
+		$Errors[$i] = InvalidSupplierNumber;
 	} else {
 		$SupplierNumber = DB_escape_string($SupplierNumber);
 
