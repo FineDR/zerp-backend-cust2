@@ -734,7 +734,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		echo "Unauthorized (no session)";
 		exit;
 	}
-	return $SupplierInvoiceHeader['supplierno']; exit;
 
 	function ok(array $data = []): array { return ['ok'=>true,'data'=>$data]; }
 	function fail(string $msg, array $extra=[]): array { return ['ok'=>false,'error'=>$msg,'extra'=>$extra]; }
@@ -758,6 +757,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		}
 		return [DB_fetch_array($res), null];
 	}
+	return $_SESSION['UserID']; exit;
 
 	function idem_get(string $key, string $action): ?array {
 		if ($key === '') return null;
