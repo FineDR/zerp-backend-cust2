@@ -734,7 +734,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		echo "Unauthorized (no session)";
 		exit;
 	}
-			return $_SESSION['UserID']; exit;
 
 	function ok(array $data = []): array { return ['ok'=>true,'data'=>$data]; }
 	function fail(string $msg, array $extra=[]): array { return ['ok'=>false,'error'=>$msg,'extra'=>$extra]; }
@@ -745,6 +744,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
 		return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 	}
+			return $_SESSION['UserID']; exit;
 
 	function require_draft_owned(string $draftUuid, bool $forUpdate=false): array {
 		$lock = $forUpdate ? " FOR UPDATE" : "";
