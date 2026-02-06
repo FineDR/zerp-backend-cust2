@@ -3730,7 +3730,7 @@ function xmlrpc_InsertSupplierInvoiceHeader($request)
 	ob_end_flush();
 	return $rtn;
 }
-
+/*
 unset($Description);
 unset($Parameter);
 unset($ReturnValue);
@@ -3776,7 +3776,7 @@ function xmlrpc_InsertSupplierInvoice($request)
 	ob_end_flush();
 	return $rtn;
 }
-
+*/
 unset($Description);
 unset($Parameter);
 unset($ReturnValue);
