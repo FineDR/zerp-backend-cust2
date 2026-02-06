@@ -621,17 +621,18 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		return $Errors;
 	}
 
-	foreach ($SupplierHeader as $key => $Value) {
-		$SupplierHeader[$key] = DB_escape_string($Value);
+	foreach ($SupplierInvoiceHeader as $key => $Value) {
+		$SupplierInvoiceHeader[$key] = DB_escape_string($Value);
 	}
 
-	$Errors=VerifySupplierNoExists($SupplierHeader['supplierno'], sizeof($Errors), $Errors);
-	if (isset($SupplierHeader['trandate'])){
-		$Errors=VerifyDateFormat($SupplierHeader['trandate'], sizeof($Errors), $Errors);
+	$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
+	if (isset($SupplierInvoiceHeader['trandate'])){
+		$Errors=VerifyDateFormat($SupplierInvoiceHeader['trandate'], sizeof($Errors), $Errors);
 	}
-	if (isset($SupplierHeader['deliverydate'])){
-		$Errors=VerifyDateFormat($SupplierHeader['deliverydate'], sizeof($Errors), $Errors);
+	if (isset($SupplierInvoiceHeader['deliverydate'])){
+		$Errors=VerifyDateFormat($SupplierInvoiceHeader['deliverydate'], sizeof($Errors), $Errors);
 	}
+	return $SupplierInvoiceHeader['supplierno']; exit;
 	/*
 	CREATE TABLE IF NOT EXISTS api_supplier_invoice_drafts (
 	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
