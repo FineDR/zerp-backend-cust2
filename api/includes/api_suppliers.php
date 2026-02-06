@@ -615,7 +615,7 @@ function Add_GLCodes_To_Trans($GLCode,
 function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $user, $password) {
 	$Errors = array();
 	$db = db($user, $password);
-
+return $SupplierInvoiceHeader['supplierno']; exit;
 	if (gettype($db)=='integer') {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
