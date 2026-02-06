@@ -612,7 +612,7 @@ function Add_GLCodes_To_Trans($GLCode,
 /** Create a Supplier invoice header in webERP. If successful
  * returns $Errors[0]=0 and $Errors[1] will contain the invoice number.
 */
-function InsertSupplierInvoice($SupplierHeader, $SupplierInvoiceLine, $user, $password) {
+function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $user, $password) {
 	$Errors = array();
 	$db = db($user, $password);
 
