@@ -744,7 +744,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
 		return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 	}
-			return $_SESSION['UserID']; exit;
 
 	function require_draft_owned(string $draftUuid, bool $forUpdate=false): array {
 		$lock = $forUpdate ? " FOR UPDATE" : "";
@@ -815,6 +814,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$res = DB_query($sql, 'Supplier lookup failed');
 		if (DB_num_rows($res) !== 1) return fail("Supplier not found", ['supplierid'=>$supplierID]);
 		$row = DB_fetch_array($res);
+			return $_SESSION['UserID']; exit;
 
 		// Local tax province from user location
 		$res2 = DB_query("SELECT taxprovinceid FROM locations WHERE loccode='" . DB_escape_string($_SESSION['UserStockLocation']) . "'");
