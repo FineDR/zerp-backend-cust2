@@ -630,10 +630,11 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 			$SupplierInvoiceLine[$key] = DB_escape_string($value);
 		}
 	}
+	$SupplierNumber = $SupplierInvoiceHeader['supplierno'];
 
 	$Searchsql = "SELECT count(supplierid)
 				  FROM suppliers
-				  WHERE supplierid='".$SupplierInvoiceHeader['supplierno']."'";
+				  WHERE supplierid='".$SupplierNumber."'";
 				  return $Searchsql; exit;
 	$SearchResult = DB_query($Searchsql);
 	$Answer = DB_fetch_row($SearchResult);
