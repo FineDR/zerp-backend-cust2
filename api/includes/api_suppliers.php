@@ -636,7 +636,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	if (isset($SupplierInvoiceHeader['trandate'])){
 		$Errors=VerifyDateFormat($SupplierInvoiceHeader['trandate'], sizeof($Errors), $Errors);
 	}
-		return $SupplierInvoiceHeader['supplierno']; exit;
 
 	if (isset($SupplierInvoiceHeader['deliverydate'])){
 		$Errors=VerifyDateFormat($SupplierInvoiceHeader['deliverydate'], sizeof($Errors), $Errors);
