@@ -643,7 +643,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	}
 
 	/*
-	CREATE TABLE IF NOT EXISTS api_supplier_invoice_drafts (
+	CREATE TABLE IF NOT EXISTS api_supplier_invoice_draft(
 	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 	draft_uuid CHAR(36) NOT NULL,
 	created_by VARCHAR(20) NOT NULL,
@@ -663,6 +663,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	posted_supptrans_id BIGINT NULL,
 	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+	PRIMARY KEY (id),
 	UNIQUE KEY uq_draft_uuid (draft_uuid),
 	KEY idx_created_by_status (created_by, status),
 	KEY idx_supplierid_status (supplierid, status)
