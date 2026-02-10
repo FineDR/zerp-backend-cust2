@@ -1,5 +1,5 @@
 <?php
-CreateTable('api_supplier_invoice_draft', "CREATE TABLE IF NOT EXISTS api_supplier_invoice_draft (
+CreateTable('api_supplier_invoice_drafts', "CREATE TABLE IF NOT EXISTS api_supplier_invoice_drafts(
 	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 	draft_uuid CHAR(36) NOT NULL,
 	created_by VARCHAR(20) NOT NULL,
@@ -19,11 +19,11 @@ CreateTable('api_supplier_invoice_draft', "CREATE TABLE IF NOT EXISTS api_suppli
 	posted_supptrans_id BIGINT NULL,
 	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
+	PRIMARY KEY (id),
 	UNIQUE KEY uq_draft_uuid (draft_uuid),
 	KEY idx_created_by_status (created_by, status),
 	KEY idx_supplierid_status (supplierid, status)
-	) ENGINE=InnoDB)");
+	) ENGINE=InnoDB");
 
 	CreateTable('api_supplier_invoice_lines',"CREATE TABLE IF NOT EXISTS api_supplier_invoice_lines (
 	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -41,7 +41,7 @@ CreateTable('api_supplier_invoice_draft', "CREATE TABLE IF NOT EXISTS api_suppli
 	PRIMARY KEY (id),
 	KEY idx_draft_uuid (draft_uuid),
 	CONSTRAINT fk_lines_draft FOREIGN KEY (draft_uuid)
-		REFERENCES api_supplier_invoice_draft (draft_uuid)
+		REFERENCES api_supplier_invoice_drafts (draft_uuid)
 		ON DELETE CASCADE
 	) ENGINE=InnoDB");
 
@@ -58,7 +58,7 @@ CreateTable('api_supplier_invoice_draft', "CREATE TABLE IF NOT EXISTS api_suppli
 	UNIQUE KEY uq_draft_tax (draft_uuid, taxauthid),
 	KEY idx_draft_uuid (draft_uuid),
 	CONSTRAINT fk_taxes_draft FOREIGN KEY (draft_uuid)
-		REFERENCES api_supplier_invoice_draft (draft_uuid)
+		REFERENCES api_supplier_invoice_drafts (draft_uuid)
 		ON DELETE CASCADE
 	) ENGINE=InnoDB");
 
