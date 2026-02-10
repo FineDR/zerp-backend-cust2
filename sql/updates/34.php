@@ -1,5 +1,5 @@
 <?php
-CreateTable('api_supplier_invoice_draft', "CREATE TABLE IF NOT EXISTS api_supplier_invoice_drafts (
+CreateTable('api_supplier_invoice_draft', "CREATE TABLE IF NOT EXISTS api_supplier_invoice_draft (
 	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 	draft_uuid CHAR(36) NOT NULL,
 	created_by VARCHAR(20) NOT NULL,
@@ -41,7 +41,7 @@ CreateTable('api_supplier_invoice_draft', "CREATE TABLE IF NOT EXISTS api_suppli
 	PRIMARY KEY (id),
 	KEY idx_draft_uuid (draft_uuid),
 	CONSTRAINT fk_lines_draft FOREIGN KEY (draft_uuid)
-		REFERENCES api_supplier_invoice_drafts (draft_uuid)
+		REFERENCES api_supplier_invoice_draft (draft_uuid)
 		ON DELETE CASCADE
 	) ENGINE=InnoDB");
 
@@ -58,11 +58,11 @@ CreateTable('api_supplier_invoice_draft', "CREATE TABLE IF NOT EXISTS api_suppli
 	UNIQUE KEY uq_draft_tax (draft_uuid, taxauthid),
 	KEY idx_draft_uuid (draft_uuid),
 	CONSTRAINT fk_taxes_draft FOREIGN KEY (draft_uuid)
-		REFERENCES api_supplier_invoice_drafts (draft_uuid)
+		REFERENCES api_supplier_invoice_draft (draft_uuid)
 		ON DELETE CASCADE
 	) ENGINE=InnoDB");
 
-	CreateTable('api_idempotency',"CREATE TABLE IF NOT EXISTS api_idempotency_keys (
+	CreateTable('api_idempotency_keys',"CREATE TABLE IF NOT EXISTS api_idempotency_keys (
 	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 	idem_key VARCHAR(80) NOT NULL,
 	created_by VARCHAR(20) NOT NULL,
