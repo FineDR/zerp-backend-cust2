@@ -1692,7 +1692,6 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 					AND custbranch.debtorno = '" . $_SESSION['Items'.$identifier]->DebtorNo . "'
 					AND custbranch.branchcode='" . $_SESSION['Items'.$identifier]->Branch . "'";
 			}
-echo 'Line 1695 <br>'.$SQL; exit;
 
 			$ErrMsg = __('Sales analysis record could not be added or updated because');
 			$Result = DB_query($SQL, $ErrMsg, '', true);
@@ -1986,6 +1985,7 @@ echo 'Line 1695 <br>'.$SQL; exit;
 			$ErrMsg = __('Cannot insert the customer allocation of the receipt to the invoice because');
 			$Result = DB_query($SQL, $ErrMsg, '', true);
 		} //end if $_POST['AmountPaid']!= 0
+echo 'Line 1988 <br>'.$SQL; exit;
 
 		DB_Txn_Commit();
 	// *************************************************************************
