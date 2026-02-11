@@ -1930,6 +1930,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 
 			$ErrMsg = __('Cannot insert a bank transaction');
 			$Result = DB_query($SQL, $ErrMsg, '', true);
+echo 'Line 1933 <br>'.$SQL; exit;
 
 			//insert a new debtortrans for the receipt
 
@@ -1985,7 +1986,6 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 			$ErrMsg = __('Cannot insert the customer allocation of the receipt to the invoice because');
 			$Result = DB_query($SQL, $ErrMsg, '', true);
 		} //end if $_POST['AmountPaid']!= 0
-echo 'Line 1988 <br>'.$SQL; exit;
 
 		DB_Txn_Commit();
 	// *************************************************************************
