@@ -1932,7 +1932,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 			$Result = DB_query($SQL, $ErrMsg, '', true);
 
 			//insert a new debtortrans for the receipt
-
+echo 'Line 1976 <br>'.$SQL; exit;
 			$SQL = "INSERT INTO debtortrans (transno,
 							type,
 							debtorno,
@@ -1973,7 +1973,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 			$Result = DB_query($SQL, $ErrMsg, '', true);
 
 			//and finally add the allocation record between receipt and invoice
-echo 'Line 1976 <br>'.$SQL; exit;
+
 
 			$SQL = "INSERT INTO custallocns (	amt,
 												datealloc,
