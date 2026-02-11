@@ -1641,7 +1641,6 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 			$Result = DB_query($SQL, $ErrMsg, '', true);
 
 			$MyRow = DB_fetch_row($Result);
-echo 'Line 1664 <br>'.$SQL; exit;
 			if ($MyRow[0]>0) {  /*Update the existing record that already exists */
 
 				$SQL = "UPDATE salesanalysis
@@ -1693,6 +1692,7 @@ echo 'Line 1664 <br>'.$SQL; exit;
 					AND custbranch.debtorno = '" . $_SESSION['Items'.$identifier]->DebtorNo . "'
 					AND custbranch.branchcode='" . $_SESSION['Items'.$identifier]->Branch . "'";
 			}
+echo 'Line 1695 <br>'.$SQL; exit;
 
 			$ErrMsg = __('Sales analysis record could not be added or updated because');
 			$Result = DB_query($SQL, $ErrMsg, '', true);
