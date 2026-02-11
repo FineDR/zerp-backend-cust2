@@ -1932,7 +1932,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 			$Result = DB_query($SQL, $ErrMsg, '', true);
 
 			//insert a new debtortrans for the receipt
-echo 'Line 1976 <br>'.$SQL; exit;
+
 			$SQL = "INSERT INTO debtortrans (transno,
 							type,
 							debtorno,
@@ -1959,7 +1959,7 @@ echo 'Line 1976 <br>'.$SQL; exit;
 						'" . $_SESSION['Items'.$identifier]->LocationName . ' ' . __('Counter Sale') ."',
 						'1',
 						'" . $_SESSION['Items'.$identifier]->SalesPerson . "')";
-
+echo 'Line 1962 <br>'.$SQL; exit;
 			$ErrMsg = __('Cannot insert a receipt transaction against the customer because') ;
 			$Result = DB_query($SQL, $ErrMsg, '', true);
 
