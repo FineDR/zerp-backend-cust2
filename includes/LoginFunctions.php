@@ -1,5 +1,7 @@
 <?php
 
+ include('AuditScriptsFunctions.php');
+ 
 /* Performs login checks and $_SESSION initialisation */
 
 define('UL_OK',  0);		/* User verified, session initialised */
@@ -19,6 +21,10 @@ function userLogin($Name, $Password, $SysAdminEmail = '') {
 
 	if (!isset($_SESSION['AccessLevel']) OR $_SESSION['AccessLevel'] == '' OR
 		(isset($Name) AND $Name != '')) {
+
+		/* Log the script we run so we can optimize CPU time*/	
+		$_SESSION['ScriptStartTime'] = microtime();
+		
 		/* if not logged in */
 
 		$_SESSION['AccessLevel'] = '';
@@ -89,6 +95,8 @@ function userLogin($Name, $Password, $SysAdminEmail = '') {
 				unset($_POST['Password']);
 				unset($_SESSION['DatabaseName']);
 
+				// log the script running time
+				RecordRunningTime('Login attempt on blocked account', $Name); 
 				return  UL_BLOCKED;
 			}
 
@@ -114,19 +122,12 @@ function userLogin($Name, $Password, $SysAdminEmail = '') {
 			$_SESSION['ShowFieldHelp'] = $MyRow['showfieldhelp'];
 			$_SESSION['ScreenFontSize'] = $MyRow['fontsize'];
 
-			switch ($_SESSION['ScreenFontSize']) {
-				case 0:
-					$_SESSION['FontSize'] = '0.667rem';
-				break;
-				case 1:
-					$_SESSION['FontSize'] = '0.833rem';
-				break;
-				case 2:
-					$_SESSION['FontSize'] = '1rem';
-				break;
-				default:
-					$_SESSION['FontSize'] = '0.833rem';
-			}
+			$_SESSION['FontSize'] = match ($_SESSION['ScreenFontSize']) {
+				'0'       => '0.667rem',
+				'1'       => '0.833rem',
+				'2'       => '1rem',
+				default => '0.833rem',
+			};
 
 			if (isset($MyRow['pdflanguage'])) {
 				$_SESSION['PDFLanguage'] = $MyRow['pdflanguage'];
@@ -151,6 +152,8 @@ function userLogin($Name, $Password, $SysAdminEmail = '') {
 			$Sec_Result = DB_query($SQL);
 			$_SESSION['AllowedPageSecurityTokens'] = array();
 			if (DB_num_rows($Sec_Result)==0) {
+				// log the script running time
+				RecordRunningTime('Login attempt with security tokens error', $_SESSION['UserID']); 
 				return  UL_CONFIGERR;
 			} else {
 				$i = 0;
@@ -183,6 +186,12 @@ function userLogin($Name, $Password, $SysAdminEmail = '') {
 									WHERE  transactiondate <= '" . Date('Y-m-d', mktime(0,0,0, Date('m')-$_SESSION['MonthsAuditTrail'])) . "'";
 							$ErrMsg = __('There was a problem deleting expired audit-trail history');
 							$Result = DB_query($SQL);
+
+							 $SQL = "DELETE FROM auditscripts
+									WHERE  executiondate <= '" . Date('Y-m-d', mktime(0,0,0, Date('m')-$_SESSION['MonthsAuditTrail'])) . "'";
+							$ErrMsg = __('There was a problem deleting expired audit-script history');
+							$Result = DB_query($SQL);
+
 						}
 					}
 				}
@@ -202,7 +211,6 @@ function userLogin($Name, $Password, $SysAdminEmail = '') {
 								$CurrenciesResult = DB_query("SELECT currabrev FROM currencies");
 								while ($CurrencyRow = DB_fetch_row($CurrenciesResult)){
 									if ($CurrencyRow[0]!=$_SESSION['CompanyRecord']['currencydefault']){
-
 										$Rate = GetCurrencyRate($CurrencyRow[0],$CurrencyRates);
 										if ($Rate == '') {
 											$Rate = 1;
@@ -216,7 +224,14 @@ function userLogin($Name, $Password, $SysAdminEmail = '') {
 							$CurrenciesResult = DB_query("SELECT currabrev FROM currencies");
 							while ($CurrencyRow = DB_fetch_row($CurrenciesResult)){
 								if ($CurrencyRow[0]!=$_SESSION['CompanyRecord']['currencydefault']){
-									$UpdateCurrRateResult = DB_query("UPDATE currencies SET rate='" . google_currency_rate($CurrencyRow[0]) . "'
+									if ($_SESSION['ExchangeRateFeed'] == 'ECB') {
+										$CurrencyRatesArray = GetECBCurrencyRates();
+									} elseif ($_SESSION['ExchangeRateFeed'] == 'DXR') {
+										$CurrencyRatesArray = GetDXRCurrencyRates();
+									} else {
+										$CurrencyRatesArray = array();
+									}
+									$UpdateCurrRateResult = DB_query("UPDATE currencies SET rate='" . GetCurrencyRate($CurrencyRow[0], $CurrencyRatesArray) . "'
 																		WHERE currabrev='" . $CurrencyRow[0] . "'");
 								}
 							}
@@ -245,11 +260,15 @@ function userLogin($Name, $Password, $SysAdminEmail = '') {
 			}
 
 			if (!isset($_SESSION['DB_Maintenance'])) {
+				// log the script running time
+				RecordRunningTime('Login attempt with config error', $_SESSION['UserID']); 
 				return  UL_CONFIGERR;
 			} else {
 				if ($_SESSION['DB_Maintenance']==-1 AND !in_array(15, $_SESSION['AllowedPageSecurityTokens'])) {
 					// the configuration setting has been set to -1 ==> Allow SysAdmin Access Only
 					// the user is NOT a SysAdmin
+					// log the script running time
+					RecordRunningTime('Login attempt while on maintenance mode', $_SESSION['UserID']); 
 					return  UL_MAINTENANCE;
 				}
 			}
@@ -280,14 +299,20 @@ function userLogin($Name, $Password, $SysAdminEmail = '') {
 				unset($_POST['Password']);
 				unset($_SESSION['DatabaseName']);
 
+				// log the script running time
+				RecordRunningTime('Login attempt with wrong password: Account Blocked', $Name); 
 				return  UL_BLOCKED;
 			}
 
+			// log the script running time
+			RecordRunningTime('Login attempt with wrong password', $Name); 
 			return  UL_NOTVALID;
 		} // End of incorrect password
 	} // End of userid/password check
 
 	// Run with debugging messages for the system administrator(s) but not anyone else
+	// log the script running time
+	RecordRunningTime('Login successful', $_SESSION['UserID']); 
 
 	return   UL_OK;		    /* All is well */
 }

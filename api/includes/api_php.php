@@ -26,6 +26,8 @@ if (!isset($WebErpSessionType)) {
 	}
 }
 
+$api_DatabaseName = $_SESSION['DatabaseName'] ?? $DefaultDatabase;
+
 include(__DIR__ . '/api_errorcodes.php');
 /* Include SQL_CommonFunctions.php, to use GetNextTransNo(). */
 include($PathPrefix . 'includes/SQL_CommonFunctions.php');

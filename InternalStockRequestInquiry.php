@@ -278,6 +278,7 @@ if (!isset($StockID) AND !isset($_POST['Search'])) {//The scripts is just opened
 		echo '<p class="bad">' . __('Problem Report') . ':<br />' . __('There are no stock categories currently defined please use the link below to set them up') . '</p>';
 		echo '<br />
 			<a href="' . $RootPath . '/StockCategories.php">' . __('Define Stock Categories') . '</a>';
+		include('includes/footer.php');
 		exit();
 	}
 
@@ -286,8 +287,7 @@ if (!isset($StockID) AND !isset($_POST['Search'])) {//The scripts is just opened
 
 if (isset($StockItemsResult)){
 
-	if (isset($StockItemsResult)
-	AND DB_num_rows($StockItemsResult)>1) {
+	if (DB_num_rows($StockItemsResult)>1) {
 	echo '<a href="' . $RootPath . '/InternalStockRequestInquiry.php">' . __('Return') . '</a>
 		<table cellpadding="2" class="selection">
 			<thead>

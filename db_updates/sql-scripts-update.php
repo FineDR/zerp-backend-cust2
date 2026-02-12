@@ -2402,4 +2402,48 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 							WHERE stockmoves.type=10
 							AND stockmoves.transno='288'
 							AND stockmoves.show_on_inv_crds=1;
+
+
+
+							INSERT INTO debtortrans (transno, type, debtorno, trandate, inputdate, 
+							                         prd, reference, rate, ovamount, alloc, 
+													 invtext, settled, salesperson) 
+							VALUES ('61', 12, 'COUNTER', '2026-02-11', '2026-02-11 17-39-44', 
+							         '3', '293', '1', '-1180', '-1180', 
+				                      'Morogoro Counter Sale', '1', '1');
 }
+
+
+======================git pull conflict===========================
+user@Users-MacBook-Pro zerp-backend % git pull origin2 master
+remote: Enumerating objects: 605, done.
+remote: Counting objects: 100% (364/364), done.
+remote: Compressing objects: 100% (36/36), done.
+remote: Total 605 (delta 341), reused 329 (delta 328), pack-reused 241 (from 3)
+Receiving objects: 100% (605/605), 1.11 MiB | 1.03 MiB/s, done.
+Resolving deltas: 100% (416/416), completed with 142 local objects.
+From github.com:timschofield/webERP
+ * branch                master     -> FETCH_HEAD
+   69c45272c..884d75fc2  master     -> origin2/master
+Auto-merging ConfirmDispatch_Invoice.php
+Auto-merging CounterSales.php
+Auto-merging ManualContents.php
+CONFLICT (content): Merge conflict in ManualContents.php
+Auto-merging PrintCustTrans.php
+Auto-merging Suppliers.php
+Auto-merging api/includes/api_debtortransactions.php
+Auto-merging api/includes/api_php.php
+CONFLICT (content): Merge conflict in api/includes/api_php.php
+Auto-merging api/includes/api_session.php
+CONFLICT (content): Merge conflict in api/includes/api_session.php
+Auto-merging doc/Manual/ManualAPIFunctions.php
+Auto-merging includes/SQL_CommonFunctions.php
+Auto-merging sql/updates/32.php
+CONFLICT (add/add): Merge conflict in sql/updates/32.php
+Auto-merging sql/updates/33.php
+CONFLICT (add/add): Merge conflict in sql/updates/33.php
+Auto-merging sql/updates/34.php
+CONFLICT (add/add): Merge conflict in sql/updates/34.php
+Automatic merge failed; fix conflicts and then commit the result.
+user@Users-MacBook-Pro zerp-backend % 
+==========================================

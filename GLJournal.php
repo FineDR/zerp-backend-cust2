@@ -611,7 +611,8 @@ echo '</table>
 	</tr>
 	</table>';
 
-if (abs($_SESSION['JournalDetail']->JournalTotal) < 0.001 and $_SESSION['JournalDetail']->GLItemCounter > 0) {
+if (abs($_SESSION['JournalDetail']->JournalTotal) < CurrencyTolerance($_SESSION['CompanyRecord']['currencydefault']) 
+	and $_SESSION['JournalDetail']->GLItemCounter > 0) {
 	echo '<div class="centre">
 			<input type="submit" name="CommitBatch" value="', __('Accept and Process Journal') , '" /><br />
 			<input type="submit" name="ConfimSave" value="', __('Save as a template') , '" />

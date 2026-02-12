@@ -869,16 +869,12 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 			if (isset($_POST[$QuickEntryQty])) {
 				$NewItemQty = filter_number_format($_POST[$QuickEntryQty]);
 			}
-			if (isset($_POST[$QuickEntryItemDue])) {
-				$NewItemDue = $_POST[$QuickEntryItemDue];
-			} else {
-				$NewItemDue = DateAdd (date($_SESSION['DefaultDateFormat']),'d', $_SESSION['Items'.$identifier]->DeliveryDays);
-			}
-			if (isset($_POST[$QuickEntryPOLine])) {
-				$NewPOLine = $_POST[$QuickEntryPOLine];
-			} else {
-				$NewPOLine = 0;
-			}
+			  $NewItemDue = $_POST[$QuickEntryItemDue] ?? DateAdd(
+				  date($_SESSION['DefaultDateFormat']),
+				  'd',
+				  $_SESSION['Items' . $identifier]->DeliveryDays
+			  );
+			  $NewPOLine = $_POST[$QuickEntryPOLine] ?? 0;
 
 			if (!isset($NewItem)){
 				unset($NewItem);
@@ -979,8 +975,9 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 			} else {
 				$AssetStockID = 'ASSET-' . $_POST['AssetToDisposeOf'];
 			}
-			if ($AssetRow['nbv']==0){
-				$NBV = 0.001; /* stock must have a cost to be invoiced if the flag is set so set to 0.001 */
+			if ($AssetRow['nbv'] == 0){
+				/* stock must have a cost to be invoiced if the flag is set so set to the base currency tolerance */
+				$NBV = CurrencyTolerance($_SESSION['Items' . $identifier]->DefaultCurrency);
 			} else {
 				$NBV = $AssetRow['nbv'];
 			}
@@ -1010,11 +1007,7 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 												FROM locations");
 			/*Now the asset has been added to the stock master we can add it to the sales order */
 			$NewItemDue = date($_SESSION['DefaultDateFormat']);
-			if (isset($_POST['POLine'])){
-				$NewPOLine = $_POST['POLine'];
-			} else {
-				$NewPOLine = 0;
-			}
+			$NewPOLine = $_POST['POLine'] ?? 0;
 			$NewItem = $AssetStockID;
 			include('includes/SelectOrderItems_IntoCart.php');
 		} //end if adding a fixed asset to the order
@@ -1048,7 +1041,7 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 
 				$Quantity = round(filter_number_format($_POST['Quantity_' . $OrderLine->LineNumber]),$OrderLine->DecimalPlaces);
 
-				if (ABS($OrderLine->Price - filter_number_format($_POST['Price_' . $OrderLine->LineNumber]))>0.01){
+				if (ABS($OrderLine->Price - filter_number_format($_POST['Price_' . $OrderLine->LineNumber])) > CurrencyTolerance($_SESSION['Items' . $identifier]->DefaultCurrency)){
 					/*There is a new price being input for the line item */
 					$Price = filter_number_format($_POST['Price_' . $OrderLine->LineNumber]);
 					if (isset($_POST['Discount_' . $OrderLine->LineNumber]) AND is_numeric(filter_number_format($_POST['Discount_' . $OrderLine->LineNumber]))) {
@@ -1062,12 +1055,10 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 					}
 
 
-				} elseif (isset($_POST['GPPercent_'.$OrderLine->LineNumber]) AND ABS($OrderLine->GPPercent - filter_number_format($_POST['GPPercent_' . $OrderLine->LineNumber]))>=0.01) {
+				} elseif (isset($_POST['GPPercent_'.$OrderLine->LineNumber]) AND ABS($OrderLine->GPPercent - filter_number_format($_POST['GPPercent_' . $OrderLine->LineNumber])) >= CurrencyTolerance($_SESSION['Items' . $identifier]->DefaultCurrency)) {
 					/* A GP % has been input so need to do a recalculation of the price at this new GP Percentage */
 
-
 					prnMsg(__('Recalculated the price from the GP % entered - the GP % was') . ' ' . $OrderLine->GPPercent . '  the new GP % is ' . filter_number_format($_POST['GPPercent_' . $OrderLine->LineNumber]),'info');
-
 
 					$Price = ($OrderLine->StandardCost*$ExRate)/(1 -((filter_number_format($_POST['GPPercent_' . $OrderLine->LineNumber]) + filter_number_format($_POST['Discount_' . $OrderLine->LineNumber]))/100));
 				} else {
@@ -1110,7 +1101,7 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 					prnMsg( __('You are attempting to make the quantity ordered a quantity less than has already been invoiced') . '. ' . __('The quantity delivered and invoiced cannot be modified retrospectively'),'warn');
 				} elseif ($OrderLine->Quantity !=$Quantity
 							OR $OrderLine->Price != $Price
-							OR ABS($OrderLine->DiscountPercent - $DiscountPercentage/100) >0.001
+							OR ABS($OrderLine->DiscountPercent - $DiscountPercentage/100) > CurrencyTolerance($_SESSION['Items' . $identifier]->DefaultCurrency)
 							OR $OrderLine->Narrative != $Narrative
 							OR $OrderLine->ItemDue != $_POST['ItemDue_' . $OrderLine->LineNumber]
 							OR $OrderLine->POLine != $_POST['POLine_' . $OrderLine->LineNumber]) {
@@ -1190,7 +1181,8 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 		echo '<meta http-equiv="refresh" content="0; url=' . $RootPath . '/DeliveryDetails.php?identifier='.$identifier . '">';
 		prnMsg(__('You should automatically be forwarded to the entry of the delivery details page') . '. ' . __('if this does not happen') . ' (' . __('if the browser does not support META Refresh') . ') ' .
 		   '<a href="' . $RootPath . '/DeliveryDetails.php?identifier='.$identifier . '">' . __('click here') . '</a> ' . __('to continue'), 'info');
-	   	exit();
+	   	include('includes/footer.php');
+		exit();
 	}
 
 

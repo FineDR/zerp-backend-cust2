@@ -9,6 +9,8 @@ $ViewTopic = 'GeneralLedger';
 $BookMark = 'BankMatching';
 include('includes/header.php');
 
+include('includes/SQL_CommonFunctions.php');
+
 if (isset($_POST['AfterDate'])){$_POST['AfterDate'] = ConvertSQLDate($_POST['AfterDate']);}
 if (isset($_POST['BeforeDate'])){$_POST['BeforeDate'] = ConvertSQLDate($_POST['BeforeDate']);}
 
@@ -48,7 +50,7 @@ if (isset($_GET['Account'])) {
 
 if (isset($_POST['Update']) AND $_POST['RowCounter']>1) {
 	for ($Counter=1;$Counter <= $_POST['RowCounter']; $Counter++) {
-		if (isset($_POST['Clear_' . $Counter]) AND $_POST['Clear_' . $Counter]==true) {
+		if (isset($_POST['Clear_' . $Counter]) AND $_POST['Clear_' . $Counter]) {
 			/*Get amount to be cleared */
 			$SQL = "SELECT amount,
 							exrate
@@ -79,7 +81,7 @@ if (isset($_POST['Update']) AND $_POST['RowCounter']>1) {
 			$Result = DB_query($SQL, $ErrMsg);
 
 		} elseif (isset($_POST['Unclear_' . $Counter])
-					AND $_POST['Unclear_' . $Counter]==true) {
+				  AND $_POST['Unclear_' . $Counter]) {
 
 			$SQL = "UPDATE banktrans SET amountcleared = 0
 					 WHERE banktransid='" . $_POST['BankTrans_' . $Counter]."'";
@@ -248,7 +250,7 @@ if ($InputError != 1
 							AND transdate >= '". $SQLAfterDate . "'
 							AND transdate <= '" . $SQLBeforeDate . "'
 							AND bankact='" . $_POST['BankAccount'] . "'
-							AND  ABS(amountcleared - (amount / exrate)) > 0.009
+							AND  ABS(amountcleared - (amount / exrate)) > " . CurrencyTolerance($CurrCode) . "
 						ORDER BY transdate";
 		} else { /* Type must == Receipts */
 			$SQL = "SELECT banktransid,
@@ -262,7 +264,7 @@ if ($InputError != 1
 							AND transdate >= '". $SQLAfterDate . "'
 							AND transdate <= '" . $SQLBeforeDate . "'
 							AND bankact='" . $_POST['BankAccount'] . "'
-							AND  ABS(amountcleared - (amount / exrate)) > 0.009
+							AND  ABS(amountcleared - (amount / exrate)) > " . CurrencyTolerance($CurrCode) . "
 						ORDER BY transdate";
 		}
 	}
@@ -293,7 +295,7 @@ if ($InputError != 1
 
 		$DisplayTranDate = ConvertSQLDate($MyRow['transdate']);
 		$Outstanding = $MyRow['amt']- $MyRow['amountcleared'];
-		if (ABS($Outstanding)<0.009) { /*the payment is cleared dont show the check box*/
+		if (ABS($Outstanding) < CurrencyTolerance($CurrCode)) { /*the payment is cleared dont show the check box*/
 
 			echo '<tr class="striped_row">
 						<td>', $MyRow['ref'], '</td>

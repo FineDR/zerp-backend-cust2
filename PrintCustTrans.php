@@ -12,6 +12,8 @@ $BookMark = 'PrintInvoicesCredits';
 
 if (isset($_GET['orientation'])) {
 	$Orientation = $_GET['orientation'];
+} else {
+	$Orientation = 'landscape';
 }
 
 if (isset($_GET['FromTransNo'])) {
@@ -237,10 +239,12 @@ if (isset($PrintPDF)
 			// Security checks as before (salesman/customer authorization)
 			if ($_SESSION['SalesmanLogin'] != '' AND $_SESSION['SalesmanLogin'] != $MyRow['salesman']){
 				echo '<p class="bad">' . __('Your account is set up to see only a specific salespersons orders. You are not authorised to view transaction for this order') . '</p>';
+				include('includes/footer.php');
 				exit();
 			}
 			if (isset($CustomerLogin) && $CustomerLogin == 1 AND $MyRow['debtorno'] != $_SESSION['CustomerID']){
 				echo '<p class="bad">' . __('This transaction is addressed to another customer and cannot be displayed for privacy reasons') . '</p>';
+				include('includes/footer.php');
 				exit();
 			}
 
@@ -614,7 +618,7 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 
 	if (!isset($FromTransNo) OR $FromTransNo=='') {
 
-		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') .  '" method="post">';
+		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') .  '" method="post" target="_blank">';
 		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
 		echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/printer.png" title="' . __('Print') . '" alt="" />' . ' ' . __('Print Invoices or Credit Notes (Landscape Mode)') . '</p>';

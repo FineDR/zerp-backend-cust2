@@ -27,3 +27,9 @@ if ($_SESSION['Updates']['Errors'] == 0) {
 */
 ChangeColumnSize('password', 'emailsettings', 'VARCHAR(100)', ' NOT NULL ', '', '100');
 UpdateDBNo(basename(__FILE__, '.php'), __('Increase the potential size of the SMPT server password to 100 chars'));
+
+AddCalculatedColumn('balance', 'supptrans', 'double', ' NOT NULL ', '(ovamount + ovgst  - alloc)', 'id');
+
+if ($_SESSION['Updates']['Errors'] == 0) {
+	UpdateDBNo(basename(__FILE__, '.php'), __('Create calculated fields to improve speed of access'));
+}

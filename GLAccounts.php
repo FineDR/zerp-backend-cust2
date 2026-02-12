@@ -1,27 +1,12 @@
 <?php
 
-/* Defines the general ledger accounts */
-/* To delete, insert, or update an account. */
-
-function CashFlowsActivityName($Activity) {
-	// Converts the cash flow activity number to an activity text.
-	switch($Activity) {
-		case -1: return '<b>' . __('Not set up') . '</b>';
-		case 0: return __('No effect on cash flow');
-		case 1: return __('Operating activity');
-		case 2: return __('Investing activity');
-		case 3: return __('Financing activity');
-		case 4: return __('Cash or cash equivalent');
-		default: return '<b>' . __('Unknown') . '</b>';
-	}
-}
-
 require(__DIR__ . '/includes/session.php');
 
 $Title = __('General Ledger Accounts');
 $ViewTopic = 'GeneralLedger';
 $BookMark = 'GLAccounts';
 include('includes/header.php');
+include('includes/GLFunctions.php');
 
 echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/transactions.png" title="', // Icon image.
 	$Title, '" /> ', // Icon title.
@@ -68,20 +53,29 @@ if (isset($_POST['submit'])) {
 
 		/*SelectedAccount is null cos no item selected on first time round so must be adding a	record must be submitting new entries */
 
-		$SQL = "INSERT INTO chartmaster (
-					accountcode,
-					accountname,
-					group_,
-					cashflowsactivity)
-				VALUES ('" .
-					$_POST['AccountCode'] . "', '" .
-					$_POST['AccountName'] . "', '" .
-					$_POST['Group'] . "', '" .
-					$_POST['CashFlowsActivity'] . "')";
-		$ErrMsg = __('Could not add the new account code');
-		$Result = DB_query($SQL, $ErrMsg);
+		// Does the account code already exist
+		$SQL = "SELECT accountcode FROM chartmaster WHERE accountcode='" . $_POST['AccountCode'] . "'";
+		$Result = DB_query($SQL);
 
-		prnMsg(__('The new general ledger account has been added'),'success');
+		if (DB_num_rows($Result) == 0) {
+
+			$SQL = "INSERT INTO chartmaster (
+								accountcode,
+								accountname,
+								group_,
+								cashflowsactivity)
+							VALUES ('" .
+								$_POST['AccountCode'] . "', '" .
+								$_POST['AccountName'] . "', '" .
+								$_POST['Group'] . "', '" .
+								$_POST['CashFlowsActivity'] . "')";
+			$ErrMsg = __('Could not add the new account code');
+			$Result = DB_query($SQL, $ErrMsg);
+
+			prnMsg(__('The new general ledger account has been added'),'success');
+		} else {
+			prnMsg(__('The account code already exists'),'error');
+		}
 	}
 
 	unset($_POST['Group']);

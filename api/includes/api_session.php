@@ -10,7 +10,20 @@ if (!isset($PathPrefix)) {
 
 require($PathPrefix.'vendor/autoload.php');
 
-/// @todo error out if config.php does not yet exist
+// error out if config.php does not yet exist
+if (!file_exists($PathPrefix . 'config.php')) {
+	// gg: there is no need for htmlspecialchars here, as we never output $RootPath into html
+	// assumes the api entrypoint script is inside the /api folder is
+	$RootPath = dirname($_SERVER['PHP_SELF'], 2);
+	if ($RootPath == '/' or $RootPath == "\\") {
+		$RootPath = '';
+	}
+	header('Location:' . $RootPath . '/install/index.php');
+	exit();
+}
+
+$DefaultDatabase = 'weberpdemo';
+
 include($PathPrefix . 'config.php');
 
 // an upgrade issue - mysql php extension is not available anymore, unless users are on obsolete php versions

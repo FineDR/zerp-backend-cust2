@@ -122,9 +122,9 @@ echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'
       <input type="hidden" name="EntryType" value="KEYED" />';
 echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 if ( isset($_GET['EditControlled']) ) {
-	$EditControlled = isset($_GET['EditControlled'])?$_GET['EditControlled']:false;
+	$EditControlled = isset($_GET['EditControlled']) && $_GET['EditControlled'];
 } elseif ( isset($_POST['EditControlled']) ){
-	$EditControlled = isset($_POST['EditControlled'])?$_POST['EditControlled']:false;
+	$EditControlled = isset($_POST['EditControlled']) && $_POST['EditControlled'];
 } else {
 	$EditControlled=false;
 }
@@ -199,9 +199,9 @@ echo '</form>
 		</td><td valign="top">';
 $ShowExisting=true;
 $_POST['EntryType']='Sequential';
-if ($ShowExisting){
+# if ($ShowExisting){
 	include('includes/InputSerialItemsExisting.php');
-}
+# }
 echo '</td>
 	</tr>
 	</table>
