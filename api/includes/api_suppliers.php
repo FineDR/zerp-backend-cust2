@@ -620,7 +620,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-	$supplierNo = (int)$SupplierInvoiceHeader['supplierno'];
+	$supplierNo = $SupplierInvoiceHeader['supplierno'];
 
 	//$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
 
