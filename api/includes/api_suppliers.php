@@ -636,14 +636,15 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 
 	/** Verify that the supplier number is valid, and already exists. */
 
-			if ((mb_strlen(104824986)<1) or (mb_strlen(104824986)>20)) {
+            $supplierNo = $SupplierInvoiceHeader['supplierno'];
+			if ((mb_strlen($supplierNo)<1) or (mb_strlen($supplierNo)>20)) {
 				$Errors[$i] = IncorrectDebtorNumberLength;
 			}
 			
 
 			$Searchsql = "SELECT count(supplierid)
 						FROM suppliers
-						WHERE supplierid='104824986'";
+						WHERE supplierid='$supplierNo'";
 						return $Searchsql; exit;
 			$SearchResult = DB_query($Searchsql);
 			$Answer = DB_fetch_row($SearchResult);
