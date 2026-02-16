@@ -349,13 +349,14 @@ function InsertSalesOrderHeader($OrderHeader, $user, $password) {
 		$FieldValues.="'".$Value."', ";
 	}
 	$SQL = "INSERT INTO salesorders (" . mb_substr($FieldNames,0,-2) . ")
-				VALUES (' . mb_substr($FieldValues,0,-2). ')";
+				VALUES (" . mb_substr($FieldValues,0,-2). ")";
 	if (sizeof($Errors)==0) {
 
 		$Result = api_DB_Query($SQL);
+
 		if (DB_error_no() != 0) {
-			//$Errors[0] = DatabaseUpdateFailed;
-			$Errors[0] = $SQL;
+			$Errors[0] = DatabaseUpdateFailed;
+			//$Errors[0] = $SQL;
 		} else {
 			$Errors[0]=0;
 			$Errors[1]=$OrderHeader['orderno'];
