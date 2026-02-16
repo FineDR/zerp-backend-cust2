@@ -752,12 +752,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	require_once(__DIR__ . '../../includes/GLFunctions.php');
 */
 
-	require_once '../../includes/session.php';
-	require_once '../../includes/DefineSuppTransClass.php';
-	require_once '../../includes/SQL_CommonFunctions.php';
-	require_once '../../includes/StockFunctions.php';
-	require_once '../../includes/GLFunctions.php';
-
 	return $supplierNo; exit;
 	if (!isset($_SESSION['UserID']) || $_SESSION['UserID'] === '') {
 		header('Content-Type: text/plain', true, 401);
