@@ -636,7 +636,9 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	/** Verify that the supplier number is valid, and already exists. */
 	//$supplierNo = '104824986';
 	$supplierNo = $SupplierInvoiceHeader['supplierno'];
-	if ((strlen($supplierNo)<1) or (strlen($supplierNo)>20)) {
+			return mb_strlen($supplierNo); exit;
+
+	if ((mb_strlen($supplierNo)<1) or (mb_strlen($supplierNo)>20)) {
 		$Errors[$i] = IncorrectDebtorNumberLength;
 	}
 		return $supplierNo; exit;
