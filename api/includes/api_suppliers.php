@@ -633,7 +633,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 			$SupplierInvoiceLine[$key] = DB_escape_string($value);
 		}
 	}
-				return $_SESSION['UserID']; exit;
 
 	//$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
 
@@ -644,6 +643,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	if (isset($SupplierInvoiceHeader['deliverydate'])){
 		$Errors=VerifyDateFormat($SupplierInvoiceHeader['deliverydate'], sizeof($Errors), $Errors);
 	}
+				return $_SESSION['UserID']; exit;
 
 	/*
 	CREATE TABLE IF NOT EXISTS api_supplier_invoice_draft(
