@@ -620,6 +620,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
+	$supplierNo = (int)$SupplierInvoiceHeader['supplierno'];
 
 	//$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
 
@@ -636,7 +637,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 
 	/** Verify that the supplier number is valid, and already exists. */
 	//$supplierNo = '104824986';
-	$supplierNo = (int)$SupplierInvoiceHeader['supplierno'];
+	//$supplierNo = (int)$SupplierInvoiceHeader['supplierno'];
 	if ((mb_strlen($supplierNo)<1) or (mb_strlen($supplierNo)>20)) {
 		$Errors[$i] = IncorrectDebtorNumberLength;
 	}
