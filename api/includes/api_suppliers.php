@@ -743,7 +743,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	 * Auth: cookie session (must be logged-in); API stores drafts in MySQL.
 	 */
 
-	require_once(__DIR__ . '../../includes/session.php');
+	require_once(__DIR__ . '/../includes/session.php');
 	return $supplierNo; exit;
 
 	require_once(__DIR__ . '../../includes/DefineSuppTransClass.php');
