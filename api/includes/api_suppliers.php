@@ -643,7 +643,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	if (isset($SupplierInvoiceHeader['deliverydate'])){
 		$Errors=VerifyDateFormat($SupplierInvoiceHeader['deliverydate'], sizeof($Errors), $Errors);
 	}
-				return $_SESSION['UserID']; exit;
+				return $SupplierInvoiceHeader['supplierno']; exit;
 
 	/*
 	CREATE TABLE IF NOT EXISTS api_supplier_invoice_draft(
