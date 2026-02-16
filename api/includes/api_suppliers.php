@@ -644,12 +644,12 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	$Searchsql = "SELECT count(supplierid)
 				FROM suppliers
 				WHERE supplierid='$supplierNo'";
-return $Searchsql;
 	$SearchResult = DB_query($Searchsql);
 	$Answer = DB_fetch_row($SearchResult);
 	if ($Answer[0] == 0) {
 		$Errors[$i] = 'SupplierNoDoesntExists';
 	}
+return $Errors.' '.$Searchsql;
 
 	//$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
 
