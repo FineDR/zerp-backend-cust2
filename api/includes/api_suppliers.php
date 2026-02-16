@@ -634,6 +634,19 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		}
 	}
 
+	/** Verify that the supplier number is valid, and already exists. */
+	if ((mb_strlen($SupplierInvoiceHeader['supplierno'])<1) or (mb_strlen($SupplierInvoiceHeader['supplierno'])>20)) {
+		$Errors[$i] = IncorrectDebtorNumberLength;
+	}
+	$Searchsql = "SELECT count(supplierid)
+				  FROM suppliers
+				  WHERE supplierid='".$SupplierInvoiceHeader['supplierno']."'";
+	$SearchResult = DB_query($Searchsql);
+	$Answer = DB_fetch_row($SearchResult);
+	if ($Answer[0] == 0) {
+		$Errors[$i] = SupplierNoDoesntExists;
+	}
+
 	//$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
 
 	if (isset($SupplierInvoiceHeader['trandate'])){
