@@ -1182,7 +1182,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	$response = xmlrpc_server_call_method($server, $request, null, ['encoding' => 'utf-8']);
 	header('Content-Type: text/xml; charset=utf-8');
 	echo $response;
-return $supplierNo; exit;
+return $supplierNo.' - '.$response; exit;
 
 	xmlrpc_server_destroy($server);
 
