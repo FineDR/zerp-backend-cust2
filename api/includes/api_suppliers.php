@@ -821,7 +821,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 
 		return $st->Taxes ?? [];
 	}
-	return $supplierID; exit;
 
 	function draft_create(string $supplierID, string $idempotencyKey=''): array {
 		$cached = idem_get($idempotencyKey, 'draft_create');
@@ -1147,7 +1146,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	/* ---------------- XML-RPC registration ---------------- */
 
 	$server = xmlrpc_server_create();
-
+return $supplierNo; exit;
 	xmlrpc_server_register_method($server, "supplier_invoice.draft_create", function($method, $params) {
 		return draft_create((string)($params[0] ?? ''), (string)($params[1] ?? ''));
 	});
