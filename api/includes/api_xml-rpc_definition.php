@@ -4672,6 +4672,7 @@ return array(
 		"function" => "xmlrpc_InsertSupplierInvoice",
 		"signature" => $InsertSupplierInvoice_sig,
 		"docstring" => $InsertSupplierInvoice_doc),
+		/*
 	"weberp.xmlrpc_InsertSupplierInvoiceHeader" => array(
 		"function" => "xmlrpc_InsertSupplierInvoiceHeader",
 		"signature" => $InsertSupplierInvoiceHeader_sig,
@@ -4688,6 +4689,7 @@ return array(
 		"function" => "xmlrpc_ModifySupplierInvoiceLine",
 		"signature" => $ModifySupplierInvoiceLine_sig,
 		"docstring" => $ModifySupplierInvoiceLine_doc),
+		*/
 	"weberp.xmlrpc_GetSupplierInvoiceHeaderDetail" => array(
 		"function" => "xmlrpc_GetSupplierInvoiceHeaderDetail",
 		"signature" => $GetSupplierInvoiceHeaderDetail_sig,

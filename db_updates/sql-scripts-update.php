@@ -130,16 +130,16 @@ VALUES ('NS1369/005', 'NS1369/005','', '38', '10', '5000', '150', 'SP001', '');
 
 MUM2025-06-12345
 INSERT INTO debtorsmaster (debtorno, name, address1, address2, address3, address4, address5,
-                address6, currcode, salestype, paymentterms, clientsince)&#10;&#9; VALUES (&apos;&quot;&quot;,
+                address6, currcode, salestype, paymentterms, clientsince)<&#9; VALUES (&apos;"",
                Ludovick Rwabiz,1,2,3,4,5,
                6,TZS,01,2,2025-11-27&apos;)
 
 INSERT INTO debtorsmaster (debtorno, name, address1, address2, address3, address4, address5,
-                address6, currcode, salestype, paymentterms, clientsince) VALUES (&quot;,Ludovick
-                Rwabiz&quot;,1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;,
-                &quot;TZS&quot;, &quot;01&quot;, &quot;2&quot;, &quot;2025-11-27&quot;)
+                address6, currcode, salestype, paymentterms, clientsince) VALUES (",Ludovick
+                Rwabiz",1", "2", "3", "4", "5", "6",
+                "TZS", "01", "2", "2025-11-27")
 
-UPDATE debtorsmaster SET debtorno=&quot;RAH&quot;, name=&quot;Ludovick Rwabiz&quot;, address1=&quot;1&quot;, address2=&quot;2&quot;, address3=&quot;3&quot;, address4=&quot;4&quot;, address5=&quot;5&quot;, address6=&quot;TZS&quot;, currcode=&quot;TZS&quot;, salestype=&quot;01&quot;, paymentterms=&quot;2&quot;, edireference=&quot;TZS&quot;, clientsince=&quot;2025-11-27&quot; WHERE debtorno=&apos;RAH&apos;<
+UPDATE debtorsmaster SET debtorno="RAH", name="Ludovick Rwabiz", address1="1", address2="2", address3="3", address4="4", address5="5", address6="TZS", currcode="TZS", salestype="01", paymentterms="2", edireference="TZS", clientsince="2025-11-27" WHERE debtorno=&apos;RAH&apos;<
 
 CONSTRAINT ` custitem _ibfk_2` FOREIGN KEY (`debtorno`) REFERENCES `debtorsmaster` (`debtorno`)
 
@@ -150,7 +150,7 @@ $GetStockCatProperty_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValu
 
 
 
-INSERT INTO supptrans (transno,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;type,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;supplierno,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;suppreference,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;trandate,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;duedate,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;ovamount,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;ovgst,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;rate,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;transtext,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;inputdate)&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;VALUES (&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;5&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;20 ,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;104824986&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;2025-12-03&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;2025-12-03&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;11000&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;0&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;1&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;CURRENT_DATE)
+INSERT INTO supptrans (transno,<&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;type,<&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;supplierno,<&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;suppreference,<&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;trandate,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;duedate,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;ovamount,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;ovgst,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;rate,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;transtext,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;inputdate)&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;VALUES (&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;5&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;20 ,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;104824986&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;2025-12-03&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;2025-12-03&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;11000&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;0&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;1&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;CURRENT_DATE)
 
 
 SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debtortrans.ovfreight, debtortrans.ovgst, debtortrans.rate, 
@@ -2447,3 +2447,6 @@ CONFLICT (add/add): Merge conflict in sql/updates/34.php
 Automatic merge failed; fix conflicts and then commit the result.
 user@Users-MacBook-Pro zerp-backend % 
 ==========================================
+
+
+?xml version="1.0" encoding="utf-8"?><methodResponse><fault>< value><  struct><   member><    name>faultString/name><    value><     string>server error. method not found.&amp;#10;&amp;#10;weberp.xmlrpc_InsertSupplierInvoice/string><    /value><   /member><   member><    name>faultCode/name><    value><     int>-32601/int><    /value><   /member><  /struct>< /value></fault></methodResponse><
