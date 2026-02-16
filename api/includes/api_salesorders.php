@@ -348,7 +348,7 @@ function InsertSalesOrderHeader($OrderHeader, $user, $password) {
 		}
 		$FieldValues.="'".$Value."', ";
 	}
-	$SQL = "INSERT INTO salesorders (" . mb_substr($FieldNames,0,-2) . ") VALUES ('" . mb_substr($FieldValues,0,-2). "')";
+	$SQL = "INSERT INTO salesorders (" . mb_substr($FieldNames,0,-2) . ") VALUES (' . mb_substr($FieldValues,0,-2). ')";
 	//$SQL = "INSERT INTO salesorders (debtorno, branchcode, customerref, orderno) VALUES ('COUNTER', 'COUNTER', 'PO123', '75')
 	if (sizeof($Errors)==0) {
 
