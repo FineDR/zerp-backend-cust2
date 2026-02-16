@@ -779,8 +779,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		}
 		return [DB_fetch_array($res), null];
 	}
-	return $_SESSION['UserID']; exit;
-
 	function idem_get(string $key, string $action): ?array {
 		if ($key === '') return null;
 		$sql = "SELECT response_json FROM api_idempotency_keys
@@ -823,6 +821,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 
 		return $st->Taxes ?? [];
 	}
+	return $supplierNo; exit;
 
 	function draft_create(string $supplierID, string $idempotencyKey=''): array {
 		$cached = idem_get($idempotencyKey, 'draft_create');
