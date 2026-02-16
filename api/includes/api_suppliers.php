@@ -821,7 +821,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 
 		return $st->Taxes ?? [];
 	}
-	return $supplierNo; exit;
 
 	function draft_create(string $supplierID, string $idempotencyKey=''): array {
 		$cached = idem_get($idempotencyKey, 'draft_create');
@@ -835,6 +834,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$res = DB_query($sql, 'Supplier lookup failed');
 		if (DB_num_rows($res) !== 1) return fail("Supplier not found", ['supplierid'=>$supplierID]);
 		$row = DB_fetch_array($res);
+	return $supplierNo. '<br>'.$sql; exit;
 
 		// Local tax province from user location
 		$res2 = DB_query("SELECT taxprovinceid FROM locations WHERE loccode='" . DB_escape_string($_SESSION['UserStockLocation']) . "'");
