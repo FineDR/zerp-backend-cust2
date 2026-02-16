@@ -622,7 +622,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	}
 
 	//$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
-
+/*
 	foreach ($SupplierInvoiceHeader as $key => $value) {
 		if (is_string($value)) {
 			$SupplierInvoiceHeader[$key] = DB_escape_string($value);
@@ -633,6 +633,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 			$SupplierInvoiceLine[$key] = DB_escape_string($value);
 		}
 	}
+		*/
 
 	/** Verify that the supplier number is valid, and already exists. */
 	/*
