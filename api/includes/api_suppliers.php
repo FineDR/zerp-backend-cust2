@@ -638,6 +638,9 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	$supplierNo = (string)$SupplierInvoiceHeader['supplierno'];
 if (!is_string($supplierNo) || mb_strlen($supplierNo) > 20) {
 return 'Notastring!'; exit;
+}else{
+	return 'allgood'; exit;
+
 }			
 
 	if ((mb_strlen($supplierNo)<1) or (mb_strlen($supplierNo)>20)) {
