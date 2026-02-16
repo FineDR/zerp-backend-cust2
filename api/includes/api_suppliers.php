@@ -638,6 +638,8 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	if ((mb_strlen($SupplierInvoiceHeader['supplierno'])<1) or (mb_strlen($SupplierInvoiceHeader['supplierno'])>20)) {
 		$Errors[$i] = IncorrectDebtorNumberLength;
 	}
+					return $SupplierInvoiceHeader['supplierno']; exit;
+
 	$Searchsql = "SELECT count(supplierid)
 				  FROM suppliers
 				  WHERE supplierid='".$SupplierInvoiceHeader['supplierno']."'";
@@ -656,7 +658,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	if (isset($SupplierInvoiceHeader['deliverydate'])){
 		$Errors=VerifyDateFormat($SupplierInvoiceHeader['deliverydate'], sizeof($Errors), $Errors);
 	}
-				return $SupplierInvoiceHeader['supplierno']; exit;
 
 	/*
 	CREATE TABLE IF NOT EXISTS api_supplier_invoice_draft(
