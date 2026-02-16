@@ -635,22 +635,20 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	}
 
 	/** Verify that the supplier number is valid, and already exists. */
+	$supplierNo = '104824986';
+	if ((mb_strlen($supplierNo)<1) or (mb_strlen($supplierNo)>20)) {
+		$Errors[$i] = IncorrectDebtorNumberLength;
+	}
+	
+	$Searchsql = "SELECT count(supplierid)
+				FROM suppliers
+				WHERE supplierid='$supplierNo'";
 
-            $supplierNo = '104824986';
-			if ((mb_strlen($supplierNo)<1) or (mb_strlen($supplierNo)>20)) {
-				$Errors[$i] = IncorrectDebtorNumberLength;
-			}
-			
-
-			$Searchsql = "SELECT count(supplierid)
-						FROM suppliers
-						WHERE supplierid='$supplierNo'";
-						return $Searchsql; exit;
-			$SearchResult = DB_query($Searchsql);
-			$Answer = DB_fetch_row($SearchResult);
-			if ($Answer[0] == 0) {
-				$Errors[$i] = 'SupplierNoDoesntExists';
-			}
+	$SearchResult = DB_query($Searchsql);
+	$Answer = DB_fetch_row($SearchResult);
+	if ($Answer[0] == 0) {
+		$Errors[$i] = 'SupplierNoDoesntExists';
+	}
 
 	//$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
 
@@ -745,6 +743,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	 * Auth: cookie session (must be logged-in); API stores drafts in MySQL.
 	 */
 
+	return $supplierNo; exit;
 	require_once(__DIR__ . '../../includes/session.php');
 
 	require_once(__DIR__ . '../../includes/DefineSuppTransClass.php');
