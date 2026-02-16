@@ -728,12 +728,12 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	 */
 	
 	require_once(__DIR__ . '../../includes/session.php');
-/*
-	require_once(__DIR__ . '/../includes/DefineSuppTransClass.php');
-	require_once(__DIR__ . '/../includes/SQL_CommonFunctions.php');
-	require_once(__DIR__ . '/../includes/StockFunctions.php');
-	require_once(__DIR__ . '/../includes/GLFunctions.php');
-*/
+
+	require_once(__DIR__ . '../../includes/DefineSuppTransClass.php');
+	require_once(__DIR__ . '../../includes/SQL_CommonFunctions.php');
+	require_once(__DIR__ . '../../includes/StockFunctions.php');
+	require_once(__DIR__ . '../../includes/GLFunctions.php');
+
 	if (!isset($_SESSION['UserID']) || $_SESSION['UserID'] === '') {
 		header('Content-Type: text/plain', true, 401);
 		echo "Unauthorized (no session)";
