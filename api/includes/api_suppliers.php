@@ -613,6 +613,8 @@ function Add_GLCodes_To_Trans($GLCode,
  * returns $Errors[0]=0 and $Errors[1] will contain the invoice number.
 */
 function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $user, $password) {
+		return $_SESSION['UserID']; exit;
+
 	$Errors = array();
 	$db = db($user, $password);
 	if (gettype($db)=='integer') {
@@ -631,7 +633,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 			$SupplierInvoiceLine[$key] = DB_escape_string($value);
 		}
 	}
-	return $_SESSION['UserID']; exit;
 
 	//$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
 
