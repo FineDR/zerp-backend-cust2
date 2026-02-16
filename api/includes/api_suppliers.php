@@ -613,7 +613,6 @@ function Add_GLCodes_To_Trans($GLCode,
  * returns $Errors[0]=0 and $Errors[1] will contain the invoice number.
 */
 function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $user, $password) {
-		return $_SESSION['UserID']; exit;
 
 	$Errors = array();
 	$db = db($user, $password);
@@ -739,7 +738,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		echo "Unauthorized (no session)";
 		exit;
 	}
-
+		return $_SESSION['UserID']; exit;
 	function ok(array $data = []): array { return ['ok'=>true,'data'=>$data]; }
 	function fail(string $msg, array $extra=[]): array { return ['ok'=>false,'error'=>$msg,'extra'=>$extra]; }
 
