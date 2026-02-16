@@ -639,7 +639,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	if ((mb_strlen($supplierNo)<1) or (mb_strlen($supplierNo)>20)) {
 		$Errors[$i] = IncorrectDebtorNumberLength;
 	}
-	
+		return $supplierNo; exit;
 	$Searchsql = "SELECT count(supplierid)
 				FROM suppliers
 				WHERE supplierid='$supplierNo'";
