@@ -727,6 +727,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	 */
 	
 	require_once(__DIR__ . '../../includes/session.php');
+		return $_SESSION['UserID']; exit;
 
 	require_once(__DIR__ . '../../includes/DefineSuppTransClass.php');
 	require_once(__DIR__ . '../../includes/SQL_CommonFunctions.php');
@@ -738,7 +739,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		echo "Unauthorized (no session)";
 		exit;
 	}
-		return $_SESSION['UserID']; exit;
 	function ok(array $data = []): array { return ['ok'=>true,'data'=>$data]; }
 	function fail(string $msg, array $extra=[]): array { return ['ok'=>false,'error'=>$msg,'extra'=>$extra]; }
 
