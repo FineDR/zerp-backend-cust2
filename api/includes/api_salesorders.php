@@ -354,8 +354,8 @@ function InsertSalesOrderHeader($OrderHeader, $user, $password) {
 
 		$Result = api_DB_Query($SQL);
 		if (DB_error_no() != 0) {
-			$Errors[0] = DatabaseUpdateFailed;
-			//$Errors[0] = $SQL;
+			//$Errors[0] = DatabaseUpdateFailed;
+			$Errors[0] = $SQL;
 		} else {
 			$Errors[0]=0;
 			$Errors[1]=$OrderHeader['orderno'];
