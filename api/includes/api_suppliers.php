@@ -621,6 +621,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		return $Errors;
 	}
 	$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
+			return $_SESSION['UserID']; exit;
 
 	foreach ($SupplierInvoiceHeader as $key => $value) {
 		if (is_string($value)) {
@@ -725,7 +726,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	 * Stateless Supplier Invoice XML-RPC API for webERP
 	 * Auth: cookie session (must be logged-in); API stores drafts in MySQL.
 	 */
-			return $_SESSION['UserID']; exit;
 
 	require_once(__DIR__ . '../../includes/session.php');
 
