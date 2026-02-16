@@ -649,7 +649,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	if ($Answer[0] == 0) {
 		$Errors[$i] = 'SupplierNoDoesntExists';
 	}
-return $Errors.' '.$Searchsql;
+return $Errors[$i].' '.$Searchsql;
 
 	//$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
 
