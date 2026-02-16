@@ -1,5 +1,5 @@
 <?php
-return 'session tu'; exit;
+
 /* webERP Session handling and general bootstrapping.
  *
  * This file is included at the start of every script in webERP.
