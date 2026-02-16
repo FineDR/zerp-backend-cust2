@@ -641,7 +641,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$Errors[$i] = IncorrectDebtorNumberLength;
 	}
 		*/
-					return $SupplierInvoiceHeader['supplierno']; exit;
+			//		return $SupplierInvoiceHeader['supplierno']; exit;
 
 	$Searchsql = "SELECT count(supplierid)
 				  FROM suppliers
