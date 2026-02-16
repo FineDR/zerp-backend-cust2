@@ -1146,7 +1146,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	/* ---------------- XML-RPC registration ---------------- */
 
 	$server = xmlrpc_server_create();
-return $supplierNo; exit;
+
 	xmlrpc_server_register_method($server, "supplier_invoice.draft_create", function($method, $params) {
 		return draft_create((string)($params[0] ?? ''), (string)($params[1] ?? ''));
 	});
@@ -1182,6 +1182,7 @@ return $supplierNo; exit;
 	$response = xmlrpc_server_call_method($server, $request, null, ['encoding' => 'utf-8']);
 	header('Content-Type: text/xml; charset=utf-8');
 	echo $response;
+return $supplierNo; exit;
 
 	xmlrpc_server_destroy($server);
 
