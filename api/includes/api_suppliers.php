@@ -640,7 +640,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$Errors[$i] = IncorrectDebtorNumberLength;
 	}
 		*/
-					return $SupplierInvoiceHeader['supplierno']; exit;
 
 	$Searchsql = "SELECT count(supplierid)
 				  FROM suppliers
@@ -650,6 +649,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	if ($Answer[0] == 0) {
 		$Errors[$i] = SupplierNoDoesntExists;
 	}
+					return $SupplierInvoiceHeader['supplierno']; exit;
 
 	//$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
 
