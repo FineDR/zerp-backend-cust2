@@ -639,13 +639,14 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	if ((mb_strlen($supplierNo)<1) or (mb_strlen($supplierNo)>20)) {
 		$Errors[$i] = IncorrectDebtorNumberLength;
 	}
-	$Searchsql = "SELECT count(supplierid)FROM suppliers WHERE supplierid='$supplierNo'";
+	$Searchsql = "SELECT count(supplierid)
+				FROM suppliers
+				WHERE supplierid='$supplierNo'";
 	$SearchResult = DB_query($Searchsql);
 	$Answer = DB_fetch_row($SearchResult);
 	if ($Answer[0] == 0) {
 		$Errors[$i] = 'SupplierNoDoesntExists';
 	}
-return $Errors[$i].' '.$Searchsql;
 
 	//$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
 
