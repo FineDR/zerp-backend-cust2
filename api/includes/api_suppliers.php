@@ -622,7 +622,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	}
 
 	//$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
-/*
+
 	foreach ($SupplierInvoiceHeader as $key => $value) {
 		if (is_string($value)) {
 			$SupplierInvoiceHeader[$key] = DB_escape_string($value);
@@ -633,25 +633,23 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 			$SupplierInvoiceLine[$key] = DB_escape_string($value);
 		}
 	}
-		*/
 
 	/** Verify that the supplier number is valid, and already exists. */
-	/*
-	if ((mb_strlen($SupplierInvoiceHeader['supplierno'])<1) or (mb_strlen($SupplierInvoiceHeader['supplierno'])>20)) {
-		$Errors[$i] = IncorrectDebtorNumberLength;
-	}
-		*/
-			//		return $SupplierInvoiceHeader['supplierno']; exit;
 
-	$Searchsql = "SELECT count(supplierid)
-				  FROM suppliers
-				  WHERE supplierid='".$SupplierInvoiceHeader['supplierno']."'";
-				  return $Searchsql; exit;
-	$SearchResult = DB_query($Searchsql);
-	$Answer = DB_fetch_row($SearchResult);
-	if ($Answer[0] == 0) {
-		$Errors[$i] = 'SupplierNoDoesntExists';
-	}
+			if ((mb_strlen(104824986)<1) or (mb_strlen(104824986)>20)) {
+				$Errors[$i] = IncorrectDebtorNumberLength;
+			}
+			
+
+			$Searchsql = "SELECT count(supplierid)
+						FROM suppliers
+						WHERE supplierid='104824986'";
+						return $Searchsql; exit;
+			$SearchResult = DB_query($Searchsql);
+			$Answer = DB_fetch_row($SearchResult);
+			if ($Answer[0] == 0) {
+				$Errors[$i] = 'SupplierNoDoesntExists';
+			}
 
 	//$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
 
