@@ -752,7 +752,6 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 	require_once(__DIR__ . '../../includes/GLFunctions.php');
 */
 
-	return $supplierNo; exit;
 	if (!isset($_SESSION['UserID']) || $_SESSION['UserID'] === '') {
 		header('Content-Type: text/plain', true, 401);
 		echo "Unauthorized (no session)";
@@ -767,7 +766,7 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
 		return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 	}
-
+	return $supplierNo; exit;
 	function require_draft_owned(string $draftUuid, bool $forUpdate=false): array {
 		$lock = $forUpdate ? " FOR UPDATE" : "";
 		$sql = "SELECT * FROM api_supplier_invoice_drafts
