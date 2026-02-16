@@ -620,8 +620,9 @@ function InsertSupplierInvoice($SupplierInvoiceHeader, $SupplierInvoiceLine, $us
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
+				return $_SESSION['UserID']; exit;
+
 	$Errors=VerifySupplierNoExists($SupplierInvoiceHeader['supplierno'], sizeof($Errors), $Errors);
-			return $_SESSION['UserID']; exit;
 
 	foreach ($SupplierInvoiceHeader as $key => $value) {
 		if (is_string($value)) {
