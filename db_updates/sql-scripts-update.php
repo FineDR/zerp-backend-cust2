@@ -2450,3 +2450,5 @@ user@Users-MacBook-Pro zerp-backend %
 
 
 ?xml version="1.0" encoding="utf-8"?><methodResponse><fault>< value><  struct><   member><    name>faultString/name><    value><     string>server error. method not found.&amp;#10;&amp;#10;weberp.xmlrpc_InsertSupplierInvoice/string><    /value><   /member><   member><    name>faultCode/name><    value><     int>-32601/int><    /value><   /member><  /struct>< /value></fault></methodResponse><
+
+INSERT INTO salesorderdetails (orderno, stkcode, narrative, quantity, unitprice, discountpercent, itemdue, linenetprice, orderlineno) VALUES ('83', 'ZTL001', 'Being charged for ZTL001', '1', '3000', '0', '2026-02-17', '9000', '3');
