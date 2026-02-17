@@ -524,7 +524,7 @@ function InsertSalesOrderLine($OrderLine, $user, $password) {
 			$Errors[0]=0;
 		}
 	}
-	return $Errors;
+	return $Errors.' '.$SQL;
 }
 
 /** Modify a customer sales order line in webERP. The order header must
