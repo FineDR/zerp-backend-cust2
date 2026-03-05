@@ -1902,7 +1902,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 			*/
 
 			//insert the banktrans record in the currency of the bank account
-
+echo 'Line 1905 <br>'.$SQL;
 			$SQL="INSERT INTO banktrans (type,
 						transno,
 						bankact,
