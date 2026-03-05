@@ -2452,3 +2452,58 @@ user@Users-MacBook-Pro zerp-backend %
 ?xml version="1.0" encoding="utf-8"?><methodResponse><fault>< value><  struct><   member><    name>faultString/name><    value><     string>server error. method not found.&amp;#10;&amp;#10;weberp.xmlrpc_InsertSupplierInvoice/string><    /value><   /member><   member><    name>faultCode/name><    value><     int>-32601/int><    /value><   /member><  /struct>< /value></fault></methodResponse><
 
 INSERT INTO salesorderdetails (orderno, stkcode, narrative, quantity, unitprice, discountpercent, itemdue, linenetprice, orderlineno) VALUES ('83', 'ZTL001', 'Being charged for ZTL001', '1', '3000', '0', '2026-02-17', '9000', '3');
+
+
+A2awgn0L@2eAi@02?!
+!?20@iAe2@L0ngwa2A
+zalongwa_saris_iae
+iaeuser
+
+user=root
+password=MySQL_sd5od25tkzLlOll3prVxBmWqK5jR1P3y2iwU
+
+select * from student where regno='NS4226/0011/2019'; update student set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
+select * from class where regno = 'NS4226/0011/2019'; update class set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
+select * from examresult where regno = 'NS4226/0011/2019'; update examresult set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
+select * from examregister where regno = 'NS4226/0011/2019'; update examregister set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
+select * from student_audit where regno='NS4226/0011/2019'; update student_audit set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
+select * from examresult_audit where regno='NS4226/0011/2019'; update examresult_audit set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
+
+select * from invoices where student_id = 'NS4226/0011/2019'; update invoices set student_id='NP5513/0004/2021' where student_id = 'NS4226/0011/2019';
+select * from payment where student_id = 'NS4226/0011/2019'; update payment set student_id='NP5513/0004/2021' where student_id = 'NS4226/0011/2019';
+select * from student_invoice where regno = 'NS4226/0011/2019'; update student_invoice set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
+
+=======
+wheile in SARIS db, issue the following commands: in the following order: Check/SELECT, then ALTER/UPDATE
+
+select * from student where regno='NS4226/0011/2019'; 
+update student set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
+
+select * from class where regno = 'NS4226/0011/2019'; 
+update class set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
+
+select * from examresult where regno = 'NS4226/0011/2019'; 
+update examresult set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
+
+select * from examregister where regno = 'NS4226/0011/2019'; 
+update examregister set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
+
+select * from student_audit where regno='NS4226/0011/2019'; 
+update student_audit set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
+
+select * from examresult_audit where regno='NS4226/0011/2019'; 
+update examresult_audit set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
+
+while in OAS db:
+select * from invoices where student_id = 'NS4226/0011/2019';
+update invoices set student_id='NP5513/0004/2021' where student_id = 'NS4226/0011/2019';
+
+select * from payment where student_id = 'NS4226/0011/2019'; 
+update payment set student_id='NP5513/0004/2021' where student_id = 'NS4226/0011/2019';
+
+select * from student_invoice where regno = 'NS4226/0011/2019'; 
+update student_invoice set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
+
+=====
+
+select * from student where regno='NP5513/0004/2021';
