@@ -1955,11 +1955,12 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 						'" . $_SESSION['Items'.$identifier]->LocationName . ' ' . __('Counter Sale') ."',
 						'1',
 						'" . $_SESSION['Items'.$identifier]->SalesPerson . "')";
+
 			$ErrMsg = __('Cannot insert a receipt transaction against the customer because') ;
 			$Result = DB_query($SQL, $ErrMsg, '', true);
 
 			$ReceiptDebtorTransID = DB_Last_Insert_ID('debtortrans','id');
-
+echo 'Line 1963 <br>'.$SQL; exit;
 			$SQL = "UPDATE debtorsmaster SET lastpaiddate = '" . $DefaultDispatchDate . "',
 											lastpaid='" . filter_number_format($_POST['AmountPaid']) . "'
 									WHERE debtorsmaster.debtorno='" . $_SESSION['Items'.$identifier]->DebtorNo . "'";
