@@ -31,7 +31,7 @@ $CompanyName = isset($_SESSION['CompanyRecord']['coyname']) ? stripslashes($_SES
 echo '<div class="title_bar" id="title_bar">', $Title, ' - ', $CompanyName, '
 	<img src="', $RootPath, '/css/', $_SESSION['Theme'], '/images/user.png" class="TitleIcon" id="TitleIcon" title="" alt="" /></div>';
 
-//include('includes/header.php');
+//include(__DIR__ . '/includes/header.php');
 
 function executeSQL($SQL, $TrapErrors = false) {
 	global $SQLFile;
@@ -56,7 +56,7 @@ function updateDBNo($NewNumber, $Description = '') {
 	}
 }
 
-include('includes/UpgradeDB_' . $DBType . '.php');
+include(__DIR__ . '/includes/UpgradeDB_' . $DBType . '.php');
 
 echo '<div class="page_title_text">
 	<img src="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/images/maintenance.png" title="' . __('Search') . '" alt="" />' . ' ' . $Title, '
@@ -65,7 +65,7 @@ echo '<div class="page_title_text">
 if (!isset($_POST['continue'])) {
 	echo '<form method="post" action="' . htmlspecialchars(basename(__FILE__), ENT_QUOTES, 'UTF-8') . '">';
 	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
+    
 	echo '<div class="page_help_text">' . __('You have the following database updates which are required.') . '<br />' . __('Please ensure that you have taken a backup of your current database before continuing.') . '</div><br />';
 	echo '<table>
 		<tr>
@@ -89,7 +89,7 @@ if (!isset($_POST['continue'])) {
 				echo '<tr>
 					<td><span class="expand_icon" id="expand_icon', $x, '"></span></td>
 					<td>', $UpdateNumber, '</td>
-					<td>', substr(substr(implode("\n", $Description), 44), 0, -4), '</td>
+					<td>', substr(substr(implode("\n", $Description), 43), 0, -4), '</td>
 				</tr>';
 			} else {
 				echo '<tr>
@@ -103,6 +103,9 @@ if (!isset($_POST['continue'])) {
 			foreach ($Lines as $Line) {
 				if ($Line != '?>' and substr($Line, 0, 8) != 'UpdateDB' and $Line != '<?php') {
 					echo $Line, '<br />';
+                    if (substr($Line, 0, 2) != '//') {
+                        $_SESSION['FunctionCalls'][$UpdateNumber][] = $Line;
+                    }
 				}
 			}
 			echo '</td>
@@ -125,8 +128,12 @@ if (!isset($_POST['continue'])) {
 		'Successes' => 0,
 		'Warnings' => 0,
 	);
+
+    $LogFileName = $_SESSION['LogPath'] . '/DBUpdateLog-' . date('Y-m-d') . '.log';
+
 	for ($UpdateNumber = $StartingUpdate; $UpdateNumber <= $EndingUpdate; $UpdateNumber++) {
 		if (file_exists('sql/updates/' . $UpdateNumber . '.php')) {
+            LogEntryHeader($LogFileName, $UpdateNumber);
 			$SQL = "SET FOREIGN_KEY_CHECKS=0";
 			$Result = DB_query($SQL);
 			include('sql/updates/' . $UpdateNumber . '.php');
@@ -159,14 +166,27 @@ if (!isset($_POST['continue'])) {
 	echo '</table><br />';
 
 	$ForceConfigReload = true;
-	include('includes/GetConfig.php');
+	include(__DIR__ . '/includes/GetConfig.php');
 	$ForceConfigReload = false;
 
+	// use a button here for consistency with the "Continue" button (used to initiate updates)
 	echo '<div class="centre">
 		<a href="' . $RootPath . '/Logout.php" title="' . __('Log out of') . ' ' . 'webERP" alt="">
-			', __('You need to logout and log back in for these changes to take affect'), '
+			<button>', __('Login again for changes to take affect'), '</button>
 		</a>
 	</div>';
+
+
 }
 
-include('includes/footer.php');
+function LogEntryHeader($LogFileName, $DBUpdateNumber) {
+    $Header = str_repeat('+', 60) . "\n";
+    $Header .= str_repeat(' ', 10);
+    $Header .= 'Update File Number' . ' - ' . $DBUpdateNumber . "\n";
+    $Header .= str_repeat(' ', 10);
+    $Header .= 'Updated on' . ' - ' . date($_SESSION['DefaultDateFormat']) . "\n";
+    $Header .= str_repeat('+', 60) . "\n\n";
+    file_put_contents($LogFileName, $Header, FILE_APPEND);
+}
+
+include(__DIR__ . '/includes/footer.php');

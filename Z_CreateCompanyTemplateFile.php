@@ -5,7 +5,7 @@ require(__DIR__ . '/includes/session.php');
 $Title = __('Create Database Template File');
 $ViewTopic = 'SpecialUtilities';
 $BookMark = basename(__FILE__, '.php');
-include('includes/header.php');
+include(__DIR__ . '/includes/header.php');
 
 if (isset($_POST['CreateTemplate'])){
       $InputError = false; //assume the best - but check for the worst
@@ -22,8 +22,10 @@ if (isset($_POST['CreateTemplate'])){
 								  creditorsact,
 								  payrollact,
 								  grnact,
-								  exchangediffact,
+								  salesexchangediffact,
 								  purchasesexchangediffact,
+								  currencyexchangediffact,
+								  unrealizedcurrencydiffact,
 								  retainedearnings,
 								  freightact
 								FROM currencies INNER JOIN companies
@@ -42,8 +44,10 @@ if (isset($_POST['CreateTemplate'])){
                                               creditorsact=" . $CurrRow['creditorsact'] . ",
                                               payrollact=" . $CurrRow['payrollact'] . ",
                                               grnact=" . $CurrRow['grnact'] . ",
-                                              exchangediffact=" . $CurrRow['exchangediffact'] . ",
+                                              salesexchangediffact=" . $CurrRow['salesexchangediffact'] . ",
                                               purchasesexchangediffact=" . $CurrRow['purchasesexchangediffact'] . ",
+                                              currencyexchangediffact=" . $CurrRow['currencyexchangediffact'] . ",
+                                              unrealizedcurrencydiffact=" . $CurrRow['unrealizedcurrencydiffact'] . ",
                                               retainedearnings=" . $CurrRow['retainedearnings'] . ",
                                               freightact=" . $CurrRow['freightact'] . "
                           WHERE coycode='1';\n";
@@ -249,4 +253,4 @@ echo '<div class="centre"><input type="submit" name="CreateTemplate" value="' . 
 
 echo '</div>
       </form>';
-include('includes/footer.php');
+include(__DIR__ . '/includes/footer.php');

@@ -220,6 +220,17 @@ function RemoveMenuItem($Link, $Section, $Caption, $URL) {
 	}
 }
 
+function UpdateMenuCaption($OldCaption, $NewCaption) {
+	$SQL = "UPDATE menuitems SET caption = '" . $NewCaption . "' WHERE  caption = '" . $OldCaption . "'";
+	$Response = executeSQL($SQL, false);
+	if ($Response == 0) {
+		OutputResult(__('The menu caption') . ' ' . $OldCaption . ' ' . __('has been updated to') . ' ' . $NewCaption, 'success');
+	} else {
+		OutputResult(__('The menu caption') . ' ' . $OldCaption . ' ' . __('could not be updated') . '<br />' . $SQL, 'error');
+	}
+}
+
+
 function AddColumn($Column, $Table, $Type, $Null, $Default, $After) {
 	global $SQLFile;
 	if (DB_table_exists($Table)) {
@@ -503,13 +514,22 @@ function DeleteConfigValue($ConfName) {
 	}
 }
 
-function CreateTable($Table, $SQL) {
+function CreateTable($Table, $SQL, $CharacterSet='utf8mb4') {
+
+	$CollationSQL = "SHOW VARIABLES LIKE 'collation_connection'";
+	$Result = DB_query($CollationSQL);
+	if (DB_num_rows($Result) == 0) {
+		$Collation='utf8mb4_general_ci';
+	} else {
+		$MyRow = DB_fetch_row($Result);
+		$Collation = $MyRow[1];
+	}
 	$ShowSQL = "SHOW TABLES WHERE Tables_in_" . $_SESSION['DatabaseName'] . "='" . $Table . "'";
 	$Result = DB_query($ShowSQL);
 
 	if (DB_num_rows($Result) == 0) {
 		DB_IgnoreForeignKeys();
-		$Response = executeSQL($SQL . ' ENGINE=InnoDB DEFAULT CHARSET=utf8', false);
+		$Response = executeSQL($SQL . ' ENGINE=InnoDB DEFAULT CHARSET=' . $CharacterSet . ' COLLATE=' . $Collation, false);
 		DB_ReinstateForeignKeys();
 		if ($Response == 0) {
 			OutputResult(__('The table') . ' ' . $Table . ' ' . __('has been created'), 'success');
@@ -520,6 +540,7 @@ function CreateTable($Table, $SQL) {
 		OutputResult(__('The table') . ' ' . $Table . ' ' . __('already exists'), 'info');
 	}
 }
+
 
 function ConstraintExists($Table, $Constraint) {
 	$SQL = "SELECT CONSTRAINT_NAME
@@ -735,12 +756,24 @@ function SetAutoIncStart($Table, $Field, $StartNumber) {
 }
 
 function OutputResult($Msg, $Status) {
+    global $LogFileName;
+    global $UpdateNumber;
+    global $LineCounter;
+    if (!isset($LineCounter) or !isset($_SESSION['FunctionCalls'][$UpdateNumber][$LineCounter])) {
+        $LineCounter = 0;
+    }
+    $Line = $_SESSION['FunctionCalls'][$UpdateNumber][$LineCounter];
+    file_put_contents($LogFileName, $Line . "\n", FILE_APPEND);
+    $LineCounter++;
 	if ($Status == 'error') {
 		$_SESSION['Updates']['Errors']++;
 		$_SESSION['Updates']['Messages'][] = $Msg;
+        file_put_contents($LogFileName, '***ERROR*** ' . $Msg . "\n\n", FILE_APPEND);
 	} elseif ($Status == 'success') {
 		$_SESSION['Updates']['Successes']++;
+        file_put_contents($LogFileName, '***SUCCESS*** ' . $Msg . "\n\n", FILE_APPEND);
 	} else {
 		$_SESSION['Updates']['Warnings']++;
+        file_put_contents($LogFileName, '***INFO***' . $Msg . "\n\n", FILE_APPEND);
 	}
 }

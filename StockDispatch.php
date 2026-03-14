@@ -8,12 +8,12 @@ require(__DIR__ . '/includes/session.php');
 
 use Dompdf\Dompdf;
 
-include('includes/SetDomPDFOptions.php');
+include(__DIR__ . '/includes/SetDomPDFOptions.php');
 
 include ('includes/SQL_CommonFunctions.php');
 include ('includes/GetPrice.php');
 include ('includes/ImageFunctions.php');
-include('includes/StockFunctions.php');
+include(__DIR__ . '/includes/StockFunctions.php');
 
 if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 
@@ -45,7 +45,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 
 	// From/To Location
 	$ErrMsg = __('Could not retrieve location name from the database');
-	$SQLfrom = "SELECT locationname FROM `locations` WHERE loccode='" . $_POST['FromLocation'] . "'";
+	$SQLfrom = "SELECT locationname FROM locations WHERE loccode='" . $_POST['FromLocation'] . "'";
 	$Result = DB_query($SQLfrom, $ErrMsg);
 	$Row = DB_fetch_row($Result);
 	$FromLocation = $Row['0'];
@@ -53,7 +53,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 	$SQLto = "SELECT locationname,
 		cashsalecustomer,
 		cashsalebranch
-		FROM `locations`
+		FROM locations
 		WHERE loccode='" . $_POST['ToLocation'] . "'";
 	$Resultto = DB_query($SQLto, $ErrMsg);
 	$RowTo = DB_fetch_row($Resultto);

@@ -7,10 +7,10 @@ require(__DIR__ . '/includes/session.php');
 $Title = __('Bank Reconciliation');
 $ViewTopic = 'GeneralLedger';
 $BookMark = 'BankAccounts';
-include('includes/header.php');
+include(__DIR__ . '/includes/header.php');
 
-include('includes/GLFunctions.php');
-include('includes/SQL_CommonFunctions.php');
+include(__DIR__ . '/includes/GLFunctions.php');
+include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 
 echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
 echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
@@ -52,7 +52,6 @@ if (isset($_POST['PostExchangeDifference']) AND is_numeric(filter_number_format(
 
 		$ExchangeDifference = ($CalculatedBalance - filter_number_format($_POST['BankStatementBalance'])) / $CurrencyRow['rate'];
 
-		include('includes/SQL_CommonFunctions.php');
 		$ExDiffTransNo = GetNextTransNo(36);
 		/*Post the exchange difference to the last day of the month prior to current date*/
 		$PostingDate = date($_SESSION['DefaultDateFormat'], mktime(0, 0, 0, date('m'), 0, date('Y')));
@@ -70,12 +69,12 @@ if (isset($_POST['PostExchangeDifference']) AND is_numeric(filter_number_format(
 									'" . $ExDiffTransNo . "',
 									'" . FormatDateForSQL($PostingDate) . "',
 									'" . $PeriodNo . "',
-									'" . $_SESSION['CompanyRecord']['exchangediffact'] . "',
+									'" . $_SESSION['CompanyRecord']['currencyexchangediffact'] . "',
 									'" . mb_substr($CurrencyRow['bankaccountname'] . ' ' . __('reconciliation on') . " " .
 										date($_SESSION['DefaultDateFormat']), 0, 200) . "',
 									'" . $ExchangeDifference . "')";
 
-		$ErrMsg = __('Cannot insert a GL entry for the exchange difference because');
+		$ErrMsg = __('Cannot insert a GL entry for the currency exchange difference because');
 		$Result = DB_query($SQL, $ErrMsg, '', true);
 		$SQL = "INSERT INTO gltrans (type,
 									typeno,
@@ -95,7 +94,7 @@ if (isset($_POST['PostExchangeDifference']) AND is_numeric(filter_number_format(
 		$Result = DB_query($SQL, $ErrMsg, '', true);
 
 		DB_Txn_Commit();
-		prnMsg(__('Exchange difference of') . ' ' . locale_number_format($ExchangeDifference, $_SESSION['CompanyRecord']['decimalplaces']) . ' ' . __('has been posted'), 'success');
+		prnMsg(__('Currency exchange difference of') . ' ' . locale_number_format($ExchangeDifference, $_SESSION['CompanyRecord']['decimalplaces']) . ' ' . __('has been posted'), 'success');
 	} //end if the bank statement balance was numeric
 }
 
@@ -122,7 +121,7 @@ if (DB_num_rows($AccountsResults) == 0) {
 			</field>
 		</fieldset>';
 	prnMsg(__('Bank Accounts have not yet been defined. You must first') . ' <a href="' . $RootPath . '/BankAccounts.php">' . __('define the bank accounts') . '</a> ' . __('and general ledger accounts to be affected'), 'warn');
-	include('includes/footer.php');
+	include(__DIR__ . '/includes/footer.php');
 	exit();
 } else {
 	while ($MyRow = DB_fetch_array($AccountsResults)) {
@@ -327,4 +326,4 @@ if (isset($_POST['BankAccount'])) {
 		</div>';
 }
 echo '</form>';
-include('includes/footer.php');
+include(__DIR__ . '/includes/footer.php');

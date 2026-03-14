@@ -15,14 +15,14 @@
 */
 
 // NB: these classes are not autoloaded, and their definition has to be included before the session is started (in session.php)
-include('includes/DefineSuppAllocsClass.php');
+include(__DIR__ . '/includes/DefineSuppAllocsClass.php');
 require(__DIR__ . '/includes/session.php');
 $Title = __('Supplier Payment') . '/' . __('Credit Note Allocations');
 $ViewTopic = 'ARTransactions';// Filename in ManualContents.php's TOC./* RChacon: To do ManualAPInquiries.html from ManualARInquiries.html */
 $BookMark = 'SupplierAllocations';
-include('includes/header.php');
+include(__DIR__ . '/includes/header.php');
 
-include('includes/SQL_CommonFunctions.php');
+include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 
 echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme,
 	'/images/transactions.png" title="', // Icon image.
@@ -37,7 +37,7 @@ if (isset($_POST['UpdateDatabase']) OR isset($_POST['RefreshAllocTotal'])) {
 				__('If you hit refresh on this page after having just processed an allocation') . ', ' .
 				__('try to use the navigation links provided rather than the back button, to avoid this message in future'),
 			'warn');
-		include('includes/footer.php');
+		include(__DIR__ . '/includes/footer.php');
 		exit();
 	}
 
@@ -152,7 +152,7 @@ if (isset($_POST['UpdateDatabase'])){
 												settled = '" . $Settled . "'
 							WHERE id = '" . $AllocnItem->ID . "'";
 
-					 $ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The debtor transaction record could not be modified for the allocation against it because');
+					 $ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The supplier transaction record could not be modified for the allocation against it because');
 
 					 $Result = DB_query($SQL, $ErrMsg, '', true);
 
@@ -180,12 +180,12 @@ if (isset($_POST['UpdateDatabase'])){
 		$Result = DB_query($SQL, $ErrMsg, '', true);
 
 		/*Almost there ... if there is a change in the total diff on exchange
-		 and if the GLLink to debtors is active - need to post diff on exchange to GL */
+		 and if the GLLink to creditors is active - need to post diff on exchange to GL */
 
 		$MovtInDiffOnExch = $_SESSION['Alloc']->PrevDiffOnExch + $TotalDiffOnExch;
 		if ($MovtInDiffOnExch !=0 ){
 
-		   if ($_SESSION['CompanyRecord']['gllink_debtors'] == 1){
+		   if ($_SESSION['CompanyRecord']['gllink_creditors'] == 1){
 
 		      $PeriodNo = GetPeriod($_SESSION['Alloc']->TransDate);
 
@@ -203,10 +203,10 @@ if (isset($_POST['UpdateDatabase'])){
 							'" . $_SESSION['Alloc']->TransDate . "',
 							'" . $PeriodNo . "',
 							'" . $_SESSION['CompanyRecord']['purchasesexchangediffact'] . "',
-							'". __('Exchange difference') . "',
+							'". __('Purchase Exchange difference') . "',
 							'" . $MovtInDiffOnExch . "')";
 
-		      $ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The GL entry for the difference on exchange arising out of this allocation could not be inserted because');
+		      $ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The GL entry for the difference on purchase exchange arising out of this allocation could not be inserted because');
 
 		      $Result = DB_query($SQL, $ErrMsg, '', true);
 
@@ -222,11 +222,11 @@ if (isset($_POST['UpdateDatabase'])){
 							'" . $_SESSION['Alloc']->TransDate . "',
 							'" . $PeriodNo . "',
 							'" . $_SESSION['CompanyRecord']['creditorsact'] . "',
-							'" . __('Exchange difference') . "',
+							'" . __('Purchase Exchange difference') . "',
 							'" . -$MovtInDiffOnExch . "')";
 
 		      $ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ' : ' .
-		      			 __('The GL entry for the difference on exchange arising out of this allocation could not be inserted because');
+		      			 __('The GL entry for the difference on purchase exchange arising out of this allocation could not be inserted because');
 
 		      $Result = DB_query($SQL, $ErrMsg, '', true);
 
@@ -531,7 +531,7 @@ if (isset($_POST['AllocTrans'])){
   $Result = DB_query($SQL);
   if (DB_num_rows($Result) == 0){
 	prnMsg(__('There are no outstanding payments or credits yet to be allocated for this supplier'),'info');
-	include('includes/footer.php');
+	include(__DIR__ . '/includes/footer.php');
 	exit();
   }
   echo '<table class="selection">';
@@ -639,4 +639,4 @@ if (isset($_POST['AllocTrans'])){
 
 echo '</div>
       </form>';
-include('includes/footer.php');
+include(__DIR__ . '/includes/footer.php');

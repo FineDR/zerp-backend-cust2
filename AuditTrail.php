@@ -5,7 +5,7 @@ require(__DIR__ . '/includes/session.php');
 $Title = __('Audit Trail');
 $ViewTopic = 'Setup';
 $BookMark = 'AuditTrail';
-include('includes/header.php');
+include(__DIR__ . '/includes/header.php');
 
 if (isset($_POST['FromDate'])){$_POST['FromDate'] = ConvertSQLDate($_POST['FromDate']);}
 if (isset($_POST['ToDate'])){$_POST['ToDate'] = ConvertSQLDate($_POST['ToDate']);}
@@ -28,6 +28,14 @@ if (isset($_POST['ContainingText'])){
 	$ContainingText = trim(mb_strtoupper($_POST['ContainingText']));
 } elseif (isset($_GET['ContainingText'])){
 	$ContainingText = trim(mb_strtoupper($_GET['ContainingText']));
+}
+
+if (isset($_POST['FromDate']) and isset($_POST['ToDate'])) {
+	if (Date1GreaterThanDate2($_POST['FromDate'], $_POST['ToDate'])) {
+		// The beginning is after the end.
+		unset($_POST['View']);
+		prnMsg(__('The from date should be before the to date.'), 'error');
+	}
 }
 
 // Get list of tables
@@ -87,10 +95,23 @@ if (!isset($_POST['ContainingText'])){
 echo '<field>
 		<label for="ContainingText">' . __('Containing text') . ':</label>
 		<input type="text" name="ContainingText" size="20" maxlength="20" value="'. $_POST['ContainingText'] . '" />
-	</field>
-	</fieldset>
+	</field>';
+
+// **NEW: Add Chronological Sort selector**
+if (!isset($_POST['ChronologicalSort'])){
+	$_POST['ChronologicalSort']='DESC';
+}
+echo '<field>
+		<label for="ChronologicalSort">' . __('Chronological Sort') . '</label>
+		<select tabindex="5" name="ChronologicalSort">
+			<option value="ASC"' . ($_POST['ChronologicalSort'] == 'ASC' ? ' selected="selected"' : '') . '>' . __('Forward (Oldest First)') . '</option>
+			<option value="DESC"' . ($_POST['ChronologicalSort'] == 'DESC' ? ' selected="selected"' : '') . '>' . __('Reverse (Newest First)') . '</option>
+		</select>
+	</field>';
+
+echo '</fieldset>
 	<div class="centre">
-		<input tabindex="5" type="submit" name="View" value="' . __('View') . '" />
+		<input tabindex="6" type="submit" name="View" value="' . __('View') . '" />
 	</div>
 	</form>';
 
@@ -156,19 +177,28 @@ if (isset($_POST['View'])) {
 	    $ContainingText = "";
 	}
 
+	// **NEW: Determine sort order**
+	$SortOrder = 'ASC'; // Default
+	if (isset($_POST['ChronologicalSort'])) {
+		$SortOrder = ($_POST['ChronologicalSort'] == 'DESC') ? 'DESC' : 'ASC';
+	}
+
+	// **MODIFIED: Add ORDER BY clause to SQL queries**
 	if ($_POST['SelectedUser'] == 'ALL') {
 		$SQL="SELECT transactiondate,
 				userid,
 				querystring
 			FROM audittrail
-			WHERE transactiondate BETWEEN '". $FromDate."' AND '".$ToDate."'" . $ContainingText;
+			WHERE transactiondate BETWEEN '". $FromDate."' AND '".$ToDate."'" . $ContainingText . "
+			ORDER BY transactiondate " . $SortOrder;
 	} else {
 		$SQL="SELECT transactiondate,
 				userid,
 				querystring
 			FROM audittrail
 			WHERE userid='".$_POST['SelectedUser']."'
-			AND transactiondate BETWEEN '".$FromDate."' AND '".$ToDate."'" . $ContainingText;
+			AND transactiondate BETWEEN '".$FromDate."' AND '".$ToDate."'" . $ContainingText . "
+			ORDER BY transactiondate " . $SortOrder;
 	}
 	$Result = DB_query($SQL);
 
@@ -181,21 +211,21 @@ if (isset($_POST['View'])) {
 			<th>' . __('Field Name') . '</th>
 			<th>' . __('Value') . '</th></tr>';
 	while ($MyRow = DB_fetch_row($Result)) {
-		if (Query_Type($MyRow[2]) == "INSERT") {
+		if (trim(Query_Type($MyRow[2])) == 'INSERT') {
 			InsertQueryInfo(str_replace("INSERT INTO",'',$MyRow[2]));
 			$RowColour = '#a8ff90';
 		}
-		if (Query_Type($MyRow[2]) == "UPDATE") {
+		if (trim(Query_Type($MyRow[2])) == "UPDATE") {
 			UpdateQueryInfo(str_replace("UPDATE",'',$MyRow[2]));
 			$RowColour = '#feff90';
 		}
-		if (Query_Type($MyRow[2]) == "DELETE") {
+		if (trim(Query_Type($MyRow[2])) == "DELETE") {
 			DeleteQueryInfo(str_replace("DELETE FROM",'',$MyRow[2]));
 			$RowColour = '#fe90bf';
 		}
 
 		// Do not show auditscripts table results, as it bloats the report unnecessarily
-		if ((trim($_SESSION['SQLString']['table']) != 'auditscripts') AND 
+		if ((trim($_SESSION['SQLString']['table']) != 'auditscripts') AND
 		   ((trim($_SESSION['SQLString']['table']) == $_POST['SelectedTable'])  OR
 			($_POST['SelectedTable'] == 'ALL'))) {
 			if (!isset($_SESSION['SQLString']['values'])) {
@@ -228,4 +258,4 @@ if (isset($_POST['View'])) {
 	}
 	echo '</table>';
 }
-include('includes/footer.php');
+include(__DIR__ . '/includes/footer.php');

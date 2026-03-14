@@ -7,16 +7,16 @@ $_GET['OrderNumber'] = (int)$_GET['OrderNumber'];
 /*if (isset($_GET['OrderNumber'])) {*/
 	$Title = __('Reviewing Sales Order Number') . ' ' . $_GET['OrderNumber'];
 /*} else {
-	include('includes/header.php');
+	include(__DIR__ . '/includes/header.php');
 	echo '<br /><br /><br />';
 	prnMsg(__('This page must be called with a sales order number to review') . '.<br />' . __('i.e.') . ' http://????/OrderDetails.php?OrderNumber=<i>xyz</i><br />' . __('Click on back') . '.','error');
-	include('includes/footer.php');
+	include(__DIR__ . '/includes/footer.php');
 	exit();
 }*/
 
 $ViewTopic = 'SalesOrders';
 $BookMark = '';
-include('includes/header.php');
+include(__DIR__ . '/includes/header.php');
 
 $OrderHeaderSQL = "SELECT salesorders.debtorno,
 							debtorsmaster.name,
@@ -63,7 +63,7 @@ if (DB_num_rows($GetOrdHdrResult)==1) {
 
 	if ($CustomerLogin ==1 AND $MyRow['debtorno']!= $_SESSION['CustomerID']) {
 		prnMsg(__('Your customer login will only allow you to view your own purchase orders'),'error');
-		include('includes/footer.php');
+		include(__DIR__ . '/includes/footer.php');
 		exit();
 	}
 	//retrieve invoice number
@@ -79,63 +79,63 @@ if (DB_num_rows($GetOrdHdrResult)==1) {
 			<tr>
 				<th colspan="4"><h3>' . __('Order Header Details For Order No').' '.$_GET['OrderNumber'] . '</h3></th>
 			</tr>
-			<tr>
+			<tr class="striped_row">
 				<th class="text">' . __('Customer Code') . ':</th>
 				<td><a href="' . $RootPath . '/SelectCustomer.php?Select=' . $MyRow['debtorno'] . '">' . $MyRow['debtorno'] . '</a></td>
 				<th class="text">' . __('Customer Name') . ':</th>
-				<th>' . $MyRow['name'] . '</th>
+				<td>' . $MyRow['name'] . '</td>
 			</tr>
-			<tr>
+			<tr class="striped_row">
 				<th class="text">' . __('Customer Reference') . ':</th>
 				<td>' . $MyRow['customerref'] . '</td>
 				<th class="text">' . __('Deliver To') . ':</th>
-				<th>' . $MyRow['deliverto'] . '</th>
+				<td>' . $MyRow['deliverto'] . '</td>
 			</tr>
-			<tr>
+			<tr class="striped_row">
 				<th class="text">' . __('Ordered On') . ':</th>
 				<td>' . ConvertSQLDate($MyRow['orddate']) . '</td>
 				<th class="text">' . __('Delivery Address 1') . ':</th>
 				<td>' . $MyRow['deladd1'] . '</td>
 			</tr>
-			<tr>
+			<tr class="striped_row">
 				<th class="text">' . __('Requested Delivery') . ':</th>
 				<td>' . ConvertSQLDate($MyRow['deliverydate']) . '</td>
 				<th class="text">' . __('Delivery Address 2') . ':</th>
 				<td>' . $MyRow['deladd2'] . '</td>
 			</tr>
-			<tr>
+			<tr class="striped_row">
 				<th class="text">' . __('Order Currency') . ':</th>
 				<td>' . $MyRow['currcode'] . '</td>
 				<th class="text">' . __('Delivery Address 3') . ':</th>
 				<td>' . $MyRow['deladd3'] . '</td>
 			</tr>
-			<tr>
+			<tr class="striped_row">
 				<th class="text">' . __('Deliver From Location') . ':</th>
 				<td>' . $MyRow['fromstkloc'] . '</td>
 				<th class="text">' . __('Delivery Address 4') . ':</th>
 				<td>' . $MyRow['deladd4'] . '</td>
 			</tr>
-			<tr>
+			<tr class="striped_row">
 				<th class="text">' . __('Telephone') . ':</th>
 				<td>' . $MyRow['contactphone'] . '</td>
 				<th class="text">' . __('Delivery Address 5') . ':</th>
 				<td>' . $MyRow['deladd5'] . '</td>
 			</tr>
-			<tr>
+			<tr class="striped_row">
 				<th class="text">' . __('Email') . ':</th>
 				<td><a href="mailto:' . $MyRow['contactemail'] . '">' . $MyRow['contactemail'] . '</a></td>
 				<th class="text">' . __('Delivery Address 6') . ':</th>
 				<td>' . $MyRow['deladd6'] . '</td>
 			</tr>
-			<tr>
+			<tr class="striped_row">
 				<th class="text">' . __('Freight Cost') . ':</th>
 				<td>' . $MyRow['freightcost'] . '</td>
 			</tr>
-			<tr>
+			<tr class="striped_row">
 				<th class="text">' . __('Comments'). ': </th>
 				<td colspan="3">' . $MyRow['comments'] . '</td>
 			</tr>
-			<tr>
+			<tr class="striped_row">
 				<th class="text">' . __('Invoices') . ': </th>
 				<td colspan="3">' . $Inv . '</td>
 			</tr>
@@ -228,6 +228,7 @@ if (DB_num_rows($GetOrdHdrResult)==1) {
 		echo '<tr class="total_row">
 				<td colspan="6" class="number"><b>' . __('TOTAL Excl Tax/Freight') . '</b></td>
 				<td colspan="2" class="number">' . $DisplayTotal . '</td>
+                <td colspan="3"></td>
 			</tr>
 			</table>';
 
@@ -242,4 +243,4 @@ if (DB_num_rows($GetOrdHdrResult)==1) {
 		</table>';
 	}
 
-include('includes/footer.php');
+include(__DIR__ . '/includes/footer.php');

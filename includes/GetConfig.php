@@ -48,34 +48,60 @@ if ((isset($ForceConfigReload) AND $ForceConfigReload==true) OR !isset($_SESSION
 
 	/* Also reads all the company data set up in the company record and returns an array */
 
-	$SQL=	"SELECT	coyname,
-					gstno,
-					regoffice1,
-					regoffice2,
-					regoffice3,
-					regoffice4,
-					regoffice5,
-					regoffice6,
-					telephone,
-					fax,
-					email,
-					currencydefault,
-					debtorsact,
-					pytdiscountact,
-					creditorsact,
-					payrollact,
-					grnact,
-					exchangediffact,
+	/* Build the SELECT clause based on available columns, as update 41:
+	a) renames column exchangediffact into salesexchangediffact and
+	b) adds a new column to the companies table
+	and we want to be able to run this code on both updated and non-updated databases without errors.
+	*/
+
+	$SQLColumns = "SHOW COLUMNS FROM companies LIKE 'salesexchangediffact'";
+	$ResultColumns = DB_query($SQLColumns, '', '', false, false);
+	$UseNewColumns41 = (DB_num_rows($ResultColumns) > 0);
+
+	/* similar for update 46.php, as it adds the unrealizedcurrencydiffact column */
+	$SQLColumns = "SHOW COLUMNS FROM companies LIKE 'unrealizedcurrencydiffact'";
+	$ResultColumns = DB_query($SQLColumns, '', '', false, false);
+	$UseNewColumns46 = (DB_num_rows($ResultColumns) > 0);
+
+	$SQL = "SELECT coyname,
+				gstno,
+				regoffice1,
+				regoffice2,
+				regoffice3,
+				regoffice4,
+				regoffice5,
+				regoffice6,
+				telephone,
+				fax,
+				email,
+				currencydefault,
+				debtorsact,
+				pytdiscountact,
+				creditorsact,
+				payrollact,
+				grnact,";
+
+	if ($UseNewColumns41) {
+		$SQL .= "	salesexchangediffact,
 					purchasesexchangediffact,
-					retainedearnings,
-					freightact,
-					gllink_debtors,
-					gllink_creditors,
-					gllink_stock,
-					decimalplaces
-				FROM companies
-				INNER JOIN currencies ON companies.currencydefault=currencies.currabrev
-				WHERE coycode=1";
+					currencyexchangediffact,";
+		if ($UseNewColumns46) {
+			$SQL .= "	unrealizedcurrencydiffact,";
+		}
+	} else {
+		$SQL .= "	exchangediffact,
+					purchasesexchangediffact,";
+	}
+
+	$SQL .= "	retainedearnings,
+				freightact,
+				gllink_debtors,
+				gllink_creditors,
+				gllink_stock,
+				decimalplaces
+			FROM companies
+			INNER JOIN currencies ON companies.currencydefault=currencies.currabrev
+			WHERE coycode=1";
 
 	$ErrMsg = __('An error occurred accessing the database to retrieve the company information');
 	$ReadCoyResult = DB_query($SQL, $ErrMsg);
@@ -83,7 +109,7 @@ if ((isset($ForceConfigReload) AND $ForceConfigReload==true) OR !isset($_SESSION
 	if (DB_num_rows($ReadCoyResult)==0) {
       		echo '<br /><b>';
 		prnMsg( __('The company record has not yet been set up') . '</b><br />' . __('From the system setup tab select company maintenance to enter the company information and system preferences'),'error',__('CRITICAL PROBLEM'));
-		include('includes/footer.php');
+		include(__DIR__ . '/footer.php');
 		exit();
 	} else {
 		$_SESSION['CompanyRecord'] = DB_fetch_array($ReadCoyResult);

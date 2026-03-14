@@ -5,10 +5,10 @@ require(__DIR__ . '/includes/session.php');
 $Title = __('Authorisation of Petty Cash Expenses');
 $ViewTopic = 'PettyCash';
 $BookMark = 'AuthorizeExpense';
-include('includes/header.php');
+include(__DIR__ . '/includes/header.php');
 
-include('includes/SQL_CommonFunctions.php');
-include('includes/GLFunctions.php');
+include(__DIR__ . '/includes/SQL_CommonFunctions.php');
+include(__DIR__ . '/includes/GLFunctions.php');
 
 if (isset($_POST['SelectedTabs'])) {
 	$SelectedTabs = mb_strtoupper($_POST['SelectedTabs']);
@@ -159,16 +159,16 @@ if (isset($_POST['Submit']) or isset($_POST['update']) or isset($SelectedTabs) o
 			$Narrative = __('PettyCash') . ' - ' . $MyRow['tabcode'] . ' - ' . $MyRow['codeexpense'] . ' - ' . DB_escape_string($MyRow['notes']);
 			//insert to gltrans
 			DB_Txn_Begin();
-			$SQLFrom = "INSERT INTO `gltrans` (`counterindex`,
-											`type`,
-											`typeno`,
-											`chequeno`,
-											`trandate`,
-											`periodno`,
-											`account`,
-											`narrative`,
-											`amount`,
-											`jobref`)
+			$SQLFrom = "INSERT INTO gltrans (counterindex,
+											type,
+											typeno,
+											chequeno,
+											trandate,
+											periodno,
+											account,
+											narrative,
+											amount,
+											jobref)
 									VALUES (NULL,
 											'" . $Type . "',
 											'" . $TypeNo . "',
@@ -181,16 +181,16 @@ if (isset($_POST['Submit']) or isset($_POST['update']) or isset($SelectedTabs) o
 											'')";
 			$ResultFrom = DB_Query($SQLFrom, '', '', true);
 
-			$SQLTo = "INSERT INTO `gltrans` (`counterindex`,
-										`type`,
-										`typeno`,
-										`chequeno`,
-										`trandate`,
-										`periodno`,
-										`account`,
-										`narrative`,
-										`amount`,
-										`jobref`)
+			$SQLTo = "INSERT INTO gltrans (counterindex,
+										type,
+										typeno,
+										chequeno,
+										trandate,
+										periodno,
+										account,
+										narrative,
+										amount,
+										jobref)
 								VALUES (NULL,
 										'" . $Type . "',
 										'" . $TypeNo . "',
@@ -217,16 +217,16 @@ if (isset($_POST['Submit']) or isset($_POST['update']) or isset($SelectedTabs) o
 							WHERE pccashdetail='" . $MyRow['counterindex'] . "'";
 			$TaxResult = DB_query($TaxSQL);
 			while ($MyTaxRow = DB_fetch_array($TaxResult)) {
-				$SQLTo = "INSERT INTO `gltrans` (`counterindex`,
-												`type`,
-												`typeno`,
-												`chequeno`,
-												`trandate`,
-												`periodno`,
-												`account`,
-												`narrative`,
-												`amount`,
-												`jobref`)
+				$SQLTo = "INSERT INTO gltrans (counterindex,
+												type,
+												typeno,
+												chequeno,
+												trandate,
+												periodno,
+												account,
+												narrative,
+												amount,
+												jobref)
 										VALUES (NULL,
 												'" . $Type . "',
 												'" . $TypeNo . "',
@@ -371,4 +371,4 @@ if (isset($_POST['Submit']) or isset($_POST['update']) or isset($SelectedTabs) o
 	echo '</form>';
 }
 /*end of else not submit */
-include('includes/footer.php');
+include(__DIR__ . '/includes/footer.php');
