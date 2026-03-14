@@ -1902,7 +1902,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 			*/
 
 			//insert the banktrans record in the currency of the bank account
-echo 'Line 1905 <br>'.$SQL;
+
 			$SQL="INSERT INTO banktrans (type,
 						transno,
 						bankact,
@@ -1955,7 +1955,7 @@ echo 'Line 1905 <br>'.$SQL;
 						'" . $_SESSION['Items'.$identifier]->LocationName . ' ' . __('Counter Sale') ."',
 						'1',
 						'" . $_SESSION['Items'.$identifier]->SalesPerson . "')";
-echo 'Line 1958 <br>'.$SQL; exit;
+
 			$ErrMsg = __('Cannot insert a receipt transaction against the customer because') ;
 			$Result = DB_query($SQL, $ErrMsg, '', true);
 
