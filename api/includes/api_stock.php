@@ -707,14 +707,7 @@ function SetStockPrice($StockID, $Currency, $SalesType, $Price, $user, $password
 								branchcode,
 								startdate,
 								enddate)
-							VALUES ('".$StockID."',
-								'".$SalesType."',
-								'".$Currency."',
-								'',
-								'" . $Price. "',
-								'',
-								'" . FormatDateForSQL($StartDate). "',
-								'" . FormatDateForSQL($EndDate) . "'
+							VALUES ('".$StockID."','".$SalesType."','".$Currency."','','" . $Price. "','','" . FormatDateForSQL($StartDate). "','" . FormatDateForSQL($EndDate) . "'
 							)";
 	} else {
 		$SQL='UPDATE prices SET price='. $Price .
