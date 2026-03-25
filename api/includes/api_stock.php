@@ -703,8 +703,6 @@ function SetStockPrice($StockID, $Currency, $SalesType, $Price, $user, $password
 				AND typeabbrev='".$SalesType."'
 				AND currabrev='".$Currency."'";
 	}
-			$Errors[0]=$SQL;
-		return $Errors;
 	$Result = DB_query($SQL);
 	$Errors[0] = 0;
 	return $Errors;
