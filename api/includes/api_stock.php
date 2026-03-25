@@ -692,12 +692,7 @@ function SetStockPrice($StockID, $Currency, $SalesType, $Price, $user, $password
 	$MyRow = DB_fetch_row($Result);
 	if ($MyRow[0]==0) {
 		
-		$SQL="INSERT INTO prices VALUES('". $StockID."',
-										'". $SalesType ."',
-										'". $Currency."',
-										'',
-										'". $Price ."',
-										'')";
+		$SQL="INSERT INTO prices VALUES('". $StockID."','". $SalesType ."','". $Currency."','','". $Price ."','')";
         
 		//		$SQL = "INSERT INTO prices (stockid,typeabbrev,currabrev,debtorno,price,branchcode,startdate,enddate) VALUES ('".$StockID."','".$SalesType."','".$Currency."','','" . $Price. "','','" . FormatDateForSQL($StartDate). "','" . FormatDateForSQL($EndDate) . "')";
 	} else {
