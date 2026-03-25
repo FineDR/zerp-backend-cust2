@@ -699,16 +699,7 @@ function SetStockPrice($StockID, $Currency, $SalesType, $Price, $user, $password
 										'". $Price ."',
 										'')";
         */
-				$SQL = "INSERT INTO prices (stockid,
-								typeabbrev,
-								currabrev,
-								debtorno,
-								price,
-								branchcode,
-								startdate,
-								enddate)
-							VALUES ('".$StockID."','".$SalesType."','".$Currency."','','" . $Price. "','','" . FormatDateForSQL($StartDate). "','" . FormatDateForSQL($EndDate) . "'
-							)";
+				$SQL = "INSERT INTO prices (stockid,typeabbrev,currabrev,debtorno,price,branchcode,startdate,enddate) VALUES ('".$StockID."','".$SalesType."','".$Currency."','','" . $Price. "','','" . FormatDateForSQL($StartDate). "','" . FormatDateForSQL($EndDate) . "')";
 	} else {
 		$SQL='UPDATE prices SET price='. $Price .
 				" WHERE  stockid='" .$StockID."'
