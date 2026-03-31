@@ -2866,8 +2866,8 @@ $ReturnValue = __('If successful this function returns 0. ')
 	. __('Otherwise an array of error codes is returned. ');
 
 $StockAdjustment_sig = array(
-	array(Value::$xmlrpcValue, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcDouble, Value::$xmlrpcString),
-	array(Value::$xmlrpcValue, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcDouble, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString));
+	array(Value::$xmlrpcValue, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString),
+	array(Value::$xmlrpcValue, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString, Value::$xmlrpcString));
 $StockAdjustment_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
 
 function xmlrpc_StockAdjustment($request)
