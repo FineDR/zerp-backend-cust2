@@ -35,6 +35,10 @@ if (isset($_GET['PrintPDF'])) {
 	$PrintPDF = $_POST['PrintPDF'];
 }
 
+if (!isset($InvOrCredit) || ($InvOrCredit != 'Invoice' && $InvOrCredit != 'Credit')) {
+	$InvOrCredit = 'Invoice';
+}
+
 if (!isset($_POST['ToTransNo'])
 	|| trim($_POST['ToTransNo'])==''
 	|| filter_number_format($_POST['ToTransNo']) < $FromTransNo) {
@@ -616,6 +620,25 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 	include(__DIR__ . '/includes/header.php');
 
 	if (!isset($FromTransNo) OR $FromTransNo=='') {
+		$TransactionType = ($InvOrCredit == 'Invoice') ? 10 : 11;
+		$TransactionOptions = array();
+		$SQL = "SELECT debtortrans.transno,
+					debtorsmaster.name,
+					(debtortrans.ovamount + debtortrans.ovfreight + debtortrans.ovgst) AS totalamount,
+					currencies.decimalplaces,
+					currencies.currabrev
+				FROM debtortrans
+				INNER JOIN debtorsmaster
+					ON debtortrans.debtorno=debtorsmaster.debtorno
+				INNER JOIN currencies
+					ON debtorsmaster.currcode=currencies.currabrev
+				WHERE debtortrans.type='" . $TransactionType . "'
+				ORDER BY debtortrans.transno DESC";
+		$Result = DB_query($SQL);
+		while ($MyRow = DB_fetch_array($Result)) {
+			$DisplayTotal = locale_number_format(abs($MyRow['totalamount']), $MyRow['decimalplaces']);
+			$TransactionOptions[$MyRow['transno']] = $MyRow['transno'] . ' - ' . $MyRow['name'] . ' - ' . $MyRow['currabrev'] . ' ' . $DisplayTotal;
+		}
 
 		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') .  '" method="post" target="_blank">';
 		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
@@ -660,15 +683,34 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 
 		echo '<field>
 				<label for="FromTransNo">' . __('Start invoice/credit note number to print') . '</label>
-				<input class="number" type="text" maxlength="6" size="7" name="FromTransNo" required="required" />
+				<select name="FromTransNo" required="required">';
+		echo '<option value="">' . __('Select a transaction') . '</option>';
+		foreach ($TransactionOptions as $TransactionNo => $TransactionLabel) {
+			if ((string)$FromTransNo === (string)$TransactionNo) {
+				echo '<option selected="selected" value="' . $TransactionNo . '">' . htmlspecialchars($TransactionLabel, ENT_QUOTES, 'UTF-8') . '</option>';
+			} else {
+				echo '<option value="' . $TransactionNo . '">' . htmlspecialchars($TransactionLabel, ENT_QUOTES, 'UTF-8') . '</option>';
+			}
+		}
+		echo '</select>
 			</field>';
 
 		echo '<field>
 				<label for="ToTransNo">' . __('End invoice/credit note number to print') . '</label>
-				<input class="number" type="text" maxlength="6" size="7" name="ToTransNo" />
+				<select name="ToTransNo">';
+		echo '<option value="">' . __('Select a transaction') . '</option>';
+		foreach ($TransactionOptions as $TransactionNo => $TransactionLabel) {
+			if (isset($_POST['ToTransNo']) && (string)filter_number_format($_POST['ToTransNo']) === (string)$TransactionNo) {
+				echo '<option selected="selected" value="' . $TransactionNo . '">' . htmlspecialchars($TransactionLabel, ENT_QUOTES, 'UTF-8') . '</option>';
+			} else {
+				echo '<option value="' . $TransactionNo . '">' . htmlspecialchars($TransactionLabel, ENT_QUOTES, 'UTF-8') . '</option>';
+			}
+		}
+		echo '</select>
 			</field>
 		</fieldset>';
 		echo '<div class="centre">
+				<input type="submit" name="RefreshList" value="' . __('Refresh Transaction List') . '" formtarget="_self" />
 				<input type="submit" name="Print" value="' . __('Print Preview') . '" />
 				<input type="submit" name="PrintPDF" value="' . __('Print PDF') . '" />
 			</div>';
