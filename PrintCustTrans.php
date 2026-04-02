@@ -6,6 +6,20 @@ use Dompdf\Dompdf;
 
 include(__DIR__ . '/includes/SetDomPDFOptions.php');
 
+function NormaliseTransactionSelection($TransactionSelection) {
+	if (is_array($TransactionSelection)) {
+		return '';
+	}
+	$TransactionSelection = trim($TransactionSelection);
+	if ($TransactionSelection === '') {
+		return '';
+	}
+	if (preg_match('/^([0-9]+)/', $TransactionSelection, $Matches)) {
+		return filter_number_format($Matches[1]);
+	}
+	return filter_number_format($TransactionSelection);
+}
+
 $ViewTopic = 'ARReports';
 $BookMark = 'PrintInvoicesCredits';
 
@@ -16,9 +30,9 @@ if (isset($_GET['orientation'])) {
 }
 
 if (isset($_GET['FromTransNo'])) {
-	$FromTransNo = filter_number_format($_GET['FromTransNo']);
+	$FromTransNo = NormaliseTransactionSelection($_GET['FromTransNo']);
 } elseif (isset($_POST['FromTransNo'])) {
-	$FromTransNo = filter_number_format($_POST['FromTransNo']);
+	$FromTransNo = NormaliseTransactionSelection($_POST['FromTransNo']);
 } else {
 	$FromTransNo = '';
 }
@@ -41,9 +55,11 @@ if (!isset($InvOrCredit) || ($InvOrCredit != 'Invoice' && $InvOrCredit != 'Credi
 
 if (!isset($_POST['ToTransNo'])
 	|| trim($_POST['ToTransNo'])==''
-	|| filter_number_format($_POST['ToTransNo']) < $FromTransNo) {
+	|| NormaliseTransactionSelection($_POST['ToTransNo']) < $FromTransNo) {
 
 	$_POST['ToTransNo'] = $FromTransNo;
+} else {
+	$_POST['ToTransNo'] = NormaliseTransactionSelection($_POST['ToTransNo']);
 }
 
 $FirstTrans = $FromTransNo;
@@ -683,32 +699,19 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 
 		echo '<field>
 				<label for="FromTransNo">' . __('Start invoice/credit note number to print') . '</label>
-				<select name="FromTransNo" required="required">';
-		echo '<option value="">' . __('Select a transaction') . '</option>';
-		foreach ($TransactionOptions as $TransactionNo => $TransactionLabel) {
-			if ((string)$FromTransNo === (string)$TransactionNo) {
-				echo '<option selected="selected" value="' . $TransactionNo . '">' . htmlspecialchars($TransactionLabel, ENT_QUOTES, 'UTF-8') . '</option>';
-			} else {
-				echo '<option value="' . $TransactionNo . '">' . htmlspecialchars($TransactionLabel, ENT_QUOTES, 'UTF-8') . '</option>';
-			}
-		}
-		echo '</select>
+				<input type="text" name="FromTransNo" list="TransactionList" required="required" autocomplete="off" value="' . (isset($TransactionOptions[$FromTransNo]) ? htmlspecialchars($TransactionOptions[$FromTransNo], ENT_QUOTES, 'UTF-8') : '') . '" />
 			</field>';
 
 		echo '<field>
 				<label for="ToTransNo">' . __('End invoice/credit note number to print') . '</label>
-				<select name="ToTransNo">';
-		echo '<option value="">' . __('Select a transaction') . '</option>';
-		foreach ($TransactionOptions as $TransactionNo => $TransactionLabel) {
-			if (isset($_POST['ToTransNo']) && (string)filter_number_format($_POST['ToTransNo']) === (string)$TransactionNo) {
-				echo '<option selected="selected" value="' . $TransactionNo . '">' . htmlspecialchars($TransactionLabel, ENT_QUOTES, 'UTF-8') . '</option>';
-			} else {
-				echo '<option value="' . $TransactionNo . '">' . htmlspecialchars($TransactionLabel, ENT_QUOTES, 'UTF-8') . '</option>';
-			}
-		}
-		echo '</select>
+				<input type="text" name="ToTransNo" list="TransactionList" autocomplete="off" value="' . (isset($_POST['ToTransNo'], $TransactionOptions[$_POST['ToTransNo']]) ? htmlspecialchars($TransactionOptions[$_POST['ToTransNo']], ENT_QUOTES, 'UTF-8') : '') . '" />
 			</field>
 		</fieldset>';
+		echo '<datalist id="TransactionList">';
+		foreach ($TransactionOptions as $TransactionLabel) {
+			echo '<option value="' . htmlspecialchars($TransactionLabel, ENT_QUOTES, 'UTF-8') . '"></option>';
+		}
+		echo '</datalist>';
 		echo '<div class="centre">
 				<input type="submit" name="RefreshList" value="' . __('Refresh Transaction List') . '" formtarget="_self" />
 				<input type="submit" name="Print" value="' . __('Print Preview') . '" />
