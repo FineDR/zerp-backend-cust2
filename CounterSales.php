@@ -120,6 +120,15 @@ $ExtraHeadContent = '<style>
 	font-weight:700;
 	padding:6px 10px;
 }
+.pos-success-link,
+.pos-success-link:visited {
+	color:inherit;
+	text-decoration:underline;
+	font-weight:700;
+}
+.pos-success-link:hover {
+	text-decoration:none;
+}
 .pos-entry-tools {
 	display:grid;
 	gap:14px;
@@ -617,7 +626,7 @@ if (isset($_POST['CancelOrder'])) {
 	echo '</p></div>';
 
 	if (isset($CompletedInvoiceNo)) {
-		prnMsg(__('Invoice number') . ' ' . $CompletedInvoiceNo . ' ' . __('processed'), 'success');
+		prnMsg('<a class="pos-success-link" target="_blank" rel="noopener" href="' . htmlspecialchars($CompletedInvoiceURL, ENT_QUOTES, 'UTF-8') . '">' . __('Invoice number') . ' ' . $CompletedInvoiceNo . ' ' . __('processed') . '</a>', 'success');
 		echo '<div class="centre">';
 		echo '<p><a target="_blank" rel="noopener" href="' . htmlspecialchars($CompletedInvoiceURL, ENT_QUOTES, 'UTF-8') . '">' . __('Open invoice PDF in a new tab') . '</a></p>';
 		echo '<script>window.open(' . json_encode($CompletedInvoiceURL) . ', "_blank", "noopener");</script>';
