@@ -738,6 +738,8 @@ if (isset($_POST['Search']) or isset($_POST['Next']) or isset($_POST['Previous']
 echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" id="SelectParts" method="post">';
 echo '<div>';
 echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+echo '<input type="submit" id="AutoQuickEntrySubmit" name="QuickEntry" value="' . __('Quick Entry') . '" style="display:none;" />';
+echo '<input type="submit" id="AutoRecalculateSubmit" name="Recalculate" value="' . __('Re-Calculate') . '" style="display:none;" />';
 echo '<div class="pos-layout">';
 
 //Get The exchange rate used for GPPercent calculations on adding or amending items
@@ -1156,7 +1158,7 @@ if (count($_SESSION['Items'.$identifier]->LineItems)>0 ) { /*only show order lin
 		echo '<a target="_blank" href="' . $RootPath . '/StockStatus.php?identifier='.$identifier . '&amp;StockID=' . $OrderLine->StockID . '&amp;DebtorNo=' . $_SESSION['Items'.$identifier]->DebtorNo . '">' . $OrderLine->StockID . '</a></td>
 			<td title="' . $OrderLine->LongDescription . '">' . $OrderLine->ItemDescription . '</td>';
 
-		echo '<td><input class="number" tabindex="2" type="text" name="Quantity_' . $OrderLine->LineNumber . '" required="required" size="6" maxlength="6" value="' . locale_number_format($OrderLine->Quantity,$OrderLine->DecimalPlaces) . '" />';
+		echo '<td><input class="number" tabindex="2" type="text" name="Quantity_' . $OrderLine->LineNumber . '" data-stock-id="' . htmlspecialchars($OrderLine->StockID, ENT_QUOTES, 'UTF-8') . '" required="required" size="6" maxlength="6" value="' . locale_number_format($OrderLine->Quantity,$OrderLine->DecimalPlaces) . '" />';
 
 		echo '</td>
 			<td class="number">' . locale_number_format($OrderLine->QOHatLoc,$OrderLine->DecimalPlaces) . '</td>
@@ -2743,7 +2745,7 @@ if (!isset($_POST['ProcessSale'])) {
 	CounterSales.SetItemList(<?php echo json_encode($_SESSION['ItemList']); ?>);
 	CounterSales.SetQuickEntryTableId('QuickEntryTable');
 	CounterSales.SetRowCounter(<?php echo empty($i) ? 0 : $i; ?>);
-	CounterSales.SetDefaultDeliveryDate(<?php echo empty($DefaultDeliveryDate) ? '""' : $DefaultDeliveryDate; ?>);
+	CounterSales.SetDefaultDeliveryDate(<?php echo json_encode(empty($DefaultDeliveryDate) ? '' : $DefaultDeliveryDate); ?>);
 	CounterSales.SetTotalQuickEntryRowsId('TotalQuickEntryRows');
 
 	CounterSales.SetDecimal(<?php echo $_SESSION['Items'.$identifier]->CurrDecimalPlaces; ?>);

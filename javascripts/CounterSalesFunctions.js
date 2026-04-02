@@ -40,21 +40,7 @@ var CounterSales = {
 	_addItemByCode: function(code)
 	{
 		var codeUpper = code.toUpperCase();
-		var matchedCode = null;
-
-		if (code in this.itemlist) {
-			matchedCode = code;
-		} else if (codeUpper in this.itemlist) {
-			matchedCode = codeUpper;
-		} else {
-			// Try case-insensitive scan of all keys
-			for (var key in this.itemlist) {
-				if (key.toUpperCase() === codeUpper) {
-					matchedCode = key;
-					break;
-				}
-			}
-		}
+		var matchedCode = this._getMatchedCode(code);
 
 		if (matchedCode !== null) {
 			var table = document.getElementById(this.quickentrytableid);
@@ -98,9 +84,68 @@ var CounterSales = {
 	{
 		var code = barcodeInput.value.trim();
 		if (code !== '') {
-			this._addItemByCode(code);
+			var matchedCode = this._getMatchedCode(code);
+
+			if (matchedCode !== null) {
+				if (!this._incrementExistingCartLine(matchedCode)) {
+					this._addItemByCode(matchedCode);
+					this._submitFormButton("AutoQuickEntrySubmit");
+				} else {
+					this._submitFormButton("AutoRecalculateSubmit");
+				}
+			} else {
+				alert("Item code not found: " + code);
+			}
+
 			barcodeInput.value = "";
 			barcodeInput.focus();
+		}
+	},
+
+	_getMatchedCode: function(code)
+	{
+		var codeUpper = code.toUpperCase();
+		var matchedCode = null;
+
+		if (code in this.itemlist) {
+			matchedCode = code;
+		} else if (codeUpper in this.itemlist) {
+			matchedCode = codeUpper;
+		} else {
+			for (var key in this.itemlist) {
+				if (key.toUpperCase() === codeUpper) {
+					matchedCode = key;
+					break;
+				}
+			}
+		}
+
+		return matchedCode;
+	},
+
+	_incrementExistingCartLine: function(code)
+	{
+		var quantityInput = document.querySelector('input[data-stock-id="' + code.replace(/"/g, '\\"') + '"]');
+
+		if (!quantityInput) {
+			return false;
+		}
+
+		var currentQty = parseFloat(quantityInput.value);
+		if (isNaN(currentQty)) {
+			currentQty = 0;
+		}
+
+		quantityInput.value = currentQty + 1;
+		return true;
+	},
+
+	_submitFormButton: function(buttonId)
+	{
+		var button = document.getElementById(buttonId);
+
+		if (button && button.form) {
+			button.form.requestSubmit(button);
 		}
 	},
 
