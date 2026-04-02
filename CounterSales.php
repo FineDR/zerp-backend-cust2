@@ -2400,15 +2400,21 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 		unset($_SESSION['Items'.$identifier]);
 
 		prnMsg( __('Invoice number'). ' '. $InvoiceNo .' '. __('processed'), 'success');
-
-		echo '<br /><div class="centre">';
-
 		if ($_SESSION['InvoicePortraitFormat']==0) {
-			echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath.'/PrintCustTrans.php?FromTransNo='.$InvoiceNo.'&amp;InvOrCredit=Invoice&amp;PrintPDF=True&orientation=landscape" />';
+			$InvoiceRedirectURL = $RootPath . '/PrintCustTrans.php?FromTransNo=' . $InvoiceNo . '&InvOrCredit=Invoice&PrintPDF=True&orientation=landscape';
 		} else {
-			echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath.'/PrintCustTrans.php?FromTransNo='.$InvoiceNo.'&amp;InvOrCredit=Invoice&amp;PrintPDF=True&orientation=portrait" />';
+			$InvoiceRedirectURL = $RootPath . '/PrintCustTrans.php?FromTransNo=' . $InvoiceNo . '&InvOrCredit=Invoice&PrintPDF=True&orientation=portrait';
 		}
 
+		if (!headers_sent()) {
+			header('Location: ' . $InvoiceRedirectURL, true, 303);
+			exit();
+		}
+
+		echo '<br /><div class="centre">';
+		echo '<script>window.location.replace(' . json_encode($InvoiceRedirectURL) . ');</script>';
+		echo '<noscript><meta http-equiv="Refresh" content="0; url=' . htmlspecialchars($InvoiceRedirectURL, ENT_QUOTES, 'UTF-8') . '" /></noscript>';
+		echo '<p><a href="' . htmlspecialchars($InvoiceRedirectURL, ENT_QUOTES, 'UTF-8') . '">' . __('Open the invoice') . '</a></p>';
 		echo '<br /><br /><a href="' .htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">' . __('Start a new Counter Sale') . '</a></div>';
 
 	}
