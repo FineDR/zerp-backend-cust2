@@ -87,6 +87,12 @@ $ExtraHeadContent = '<style>
 	position:sticky;
 	top:96px;
 }
+.pos-sidebar-secondary {
+	order:5;
+	position:static;
+	top:auto;
+	align-self:start;
+}
 .pos-card-header {
 	align-items:center;
 	display:flex;
@@ -219,7 +225,7 @@ $ExtraHeadContent = '<style>
 .pos-summary-card h3,
 .pos-panel legend {
 	color:#16355e;
-	font-size:1rem;
+	font-size:0.95rem;
 	font-weight:700;
 	margin:0 0 12px;
 }
@@ -263,7 +269,7 @@ $ExtraHeadContent = '<style>
 }
 .pos-panel field {
 	display:block;
-	margin-bottom:12px;
+	margin-bottom:10px;
 }
 .pos-panel field:last-child {
 	margin-bottom:0;
@@ -271,10 +277,10 @@ $ExtraHeadContent = '<style>
 .pos-panel label {
 	color:#5e789a;
 	display:block;
-	font-size:0.82rem;
+	font-size:0.76rem;
 	font-weight:700;
 	letter-spacing:0.03em;
-	margin-bottom:6px;
+	margin-bottom:4px;
 	text-transform:uppercase;
 	width:auto;
 	float:none;
@@ -297,17 +303,18 @@ $ExtraHeadContent = '<style>
 	border:1px solid #ccdbee;
 	border-radius:12px;
 	box-shadow:none;
-	min-height:42px;
-	padding:8px 12px;
+	font-size:0.92rem;
+	min-height:38px;
+	padding:6px 10px;
 	width:100%;
 }
 .pos-panel textarea {
-	min-height:110px;
+	min-height:84px;
 	resize:vertical;
 }
 .pos-sidebar-actions {
 	display:grid;
-	gap:10px;
+	gap:8px;
 }
 .pos-sidebar-actions input[type="submit"],
 .pos-sidebar-actions input[type="reset"],
@@ -319,9 +326,10 @@ $ExtraHeadContent = '<style>
 	box-shadow:0 12px 24px rgba(53, 139, 87, 0.18);
 	color:#ffffff;
 	cursor:pointer;
+	font-size:0.95rem;
 	font-weight:700;
-	min-height:46px;
-	padding:10px 14px;
+	min-height:40px;
+	padding:8px 12px;
 }
 .pos-sidebar-actions input[name="Recalculate"],
 .pos-entry-card input[name="Search"],
@@ -2733,7 +2741,7 @@ if (!isset($_POST['ProcessSale'])) {
 
   	}
 	if ($_SESSION['Items'.$identifier]->ItemsOrdered >=1) {
-  		echo '<aside class="pos-sidebar" style="order:5;"><div class="pos-sidebar-actions"><input type="reset" name="CancelOrder" value="' . __('Cancel Sale') . '" onclick="return confirm(\'' . __('Are you sure you wish to cancel this sale?') . '\');" /></div></aside>';
+  		echo '<aside class="pos-sidebar pos-sidebar-secondary"><div class="pos-sidebar-actions"><input type="reset" name="CancelOrder" value="' . __('Cancel Sale') . '" onclick="return confirm(\'' . __('Are you sure you wish to cancel this sale?') . '\');" /></div></aside>';
 	}
 	echo '</div>';
 	echo '</form>';
