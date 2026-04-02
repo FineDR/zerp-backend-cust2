@@ -435,6 +435,15 @@ if (isset($_GET['NewItem'])) {
 	$NewItem = trim($_GET['NewItem']);
 }
 
+if (isset($_GET['CompletedInvoiceNo'])) {
+	$CompletedInvoiceNo = $_GET['CompletedInvoiceNo'];
+	$CompletedInvoiceOrientation = $_GET['CompletedInvoiceOrientation'] ?? 'portrait';
+	if ($CompletedInvoiceOrientation != 'landscape') {
+		$CompletedInvoiceOrientation = 'portrait';
+	}
+	$CompletedInvoiceURL = $RootPath . '/PrintCustTrans.php?FromTransNo=' . urlencode($CompletedInvoiceNo) . '&InvOrCredit=Invoice&PrintPDF=True&orientation=' . urlencode($CompletedInvoiceOrientation);
+}
+
 if (isset($_GET['NewOrder'])) {
 	/*New order entry - clear any existing order details from the Items object and initiate a newy*/
 	 if (isset($_SESSION['Items'.$identifier])) {
@@ -606,6 +615,14 @@ if (isset($_POST['CancelOrder'])) {
 	echo '<span>' . $_SESSION['Items'.$identifier]->CustomerName . ' ' . __('Counter Sale') . ' ' .__('from') . ' ' . $_SESSION['Items'.$identifier]->LocationName . ' ' . __('inventory') . '</span>';
 	echo '<small>' . __('All amounts in') . ' ' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' • ' . date('l, F j, Y') . '</small>';
 	echo '</p></div>';
+
+	if (isset($CompletedInvoiceNo)) {
+		prnMsg(__('Invoice number') . ' ' . $CompletedInvoiceNo . ' ' . __('processed'), 'success');
+		echo '<div class="centre">';
+		echo '<p><a target="_blank" rel="noopener" href="' . htmlspecialchars($CompletedInvoiceURL, ENT_QUOTES, 'UTF-8') . '">' . __('Open invoice PDF in a new tab') . '</a></p>';
+		echo '<script>window.open(' . json_encode($CompletedInvoiceURL) . ', "_blank", "noopener");</script>';
+		echo '</div>';
+	}
 }
 
 if (isset($_POST['Search']) or isset($_POST['Next']) or isset($_POST['Previous'])) {
@@ -2399,23 +2416,23 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 		unset($_SESSION['Items'.$identifier]->LineItems);
 		unset($_SESSION['Items'.$identifier]);
 
-		prnMsg( __('Invoice number'). ' '. $InvoiceNo .' '. __('processed'), 'success');
 		if ($_SESSION['InvoicePortraitFormat']==0) {
-			$InvoiceRedirectURL = $RootPath . '/PrintCustTrans.php?FromTransNo=' . $InvoiceNo . '&InvOrCredit=Invoice&PrintPDF=True&orientation=landscape';
+			$CompletedInvoiceOrientation = 'landscape';
 		} else {
-			$InvoiceRedirectURL = $RootPath . '/PrintCustTrans.php?FromTransNo=' . $InvoiceNo . '&InvOrCredit=Invoice&PrintPDF=True&orientation=portrait';
+			$CompletedInvoiceOrientation = 'portrait';
 		}
+		$CompletedSaleURL = htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8')
+			. '?CompletedInvoiceNo=' . urlencode($InvoiceNo)
+			. '&CompletedInvoiceOrientation=' . urlencode($CompletedInvoiceOrientation);
 
 		if (!headers_sent()) {
-			header('Location: ' . $InvoiceRedirectURL, true, 303);
+			header('Location: ' . $CompletedSaleURL, true, 303);
 			exit();
 		}
 
-		echo '<br /><div class="centre">';
-		echo '<script>window.location.replace(' . json_encode($InvoiceRedirectURL) . ');</script>';
-		echo '<noscript><meta http-equiv="Refresh" content="0; url=' . htmlspecialchars($InvoiceRedirectURL, ENT_QUOTES, 'UTF-8') . '" /></noscript>';
-		echo '<p><a href="' . htmlspecialchars($InvoiceRedirectURL, ENT_QUOTES, 'UTF-8') . '">' . __('Open the invoice') . '</a></p>';
-		echo '<br /><br /><a href="' .htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">' . __('Start a new Counter Sale') . '</a></div>';
+		echo '<script>window.location.replace(' . json_encode($CompletedSaleURL) . ');</script>';
+		echo '<noscript><meta http-equiv="Refresh" content="0; url=' . htmlspecialchars($CompletedSaleURL, ENT_QUOTES, 'UTF-8') . '" /></noscript>';
+		exit();
 
 	}
 	// There were input errors so don't process nuffin
