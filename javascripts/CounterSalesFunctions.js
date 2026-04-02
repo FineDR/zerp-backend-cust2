@@ -36,6 +36,12 @@ var CounterSales = {
 		this.defaultdeliverydate = val;
 	},
 
+	autofillcashreceived: false,
+	SetAutoFillCashReceived: function(val)
+	{
+		this.autofillcashreceived = val;
+	},
+
 	// Core logic: find the matched stock code (case-insensitive) and add to cart table
 	_addItemByCode: function(code)
 	{
@@ -89,9 +95,9 @@ var CounterSales = {
 			if (matchedCode !== null) {
 				if (!this._incrementExistingCartLine(matchedCode)) {
 					this._addItemByCode(matchedCode);
-					this._submitFormButton("AutoQuickEntrySubmit");
+					this._submitFormButton("AutoQuickEntrySubmit", true);
 				} else {
-					this._submitFormButton("AutoRecalculateSubmit");
+					this._submitFormButton("AutoRecalculateSubmit", true);
 				}
 			} else {
 				alert("Item code not found: " + code);
@@ -140,9 +146,14 @@ var CounterSales = {
 		return true;
 	},
 
-	_submitFormButton: function(buttonId)
+	_submitFormButton: function(buttonId, autoFillCashReceived)
 	{
 		var button = document.getElementById(buttonId);
+		var autoFillInput = document.getElementById("AutoFillCashReceived");
+
+		if (autoFillInput) {
+			autoFillInput.value = autoFillCashReceived ? "1" : "0";
+		}
 
 		if (button && button.form) {
 			button.form.requestSubmit(button);
@@ -208,5 +219,17 @@ var CounterSales = {
 			paid_amount.value = 0;
 			change_due.value = 0;
 		}
+	},
+
+	ApplyAutoPaymentDefaults: function()
+	{
+		var receivedAmount = document.getElementById(this.cashreceivedid);
+
+		if (!this.autofillcashreceived || !receivedAmount) {
+			return;
+		}
+
+		receivedAmount.value = Number(this.totaldue).toFixed(this.decimal);
+		this.CalculateChangeDue();
 	}
 }

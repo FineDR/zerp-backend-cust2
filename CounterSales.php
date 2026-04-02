@@ -738,6 +738,7 @@ if (isset($_POST['Search']) or isset($_POST['Next']) or isset($_POST['Previous']
 echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" id="SelectParts" method="post">';
 echo '<div>';
 echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+echo '<input type="hidden" id="AutoFillCashReceived" name="AutoFillCashReceived" value="0" />';
 echo '<input type="submit" id="AutoQuickEntrySubmit" name="QuickEntry" value="' . __('Quick Entry') . '" style="display:none;" />';
 echo '<input type="submit" id="AutoRecalculateSubmit" name="Recalculate" value="' . __('Re-Calculate') . '" style="display:none;" />';
 echo '<div class="pos-layout">';
@@ -2752,6 +2753,8 @@ if (!isset($_POST['ProcessSale'])) {
 	CounterSales.SetCashReceivedId('CashReceived');
 	CounterSales.SetAmountPaidId('AmountPaid');
 	CounterSales.SetChangeDueId('ChangeDue');
+	CounterSales.SetAutoFillCashReceived(<?php echo !empty($_POST['AutoFillCashReceived']) ? 'true' : 'false'; ?>);
+	CounterSales.ApplyAutoPaymentDefaults();
 </script>
 <?php
 include(__DIR__ . '/includes/footer.php');
