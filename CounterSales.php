@@ -10,6 +10,378 @@ require(__DIR__ . '/includes/session.php');
 $Title = __('Counter Sales');
 $ViewTopic = 'SalesOrders';
 $BookMark = 'SalesOrderCounterSales';
+$ExtraHeadContent = '<style>
+.pos-shell-title {
+	align-items:center;
+	display:flex;
+	flex-wrap:wrap;
+	gap:12px;
+	justify-content:space-between;
+	margin:4px 0 18px;
+}
+.pos-shell-title .page_title_text {
+	background:linear-gradient(135deg, #ffffff, #edf5ff);
+	border:1px solid #cddcf2;
+	border-radius:22px;
+	box-shadow:0 14px 28px rgba(22, 58, 108, 0.10);
+	margin:0;
+	padding:16px 22px;
+	text-align:left;
+	width:100%;
+}
+.pos-shell-title .page_title_text strong {
+	display:block;
+	font-size:0.92rem;
+	letter-spacing:0.08em;
+	margin-bottom:6px;
+	text-transform:uppercase;
+	color:#5f799a;
+}
+.pos-shell-title .page_title_text span {
+	display:block;
+	font-size:2rem;
+	font-weight:700;
+	line-height:1.15;
+	color:#122a49;
+}
+.pos-shell-title .page_title_text small {
+	color:#5e7594;
+	display:block;
+	font-size:0.95rem;
+	margin-top:6px;
+}
+.pos-layout {
+	display:grid;
+	gap:18px;
+	grid-template-columns:minmax(0, 1fr) 330px;
+	align-items:start;
+}
+.pos-entry-card,
+.pos-cart-card,
+.pos-sidebar,
+.pos-search-results-card {
+	background:rgba(255,255,255,0.92);
+	border:1px solid #d5e2f3;
+	border-radius:22px;
+	box-shadow:0 18px 34px rgba(22, 58, 108, 0.08);
+}
+.pos-entry-card,
+.pos-cart-card,
+.pos-search-results-card {
+	grid-column:1;
+	padding:18px;
+}
+.pos-entry-card {
+	order:1;
+}
+.pos-cart-card {
+	order:2;
+}
+.pos-search-results-card {
+	order:4;
+}
+.pos-sidebar {
+	grid-column:2;
+	order:3;
+	padding:14px;
+	position:sticky;
+	top:96px;
+}
+.pos-card-header {
+	align-items:center;
+	display:flex;
+	justify-content:space-between;
+	gap:12px;
+	margin-bottom:14px;
+}
+.pos-card-header h2,
+.pos-card-header h3 {
+	color:#15355e;
+	font-size:1.15rem;
+	margin:0;
+}
+.pos-card-header p {
+	color:#6a82a3;
+	font-size:0.92rem;
+	margin:4px 0 0;
+}
+.pos-badge {
+	background:#e8f1ff;
+	border:1px solid #cadbf8;
+	border-radius:999px;
+	color:#1f5fbf;
+	font-size:0.82rem;
+	font-weight:700;
+	padding:6px 10px;
+}
+.pos-entry-tools {
+	display:grid;
+	gap:14px;
+	grid-template-columns:minmax(0, 1.65fr) minmax(180px, 0.9fr);
+	margin-bottom:16px;
+}
+.pos-entry-tools .search-inline {
+	align-items:center;
+	display:flex;
+	gap:10px;
+}
+.pos-entry-tools .search-inline input[type="text"] {
+	flex:1;
+}
+.pos-quick-entry-wrap {
+	background:#f6faff;
+	border:1px solid #d7e5f7;
+	border-radius:18px;
+	padding:16px;
+}
+.pos-quick-entry-table,
+.pos-cart-table,
+.pos-search-results-card table,
+.pos-entry-card table.table1 {
+	border-collapse:separate;
+	border-spacing:0;
+	width:100%;
+}
+.pos-quick-entry-table th,
+.pos-cart-table th,
+.pos-search-results-card th,
+.pos-entry-card table.table1 th {
+	background:#f1f6fd;
+	border-bottom:1px solid #d7e5f7;
+	color:#607897;
+	font-size:0.82rem;
+	font-weight:700;
+	letter-spacing:0.03em;
+	padding:12px 10px;
+	text-align:left;
+	text-transform:uppercase;
+}
+.pos-quick-entry-table td,
+.pos-cart-table td,
+.pos-search-results-card td,
+.pos-entry-card table.table1 td {
+	border-bottom:1px solid #ebf1f9;
+	padding:10px;
+	vertical-align:middle;
+}
+.pos-cart-table tr:last-child td,
+.pos-quick-entry-table tr:last-child td,
+.pos-entry-card table.table1 tr:last-child td,
+.pos-search-results-card table tr:last-child td {
+	border-bottom:none;
+}
+.pos-cart-table .number,
+.pos-search-results-card .number,
+.pos-entry-card table.table1 .number {
+	text-align:right;
+}
+.pos-empty-cart {
+	align-items:center;
+	display:flex;
+	flex-direction:column;
+	justify-content:center;
+	min-height:320px;
+	text-align:center;
+}
+.pos-empty-cart .empty-icon {
+	color:#b3c5df;
+	font-size:4rem;
+	line-height:1;
+	margin-bottom:12px;
+}
+.pos-empty-cart .empty-icon img {
+	height:72px;
+	opacity:0.7;
+	width:72px;
+}
+.pos-empty-cart h3 {
+	color:#29496f;
+	font-size:1.3rem;
+	margin:0 0 8px;
+}
+.pos-empty-cart p {
+	color:#6882a2;
+	margin:0;
+	max-width:420px;
+}
+.pos-summary-card,
+.pos-panel,
+.pos-sidebar-actions {
+	background:#ffffff;
+	border:1px solid #dde7f5;
+	border-radius:18px;
+	box-shadow:0 10px 20px rgba(22, 58, 108, 0.06);
+	padding:16px;
+}
+.pos-summary-card {
+	margin-bottom:14px;
+}
+.pos-summary-card h3,
+.pos-panel legend {
+	color:#16355e;
+	font-size:1rem;
+	font-weight:700;
+	margin:0 0 12px;
+}
+.pos-summary-grid {
+	display:grid;
+	gap:8px 12px;
+	grid-template-columns:1fr auto;
+}
+.pos-summary-grid .label {
+	color:#6b84a4;
+	font-weight:700;
+	text-transform:uppercase;
+	font-size:0.78rem;
+}
+.pos-summary-grid .value {
+	color:#15355e;
+	font-weight:700;
+}
+.pos-summary-total {
+	align-items:center;
+	border-top:1px solid #e6eef9;
+	display:flex;
+	justify-content:space-between;
+	margin-top:12px;
+	padding-top:14px;
+}
+.pos-summary-total strong {
+	color:#173861;
+	font-size:1.05rem;
+}
+.pos-summary-total span {
+	color:#1b8f58;
+	font-size:1.6rem;
+	font-weight:800;
+}
+.pos-panel {
+	margin:0 0 14px;
+}
+.pos-panel legend {
+	padding:0;
+}
+.pos-panel field {
+	display:block;
+	margin-bottom:12px;
+}
+.pos-panel field:last-child {
+	margin-bottom:0;
+}
+.pos-panel label {
+	color:#5e789a;
+	display:block;
+	font-size:0.82rem;
+	font-weight:700;
+	letter-spacing:0.03em;
+	margin-bottom:6px;
+	text-transform:uppercase;
+	width:auto;
+	float:none;
+}
+.pos-panel .fieldtext {
+	display:block;
+	padding:10px 12px;
+	border:1px solid #d6e2f3;
+	border-radius:12px;
+	background:#f8fbff;
+}
+.pos-panel input[type="text"],
+.pos-panel input[type="tel"],
+.pos-panel input[type="email"],
+.pos-panel select,
+.pos-panel textarea,
+.pos-entry-card input[type="text"],
+.pos-entry-card input[type="search"],
+.pos-entry-card input[type="button"] {
+	border:1px solid #ccdbee;
+	border-radius:12px;
+	box-shadow:none;
+	min-height:42px;
+	padding:8px 12px;
+	width:100%;
+}
+.pos-panel textarea {
+	min-height:110px;
+	resize:vertical;
+}
+.pos-sidebar-actions {
+	display:grid;
+	gap:10px;
+}
+.pos-sidebar-actions input[type="submit"],
+.pos-sidebar-actions input[type="reset"],
+.pos-entry-card input[type="submit"],
+.pos-entry-card input[type="button"] {
+	background:linear-gradient(135deg, #53ac72, #2f8d56);
+	border:none;
+	border-radius:14px;
+	box-shadow:0 12px 24px rgba(53, 139, 87, 0.18);
+	color:#ffffff;
+	cursor:pointer;
+	font-weight:700;
+	min-height:46px;
+	padding:10px 14px;
+}
+.pos-sidebar-actions input[name="Recalculate"],
+.pos-entry-card input[name="Search"],
+.pos-entry-card input[name="PartSearch"] {
+	background:linear-gradient(135deg, #f5f9ff, #e3eefc);
+	box-shadow:none;
+	color:#1f5fbf;
+	border:1px solid #cadcf7;
+}
+.pos-entry-card .page_help_text {
+	background:#eef5ff;
+	border:1px solid #d9e7fb;
+	border-radius:14px;
+	color:#5f7899;
+	margin:0 0 14px;
+	padding:12px 14px;
+}
+.pos-search-results-card .centre,
+.pos-entry-card .centre {
+	margin-top:14px;
+}
+.pos-mini-actions {
+	display:flex;
+	flex-wrap:wrap;
+	gap:10px;
+}
+.pos-mini-actions input {
+	flex:1;
+}
+.pos-delete-link {
+	color:#c2410c;
+	font-weight:700;
+}
+.pos-delete-link:hover {
+	color:#9a3412;
+}
+@media only screen and (max-width: 1100px) {
+	.pos-layout {
+		grid-template-columns:1fr;
+	}
+	.pos-entry-card,
+	.pos-cart-card,
+	.pos-search-results-card,
+	.pos-sidebar {
+		grid-column:1;
+	}
+	.pos-sidebar {
+		order:3;
+		position:static;
+	}
+}
+@media only screen and (max-width: 720px) {
+	.pos-entry-tools {
+		grid-template-columns:1fr;
+	}
+	.pos-shell-title .page_title_text span {
+		font-size:1.5rem;
+	}
+}
+</style>';
 include(__DIR__ . '/includes/header.php');
 
 include(__DIR__ . '/includes/GetPrice.php');
@@ -18,6 +390,7 @@ include(__DIR__ . '/includes/StockFunctions.php');
 include(__DIR__ . '/includes/GetSalesTransGLCodes.php');
 
 $AlreadyWarnedAboutCredit = false;
+$TaxTotal = 0;
 
 if (empty($_GET['identifier'])) {
 	$identifier=date('U');
@@ -220,9 +593,11 @@ if (isset($_POST['CancelOrder'])) {
 
 } else { /*Not cancelling the order */
 
-	echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/inventory.png" title="' . __('Counter Sales') . '" alt="" />' . ' ';
-	echo $_SESSION['Items'.$identifier]->CustomerName . ' ' . __('Counter Sale') . ' ' .__('from') . ' ' . $_SESSION['Items'.$identifier]->LocationName . ' ' . __('inventory') . ' (' . __('all amounts in') . ' ' . $_SESSION['Items'.$identifier]->DefaultCurrency . ')';
-	echo '</p>';
+	echo '<div class="pos-shell-title"><p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/inventory.png" title="' . __('Counter Sales') . '" alt="" />' . ' ';
+	echo '<strong>' . __('Point of Sale') . '</strong>';
+	echo '<span>' . $_SESSION['Items'.$identifier]->CustomerName . ' ' . __('Counter Sale') . ' ' .__('from') . ' ' . $_SESSION['Items'.$identifier]->LocationName . ' ' . __('inventory') . '</span>';
+	echo '<small>' . __('All amounts in') . ' ' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' • ' . date('l, F j, Y') . '</small>';
+	echo '</p></div>';
 }
 
 if (isset($_POST['Search']) or isset($_POST['Next']) or isset($_POST['Previous'])) {
@@ -340,8 +715,6 @@ if (isset($_POST['Search']) or isset($_POST['Next']) or isset($_POST['Previous']
 	if (!isset($Offset) OR $Offset < 0) {
 		$Offset = 0;
 	}
-	$SQL = $SQL . ' LIMIT ' . $_SESSION['DefaultDisplayRecordsMax'].' OFFSET ' . strval($_SESSION['DefaultDisplayRecordsMax']*$Offset);
-
 	$ErrMsg = __('There is a problem selecting the part records to display because');
 	$SearchResult = DB_query($SQL, $ErrMsg);
 
@@ -365,6 +738,7 @@ if (isset($_POST['Search']) or isset($_POST['Next']) or isset($_POST['Previous']
 echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" id="SelectParts" method="post">';
 echo '<div>';
 echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+echo '<div class="pos-layout">';
 
 //Get The exchange rate used for GPPercent calculations on adding or amending items
 if ($_SESSION['Items'.$identifier]->DefaultCurrency != $_SESSION['CompanyRecord']['currencydefault']) {
@@ -729,9 +1103,15 @@ if (count($_SESSION['Items'.$identifier]->LineItems)>0 ) { /*only show order lin
 //   T H I S   W H E R E   T H E   S A L E  I S   D I S P L A Y E D
 // *************************************************************************
 */
-
-	echo '<br />
-		<table width="90%" cellpadding="2">
+	echo '<section class="pos-cart-card">';
+	echo '<div class="pos-card-header">
+			<div>
+				<h2>' . __('Sale Items') . '</h2>
+				<p>' . __('Review the cart, adjust quantities, pricing, or discounts, and keep the sale moving.') . '</p>
+			</div>
+			<div class="pos-badge">' . count($_SESSION['Items'.$identifier]->LineItems) . ' ' . __('items') . '</div>
+		</div>';
+	echo '<table class="pos-cart-table" cellpadding="2">
 		<tr style="tableheader">';
 	echo '<th>' . __('Item Code') . '</th>
    	      <th>' . __('Item Description') . '</th>
@@ -818,7 +1198,7 @@ if (count($_SESSION['Items'.$identifier]->LineItems)>0 ) { /*only show order lin
 		$_SESSION['Items'.$identifier]->TaxGLCodes=$TaxGLCodes;
 		echo '<td class="number">' . locale_number_format($TaxLineTotal ,$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</td>';
 		echo '<td class="number">' . locale_number_format($SubTotal + $TaxLineTotal ,$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</td>';
-		echo '<td><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?identifier='.$identifier . '&amp;Delete=' . $OrderLine->LineNumber . '" onclick="return confirm(\'' . __('Are You Sure?') . '\');">' . __('Delete') . '</a></td></tr>';
+		echo '<td><a class="pos-delete-link" href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?identifier='.$identifier . '&amp;Delete=' . $OrderLine->LineNumber . '" onclick="return confirm(\'' . __('Are You Sure?') . '\');">' . __('Delete') . '</a></td></tr>';
 
 		if ($_SESSION['AllowOrderLineItemNarrative'] == 1) {
 			echo $RowStarter;
@@ -844,11 +1224,24 @@ if (count($_SESSION['Items'.$identifier]->LineItems)>0 ) { /*only show order lin
 			<td class="number">' . locale_number_format(($_SESSION['Items'.$identifier]->total+$TaxTotal),$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</td>
 		</tr>
 		</table>';
+	echo '</section>';
 	echo '<input type="hidden" name="TaxTotal" value="'.$TaxTotal.'" />';
-	echo '<fieldset>';
-	//nested table
-	echo '<fieldset>
-			<legend>', __('Delivery Details'), '</legend>';
+	echo '<aside class="pos-sidebar">';
+	echo '<section class="pos-summary-card">
+			<h3>' . __('Billing Summary') . '</h3>
+			<div class="pos-summary-grid">
+				<div class="label">' . __('Subtotal') . '</div>
+				<div class="value">' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' ' . locale_number_format(($_SESSION['Items'.$identifier]->total),$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</div>
+				<div class="label">' . __('Tax') . '</div>
+				<div class="value">' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' ' . locale_number_format($TaxTotal,$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</div>
+			</div>
+			<div class="pos-summary-total">
+				<strong>' . __('Total') . '</strong>
+				<span>' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' ' . locale_number_format(($_SESSION['Items'.$identifier]->total+$TaxTotal),$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</span>
+			</div>
+		</section>';
+	echo '<fieldset class="pos-panel">
+			<legend>', __('Customer Details'), '</legend>';
 
 	echo '<field>
 			<label for="DeliverTo">', __('Picked Up By'), ':</label>
@@ -898,8 +1291,8 @@ if (count($_SESSION['Items'.$identifier]->LineItems)>0 ) { /*only show order lin
 			<textarea name="Comments" cols="23" rows="5">', stripcslashes($_SESSION['Items' . $identifier]->Comments), '</textarea>
 		</field>';
 
-	echo '</fieldset>'; //end the sub table in the first column of master table
-	echo '<fieldset>
+	echo '</fieldset>';
+	echo '<fieldset class="pos-panel">
 			<legend>', __('Payment Details'), '</legend>'; // a new nested table in the second column of master table
 	//now the payment stuff in this column
 	$PaymentMethodsResult = DB_query("SELECT paymentid, paymentname FROM paymentmethods");
@@ -957,16 +1350,21 @@ if (count($_SESSION['Items'.$identifier]->LineItems)>0 ) { /*only show order lin
 			<input type="text" class="number" id="ChangeDue" name="ChangeDue" maxlength="12" size="12" value="', $_POST['ChangeDue'], '" readonly />
 		</field>';
 
-	echo '</fieldset>'; //end the sub table in the second column of master table
-	echo '</fieldset>'; //end of column/row/master table
+	echo '</fieldset>';
 	if (!isset($_POST['ProcessSale'])) {
-		echo '<br />
-				<div class="centre">
+		echo '<div class="pos-sidebar-actions">
 					<input type="submit" name="Recalculate" value="' . __('Re-Calculate') . '" />
 					<input type="submit" name="ProcessSale" value="' . __('Process The Sale') . '" />
 				</div>';
 	}
-	echo '<hr />';
+	echo '</aside>';
+
+} else {
+	echo '<section class="pos-cart-card pos-empty-cart">
+			<div class="empty-icon"><img src="'.$RootPath.'/css/'.$Theme.'/images/inventory.png" alt="" /></div>
+			<h3>' . __('No items added yet') . '</h3>
+			<p>' . __('Start by scanning a barcode, typing a product code, or using product search to add items into the sale.') . '</p>
+		</section>';
 
 } # end of if lines
 
@@ -2017,6 +2415,14 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 if (!isset($_POST['ProcessSale'])) {
 	 if (isset($_POST['PartSearch']) and $_POST['PartSearch']!='') {
 
+		echo '<section class="pos-entry-card">';
+		echo '<div class="pos-card-header">
+				<div>
+					<h3>' . __('Find Products') . '</h3>
+					<p>' . __('Search the catalog, check availability, and add products directly into this cash sale.') . '</p>
+				</div>
+				<div class="pos-badge">' . __('Search Mode') . '</div>
+			</div>';
 		echo '<input type="hidden" name="PartSearch" value="' .  __('Yes Please') . '" />';
 
 		if ($_SESSION['FrequentlyOrderedItems']>0) { //show the Frequently Order Items selection where configured to do so
@@ -2040,6 +2446,7 @@ if (!isset($_POST['ProcessSale'])) {
 			echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/magnifier.png" title="' . __('Search') . '" alt="" />' . ' ';
 			echo __('Frequently Ordered Items') . '</p><br />';
 			echo '<div class="page_help_text">' . __('Frequently Ordered Items') . __(', shows the most frequently ordered items in the last 6 months.  You can choose from this list, or search further for other items') . '.</div><br />';
+			echo '<div class="pos-search-results-card">';
 			echo '<table class="table1">';
 			$TableHeader = '<tr><th>' . __('Code') . '</th>
 								<th>' . __('Description') . '</th>
@@ -2085,13 +2492,14 @@ if (!isset($_POST['ProcessSale'])) {
 	#end of while loop for Frequently Ordered Items
 			echo '<td class="centre" colspan="8"><input type="hidden" name="SelectingOrderItems" value="1" /><input tabindex="'.strval($j+8).'" type="submit" value="'.__('Add to Sale').'" /></td>';
 			echo '</table>';
+			echo '</div>';
 		} //end of if Frequently Ordered Items > 0
 		if (isset($Msg)) {
 			echo '<div class="page_help_text"><p><b>' . $Msg . '</b></p></div>';
 		}
 		echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/magnifier.png" title="' . __('Search') . '" alt="" />' . ' ' . __('Search for Items') . '</p>
 			<div class="page_help_text">' . __('Search for Items') . __(', Searches the database for items, you can narrow the results by selecting a stock category, or just enter a partial item description or partial item code') . '.</div>';
-		echo '<fieldset>
+		echo '<fieldset class="pos-quick-entry-wrap">
 				<legend>', __('Item Search Criteria'), '</legend>';
 
 		$SQL = "SELECT categoryid,
@@ -2136,7 +2544,7 @@ if (!isset($_POST['ProcessSale'])) {
 				<input type="search" autofocus="autofocus" name="StockCode" size="15" maxlength="18" value="', $_POST['StockCode'], '" />
 			</field>
 		</fieldset>';
-		echo '<div class="centre">
+		echo '<div class="centre pos-mini-actions">
 				<input type="submit" name="Search" value="', __('Search Now'), '" />
 				<input type="submit" name="QuickEntry" value="', __('Use Quick Entry'), '" />
 			</div>';
@@ -2150,12 +2558,10 @@ if (!isset($_POST['ProcessSale'])) {
 
 		if (isset($SearchResult)) {
 			$j = 1;
-			echo '<div>';
+			echo '<div class="pos-search-results-card">';
 			echo '<table class="table1">';
 			echo '<tr>
-					<td><input type="hidden" name="PreviousList" value="'.strval($Offset-1).'" /><input tabindex="'.strval($j+7).'" type="submit" name="Previous" value="'.__('Prev').'" /></td>
-					<td class="centre" colspan="6"><input type="hidden" name="SelectingOrderItems" value="1" /><input tabindex="'.strval($j+8).'" type="submit" value="'.__('Add to Sale').'" /></td>
-					<td><input type="hidden" name="NextList" value="'.strval($Offset+1).'" /><input tabindex="'.strval($j+9).'" type="submit" name="Next" value="'.__('Next').'" /></td>
+					<td class="centre" colspan="8"><input type="hidden" name="SelectingOrderItems" value="1" /><input tabindex="'.strval($j+8).'" type="submit" value="'.__('Add to Sale').'" /></td>
 				</tr>
 				<tr>
 					<th>' . __('Code') . '</th>
@@ -2205,18 +2611,25 @@ if (!isset($_POST['ProcessSale'])) {
 						<input type="hidden" name="SalesPerson" value="'.$_SESSION['Items'.$identifier]->SalesPerson.'" />
 					</td>
 				</tr>
-				<tr>
-					<td><input type="hidden" name="previous" value="' . strval($Offset-1) . '" /><input tabindex="' . strval($j+7) . '" type="submit" name="Prev" value="' . __('Prev') . '" /></td>
-					<td class="centre" colspan="6"><input type="hidden" name="SelectingOrderItems" value="1" /><input tabindex="'.strval($j+8).'" type="submit" value="'.__('Add to Sale').'" /></td>
-					<td><input type="hidden" name="NextList" value="'.strval($Offset+1).'" /><input tabindex="'.strval($j+9).'" type="submit" name="Next" value="'.__('Next').'" /></td>
+			<tr>
+					<td class="centre" colspan="8"><input type="hidden" name="SelectingOrderItems" value="1" /><input tabindex="'.strval($j+8).'" type="submit" value="'.__('Add to Sale').'" /></td>
 				</tr>
 				</table>
 				</div>';
 		}#end if SearchResults to show
+		echo '</section>';
 	} /*end of PartSearch options to be displayed */
 		else { /* show the quick entry form variable */
 
-		echo '<div class="page_help_text"><b>' . __('Use this form to add items quickly if the item codes are already known') . '</b></div><br />';
+		echo '<section class="pos-entry-card">';
+		echo '<div class="pos-card-header">
+				<div>
+					<h3>' . __('Add Products') . '</h3>
+					<p>' . __('Use barcode scan, quick code entry, or search to build the sale fast.') . '</p>
+				</div>
+				<div class="pos-badge">' . __('Ready') . '</div>
+			</div>';
+		echo '<div class="page_help_text"><b>' . __('Use this form to add items quickly if the item codes are already known') . '</b></div>';
         if (count($_SESSION['Items'.$identifier]->LineItems)==0) {
             echo '<input type="hidden" name="CustRef" value="' . $_SESSION['Items'.$identifier]->CustRef . '" />';
             echo '<input type="hidden" name="Comments" value="' . $_SESSION['Items'.$identifier]->Comments . '" />';
@@ -2226,9 +2639,15 @@ if (!isset($_POST['ProcessSale'])) {
             echo '<input type="hidden" name="SalesPerson" value="' . $_SESSION['Items'.$identifier]->SalesPerson . '" />';
 		}
 
-		$SQL = "SELECT stockid
+		$SQL = "SELECT stockmaster.stockid,
+					stockmaster.description
 				FROM stockmaster
-				WHERE controlled = 0";
+				INNER JOIN stockcategory ON stockmaster.categoryid = stockcategory.categoryid
+				WHERE stockmaster.controlled = 0
+				AND (stockcategory.stocktype='F' OR stockcategory.stocktype='D' OR stockcategory.stocktype='L')
+				AND stockmaster.mbflag <> 'G'
+				AND stockmaster.discontinued = 0
+				ORDER BY stockmaster.description";
 		$ErrMsg = __('Could not fetch items list because');
 		$ItemsResult = DB_query($SQL, $ErrMsg);
 		$ItemCount = DB_num_rows($ItemsResult);
@@ -2244,11 +2663,49 @@ if (!isset($_POST['ProcessSale'])) {
 			$_SESSION['ItemList'] = array();
 			while($MyRow=DB_fetch_array($ItemsResult))
 			{
-				$_SESSION['ItemList'][] = $MyRow['stockid'];
+				$_SESSION['ItemList'][$MyRow['stockid']] = $MyRow['description'];
 			}
 		}
 
-		echo '<table id="QuickEntryTable" border="1">
+		// Output product datalist for dropdown/autocomplete support
+		echo '<datalist id="ProductList">';
+		foreach ($_SESSION['ItemList'] as $stockid => $description) {
+			echo '<option value="' . htmlspecialchars($stockid, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($stockid . ' - ' . $description, ENT_QUOTES, 'UTF-8') . '</option>';
+		}
+		echo '</datalist>';
+
+		echo '<div class="pos-entry-tools">';
+		echo '<fieldset class="pos-quick-entry-wrap">
+				<legend>', __('Scan Barcode / Select Product'), '</legend>
+				<field>
+					<label for="BarcodeInput">', __('Scan Barcode or Search Product'), ':</label>
+					<div class="search-inline">
+					<input type="text" id="BarcodeInput" list="ProductList" autocomplete="off"
+						   autofocus="autofocus" size="40" maxlength="40"
+						   placeholder="', __('Scan barcode or type product name / code...'), '"
+						   title="', __('Scan a barcode or start typing to search. Press Enter to add to cart.'), '"
+						   onkeydown="if(event.key===\'Enter\'){event.preventDefault();CounterSales.AddBarcodeItem(this);}" />
+					<input type="button" value="', __('Add Item'), '"
+						   onclick="CounterSales.AddBarcodeItem(document.getElementById(\'BarcodeInput\'))" />
+					</div>
+				</field>
+			</fieldset>';
+		echo '<div class="pos-quick-entry-wrap">
+				<div class="pos-card-header">
+					<div>
+						<h3>' . __('Shortcuts') . '</h3>
+						<p>' . __('Switch between quick entry and full product lookup as needed.') . '</p>
+					</div>
+				</div>
+				<div class="pos-mini-actions">
+					<input type="submit" name="QuickEntry" value="' . __('Quick Entry') . '" />
+					<input type="submit" name="PartSearch" value="' . __('Search Parts') . '" />
+				</div>
+			</div>';
+		echo '</div>';
+
+		echo '<div class="pos-quick-entry-wrap">';
+		echo '<table id="QuickEntryTable" class="pos-quick-entry-table" border="1">
 				<tr>
 					<th>' . __('Item Code') . '</th>
 					<th>' . __('Quantity') . '</th>
@@ -2257,29 +2714,30 @@ if (!isset($_POST['ProcessSale'])) {
 		for ($i=1;$i<=$_SESSION['QuickEntries'];$i++) {
 
 	 		echo '<tr class="striped_row">';
-	 		/* Do not display colum unless customer requires po line number by sales order line*/
-	 		echo '<td><input type="text" name="part_' . $i . '"' . ($i==1 ? ' autofocus="autofocus"':'') . ' data-type="no-illegal-chars" title="' . __('Enter a part code to be sold. Part codes can contain any alpha-numeric characters underscore or hyphen.') . '"size="21" maxlength="20" /></td>
+	 		/* Do not display column unless customer requires po line number by sales order line*/
+	 		echo '<td><input type="text" name="part_' . $i . '" list="ProductList" data-type="no-illegal-chars" title="' . __('Select a product from the dropdown or type a product code / name.') . '" size="21" maxlength="20" /></td>
 					<td><input type="text" class="number" name="qty_' . $i . '" size="6" maxlength="6" />
 						<input type="hidden" type="date" name="ItemDue_' . $i . '" value="' . $DefaultDeliveryDate . '" /></td></tr>';
    		}
 	 	echo '</table>
-				<br />
-				<div class="centre">
+				<div class="centre pos-mini-actions">
 					<input type="hidden" id="TotalQuickEntryRows" name="TotalQuickEntryRows" value="' .$_SESSION['QuickEntries'] . '" />
 					<input type="submit" name="QuickEntry" value="' . __('Quick Entry') . '" />
 					<input type="submit" name="PartSearch" value="' . __('Search Parts') . '" />
 				</div>
 			</div>';
+		echo '</section>';
 
   	}
 	if ($_SESSION['Items'.$identifier]->ItemsOrdered >=1) {
-  		echo '<br /><div class="centre"><input type="reset" name="CancelOrder" value="' . __('Cancel Sale') . '" onclick="return confirm(\'' . __('Are you sure you wish to cancel this sale?') . '\');" /></div>';
+  		echo '<aside class="pos-sidebar" style="order:5;"><div class="pos-sidebar-actions"><input type="reset" name="CancelOrder" value="' . __('Cancel Sale') . '" onclick="return confirm(\'' . __('Are you sure you wish to cancel this sale?') . '\');" /></div></aside>';
 	}
+	echo '</div>';
 	echo '</form>';
 }
 
 ?>
-<script src="<?=$RootPath?>/javascripts/CounterSalesFunctions.js"></script>
+<script src="<?=$RootPath?>/javascripts/CounterSalesFunctions.js?v=<?=filemtime(__DIR__ . '/javascripts/CounterSalesFunctions.js')?>"></script>
 <script defer="defer">
 	CounterSales.SetTotalDue(<?=$_SESSION['Items'.$identifier]->total+$TaxTotal?>);
 	CounterSales.SetItemList(<?php echo json_encode($_SESSION['ItemList']); ?>);

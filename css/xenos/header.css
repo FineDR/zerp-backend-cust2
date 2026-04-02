@@ -1,91 +1,138 @@
 header {
-background:transparent;
-padding:10px;
+align-items:center;
+background:linear-gradient(135deg, #0f2749 0%, #1c4f94 55%, #2b6bc5 100%);
+box-shadow:var(--shadow-lg);
+color:var(--text-inverse);
+display:flex;
+flex-wrap:wrap;
+gap:12px;
+padding:14px 18px;
+position:sticky;
+top:0;
+z-index:80;
 }
 header #Info {
-display:inline;
-padding:10px;
+align-items:center;
+display:inline-flex;
+gap:10px;
+margin:0;
+padding:0;
+}
+header #Info:first-of-type {
+background:rgba(255, 255, 255, 0.12);
+border:1px solid rgba(255, 255, 255, 0.18);
+border-radius:var(--radius-pill);
+box-shadow:inset 0 1px 0 rgba(255, 255, 255, 0.12);
+min-height:52px;
+padding:6px 14px;
 }
 header #Info img {
-padding-right:7px;
-height:32px;
-width:auto;
+border-radius:12px;
+height:34px;
+padding-right:0;
 vertical-align:middle;
+width:auto;
 }
 header #Info a {
-}
-header #ActionIcon {
-background:#8A8A8A;
-display:inline;
-float:right;
-padding-left:10px;
-padding-right:10px;
-height:40px;
-padding-top:9px;
-border-left: 1px solid #1A1A1A;
-margin-top:-10px;
-}
-header #ActionIcon img{
-padding-right:7px;
-height:32px;
-width:32px;
-}
-header #ActionIcon:hover {
-background:#4D4D4D;
-transition-duration:0.5s;
-}
-header #ExitIcon {
-background:#8A8A8A;
-display:inline;
-float:right;
-padding-left:10px;
-padding-right:30px;
-height:40px;
-padding-top:9px;
-border-left: 1px solid #1A1A1A;
-margin-top:-10px;
-}
-header #ExitIcon:hover {
-background:#4D4D4D;
-transition-duration:0.5s;
-}
-header #ExitIcon img {
-height:32px;
-width:32px;
+align-items:center;
+display:inline-flex;
+gap:10px;
 }
 header .FontSize {
+align-items:center;
+background:rgba(255, 255, 255, 0.12);
+border:1px solid rgba(255, 255, 255, 0.14);
+border-radius:var(--radius-pill);
+color:var(--text-inverse);
+display:inline-flex;
 font-weight:bold;
-display:inline;
-padding:3px;
-color:#4D4D4D;
+min-height:44px;
+padding:0 16px;
+}
+header .FontSize:hover {
+background:rgba(255, 255, 255, 0.18);
+color:var(--text-inverse);
+text-decoration:none;
+}
+header #ActionIcon,
+header #ExitIcon {
+align-items:center;
+background:rgba(255, 255, 255, 0.1);
+border:1px solid rgba(255, 255, 255, 0.14);
+border-radius:var(--radius-pill);
+display:inline-flex;
+height:auto;
+justify-content:center;
+margin:0 0 0 auto;
+min-height:46px;
+padding:0 14px;
+}
+header #ActionIcon + #ActionIcon,
+header #ActionIcon + #ExitIcon,
+header #ExitIcon + #ActionIcon {
+margin-left:0;
+}
+header #ActionIcon img,
+header #ExitIcon img {
+height:24px;
+padding-right:0;
+width:24px;
+}
+header #ActionIcon:hover,
+header #ExitIcon:hover {
+background:rgba(255, 255, 255, 0.18);
+transition-duration:0.25s;
 }
 header .ScriptTitle {
+color:var(--text-inverse);
+display:block;
+flex:1 1 100%;
+font-size:1.2rem;
 font-weight:bold;
-font-size:130%;
-display:inline-block;
-padding:10px;
-margin-left:0px;
+line-height:1.4;
+margin-left:0;
+padding:6px 0 0;
+}
+header .ScriptTitle a {
+color:rgba(248, 251, 255, 0.82);
+}
+header .ScriptTitle a:hover {
+color:#ffffff;
 }
 header #favourites {
-background: url(images/descending.png) no-repeat right #8A8A8A;
-background-size:contain;
-overflow: hidden;
-color:#FFFFFF;
-font-size: 130%;
-font-weight:bold;
-padding-top: 2px;
-padding-bottom: 2px;
-padding-left: 7px;
-padding-right:32px;
-border: solid 1px #1A1A1A;
-border-radius: 4px;
-margin: 2px;
--moz-appearance:none;
--webkit-appearance: none;
+background:var(--accent-soft) url(images/descending.png) no-repeat right 12px center;
+background-size:16px;
+border:1px solid rgba(255, 255, 255, 0.18);
+border-radius:var(--radius-pill);
+color:#113160;
 cursor:pointer;
+font-size:1rem;
+font-weight:bold;
+margin:0;
+min-height:44px;
+-moz-appearance:none;
+-webkit-appearance:none;
+overflow:hidden;
+padding:0 40px 0 14px;
 }
 header #favourites:hover {
-background:url(images/descending.png) no-repeat right #4D4D4D;
-background-size:contain;
-transition-duration:0.5s;
+background-color:#ffffff;
+transition-duration:0.2s;
+}
+@media only screen and (max-width: 768px) {
+header {
+padding:12px;
+}
+header #Info,
+header #ActionIcon,
+header #ExitIcon {
+margin-left:0;
+}
+header .ScriptTitle {
+font-size:1.05rem;
+}
+header #favourites {
+max-width:100%;
+width:100%;
+}
 }

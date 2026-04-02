@@ -1,39 +1,47 @@
 div.Message {
-    border-radius:10px;
-    padding:10px 10px 10px 36px;
-    margin:5px;
-opacity: 1;
-    transition: opacity 0.6s; /* 600ms to fade out */
+border-radius:16px;
+box-shadow:var(--shadow-sm);
+margin:10px;
+opacity:1;
+padding:14px 16px 14px 44px;
+position:relative;
+transition:opacity 0.6s;
 }
 div.Message.error {
-background:url('images/message-error.png') no-repeat 10px 50%, linear-gradient(#FB9E9E, #ffecec);
-    border:1px solid #f5aca6;
+background:url('images/message-error.png') no-repeat 14px 16px, linear-gradient(180deg, #fff3ef, #ffe3da);
+border:1px solid rgba(194, 65, 12, 0.2);
+color:#7c2d12;
 }
 div.Message.success {
-background:url('images/message-success.png') no-repeat 10px 50%, linear-gradient(#82FF7A, #32F932);
-    border:1px solid #a6ca8a;
+background:url('images/message-success.png') no-repeat 14px 16px, linear-gradient(180deg, #eefcf6, #d9f7e9);
+border:1px solid rgba(15, 159, 110, 0.2);
+color:#0f5132;
 }
 div.Message.info {
-background:url('images/message-info.png') no-repeat 10px 50%, linear-gradient(#1E90FF, #85DFF6);
-    border:1px solid #8ed9f6;
+background:url('images/message-info.png') no-repeat 14px 16px, linear-gradient(180deg, #eef5ff, #dceaff);
+border:1px solid rgba(31, 95, 191, 0.18);
+color:#163768;
 }
 div.Message.warn {
-background:url('images/message-warning.png') no-repeat 10px 50%, linear-gradient(#FDEF80, #fff8c4);
-    border:1px solid #f2c779;
+background:url('images/message-warning.png') no-repeat 14px 16px, linear-gradient(180deg, #fff9e8, #ffefc2);
+border:1px solid rgba(217, 119, 6, 0.24);
+color:#8a4b08;
 }
 .MessageCloseButton {
-    margin-left: 15px;
-    color: #000000;
-    font-weight: bold;
-    float: right;
-    font-size: 20px;
-line-height: 17px;
-cursor: pointer;
-    transition: 0.3s;
+color:inherit;
+cursor:pointer;
+float:right;
+font-size:20px;
+font-weight:bold;
+line-height:17px;
+margin-left:15px;
+opacity:0.75;
+transition:opacity 0.2s ease;
 }
 .MessageCloseButton:hover {
-    color: #606060;
+color:inherit;
+opacity:1;
 }
 #MessageContainerFoot {
-display: none;
+display:none;
 }

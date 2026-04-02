@@ -1,6 +1,7 @@
-var CounterSales =  {
+var CounterSales = {
 
-	itemlist: Array(),
+	// itemlist is now an object: { stockid: description, ... }
+	itemlist: {},
 	SetItemList: function(val)
 	{
 		this.itemlist = val;
@@ -35,67 +36,89 @@ var CounterSales =  {
 		this.defaultdeliverydate = val;
 	},
 
-	AddQuickEntry: function(itemcode)
+	// Core logic: find the matched stock code (case-insensitive) and add to cart table
+	_addItemByCode: function(code)
 	{
-		// prevent form submitting
-		event.preventDefault();
-		var itemlist = this.itemlist;
+		var codeUpper = code.toUpperCase();
+		var matchedCode = null;
 
-		if(itemlist.includes(itemcode.value.trim()))
-		{
+		if (code in this.itemlist) {
+			matchedCode = code;
+		} else if (codeUpper in this.itemlist) {
+			matchedCode = codeUpper;
+		} else {
+			// Try case-insensitive scan of all keys
+			for (var key in this.itemlist) {
+				if (key.toUpperCase() === codeUpper) {
+					matchedCode = key;
+					break;
+				}
+			}
+		}
+
+		if (matchedCode !== null) {
 			var table = document.getElementById(this.quickentrytableid);
+			var found = false;
 
-			// loop quick entry table rows
-			for (var j = 0, row; row = table.rows[j]; j++)
-			{
-				found = false;
-				col = row.cells[0];
-				var input_itemcode = col.firstElementChild;
-				if(input_itemcode)
-				{
-					// check if item already in list or fill in the first empty row
-					if(input_itemcode.value == '' || input_itemcode.value == itemcode.value.trim())
-					{
-						// set item code
-						input_itemcode.value = itemcode.value.trim();
-						// set qty
-						row.cells[1].firstElementChild.value = row.cells[1].firstElementChild.value ? parseInt(row.cells[1].firstElementChild.value) + 1 : '1';
+			for (var j = 0, row; row = table.rows[j]; j++) {
+				var col = row.cells[0];
+				var input_itemcode = col ? col.firstElementChild : null;
+				if (input_itemcode) {
+					if (input_itemcode.value === '' || input_itemcode.value.toUpperCase() === codeUpper) {
+						input_itemcode.value = matchedCode;
+						var qtyInput = row.cells[1].firstElementChild;
+						qtyInput.value = qtyInput.value ? parseInt(qtyInput.value) + 1 : '1';
 						found = true;
 						break;
 					}
 				}
 			}
 
-			// when no rows matched and no more empty rows
-			if(!found)
-			{
-				this.AddQuickEntryRow(itemcode)
+			if (!found) {
+				this.AddQuickEntryRow(matchedCode);
 			}
+		} else {
+			alert("Item code not found: " + code);
 		}
-		else
-		{
-			alert("item code not found!");
-		}
+	},
 
+	// Called by the quick entry table's scan/add button (prevents default form submission)
+	AddQuickEntry: function(itemcode)
+	{
+		event.preventDefault();
+		var code = itemcode.value.trim();
+		if (code !== '') {
+			this._addItemByCode(code);
+		}
 		itemcode.value = "";
 	},
 
-	AddQuickEntryRow: function (itemcode)
+	// Called by the barcode scanner input (Enter key or Add Item button)
+	AddBarcodeItem: function(barcodeInput)
+	{
+		var code = barcodeInput.value.trim();
+		if (code !== '') {
+			this._addItemByCode(code);
+			barcodeInput.value = "";
+			barcodeInput.focus();
+		}
+	},
+
+	AddQuickEntryRow: function(code)
 	{
 		var table = document.getElementById(this.quickentrytableid);
 		var row = table.insertRow(-1);
 		var cell1 = row.insertCell(0);
 		var cell2 = row.insertCell(1);
 
-		cell1.innerHTML = "<input type='text' name='part_" + this.rowcounter + "' data-type='no-illegal-chars' title='Enter a part code to be sold. Part codes can contain any alpha-numeric characters underscore or hyphen.' size='21' maxlength='20' value='" + itemcode.value.trim() + "' />";
-		cell2.innerHTML = "<input type='text' class='number' name='qty_" + this.rowcounter + "' size='6' maxlength='6' value='1' /><input type='hidden' class='date' name='ItemDue_" + this.rowcounter + " value='" + this.defaultdeliverydate + "' />";
+		cell1.innerHTML = "<input type='text' name='part_" + this.rowcounter + "' list='ProductList' data-type='no-illegal-chars' title='Select a product from the dropdown or type a product code / name.' size='21' maxlength='20' value='" + code + "' />";
+		cell2.innerHTML = "<input type='text' class='number' name='qty_" + this.rowcounter + "' size='6' maxlength='6' value='1' /><input type='hidden' name='ItemDue_" + this.rowcounter + "' value='" + this.defaultdeliverydate + "' />";
 
-		totalquickentry = document.getElementById(this.quickentryrowid);
+		var totalquickentry = document.getElementById(this.quickentryrowid);
 		totalquickentry.value = parseInt(totalquickentry.value) + 1;
 
 		this.IncreaseRowCounter();
 	},
-
 
 	totaldue: 0,
 	SetTotalDue: function(val)
@@ -127,19 +150,16 @@ var CounterSales =  {
 		this.changedueid = val;
 	},
 
-	CalculateChangeDue: function ()
+	CalculateChangeDue: function()
 	{
-		received_amount = document.getElementById(this.cashreceivedid);
-		paid_amount = document.getElementById(this.amountpaidid);
-		change_due = document.getElementById(this.changedueid);
+		var received_amount = document.getElementById(this.cashreceivedid);
+		var paid_amount = document.getElementById(this.amountpaidid);
+		var change_due = document.getElementById(this.changedueid);
 
-		if(received_amount.value >= this.totaldue)
-		{
+		if (received_amount.value >= this.totaldue) {
 			paid_amount.value = Number(this.totaldue).toFixed(this.decimal);
 			change_due.value = Number(received_amount.value - this.totaldue).toFixed(this.decimal);
-		}
-		else
-		{
+		} else {
 			paid_amount.value = 0;
 			change_due.value = 0;
 		}
