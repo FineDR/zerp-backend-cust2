@@ -39,6 +39,30 @@ if (isset($_GET['Application']) and ($_GET['Application'] != '')) {
 	$_SESSION['Module'] = '';
 }
 
+if (isset($_GET['Application']) && ($_GET['Application'] == 'Sales' || $_GET['Application'] == 'orders')) {
+    $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/sales.css?v=' . time() . '">';
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'AR') {
+    $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/receivables.css?v=' . time() . '">';
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'PO') {
+    $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/purchases.css?v=' . time() . '">';
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'AP') {
+    $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/payables.css?v=' . time() . '">';
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'stock') {
+    $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/inventory.css?v=' . time() . '">';
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'manuf') {
+    $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/manufacturing.css?v=' . time() . '">';
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'GL') {
+    $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/gl.css?v=' . time() . '">';
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'FA') {
+    $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/assets.css?v=' . time() . '">';
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'PC') {
+    $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/pettycash.css?v=' . time() . '">';
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'Setup') {
+    $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/setup.css?v=' . time() . '">';
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'Utilities') {
+    $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/utilities.css?v=' . time() . '">';
+}
+
 include(__DIR__ . '/includes/header.php');
 
 if (isset($SupplierLogin) AND $SupplierLogin==1){
@@ -446,10 +470,32 @@ if ($isDashboard) {
 
 </div><!-- /.db-page -->
 <?php
-} // end dashboard
+} elseif (isset($_GET['Application']) && ($_GET['Application'] == 'Sales' || $_GET['Application'] == 'orders')) {
+	include(__DIR__ . '/includes/ModernSalesDashboard.php');
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'AR') {
+	include(__DIR__ . '/includes/ModernReceivablesDashboard.php');
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'PO') {
+	include(__DIR__ . '/includes/ModernPurchasesDashboard.php');
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'AP') {
+	include(__DIR__ . '/includes/ModernPayablesDashboard.php');
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'stock') {
+	include(__DIR__ . '/includes/ModernInventoryDashboard.php');
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'manuf') {
+	include(__DIR__ . '/includes/ModernManufacturingDashboard.php');
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'GL') {
+	include(__DIR__ . '/includes/ModernGLDashboard.php');
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'FA') {
+	include(__DIR__ . '/includes/ModernFADashboard.php');
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'PC') {
+	include(__DIR__ . '/includes/ModernPCDashboard.php');
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'Setup') {
+	include(__DIR__ . '/includes/ModernSetupDashboard.php');
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'Utilities') {
+	include(__DIR__ . '/includes/ModernUtilitiesDashboard.php');
+} // end module Sales / orders / AR / PO / AP / stock / manuf / GL / FA / PC / Setup / Utilities
 
-// Legacy Menu (Only show if a specific module is selected)
-if (isset($_GET['Application']) && $_GET['Application'] != 'Dashboard') {
+// Legacy Menu (Only show if a specific module is selected and NOT Sales/orders/AR/PO/AP/stock/manuf/GL/FA/PC/Setup/Utilities)
+if (isset($_GET['Application']) && $_GET['Application'] != 'Dashboard' && $_GET['Application'] != 'Sales' && $_GET['Application'] != 'orders' && $_GET['Application'] != 'AR' && $_GET['Application'] != 'PO' && $_GET['Application'] != 'AP' && $_GET['Application'] != 'stock' && $_GET['Application'] != 'manuf' && $_GET['Application'] != 'GL' && $_GET['Application'] != 'FA' && $_GET['Application'] != 'PC' && $_GET['Application'] != 'Setup' && $_GET['Application'] != 'Utilities') {
 	echo '<div class="legacy-menu-container">
 			<div class="legacy-menu-header" onclick="document.getElementById(\'LegacyMenu\').style.display = (document.getElementById(\'LegacyMenu\').style.display==\'none\') ? \'flex\' : \'none\'">
 				<span>' . __('Module Menu') . ' (' . $_SESSION['Module'] . ')</span>
