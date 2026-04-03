@@ -1,0 +1,172 @@
+@import url('variables.css');
+
+body {
+    background: var(--bg-main);
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(89, 174, 105, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(89, 174, 105, 0.05) 0px, transparent 50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+}
+
+#container {
+    width: 100%;
+    max-width: 440px;
+    padding: 20px;
+}
+
+.login-shell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 40px;
+}
+
+.login-branding {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-brand-mark img {
+    height: 60px;
+    width: auto;
+    margin-bottom: 20px;
+}
+
+.login-card-header h2 {
+    color: var(--text-main);
+    margin: 10px 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.login-card-kicker {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.login-card-copy {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 30px;
+}
+
+/* Fields */
+.field-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.field-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-main);
+}
+
+.input-shell, .password-field {
+    position: relative;
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-shell:focus-within, .password-field:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px var(--primary-soft);
+}
+
+.input-shell input, .password-field input {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-main) !important; /* Explicitly ensure visibility */
+    font-size: 1rem;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.password-field input {
+    padding-right: 50px !important; /* Room for the eye icon */
+}
+
+/* Eye icon for password toggle */
+#eye {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 1.25rem;
+    user-select: none;
+    transition: opacity 0.2s, transform 0.1s;
+    line-height: 1;
+}
+
+#eye:hover {
+    opacity: 0.8;
+}
+
+#eye:active {
+    transform: translateY(-50%) scale(0.9);
+}
+
+/* Button */
+.button {
+    width: 100%;
+    background: var(--primary);
+    color: var(--text-inverse);
+    padding: 14px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 10px;
+}
+
+.button:hover {
+    background: var(--primary-dark);
+}
+
+.button:active {
+    transform: scale(0.98);
+}
+
+.remember-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 25px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.login-copyright {
+    margin-top: 30px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+#demo_text {
+    background: var(--primary-soft);
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    color: var(--primary-dark);
+}

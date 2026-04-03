@@ -99,6 +99,21 @@ if (!isset($_SESSION['AttemptsCounter']) or $AllowDemoMode == true) {
 $_SESSION['ScriptStartTime'] = microtime();
 
 if (isset($_SESSION['DatabaseName'])) {
+	include_once($PathPrefix . 'includes/GetConfig.php');
+	include_once($PathPrefix . 'includes/MainMenuLinksArray.php');
+
+	// Force Modern ZERP theme for this session to ensure "Green System" design
+	$_SESSION['Theme'] = 'modern-zerp';
+
+	// Session Recovery: If tokens are missing/empty but we are logged in, reload them
+	if ((!isset($_SESSION['AllowedPageSecurityTokens']) || count($_SESSION['AllowedPageSecurityTokens']) == 0) && isset($_SESSION['AccessLevel'])) {
+		$SQL = "SELECT tokenid FROM securitygroups WHERE secroleid =  '" . $_SESSION['AccessLevel'] . "'";
+		$Sec_Result = DB_query($SQL);
+		$_SESSION['AllowedPageSecurityTokens'] = array();
+		while ($MyRow = DB_fetch_row($Sec_Result)) {
+			$_SESSION['AllowedPageSecurityTokens'][] = $MyRow[0];
+		}
+	}
 
 	/* iterate through all elements of the $_GET and $_POST arrays and DB_escape_string plus htmlspecialchars them
 	to avoid both SQL injection attacks and cross scripting attacks
@@ -181,8 +196,10 @@ if (basename($_SERVER['SCRIPT_NAME']) == 'Logout.php') {
 		$FirstLogin = true;
 	} elseif (empty($_SESSION['DatabaseName'])) {
 		$rc = UL_SHOWLOGIN;
-	} else {
+	} elseif (isset($_SESSION['UserID'])) {
 		$rc = UL_OK;
+	} else {
+		$rc = UL_SHOWLOGIN;
 	}
 
 	/* Need to set the theme to make login screen nice */
@@ -367,8 +384,13 @@ if (in_array(1, $_SESSION['AllowedPageSecurityTokens']) and count($_SESSION['All
 	$CustomerLogin = 0;
 }
 
-if ($FirstLogin and !$SupplierLogin and !$CustomerLogin) {
-	header('Location: ' . htmlspecialchars_decode($RootPath) . '/Dashboard.php');
+if ($FirstLogin) {
+	if (!$SupplierLogin and !$CustomerLogin and $_SESSION['ShowDashboard'] == 1) {
+		header('Location: ' . htmlspecialchars_decode($RootPath) . '/Dashboard.php');
+	} else {
+		header('Location: ' . htmlspecialchars_decode($RootPath) . '/index.php');
+	}
+	exit;
 }
 
 /// @todo instead of checking for $_POST['CompanyNameField'], only disable this check on posts from Login.php, or
@@ -393,7 +415,10 @@ function CryptPass($Password) {
 
 /// @todo move to LoginFunctions.php
 function VerifyPass($Password, $Hash) {
-	return password_verify($Password, $Hash);
+	if (password_verify($Password, $Hash)) {
+		return true;
+	}
+	return false;
 }
 
 function HighestFileName($PathPrefix) {

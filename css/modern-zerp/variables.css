@@ -1,0 +1,82 @@
+:root {
+    /* Primary Brand — Forest Green System */
+    --primary-h: 145;
+    --primary-s: 63%;
+    --primary-l: 38%;
+
+    --primary:        hsl(var(--primary-h), var(--primary-s), var(--primary-l));
+    --primary-hover:  hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 6%));
+    --primary-active: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 12%));
+    --primary-light:  hsl(var(--primary-h), 50%, 55%);
+    --primary-soft:   hsl(var(--primary-h), 40%, 95%);
+    --primary-subtle: hsl(var(--primary-h), 35%, 88%);
+    --primary-dark:   hsl(var(--primary-h), 45%, 22%);
+    --primary-glow:   hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.25);
+
+    /* Backgrounds */
+    --bg-main:      hsl(210, 20%, 97%);
+    --bg-workspace: hsl(210, 20%, 94%);
+    --bg-sidebar:   hsl(0, 0%, 100%);
+
+    /* Text - Green-tinted neutrals */
+    --text-main:    hsl(145, 15%, 12%);
+    --text-body:    hsl(145, 10%, 30%);
+    --text-muted:   hsl(145, 8%, 50%);
+    --text-inverse: hsl(0, 0%, 100%);
+    --text-label:   hsl(145, 10%, 40%);
+
+    /* Surfaces */
+    --surface:      hsl(0, 0%, 100%);
+    --surface-alt:  hsl(210, 20%, 98%);
+    --surface-glass: hsla(255, 100%, 100%, 0.85);
+
+    /* Borders */
+    --border:       hsl(220, 15%, 88%);
+    --border-soft:  hsl(220, 15%, 93%);
+    --border-hover: hsl(220, 15%, 78%);
+
+    /* Geometry */
+    --radius-xs:   4px;
+    --radius-sm:   8px;
+    --radius-md:  12px;
+    --radius-lg:  16px;
+    --radius-xl:  24px;
+    --radius-full: 9999px;
+
+    /* Spacing scale */
+    --space-1:  4px;
+    --space-2:  8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+
+    /* Sidebar */
+    --sidebar-width: 256px;
+    --sidebar-collapsed: 64px;
+    --header-height: 64px;
+
+    /* Shadows */
+    --shadow-xs:  0 1px 2px rgba(0,0,0,0.06);
+    --shadow-sm:  0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-md:  0 4px 16px rgba(0,0,0,0.07), 0 2px 6px rgba(0,0,0,0.04);
+    --shadow-lg:  0 12px 32px rgba(0,0,0,0.09), 0 4px 12px rgba(0,0,0,0.05);
+
+    /* Feedback */
+    --success:     hsl(145, 65%, 32%);
+    --success-bg:  hsl(145, 40%, 96%);
+    --warning:     hsl(38, 88%, 44%);
+    --warning-bg:  hsl(38, 80%, 96%);
+    --danger:      hsl(0, 72%, 52%);
+    --danger-bg:   hsl(0, 80%, 97%);
+    --info:        hsl(217, 80%, 52%);
+    --info-bg:     hsl(217, 80%, 96%);
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.2s ease;
+    --transition-slow: 0.3s ease;
+}

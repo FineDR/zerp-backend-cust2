@@ -20,56 +20,56 @@ $ExtraHeadContent = '<style>
 	margin:4px 0 18px;
 }
 .pos-shell-title .page_title_text {
-	background:linear-gradient(135deg, #ffffff, #edf5ff);
-	border:1px solid #cddcf2;
-	border-radius:22px;
-	box-shadow:0 14px 28px rgba(22, 58, 108, 0.10);
+	background: linear-gradient(135deg, var(--surface), var(--primary-soft));
+	border:1px solid var(--border);
+	border-radius: var(--radius-md);
+	box-shadow: var(--shadow-sm);
 	margin:0;
-	padding:16px 22px;
+	padding:20px 24px;
 	text-align:left;
 	width:100%;
 }
 .pos-shell-title .page_title_text strong {
 	display:block;
-	font-size:0.92rem;
-	letter-spacing:0.08em;
-	margin-bottom:6px;
+	font-size:0.85rem;
+	letter-spacing:0.1em;
+	margin-bottom:8px;
 	text-transform:uppercase;
-	color:#5f799a;
+	color: var(--primary);
 }
 .pos-shell-title .page_title_text span {
 	display:block;
-	font-size:2rem;
-	font-weight:700;
-	line-height:1.15;
-	color:#122a49;
+	font-size:2.2rem;
+	font-weight:800;
+	line-height:1.1;
+	color: var(--text-main);
 }
 .pos-shell-title .page_title_text small {
-	color:#5e7594;
+	color: var(--text-muted);
 	display:block;
-	font-size:0.95rem;
-	margin-top:6px;
+	font-size:0.9rem;
+	margin-top:10px;
 }
 .pos-layout {
 	display:grid;
-	gap:18px;
-	grid-template-columns:minmax(0, 1fr) 330px;
+	gap:24px;
+	grid-template-columns:minmax(0, 1fr) 360px;
 	align-items:start;
 }
 .pos-entry-card,
 .pos-cart-card,
 .pos-sidebar,
 .pos-search-results-card {
-	background:rgba(255,255,255,0.92);
-	border:1px solid #d5e2f3;
-	border-radius:22px;
-	box-shadow:0 18px 34px rgba(22, 58, 108, 0.08);
+	background: var(--surface);
+	border:1px solid var(--border);
+	border-radius: var(--radius-md);
+	box-shadow: var(--shadow-sm);
 }
 .pos-entry-card,
 .pos-cart-card,
 .pos-search-results-card {
 	grid-column:1;
-	padding:18px;
+	padding:24px;
 }
 .pos-entry-card {
 	order:1;
@@ -83,7 +83,7 @@ $ExtraHeadContent = '<style>
 .pos-sidebar {
 	grid-column:2;
 	order:3;
-	padding:14px;
+	padding:20px;
 	position:sticky;
 	top:96px;
 }
@@ -98,25 +98,26 @@ $ExtraHeadContent = '<style>
 	display:flex;
 	justify-content:space-between;
 	gap:12px;
-	margin-bottom:14px;
+	margin-bottom:20px;
 }
 .pos-card-header h2,
 .pos-card-header h3 {
-	color:#15355e;
-	font-size:1.15rem;
+	color: var(--text-main);
+	font-size:1.25rem;
+	font-weight: 800;
 	margin:0;
 }
 .pos-card-header p {
-	color:#6a82a3;
-	font-size:0.92rem;
-	margin:4px 0 0;
+	color: var(--text-muted);
+	font-size:0.95rem;
+	margin:6px 0 0;
 }
 .pos-badge {
-	background:#e8f1ff;
-	border:1px solid #cadbf8;
+	background: var(--primary-soft);
+	border:1px solid var(--primary-accent);
 	border-radius:999px;
-	color:#1f5fbf;
-	font-size:0.82rem;
+	color: var(--primary-dark);
+	font-size:0.8rem;
 	font-weight:700;
 	padding:6px 10px;
 }
@@ -131,23 +132,23 @@ $ExtraHeadContent = '<style>
 }
 .pos-entry-tools {
 	display:grid;
-	gap:14px;
+	gap:16px;
 	grid-template-columns:minmax(0, 1.65fr) minmax(180px, 0.9fr);
-	margin-bottom:16px;
+	margin-bottom:20px;
 }
 .pos-entry-tools .search-inline {
 	align-items:center;
 	display:flex;
-	gap:10px;
+	gap:12px;
 }
 .pos-entry-tools .search-inline input[type="text"] {
 	flex:1;
 }
 .pos-quick-entry-wrap {
-	background:#f6faff;
-	border:1px solid #d7e5f7;
-	border-radius:18px;
-	padding:16px;
+	background: var(--bg-main);
+	border:1px solid var(--border);
+	border-radius: var(--radius-md);
+	padding:20px;
 }
 .pos-quick-entry-table,
 .pos-cart-table,
@@ -161,13 +162,13 @@ $ExtraHeadContent = '<style>
 .pos-cart-table th,
 .pos-search-results-card th,
 .pos-entry-card table.table1 th {
-	background:#f1f6fd;
-	border-bottom:1px solid #d7e5f7;
-	color:#607897;
-	font-size:0.82rem;
+	background: var(--surface-alt);
+	border-bottom:1px solid var(--border);
+	color: var(--text-muted);
+	font-size:0.75rem;
 	font-weight:700;
-	letter-spacing:0.03em;
-	padding:12px 10px;
+	letter-spacing:0.05em;
+	padding:14px 12px;
 	text-align:left;
 	text-transform:uppercase;
 }
@@ -175,8 +176,8 @@ $ExtraHeadContent = '<style>
 .pos-cart-table td,
 .pos-search-results-card td,
 .pos-entry-card table.table1 td {
-	border-bottom:1px solid #ebf1f9;
-	padding:10px;
+	border-bottom:1px solid var(--border);
+	padding:14px 12px;
 	vertical-align:middle;
 }
 .pos-cart-table tr:last-child td,
@@ -195,41 +196,37 @@ $ExtraHeadContent = '<style>
 	display:flex;
 	flex-direction:column;
 	justify-content:center;
-	min-height:320px;
+	min-height:360px;
 	text-align:center;
 }
 .pos-empty-cart .empty-icon {
-	color:#b3c5df;
-	font-size:4rem;
+	color: var(--primary-accent);
+	font-size:5rem;
 	line-height:1;
-	margin-bottom:12px;
-}
-.pos-empty-cart .empty-icon img {
-	height:72px;
-	opacity:0.7;
-	width:72px;
+	margin-bottom:16px;
 }
 .pos-empty-cart h3 {
-	color:#29496f;
-	font-size:1.3rem;
-	margin:0 0 8px;
+	color: var(--text-main);
+	font-size:1.5rem;
+	margin:0 0 10px;
 }
 .pos-empty-cart p {
-	color:#6882a2;
+	color: var(--text-muted);
 	margin:0;
 	max-width:420px;
 }
 .pos-summary-card,
 .pos-panel,
 .pos-sidebar-actions {
-	background:#ffffff;
-	border:1px solid #dde7f5;
-	border-radius:18px;
-	box-shadow:0 10px 20px rgba(22, 58, 108, 0.06);
-	padding:16px;
+	background: var(--surface);
+	border:1px solid var(--border);
+	border-radius: var(--radius-md);
+	box-shadow: var(--shadow-sm);
+	padding:20px;
+	margin: 0;
 }
 .pos-summary-card {
-	margin-bottom:14px;
+	margin-bottom:16px;
 }
 .pos-summary-card h3,
 .pos-panel legend {
@@ -240,38 +237,38 @@ $ExtraHeadContent = '<style>
 }
 .pos-summary-grid {
 	display:grid;
-	gap:8px 12px;
+	gap:10px 14px;
 	grid-template-columns:1fr auto;
 }
 .pos-summary-grid .label {
-	color:#6b84a4;
+	color: var(--text-muted);
 	font-weight:700;
 	text-transform:uppercase;
-	font-size:0.78rem;
+	font-size:0.75rem;
 }
 .pos-summary-grid .value {
-	color:#15355e;
+	color: var(--text-main);
 	font-weight:700;
 }
 .pos-summary-total {
 	align-items:center;
-	border-top:1px solid #e6eef9;
+	border-top:1px solid var(--border);
 	display:flex;
 	justify-content:space-between;
-	margin-top:12px;
-	padding-top:14px;
+	margin-top:16px;
+	padding-top:18px;
 }
 .pos-summary-total strong {
-	color:#173861;
-	font-size:1.05rem;
+	color: var(--text-main);
+	font-size:1.1rem;
 }
 .pos-summary-total span {
-	color:#1b8f58;
-	font-size:1.6rem;
+	color: var(--primary);
+	font-size:2rem;
 	font-weight:800;
 }
 .pos-panel {
-	margin:0 0 14px;
+	margin:0 0 20px;
 }
 .pos-panel legend {
 	padding:0;
@@ -284,7 +281,7 @@ $ExtraHeadContent = '<style>
 	margin-bottom:0;
 }
 .pos-panel label {
-	color:#5e789a;
+	color: var(--text-muted);
 	display:block;
 	font-size:0.76rem;
 	font-weight:700;
@@ -296,10 +293,10 @@ $ExtraHeadContent = '<style>
 }
 .pos-panel .fieldtext {
 	display:block;
-	padding:10px 12px;
-	border:1px solid #d6e2f3;
-	border-radius:12px;
-	background:#f8fbff;
+	padding:12px;
+	border:1px solid var(--border);
+	border-radius: var(--radius-sm);
+	background: var(--bg-main);
 }
 .pos-panel input[type="text"],
 .pos-panel input[type="tel"],
@@ -309,8 +306,8 @@ $ExtraHeadContent = '<style>
 .pos-entry-card input[type="text"],
 .pos-entry-card input[type="search"],
 .pos-entry-card input[type="button"] {
-	border:1px solid #ccdbee;
-	border-radius:12px;
+	border:1px solid var(--border);
+	border-radius: var(--radius-sm);
 	box-shadow:none;
 	font-size:0.92rem;
 	min-height:38px;
@@ -329,10 +326,10 @@ $ExtraHeadContent = '<style>
 .pos-sidebar-actions input[type="reset"],
 .pos-entry-card input[type="submit"],
 .pos-entry-card input[type="button"] {
-	background:linear-gradient(135deg, #53ac72, #2f8d56);
+	background: var(--primary);
 	border:none;
-	border-radius:14px;
-	box-shadow:0 12px 24px rgba(53, 139, 87, 0.18);
+	border-radius: var(--radius-sm);
+	box-shadow: 0 4px 12px rgba(89, 174, 105, 0.2);
 	color:#ffffff;
 	cursor:pointer;
 	font-size:0.95rem;
@@ -343,37 +340,38 @@ $ExtraHeadContent = '<style>
 .pos-sidebar-actions input[name="Recalculate"],
 .pos-entry-card input[name="Search"],
 .pos-entry-card input[name="PartSearch"] {
-	background:linear-gradient(135deg, #f5f9ff, #e3eefc);
+	background: var(--primary-soft);
 	box-shadow:none;
-	color:#1f5fbf;
-	border:1px solid #cadcf7;
+	color: var(--primary-dark);
+	border:1px solid var(--primary-accent);
 }
 .pos-entry-card .page_help_text {
-	background:#eef5ff;
-	border:1px solid #d9e7fb;
-	border-radius:14px;
-	color:#5f7899;
-	margin:0 0 14px;
-	padding:12px 14px;
+	background: var(--primary-soft);
+	border:1px solid var(--primary-accent);
+	border-radius: var(--radius-sm);
+	color: var(--text-muted);
+	margin:0 0 16px;
+	padding:14px 16px;
 }
 .pos-search-results-card .centre,
 .pos-entry-card .centre {
-	margin-top:14px;
+	margin-top:18px;
 }
 .pos-mini-actions {
 	display:flex;
 	flex-wrap:wrap;
-	gap:10px;
+	gap:12px;
 }
 .pos-mini-actions input {
 	flex:1;
 }
 .pos-delete-link {
-	color:#c2410c;
+	color: var(--danger);
 	font-weight:700;
 }
 .pos-delete-link:hover {
-	color:#9a3412;
+	color: var(--danger);
+    opacity: 0.8;
 }
 @media only screen and (max-width: 1100px) {
 	.pos-layout {
@@ -395,7 +393,7 @@ $ExtraHeadContent = '<style>
 		grid-template-columns:1fr;
 	}
 	.pos-shell-title .page_title_text span {
-		font-size:1.5rem;
+		font-size:1.8rem;
 	}
 }
 </style>';

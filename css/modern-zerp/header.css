@@ -1,0 +1,16 @@
+@import url('variables.css');
+
+#Header {
+    background-color: var(--surface);
+    border-bottom: 2px solid var(--primary-soft);
+    padding: 15px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#AppLogo {
+    color: var(--primary);
+    font-weight: 800;
+    font-size: 24px;
+}

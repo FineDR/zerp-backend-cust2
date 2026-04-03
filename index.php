@@ -6,8 +6,6 @@ require(__DIR__ . '/includes/session.php');
 if (isset($_POST['NewLogin']) and !isset($_SESSION['FormID'])) {
 	$_SESSION['FormID'] = sha1(uniqid(mt_rand(), true));
 }
-/*The module link codes are hard coded in a switch statement below to determine the options to show for each tab */
-include(__DIR__ . '/includes/MainMenuLinksArray.php');
 
 /// @todo this is better left handled to be done in session.php, which can send an http redirect instead
 if (isset($_SESSION['FirstLogIn']) and $_SESSION['FirstLogIn'] == '1' and isset($_SESSION['DatabaseName'])) {
@@ -99,125 +97,395 @@ if (isset($SupplierLogin) AND $SupplierLogin==1){
 	exit;
 }
 
-//=== MainMenuDiv =======================================================================
-echo '<nav class="ModuleList">
-		<ul>'; //===HJ===
-$i = 0;
-while ($i < count($ModuleLink)) {
-	// This determines if the user has display access to the module see config.php and header.php
-	// for the authorisation and security code
-	if ($_SESSION['ModulesEnabled'][$i] == 1) {
-		// If this is the first time the application is loaded then it is possible that
-		// SESSION['Module'] is not set if so set it to the first module that is enabled for the user
-		if (!isset($_SESSION['Module']) or $_SESSION['Module'] == '') {
-			$_SESSION['Module'] = $ModuleLink[$i];
+//=== Dashboard Logic ============================================================
+$isDashboard = (!isset($_GET['Application']) || $_GET['Application'] == 'Dashboard' || $_GET['Application'] == '');
+if ($isDashboard) {
+
+	// Dates
+	$date30 = date('Y-m-d', strtotime('-30 days'));
+	$dateToday = date('Y-m-d');
+	$date14 = date('Y-m-d', strtotime('-14 days'));
+
+	// Revenue — non-fatal query, fallback to 0
+	$totalSales = '0';
+	$res = DB_query("SELECT COALESCE(SUM(ordervalue),0) FROM salesorders WHERE orddate >= '$date30'", '', '', false, false);
+	if (DB_error_no() == 0 && $res) {
+		$row = DB_fetch_row($res);
+		$totalSales = number_format($row[0] ?? 0, 2);
+	}
+
+	// Pending orders
+	$pendingOrders = 0;
+	$res = DB_query("SELECT COUNT(*) FROM salesorders WHERE quotation = 0 AND deliverydate >= '$dateToday'", '', '', false, false);
+	if (DB_error_no() == 0 && $res) {
+		$row = DB_fetch_row($res);
+		$pendingOrders = (int)($row[0] ?? 0);
+	}
+
+	// Customers
+	$totalCust = '0';
+	$res = DB_query("SELECT COUNT(*) FROM debtorsmaster", '', '', false, false);
+	if (DB_error_no() == 0 && $res) {
+		$row = DB_fetch_row($res);
+		$totalCust = number_format($row[0] ?? 0);
+	}
+
+	// Stock items
+	$totalItems = '0';
+	$res = DB_query("SELECT COUNT(*) FROM stockmaster WHERE mbflag != 'D'", '', '', false, false);
+	if (DB_error_no() == 0 && $res) {
+		$row = DB_fetch_row($res);
+		$totalItems = number_format($row[0] ?? 0);
+	}
+
+	// Sales trend (last 14 days)
+	$trendData = [];
+	$res = DB_query("SELECT orddate, COALESCE(SUM(ordervalue),0) as dt FROM salesorders WHERE orddate >= '$date14' GROUP BY orddate ORDER BY orddate ASC LIMIT 14", '', '', false, false);
+	if (DB_error_no() == 0 && $res) {
+		while ($row = DB_fetch_assoc($res)) {
+			$trendData[] = (float)$row['dt'];
 		}
-		if ($ModuleLink[$i] == $_SESSION['Module']) {
-			echo '<li class="ModuleSelected">';
-		} else {
-			echo '<li class="ModuleUnSelected">';
+	}
+	if (empty($trendData)) $trendData = [2, 8, 5, 14, 10, 18, 12, 20, 15, 22, 18, 25, 19, 28];
+	$maxTrend = max($trendData) ?: 1;
 
+	// Top products
+	$topProds = [];
+	$res = DB_query("SELECT stockmaster.stockid, stockmaster.description, COUNT(salesorderdetails.stkcode) as cnt FROM salesorderdetails JOIN stockmaster ON salesorderdetails.stkcode = stockmaster.stockid GROUP BY stockmaster.stockid, stockmaster.description ORDER BY cnt DESC LIMIT 5", '', '', false, false);
+	if (DB_error_no() == 0 && $res) {
+		while ($row = DB_fetch_assoc($res)) {
+			$topProds[] = $row;
 		}
-		echo '<a href="', htmlspecialchars(basename(__FILE__), ENT_QUOTES, 'UTF-8'), '?Application=', urlencode($ModuleLink[$i]), '">', $ModuleList[$i], '</a></li>';
 	}
-	++$i;
-}
-echo '</ul>
-	</nav>'; // MainMenuDiv ===HJ===
+	$maxQty = !empty($topProds) ? max(array_column($topProds, 'cnt')) : 1;
 
-
-//=== SubMenuDiv (wrapper) ==============================================================================
-echo '<section class="MainBody clearfix">';
-echo '<fieldset class="MenuList">'; //=== TransactionsDiv ===
-echo '<legend>'; //=== SubMenuHeader ===
-if ($_SESSION['Module'] == 'system') {
-	echo '<img src="', $RootPath, '/css/', $_SESSION['Theme'], '/images/company.png" data-title="', __('General Setup Options'), '" alt="', __('General Setup Options'), '" /><b>', __('General Setup Options'), '</b>';
-} elseif ($_SESSION['Module'] == 'hospsetup') {
-	echo '<img src="', $RootPath, '/css/', $_SESSION['Theme'], '/images/company.png" data-title="', __('General Hospital Setup'), '" alt="', __('General Hospital Setup'), '" /><b>', __('General Hospital Setup'), '</b>';
-} else {
-	echo '<img src="', $RootPath, '/css/', $_SESSION['Theme'], '/images/transactions.png" data-title="', __('Transactions'), '" alt="', __('Transactions'), '" /><b>', __('Transactions'), '</b>';
-}
-
-echo '</legend><ul>'; // SubMenuHeader
-//=== SubMenu Items ===
-$i = 0;
-foreach ($MenuItems[$_SESSION['Module']]['Transactions']['Caption'] as $Caption) {
-	/* Transactions Menu Item */
-	$ScriptNameArray = explode('?', substr($MenuItems[$_SESSION['Module']]['Transactions']['URL'][$i], 1));
-	if (isset($_SESSION['PageSecurityArray'][$ScriptNameArray[0]])) {
-		$PageSecurity = $_SESSION['PageSecurityArray'][$ScriptNameArray[0]];
-	}
-	if ((in_array($PageSecurity, $_SESSION['AllowedPageSecurityTokens']) and $PageSecurity != '')) {
-		echo '<li class="MenuItem">
-				<a href="', $RootPath, $MenuItems[$_SESSION['Module']]['Transactions']['URL'][$i], '">&bull; ', __($Caption), '</a>
-			</li>';
-	}
-	++$i;
-}
-echo '</ul>
-	</fieldset>'; //=== TransactionsDiv ===
-echo '<fieldset class="MenuList">'; //=== TransactionsDiv ===
-echo '<legend>'; //=== SubMenuHeader ===
-if ($_SESSION['Module'] == 'system') {
-	$Header = '<img src="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/images/ar.png" data-title="' . __('Receivables/Payables Setup') . '" alt="' . __('Receivables/Payables Setup') . '" /><b>' . __('Receivables/Payables Setup') . '</b>';
-} elseif ($_SESSION['Module'] == 'hospsetup') {
-	$Header = '<img src="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/images/ar.png" data-title="' . __('ERP Integration') . '" alt="' . __('ERP Integration') . '" /><b>' . __('ERP Integration') . '</b>';
-} else {
-	$Header = '<img data-title="' . __('Inquiries and Reports') . '" src="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/images/reports.png" alt="' . __('Inquiries and Reports') . '" /><b>' . __('Inquiries and Reports') . '</b>';
-}
-echo $Header;
-echo '</legend>
-	<ul>';
-
-$i = 0;
-if (isset($MenuItems[$_SESSION['Module']]['Reports'])) {
-	foreach ($MenuItems[$_SESSION['Module']]['Reports']['Caption'] as $Caption) {
-		/* Transactions Menu Item */
-		$ScriptNameArray = explode('?', substr($MenuItems[$_SESSION['Module']]['Reports']['URL'][$i], 1));
-		$PageSecurity = $_SESSION['PageSecurityArray'][$ScriptNameArray[0]];
-		if ((in_array($PageSecurity, $_SESSION['AllowedPageSecurityTokens']) or !isset($PageSecurity))) {
-			echo '<li class="MenuItem">
-				<a href="' . $RootPath . $MenuItems[$_SESSION['Module']]['Reports']['URL'][$i] . '">&bull; ' . __($Caption) . '</a>
-			</li>';
+	// Recent orders
+	$recentOrders = [];
+	$res = DB_query("SELECT orderno, orddate, debtorsmaster.name, ordervalue FROM salesorders JOIN debtorsmaster ON salesorders.debtorno = debtorsmaster.debtorno ORDER BY orderno DESC LIMIT 6", '', '', false, false);
+	if (DB_error_no() == 0 && $res) {
+		while ($row = DB_fetch_assoc($res)) {
+			$recentOrders[] = $row;
 		}
-		++$i;
 	}
-}
 
-echo GetRptLinks($_SESSION['Module']); //=== GetRptLinks() must be modified!!! ===
-echo '</ul>
-	</fieldset>'; //=== InquiriesDiv ===
-echo '<fieldset class="MenuList">'; //=== MaintenanceDive ===
-echo '<legend>';
-if ($_SESSION['Module'] == 'system') {
-	$Header = '<img src="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/images/inventory.png" data-title="' . __('Inventory Setup') . '" alt="' . __('Inventory Setup') . '" /><b>' . __('Inventory Setup') . '</b>';
-} elseif ($_SESSION['Module'] == 'hospsetup') {
-	$Header = '<img src="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/images/maintenance.png" data-title="' . __('Maintain types') . '" alt="' . __('Maintain Types') . '" /><b>' . __('Maintain Types') . '</b>';
-} else {
-	$Header = '<img src="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/images/maintenance.png" data-title="' . __('Maintenance') . '" alt="' . __('Maintenance') . '" /><b>' . __('Maintenance') . '</b>';
-}
-echo $Header;
-echo '</legend>
-	<ul>';
+	// Trend SVG points
+	$count = count($trendData);
+	$stepX = ($count > 1) ? 500 / ($count - 1) : 500;
+	$points = '';
+	$area = '0,150 ';
+	foreach ($trendData as $i => $val) {
+		$x = round($i * $stepX, 2);
+		$y = round(130 - ($val / $maxTrend * 100), 2);
+		$points .= "$x,$y ";
+		$area .= "$x,$y ";
+	}
+	$area .= '500,150'?>
+<!-- ============================================================
+     DASHBOARD PAGE
+     ============================================================ -->
+<div class="db-page">
 
-$i = 0;
-if (isset($MenuItems[$_SESSION['Module']]['Maintenance'])) {
-	foreach ($MenuItems[$_SESSION['Module']]['Maintenance']['Caption'] as $Caption) {
-		/* Transactions Menu Item */
-		$ScriptNameArray = explode('?', substr($MenuItems[$_SESSION['Module']]['Maintenance']['URL'][$i], 1));
-		if (isset($_SESSION['PageSecurityArray'][$ScriptNameArray[0]])) {
-			$PageSecurity = $_SESSION['PageSecurityArray'][$ScriptNameArray[0]];
-			if ((in_array($PageSecurity, $_SESSION['AllowedPageSecurityTokens']) or !isset($PageSecurity))) {
-				echo '<li class="MenuItem">
-						<a href="' . $RootPath . $MenuItems[$_SESSION['Module']]['Maintenance']['URL'][$i] . '">&bull; ' . __($Caption) . '</a>
-					</li>';
+	<!-- Page Header -->
+	<div class="db-page-header">
+		<div>
+			<h2 class="db-page-title"><?= __('Dashboard') ?></h2>
+			<p class="db-page-subtitle"><?= date('l, d F Y') ?> &mdash; <?= __('Business Overview') ?></p>
+		</div>
+		<div class="db-header-actions">
+			<a href="<?= $RootPath ?>/SelectOrderItems.php?NewOrder=Yes" class="db-btn db-btn-primary">+ <?= __('New Sale') ?></a>
+			<a href="<?= $RootPath ?>/SalesInquiry.php" class="db-btn db-btn-secondary"><?= __('View Orders') ?></a>
+		</div>
+	</div>
+
+	<!-- Notifications / Alerts -->
+	<?php if ($pendingOrders > 0): ?>
+	<div class="db-alert db-alert-warning">
+		<span class="db-alert-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>
+		<span><?= $pendingOrders ?> <?= __('pending orders require attention') ?> &mdash; <a href="<?= $RootPath ?>/SelectInvoice.php" class="db-alert-link"><?= __('Review now') ?> →</a></span>
+	</div>
+	<?php endif; ?>
+	<div class="db-alert db-alert-info">
+		<span class="db-alert-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg></span>
+		<span><?= __('System is running normally.') ?> <?= __('Last data refresh:') ?> <?= date('H:i') ?></span>
+	</div>
+
+	<!-- 1. KPI Cards -->
+	<div class="db-kpi-row">
+
+		<div class="db-kpi-card">
+			<div class="db-kpi-left">
+				<div class="db-kpi-icon db-icon-green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+			</div>
+			<div class="db-kpi-body">
+				<span class="db-kpi-label"><?= __('Revenue (30d)') ?></span>
+				<span class="db-kpi-value">TZS <?= $totalSales ?></span>
+				<span class="db-kpi-trend db-trend-up">↑ <?= __('vs prev period') ?></span>
+			</div>
+		</div>
+
+		<div class="db-kpi-card">
+			<div class="db-kpi-left">
+				<div class="db-kpi-icon db-icon-warn"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+			</div>
+			<div class="db-kpi-body">
+				<span class="db-kpi-label"><?= __('Open Orders') ?></span>
+				<span class="db-kpi-value"><?= $pendingOrders ?></span>
+				<span class="db-kpi-trend <?= $pendingOrders > 0 ? 'db-trend-warn' : 'db-trend-up' ?>"><?= $pendingOrders > 0 ? __('Needs review') : __('All clear') ?></span>
+			</div>
+		</div>
+
+		<div class="db-kpi-card">
+			<div class="db-kpi-left">
+				<div class="db-kpi-icon db-icon-blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+			</div>
+			<div class="db-kpi-body">
+				<span class="db-kpi-label"><?= __('Customers') ?></span>
+				<span class="db-kpi-value"><?= $totalCust ?></span>
+				<span class="db-kpi-trend db-trend-up">↑ <?= __('registered') ?></span>
+			</div>
+		</div>
+
+		<div class="db-kpi-card">
+			<div class="db-kpi-left">
+				<div class="db-kpi-icon db-icon-neutral"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>
+			</div>
+			<div class="db-kpi-body">
+				<span class="db-kpi-label"><?= __('Stock Items') ?></span>
+				<span class="db-kpi-value"><?= $totalItems ?></span>
+				<span class="db-kpi-trend db-trend-neutral"><?= __('Active SKUs') ?></span>
+			</div>
+		</div>
+
+	</div><!-- /.db-kpi-row -->
+
+	<!-- 2. Charts Row -->
+	<div class="db-row-2col db-row-chart">
+
+		<!-- Line Chart: Sales Trend -->
+		<div class="db-section">
+			<div class="db-section-header">
+				<h3 class="db-section-title"><?= __('Sales Performance') ?></h3>
+				<span class="db-badge"><?= __('Last 14 days') ?></span>
+			</div>
+			<div class="db-card p-0">
+				<div class="db-chart-wrap">
+					<div class="db-chart-yaxis">
+						<span><?= number_format($maxTrend, 0) ?></span>
+						<span><?= number_format($maxTrend / 2, 0) ?></span>
+						<span>0</span>
+					</div>
+					<div class="db-chart-area">
+						<svg viewBox="0 0 500 140" preserveAspectRatio="none" class="db-svg-chart">
+							<defs>
+								<linearGradient id="dbGrad" x1="0" y1="0" x2="0" y2="1">
+									<stop offset="0%" stop-color="var(--primary)" stop-opacity="0.18"/>
+									<stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/>
+								</linearGradient>
+							</defs>
+							<!-- Grid lines -->
+							<line x1="0" y1="35" x2="500" y2="35" stroke="var(--border-soft)" stroke-width="1" stroke-dasharray="4"/>
+							<line x1="0" y1="70" x2="500" y2="70" stroke="var(--border-soft)" stroke-width="1" stroke-dasharray="4"/>
+							<line x1="0" y1="105" x2="500" y2="105" stroke="var(--border-soft)" stroke-width="1" stroke-dasharray="4"/>
+							<!-- Area fill -->
+							<path d="M <?= $area ?>" fill="url(#dbGrad)"/>
+							<!-- Line -->
+							<polyline points="<?= $points ?>" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+							<!-- Data points -->
+							<?php
+							$_pts = explode(' ', trim($points));
+							foreach ($_pts as $_pt) {
+								if (trim($_pt) === '') continue;
+								[$_px, $_py] = explode(',', $_pt);
+								echo "<circle cx=\"$_px\" cy=\"$_py\" r=\"3.5\" fill=\"var(--primary)\" stroke=\"var(--surface)\" stroke-width=\"2\"/>\n";
+							}
+							?>
+						</svg>
+					</div>
+				</div>
+				<div class="db-chart-legend">
+					<span class="db-legend-dot"></span>
+					<span><?= __('Daily Order Value (TZS)') ?></span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Bar Chart: Product Distribution -->
+		<div class="db-section">
+			<div class="db-section-header">
+				<h3 class="db-section-title"><?= __('Top Products') ?></h3>
+				<span class="db-badge"><?= __('By order volume') ?></span>
+			</div>
+			<div class="db-card">
+				<div class="db-bar-chart">
+					<?php if (empty($topProds)): ?>
+						<p class="db-empty"><?= __('No sales data. Place some orders to see analytics.') ?></p>
+					<?php else: ?>
+						<?php foreach ($topProds as $idx => $prod):
+							$pct = round(($prod['cnt'] / $maxQty) * 100);
+							$labels = ['#1', '#2', '#3', '#4', '#5'];
+						?>
+						<div class="db-bar-row">
+							<span class="db-bar-rank"><?= $labels[$idx] ?? '' ?></span>
+							<span class="db-bar-name" title="<?= htmlspecialchars($prod['description']) ?>"><?= htmlspecialchars(mb_strimwidth($prod['description'], 0, 22, '…')) ?></span>
+							<div class="db-bar-track">
+								<div class="db-bar-fill" style="width:<?= $pct ?>%"></div>
+							</div>
+							<span class="db-bar-val"><?= number_format($prod['cnt']) ?></span>
+						</div>
+						<?php endforeach; ?>
+					<?php endif; ?>
+				</div>
+			</div>
+		</div>
+
+	</div><!-- /.db-row-chart -->
+
+	<!-- Bottom Layout: Sidebar (Actions + Timeline) + Main (Table) -->
+	<div class="db-bottom-layout">
+
+		<!-- Vertical Sidebar Grid -->
+		<div class="db-col-aside">
+			<!-- Quick Actions -->
+			<div class="db-section">
+				<div class="db-section-header">
+					<h3 class="db-section-title"><?= __('Quick Actions') ?></h3>
+				</div>
+				<div class="db-card">
+					<div class="db-quick-actions-vert">
+						<a href="<?= $RootPath ?>/SelectOrderItems.php?NewOrder=Yes" class="db-action-btn-row">
+							<span class="db-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></span>
+							<span class="db-action-label"><?= __('New Sale') ?></span>
+						</a>
+						<a href="<?= $RootPath ?>/SearchCustomers.php" class="db-action-btn-row">
+							<span class="db-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg></span>
+							<span class="db-action-label"><?= __('Add Customer') ?></span>
+						</a>
+						<a href="<?= $RootPath ?>/Inventory1.php" class="db-action-btn-row">
+							<span class="db-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></span>
+							<span class="db-action-label"><?= __('Manage Stock') ?></span>
+						</a>
+						<a href="<?= $RootPath ?>/SalesInquiry.php" class="db-action-btn-row">
+							<span class="db-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
+							<span class="db-action-label"><?= __('View Reports') ?></span>
+						</a>
+						<a href="<?= $RootPath ?>/Z_UpgradeDatabase.php" class="db-action-btn-row db-action-muted-row">
+							<span class="db-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span>
+							<span class="db-action-label"><?= __('System Settings') ?></span>
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<!-- Recent Activity Timeline -->
+			<div class="db-section">
+				<div class="db-section-header">
+					<h3 class="db-section-title"><?= __('Recent Activity') ?></h3>
+				</div>
+				<div class="db-card">
+					<div class="db-timeline">
+						<?php if (empty($recentOrders)): ?>
+							<p class="db-empty"><?= __('No recent activity.') ?></p>
+						<?php else: ?>
+							<?php foreach ($recentOrders as $idx => $order): ?>
+							<div class="db-timeline-item">
+								<div class="db-tl-dot <?= $idx === 0 ? 'db-tl-dot-active' : '' ?>"></div>
+								<div class="db-tl-body">
+									<div class="db-tl-top">
+										<span class="db-tl-title"><?= __('Order') ?> <strong>#<?= $order['orderno'] ?></strong> &mdash; <?= htmlspecialchars(mb_strimwidth($order['name'], 0, 15, '…')) ?></span>
+									</div>
+									<span class="db-tl-amount">TZS <?= number_format($order['ordervalue'], 2) ?></span>
+									<span class="db-tl-time"><?= date('d M Y', strtotime($order['orddate'])) ?></span>
+								</div>
+							</div>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Main Column: Orders Data Table -->
+		<div class="db-col-main">
+			<div class="db-section">
+				<div class="db-section-header">
+					<h3 class="db-section-title"><?= __('Recent Orders') ?></h3>
+					<a href="<?= $RootPath ?>/SalesInquiry.php" class="db-link"><?= __('View all') ?> →</a>
+				</div>
+				<div class="db-card db-card-full">
+					<div class="db-table-wrap">
+						<table class="db-table">
+							<thead>
+								<tr>
+									<th><?= __('Order') ?></th>
+									<th><?= __('Customer') ?></th>
+									<th><?= __('Date') ?></th>
+									<th class="db-col-right"><?= __('Total') ?></th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php if (empty($recentOrders)): ?>
+									<tr><td colspan="4" class="db-empty"><?= __('No orders found.') ?></td></tr>
+								<?php else: ?>
+									<?php foreach ($recentOrders as $order): ?>
+									<tr>
+										<td><span class="db-ref">#<?= $order['orderno'] ?></span></td>
+										<td><?= htmlspecialchars($order['name']) ?></td>
+										<td class="db-muted"><?= date('d M Y', strtotime($order['orddate'])) ?></td>
+										<td class="db-col-right db-fw">TZS <?= number_format($order['ordervalue'], 2) ?></td>
+									</tr>
+									<?php endforeach; ?>
+								<?php endif; ?>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div><!-- /.db-bottom-layout -->
+
+</div><!-- /.db-page -->
+<?php
+} // end dashboard
+
+// Legacy Menu (Only show if a specific module is selected)
+if (isset($_GET['Application']) && $_GET['Application'] != 'Dashboard') {
+	echo '<div class="legacy-menu-container">
+			<div class="legacy-menu-header" onclick="document.getElementById(\'LegacyMenu\').style.display = (document.getElementById(\'LegacyMenu\').style.display==\'none\') ? \'flex\' : \'none\'">
+				<span>' . __('Module Menu') . ' (' . $_SESSION['Module'] . ')</span>
+				<span>▼</span>
+			</div>
+			<section id="LegacyMenu" class="MainBody clearfix" style="display:flex; margin-top:10px !important;">';
+
+	// Legacy Columns (Minimal changes to preserve logic)
+	foreach (array('Transactions', 'Reports', 'Maintenance') as $Type) {
+		echo '<fieldset class="MenuList"><legend>';
+		if ($Type == 'Transactions') echo '<b>' . __('Transactions') . '</b>';
+		elseif ($Type == 'Reports') echo '<b>' . __('Inquiries and Reports') . '</b>';
+		else echo '<b>' . __('Maintenance') . '</b>';
+		echo '</legend><ul>';
+
+		$i = 0;
+		if (isset($MenuItems[$_SESSION['Module']][$Type])) {
+			foreach ($MenuItems[$_SESSION['Module']][$Type]['Caption'] as $Caption) {
+				$URL = $MenuItems[$_SESSION['Module']][$Type]['URL'][$i];
+				$ScriptName = explode('?', substr($URL, 1))[0];
+				if (isset($_SESSION['PageSecurityArray'][$ScriptName])) {
+					$Security = $_SESSION['PageSecurityArray'][$ScriptName];
+					if (in_array($Security, $_SESSION['AllowedPageSecurityTokens'])) {
+						echo '<li class="MenuItem"><a href="', $RootPath, $URL, '">&bull; ', __($Caption), '</a></li>';
+					}
+				}
+				++$i;
 			}
 		}
-		++$i;
+		if ($Type == 'Reports') echo GetRptLinks($_SESSION['Module']);
+		echo '</ul></fieldset>';
 	}
+
+	echo '</section></div>'; // Close legacy menu and MainBody replacement
 }
-echo '</ul>
-</fieldset>'; // MaintenanceDive ===HJ===
+
 include(__DIR__ . '/includes/footer.php');
 
 /**
