@@ -2,6 +2,12 @@
 
 global $RootPath;
 
+if (!function_exists('__')) {
+	function __($Text) {
+		return $Text;
+	}
+}
+
 // Systems can force a reload by setting the variable $ForceConfigReload to true and including this file
 
 if ((isset($ForceConfigReload) AND $ForceConfigReload==true) OR !isset($_SESSION['CompanyDefaultsLoaded'])) {
