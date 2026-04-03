@@ -1,8 +1,25 @@
 <?php
 
 /// @todo should we include these two here? This file is included from session.php, which already includes them...
-include($PathPrefix . 'includes/LanguageSetup.php');
 include(__DIR__ . '/LanguagesArray.php');
+
+if (!function_exists('__')) {
+	function __($Text) {
+		return $Text;
+	}
+}
+
+if (!isset($DefaultLanguage) || !isset($LanguagesArray[$DefaultLanguage])) {
+	$DefaultLanguage = 'en_GB.utf8';
+}
+
+if (!isset($Language) || $Language == '') {
+	$Language = $DefaultLanguage;
+}
+
+if (!isset($Theme) || $Theme == '') {
+	$Theme = $DefaultTheme ?? 'xenos';
+}
 
 // Display demo user name and password within login form if $AllowDemoMode is true
 if ((isset($AllowDemoMode)) and ($AllowDemoMode == true) and (!isset($DemoText))) {
