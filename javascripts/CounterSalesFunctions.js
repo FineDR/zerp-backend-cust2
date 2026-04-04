@@ -231,5 +231,14 @@ var CounterSales = {
 
 		receivedAmount.value = Number(this.totaldue).toFixed(this.decimal);
 		this.CalculateChangeDue();
+	},
+
+	AddProductToGrid: function(stockid, index)
+	{
+		var qtyInput = document.getElementById('OrderQty' + index);
+		if (qtyInput) {
+			qtyInput.value = 1;
+			qtyInput.form.submit();
+		}
 	}
 }

@@ -128,7 +128,8 @@ echo '<div class="help-bubble" id="help-bubble">
 		<div class="help-content" id="help-content"></div>
 	</div>';
 
-echo '<div class="dashboard-container">';
+echo '<div class="dashboard-container">
+		<div id="SidebarMask" class="sidebar-mask"></div>';
 
 // Icon map for sidebar modules
 $moduleIcons = [
@@ -169,7 +170,10 @@ echo '	</ul>
 
 echo '<div class="dashboard-content">';
 
-echo '<header class="noPrint">';
+echo '<header class="noPrint">
+		<button id="SidebarToggle" class="SidebarToggle" aria-label="Toggle Navigation">
+			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+		</button>';
 
 $CompanyLogo = '';
 if (file_exists('companies/' . $_SESSION['DatabaseName'] . '/logo.png')) {
@@ -199,13 +203,13 @@ if (isset($_SESSION['AllowedPageSecurityTokens']) && is_array($_SESSION['Allowed
 
 echo '<div id="Info">
 		<a class="FontSize" data-title="', __('Change the settings for'), ' ', $_SESSION['UsersRealName'], '" href="', $RootPath, '/UserSettings.php">
-			<span class="icon">👤</span> ', $_SESSION['UsersRealName'], '
+			<span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span> ', $_SESSION['UsersRealName'], '
 		</a>
 	</div>';
 
 echo '<div id="ExitIcon">
 		<a data-title="', __('Logout'), '" href="#" id="logoutLink">
-			<span class="icon">🚪</span>
+			<span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></span>
 		</a>
 	</div>';
 
@@ -237,4 +241,21 @@ echo '<div id="mask"></div>
 			</div>
 		</div>
 	</dialog>
-	<script async src="', $RootPath, '/javascripts/dialogs.js?version=1.0"></script>';
+	<script async src="', $RootPath, '/javascripts/dialogs.js?version=1.0"></script>
+	<script>
+		const sidebarToggle = document.getElementById("SidebarToggle");
+		const sidebarMask = document.getElementById("SidebarMask");
+
+		function toggleSidebar() {
+			if (window.innerWidth > 1024) {
+				document.body.classList.toggle("sidebar-collapsed");
+			} else {
+				document.body.classList.toggle("sidebar-active");
+			}
+		}
+
+		sidebarToggle.onclick = toggleSidebar;
+		sidebarMask.onclick = function() {
+			document.body.classList.remove("sidebar-active");
+		};
+	</script>';

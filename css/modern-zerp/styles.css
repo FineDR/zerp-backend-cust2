@@ -18,6 +18,8 @@ body {
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 a { color: var(--primary); text-decoration: none; }
@@ -167,6 +169,7 @@ header.noPrint {
     top: 0;
     z-index: 90;
     box-shadow: var(--shadow-xs);
+    width: 100%;
 }
 
 /* App icon / logo in header */
@@ -921,64 +924,183 @@ dialog,
 /* ============================================================
    RESPONSIVE — Mobile / Tablet
    ============================================================ */
-@media (max-width: 1024px) {
-    .analysis-row-v2 {
-        grid-template-columns: 1fr;
-    }
+
+/* 1. Header Sidebar Toggle visibility */
+.SidebarToggle {
+    display: flex;
+    background: transparent;
+    border: none;
+    color: var(--text-body);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    margin-right: 15px;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
 }
 
-@media (max-width: 768px) {
-    .dashboard-container {
-        flex-direction: column;
+.SidebarToggle:hover {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+/* Sidebar Collapsed State (Desktop) */
+body.sidebar-collapsed .ModuleList {
+    width: var(--sidebar-collapsed);
+    min-width: var(--sidebar-collapsed);
+}
+
+body.sidebar-collapsed .ModuleList .nav-label,
+body.sidebar-collapsed .ModuleList ul::before {
+    display: none;
+}
+
+body.sidebar-collapsed .ModuleList li a {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+body.sidebar-collapsed .ModuleList::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext x='12' y='44' font-family='Inter,sans-serif' font-size='28' font-weight='800' fill='white'%3EZ%3C/text%3E%3C/svg%3E");
+}
+
+/* 2. Responsive Breakpoints */
+
+/* Tablet & Mobile View */
+@media (max-width: 1024px) {
+    .SidebarToggle {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        z-index: 1001; /* Above mask */
     }
 
     .ModuleList {
-        width: 100%;
-        min-width: 0;
-        height: auto;
-        position: relative;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
+        position: fixed;
+        left: calc(-1 * var(--sidebar-width));
+        top: 0;
+        bottom: 0;
+        z-index: 1100; /* Above mask */
+        box-shadow: var(--shadow-lg);
+        transition: left var(--transition-base);
+        background: var(--bg-sidebar);
     }
 
-    .ModuleList ul {
-        flex-direction: row;
-        flex-wrap: wrap;
-        padding: var(--space-2);
-        gap: var(--space-1);
+    body.sidebar-active .ModuleList {
+        left: 0;
     }
 
-    .ModuleList ul::before { display: none; }
-    .ModuleList::before { display: none; }
-
-    .ModuleList li a {
-        padding: var(--space-2) var(--space-3);
-        font-size: 0.8rem;
+    body.sidebar-active .dashboard-content {
+        pointer-events: none;
     }
 
-    .ModuleList li a .nav-label { display: none; }
+    /* Overlay for mobile sidebar */
+    .sidebar-mask {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(2px);
+        z-index: 1050;
+    }
 
-    .kpi-grid {
+    body.sidebar-active .sidebar-mask {
+        display: block;
+    }
+
+    /* Content adjustments */
+    .dashboard-container { width: 100%; overflow-x: hidden; }
+    .dashboard-content { width: 100%; min-width: 0; }
+
+    /* Dashboard grids */
+    .db-kpi-row {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .db-row-2col, .db-row-chart, .analysis-row-v2 {
+        grid-template-columns: 1fr;
+    }
+
+    .db-bottom-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .db-col-aside { order: 2; }
+    .db-col-main { order: 1; }
+}
+
+/* Phones */
+@media (max-width: 640px) {
+    header.noPrint {
+        padding: 0 var(--space-4);
+        gap: var(--space-3);
+        justify-content: flex-start;
+    }
+
+    #AppIcon { margin-right: auto; flex-shrink: 0; }
+    #AppIcon a::after { content: "ZERP"; }
+
+    #ActionIcon, #Info span { display: none; }
+
+    #Info a { border: none; padding: 0; }
+    #ExitIcon a { width: 36px; height: 36px; }
+
+    .db-kpi-row {
+        grid-template-columns: 1fr;
+    }
+
+    .db-page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-3);
+    }
+
+    .db-page-title {
+        font-size: 1.25rem;
+        line-height: 1.2;
+    }
+
+    .db-header-actions {
+        justify-content: flex-start;
+        gap: var(--space-2);
     }
 
     .welcome-banner {
         flex-direction: column;
-        gap: var(--space-4);
         text-align: center;
+        padding: var(--space-6) var(--space-4);
     }
 
-    .banner-content h1 { font-size: 1.3rem; }
+    .banner-content h1 { font-size: 1.2rem; }
 
-    .MainBody { padding: var(--space-4); }
+    .MainBody { padding: var(--space-4); width: 100%; max-width: 100vw; overflow-x: hidden; }
 
-    header.noPrint { padding: 0 var(--space-4); }
+    .db-card, .db-kpi-card { padding: var(--space-4); width: 100%; }
+
+    .db-kpi-value { font-size: 1.35rem; }
+
+    .db-chart-wrap { overflow-x: auto; }
 }
 
-@media (max-width: 480px) {
-    .kpi-grid {
-        grid-template-columns: 1fr;
-    }
+/* 3. Table Responsiveness */
+.activity-table-wrapper, .db-table-wrap, .StandardForm-wrap, .table-responsive {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: var(--space-4);
+}
+
+table {
+    width: 100%;
+    min-width: 600px;
+}
+
+/* Allow flex-basis adjustments for smaller screens if needed */
+.db-header-actions {
+    width: 100%;
+    justify-content: flex-end;
 }
 
 /* ============================================================
@@ -1428,6 +1550,20 @@ hr {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+}
+
+@media (max-width: 640px) {
+    .db-quick-actions-vert {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-3);
+    }
+    .db-action-btn-row {
+        flex-direction: column;
+        padding: var(--space-4) var(--space-2);
+        text-align: center;
+        justify-content: center;
+    }
 }
 
 .db-action-btn-row {

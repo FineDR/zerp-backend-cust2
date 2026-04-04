@@ -10,393 +10,7 @@ require(__DIR__ . '/includes/session.php');
 $Title = __('Counter Sales');
 $ViewTopic = 'SalesOrders';
 $BookMark = 'SalesOrderCounterSales';
-$ExtraHeadContent = '<style>
-.pos-shell-title {
-	align-items:center;
-	display:flex;
-	flex-wrap:wrap;
-	gap:12px;
-	justify-content:space-between;
-	margin:4px 0 18px;
-}
-.pos-shell-title .page_title_text {
-	background: linear-gradient(135deg, var(--surface), var(--primary-soft));
-	border:1px solid var(--border);
-	border-radius: var(--radius-md);
-	box-shadow: var(--shadow-sm);
-	margin:0;
-	padding:20px 24px;
-	text-align:left;
-	width:100%;
-}
-.pos-shell-title .page_title_text strong {
-	display:block;
-	font-size:0.85rem;
-	letter-spacing:0.1em;
-	margin-bottom:8px;
-	text-transform:uppercase;
-	color: var(--primary);
-}
-.pos-shell-title .page_title_text span {
-	display:block;
-	font-size:2.2rem;
-	font-weight:800;
-	line-height:1.1;
-	color: var(--text-main);
-}
-.pos-shell-title .page_title_text small {
-	color: var(--text-muted);
-	display:block;
-	font-size:0.9rem;
-	margin-top:10px;
-}
-.pos-layout {
-	display:grid;
-	gap:24px;
-	grid-template-columns:minmax(0, 1fr) 360px;
-	align-items:start;
-}
-.pos-entry-card,
-.pos-cart-card,
-.pos-sidebar,
-.pos-search-results-card {
-	background: var(--surface);
-	border:1px solid var(--border);
-	border-radius: var(--radius-md);
-	box-shadow: var(--shadow-sm);
-}
-.pos-entry-card,
-.pos-cart-card,
-.pos-search-results-card {
-	grid-column:1;
-	padding:24px;
-}
-.pos-entry-card {
-	order:1;
-}
-.pos-cart-card {
-	order:2;
-}
-.pos-search-results-card {
-	order:4;
-}
-.pos-sidebar {
-	grid-column:2;
-	order:3;
-	padding:20px;
-	position:sticky;
-	top:96px;
-}
-.pos-sidebar-secondary {
-	order:5;
-	position:static;
-	top:auto;
-	align-self:start;
-}
-.pos-card-header {
-	align-items:center;
-	display:flex;
-	justify-content:space-between;
-	gap:12px;
-	margin-bottom:20px;
-}
-.pos-card-header h2,
-.pos-card-header h3 {
-	color: var(--text-main);
-	font-size:1.25rem;
-	font-weight: 800;
-	margin:0;
-}
-.pos-card-header p {
-	color: var(--text-muted);
-	font-size:0.95rem;
-	margin:6px 0 0;
-}
-.pos-badge {
-	background: var(--primary-soft);
-	border:1px solid var(--primary-accent);
-	border-radius:999px;
-	color: var(--primary-dark);
-	font-size:0.8rem;
-	font-weight:700;
-	padding:6px 10px;
-}
-.pos-success-link,
-.pos-success-link:visited {
-	color:inherit;
-	text-decoration:underline;
-	font-weight:700;
-}
-.pos-success-link:hover {
-	text-decoration:none;
-}
-.pos-entry-tools {
-	display:grid;
-	gap:16px;
-	grid-template-columns:minmax(0, 1.65fr) minmax(180px, 0.9fr);
-	margin-bottom:20px;
-}
-.pos-entry-tools .search-inline {
-	align-items:center;
-	display:flex;
-	gap:12px;
-}
-.pos-entry-tools .search-inline input[type="text"] {
-	flex:1;
-}
-.pos-quick-entry-wrap {
-	background: var(--bg-main);
-	border:1px solid var(--border);
-	border-radius: var(--radius-md);
-	padding:20px;
-}
-.pos-quick-entry-table,
-.pos-cart-table,
-.pos-search-results-card table,
-.pos-entry-card table.table1 {
-	border-collapse:separate;
-	border-spacing:0;
-	width:100%;
-}
-.pos-quick-entry-table th,
-.pos-cart-table th,
-.pos-search-results-card th,
-.pos-entry-card table.table1 th {
-	background: var(--surface-alt);
-	border-bottom:1px solid var(--border);
-	color: var(--text-muted);
-	font-size:0.75rem;
-	font-weight:700;
-	letter-spacing:0.05em;
-	padding:14px 12px;
-	text-align:left;
-	text-transform:uppercase;
-}
-.pos-quick-entry-table td,
-.pos-cart-table td,
-.pos-search-results-card td,
-.pos-entry-card table.table1 td {
-	border-bottom:1px solid var(--border);
-	padding:14px 12px;
-	vertical-align:middle;
-}
-.pos-cart-table tr:last-child td,
-.pos-quick-entry-table tr:last-child td,
-.pos-entry-card table.table1 tr:last-child td,
-.pos-search-results-card table tr:last-child td {
-	border-bottom:none;
-}
-.pos-cart-table .number,
-.pos-search-results-card .number,
-.pos-entry-card table.table1 .number {
-	text-align:right;
-}
-.pos-empty-cart {
-	align-items:center;
-	display:flex;
-	flex-direction:column;
-	justify-content:center;
-	min-height:360px;
-	text-align:center;
-}
-.pos-empty-cart .empty-icon {
-	color: var(--primary-accent);
-	font-size:5rem;
-	line-height:1;
-	margin-bottom:16px;
-}
-.pos-empty-cart h3 {
-	color: var(--text-main);
-	font-size:1.5rem;
-	margin:0 0 10px;
-}
-.pos-empty-cart p {
-	color: var(--text-muted);
-	margin:0;
-	max-width:420px;
-}
-.pos-summary-card,
-.pos-panel,
-.pos-sidebar-actions {
-	background: var(--surface);
-	border:1px solid var(--border);
-	border-radius: var(--radius-md);
-	box-shadow: var(--shadow-sm);
-	padding:20px;
-	margin: 0;
-}
-.pos-summary-card {
-	margin-bottom:16px;
-}
-.pos-summary-card h3,
-.pos-panel legend {
-	color:#16355e;
-	font-size:0.95rem;
-	font-weight:700;
-	margin:0 0 12px;
-}
-.pos-summary-grid {
-	display:grid;
-	gap:10px 14px;
-	grid-template-columns:1fr auto;
-}
-.pos-summary-grid .label {
-	color: var(--text-muted);
-	font-weight:700;
-	text-transform:uppercase;
-	font-size:0.75rem;
-}
-.pos-summary-grid .value {
-	color: var(--text-main);
-	font-weight:700;
-}
-.pos-summary-total {
-	align-items:center;
-	border-top:1px solid var(--border);
-	display:flex;
-	justify-content:space-between;
-	margin-top:16px;
-	padding-top:18px;
-}
-.pos-summary-total strong {
-	color: var(--text-main);
-	font-size:1.1rem;
-}
-.pos-summary-total span {
-	color: var(--primary);
-	font-size:2rem;
-	font-weight:800;
-}
-.pos-panel {
-	margin:0 0 20px;
-}
-.pos-panel legend {
-	padding:0;
-}
-.pos-panel field {
-	display:block;
-	margin-bottom:10px;
-}
-.pos-panel field:last-child {
-	margin-bottom:0;
-}
-.pos-panel label {
-	color: var(--text-muted);
-	display:block;
-	font-size:0.76rem;
-	font-weight:700;
-	letter-spacing:0.03em;
-	margin-bottom:4px;
-	text-transform:uppercase;
-	width:auto;
-	float:none;
-}
-.pos-panel .fieldtext {
-	display:block;
-	padding:12px;
-	border:1px solid var(--border);
-	border-radius: var(--radius-sm);
-	background: var(--bg-main);
-}
-.pos-panel input[type="text"],
-.pos-panel input[type="tel"],
-.pos-panel input[type="email"],
-.pos-panel select,
-.pos-panel textarea,
-.pos-entry-card input[type="text"],
-.pos-entry-card input[type="search"],
-.pos-entry-card input[type="button"] {
-	border:1px solid var(--border);
-	border-radius: var(--radius-sm);
-	box-shadow:none;
-	font-size:0.92rem;
-	min-height:38px;
-	padding:6px 10px;
-	width:100%;
-}
-.pos-panel textarea {
-	min-height:84px;
-	resize:vertical;
-}
-.pos-sidebar-actions {
-	display:grid;
-	gap:8px;
-}
-.pos-sidebar-actions input[type="submit"],
-.pos-sidebar-actions input[type="reset"],
-.pos-entry-card input[type="submit"],
-.pos-entry-card input[type="button"] {
-	background: var(--primary);
-	border:none;
-	border-radius: var(--radius-sm);
-	box-shadow: 0 4px 12px rgba(89, 174, 105, 0.2);
-	color:#ffffff;
-	cursor:pointer;
-	font-size:0.95rem;
-	font-weight:700;
-	min-height:40px;
-	padding:8px 12px;
-}
-.pos-sidebar-actions input[name="Recalculate"],
-.pos-entry-card input[name="Search"],
-.pos-entry-card input[name="PartSearch"] {
-	background: var(--primary-soft);
-	box-shadow:none;
-	color: var(--primary-dark);
-	border:1px solid var(--primary-accent);
-}
-.pos-entry-card .page_help_text {
-	background: var(--primary-soft);
-	border:1px solid var(--primary-accent);
-	border-radius: var(--radius-sm);
-	color: var(--text-muted);
-	margin:0 0 16px;
-	padding:14px 16px;
-}
-.pos-search-results-card .centre,
-.pos-entry-card .centre {
-	margin-top:18px;
-}
-.pos-mini-actions {
-	display:flex;
-	flex-wrap:wrap;
-	gap:12px;
-}
-.pos-mini-actions input {
-	flex:1;
-}
-.pos-delete-link {
-	color: var(--danger);
-	font-weight:700;
-}
-.pos-delete-link:hover {
-	color: var(--danger);
-    opacity: 0.8;
-}
-@media only screen and (max-width: 1100px) {
-	.pos-layout {
-		grid-template-columns:1fr;
-	}
-	.pos-entry-card,
-	.pos-cart-card,
-	.pos-search-results-card,
-	.pos-sidebar {
-		grid-column:1;
-	}
-	.pos-sidebar {
-		order:3;
-		position:static;
-	}
-}
-@media only screen and (max-width: 720px) {
-	.pos-entry-tools {
-		grid-template-columns:1fr;
-	}
-	.pos-shell-title .page_title_text span {
-		font-size:1.8rem;
-	}
-}
-</style>';
+$ExtraHeadContent = '<link rel="stylesheet" href="' . $RootPath . '/css/modern-zerp/pos.css">';
 include(__DIR__ . '/includes/header.php');
 
 include(__DIR__ . '/includes/GetPrice.php');
@@ -617,11 +231,13 @@ if (isset($_POST['CancelOrder'])) {
 
 } else { /*Not cancelling the order */
 
-	echo '<div class="pos-shell-title"><p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/inventory.png" title="' . __('Counter Sales') . '" alt="" />' . ' ';
-	echo '<strong>' . __('Point of Sale') . '</strong>';
-	echo '<span>' . $_SESSION['Items'.$identifier]->CustomerName . ' ' . __('Counter Sale') . ' ' .__('from') . ' ' . $_SESSION['Items'.$identifier]->LocationName . ' ' . __('inventory') . '</span>';
-	echo '<small>' . __('All amounts in') . ' ' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' • ' . date('l, F j, Y') . '</small>';
-	echo '</p></div>';
+	echo '<div class="pos-shell-title">
+		<p class="page_title_text">
+			<strong>' . __('Point of Sale') . '</strong>
+			<span>' . $_SESSION['Items'.$identifier]->CustomerName . ' ' . __('Counter Sale') . '</span>
+			<small>' . $_SESSION['Items'.$identifier]->LocationName . ' • ' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' • ' . date('l, F j, Y') . '</small>
+		</p>
+	</div>';
 
 	if (isset($CompletedInvoiceNo)) {
 		prnMsg('<a class="pos-success-link" target="_blank" rel="noopener" href="' . htmlspecialchars($CompletedInvoiceURL, ENT_QUOTES, 'UTF-8') . '">' . __('Invoice number') . ' ' . $CompletedInvoiceNo . ' ' . __('processed') . '</a>', 'success');
@@ -632,7 +248,10 @@ if (isset($_POST['CancelOrder'])) {
 	}
 }
 
-if (isset($_POST['Search']) or isset($_POST['Next']) or isset($_POST['Previous'])) {
+if (isset($_POST['Search']) or isset($_POST['Next']) or isset($_POST['Previous']) or !isset($SearchResult)) {
+	if (!isset($_POST['Keywords'])) $_POST['Keywords'] = '';
+	if (!isset($_POST['StockCode'])) $_POST['StockCode'] = '';
+	if (!isset($_POST['StockCat'])) $_POST['StockCat'] = 'All';
 
 	if ($_POST['Keywords']!='' AND $_POST['StockCode']=='') {
 		$Msg = __('Item description has been used in search');
@@ -768,12 +387,27 @@ if (isset($_POST['Search']) or isset($_POST['Next']) or isset($_POST['Previous']
 /* Always do the stuff below */
 
 echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" id="SelectParts" method="post">';
-echo '<div>';
 echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 echo '<input type="hidden" id="AutoFillCashReceived" name="AutoFillCashReceived" value="0" />';
-echo '<input type="submit" id="AutoQuickEntrySubmit" name="QuickEntry" value="' . __('Quick Entry') . '" style="display:none;" />';
-echo '<input type="submit" id="AutoRecalculateSubmit" name="Recalculate" value="' . __('Re-Calculate') . '" style="display:none;" />';
-echo '<div class="pos-layout">';
+
+echo '<div class="pos-container">';
+echo '<div class="pos-catalog">';
+echo '<div class="pos-search-box">
+		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+		<input type="text" name="Keywords" class="pos-search-input" placeholder="' . __('Search products by name or code...') . '" value="' . (isset($_POST['Keywords']) ? $_POST['Keywords'] : '') . '" />
+		<input type="submit" name="Search" value="' . __('Search') . '" class="db-btn db-btn-primary" />
+	</div>';
+
+// Category Filters
+$CatSQL = "SELECT categoryid, categorydescription FROM stockcategory WHERE stocktype='F' OR stocktype='D' OR stocktype='L'";
+$CatResult = DB_query($CatSQL);
+echo '<div class="pos-categories">';
+echo '<button type="submit" name="StockCat" value="All" class="pos-category-pill ' . ((!isset($_POST['StockCat']) || $_POST['StockCat'] == 'All') ? 'active' : '') . '">' . __('All Categories') . '</button>';
+while ($CatRow = DB_fetch_array($CatResult)) {
+	$active = (isset($_POST['StockCat']) && $_POST['StockCat'] == $CatRow['categoryid']) ? 'active' : '';
+	echo '<button type="submit" name="StockCat" value="' . $CatRow['categoryid'] . '" class="pos-category-pill ' . $active . '">' . htmlspecialchars($CatRow['categorydescription']) . '</button>';
+}
+echo '</div>';
 
 //Get The exchange rate used for GPPercent calculations on adding or amending items
 if ($_SESSION['Items'.$identifier]->DefaultCurrency != $_SESSION['CompanyRecord']['currencydefault']) {
@@ -1138,261 +772,116 @@ if (count($_SESSION['Items'.$identifier]->LineItems)>0 ) { /*only show order lin
 //   T H I S   W H E R E   T H E   S A L E  I S   D I S P L A Y E D
 // *************************************************************************
 */
-	echo '<section class="pos-cart-card">';
-	echo '<div class="pos-card-header">
+	echo '<aside class="pos-sidebar">';
+	echo '<div class="pos-cart-header">
 			<div>
-				<h2>' . __('Sale Items') . '</h2>
-				<p>' . __('Review the cart, adjust quantities, pricing, or discounts, and keep the sale moving.') . '</p>
+				<h3>' . __('Your Cart') . '</h3>
+				<p>' . __('Manage items and process payment.') . '</p>
 			</div>
 			<div class="pos-badge">' . count($_SESSION['Items'.$identifier]->LineItems) . ' ' . __('items') . '</div>
 		</div>';
-	echo '<table class="pos-cart-table" cellpadding="2">
-		<tr style="tableheader">';
-	echo '<th>' . __('Item Code') . '</th>
-   	      <th>' . __('Item Description') . '</th>
-	      <th>' . __('Quantity') . '</th>
-	      <th>' . __('QOH') . '</th>
-	      <th>' . __('Unit') . '</th>
-	      <th>' . __('Price') . '</th>';
-	if (in_array($_SESSION['PageSecurityArray']['OrderEntryDiscountPricing'], $_SESSION['AllowedPageSecurityTokens'])) {
-		echo '<th>' . __('Discount') . '</th>
-			  <th>' . __('GP %') . '</th>';
-	}
-	echo '<th>' . __('Net') . '</th>
-	      <th>' . __('Tax') . '</th>
-	      <th>' . __('Total') . '<br />' . __('Incl Tax') . '</th>
-	      </tr>';
-
-	$_SESSION['Items'.$identifier]->total = 0;
-	$_SESSION['Items'.$identifier]->totalVolume = 0;
-	$_SESSION['Items'.$identifier]->totalWeight = 0;
-	$TaxTotals = array();
-	$TaxGLCodes = array();
-	$TaxTotal =0;
-
+    echo '<div class="pos-cart-items">';
 	foreach ($_SESSION['Items'.$identifier]->LineItems as $OrderLine) {
-
 		$SubTotal = round($OrderLine->Quantity * $OrderLine->Price * (1 - $OrderLine->DiscountPercent),$_SESSION['Items'.$identifier]->CurrDecimalPlaces);
-		$DisplayDiscount = locale_number_format(($OrderLine->DiscountPercent * 100),2);
-		$QtyOrdered = $OrderLine->Quantity;
-		$QtyRemain = $QtyOrdered - $OrderLine->QtyInv;
-
-		if ($OrderLine->QOHatLoc < $OrderLine->Quantity AND ($OrderLine->MBflag=='B' OR $OrderLine->MBflag=='M')) {
-			/*There is a stock deficiency in the stock location selected */
-			$RowStarter = '<tr style="background-color:#EEAABB">';
-		} else {
-			$RowStarter = '<tr class="striped_row">';
-		}
-
-		echo $RowStarter;
-		echo '<td><input type="hidden" name="POLine_' .	 $OrderLine->LineNumber . '" value="" />';
-		echo '<input type="hidden" name="ItemDue_' .	 $OrderLine->LineNumber . '" value="'.$OrderLine->ItemDue.'" />';
-
-		echo '<a target="_blank" href="' . $RootPath . '/StockStatus.php?identifier='.$identifier . '&amp;StockID=' . $OrderLine->StockID . '&amp;DebtorNo=' . $_SESSION['Items'.$identifier]->DebtorNo . '">' . $OrderLine->StockID . '</a></td>
-			<td title="' . $OrderLine->LongDescription . '">' . $OrderLine->ItemDescription . '</td>';
-
-		echo '<td><input class="number" tabindex="2" type="text" name="Quantity_' . $OrderLine->LineNumber . '" data-stock-id="' . htmlspecialchars($OrderLine->StockID, ENT_QUOTES, 'UTF-8') . '" required="required" size="6" maxlength="6" value="' . locale_number_format($OrderLine->Quantity,$OrderLine->DecimalPlaces) . '" />';
-
-		echo '</td>
-			<td class="number">' . locale_number_format($OrderLine->QOHatLoc,$OrderLine->DecimalPlaces) . '</td>
-			<td>' . $OrderLine->Units . '</td>';
-		if (in_array($_SESSION['PageSecurityArray']['OrderEntryDiscountPricing'], $_SESSION['AllowedPageSecurityTokens'])) {
-			echo '<td><input class="number" type="text" name="Price_' . $OrderLine->LineNumber . '" required="required" size="16" maxlength="16" value="' . locale_number_format($OrderLine->Price,$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '" /></td>
-				<td><input class="number" type="text" name="Discount_' . $OrderLine->LineNumber . '" required="required" size="5" maxlength="4" value="' . locale_number_format(($OrderLine->DiscountPercent * 100),2) . '" /></td>
-				<td><input class="number" type="text" name="GPPercent_' . $OrderLine->LineNumber . '" required="required" size="3" maxlength="40" value="' . locale_number_format($OrderLine->GPPercent,2) . '" /></td>';
-		} else {
-			echo '<td class="number">' . locale_number_format($OrderLine->Price,$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '<input type="hidden" name="Price_' . $OrderLine->LineNumber . '"  value="' . locale_number_format($OrderLine->Price,$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '" />
-				<input type="hidden" name="Discount_' . $OrderLine->LineNumber . '" value="' . locale_number_format(($OrderLine->DiscountPercent * 100),2) . '" />
-				<input type="hidden" name="GPPercent_' . $OrderLine->LineNumber . '" value="' . locale_number_format($OrderLine->GPPercent,2) . '" /></td>';
-		}
-		echo '<td class="number">' . locale_number_format($SubTotal,$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</td>';
-		$LineDueDate = $OrderLine->ItemDue;
-		if (!Is_Date($OrderLine->ItemDue)) {
-			$LineDueDate = DateAdd (date($_SESSION['DefaultDateFormat']),'d', $_SESSION['Items'.$identifier]->DeliveryDays);
-			$_SESSION['Items'.$identifier]->LineItems[$OrderLine->LineNumber]->ItemDue= $LineDueDate;
-		}
-		$i=0; // initialise the number of taxes iterated through
-		$TaxLineTotal =0; //initialise tax total for the line
-
+		$TaxLineTotal = 0;
 		foreach ($OrderLine->Taxes AS $Tax) {
-			if (empty($TaxTotals[$Tax->TaxAuthID])) {
-				$TaxTotals[$Tax->TaxAuthID]=0;
-			}
-			if ($Tax->TaxOnTax ==1) {
-				$TaxTotals[$Tax->TaxAuthID] += ($Tax->TaxRate * ($SubTotal + $TaxLineTotal));
-				$TaxLineTotal += ($Tax->TaxRate * ($SubTotal + $TaxLineTotal));
-			} else {
-				$TaxTotals[$Tax->TaxAuthID] += ($Tax->TaxRate * $SubTotal);
-				$TaxLineTotal += ($Tax->TaxRate * $SubTotal);
-			}
-			$TaxGLCodes[$Tax->TaxAuthID] = $Tax->TaxGLCode;
+			$TaxLineTotal += ($Tax->TaxOnTax == 1) ? ($Tax->TaxRate * ($SubTotal + $TaxLineTotal)) : ($Tax->TaxRate * $SubTotal);
 		}
 
+		echo '<div class="pos-cart-item">
+				<div class="pos-cart-item-info">
+					<h4>' . htmlspecialchars($OrderLine->ItemDescription) . '</h4>
+					<div class="pos-cart-item-qty">
+						<button type="button" class="qty-btn" onclick="this.nextElementSibling.value--; this.form.submit();">-</button>
+						<input type="text" name="Quantity_' . $OrderLine->LineNumber . '" value="' . locale_number_format($OrderLine->Quantity,$OrderLine->DecimalPlaces) . '" size="3" style="text-align:center; border:none; background:transparent; font-weight:700;" />
+						<button type="button" class="qty-btn" onclick="this.previousElementSibling.value++; this.form.submit();">+</button>
+						<span style="margin-left: 10px; color: var(--text-muted); font-size: 0.8rem;">× ' . locale_number_format($OrderLine->Price,$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</span>
+					</div>
+				</div>
+				<div style="text-align: right;">
+					<div style="font-weight: 700; color: var(--text-main);">' . locale_number_format($SubTotal + $TaxLineTotal ,$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</div>
+					<a class="pos-delete-link" href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?identifier='.$identifier . '&amp;Delete=' . $OrderLine->LineNumber . '" onclick="return confirm(\'' . __('Are You Sure?') . '\');" style="font-size: 1.2rem; text-decoration: none;">&times;</a>
+				</div>
+				<input type="hidden" name="Price_' . $OrderLine->LineNumber . '" value="' . $OrderLine->Price . '" />
+				<input type="hidden" name="Discount_' . $OrderLine->LineNumber . '" value="' . ($OrderLine->DiscountPercent * 100) . '" />
+			  </div>';
+
+		$_SESSION['Items'.$identifier]->total += $SubTotal;
 		$TaxTotal += $TaxLineTotal;
-		$_SESSION['Items'.$identifier]->TaxTotals=$TaxTotals;
-		$_SESSION['Items'.$identifier]->TaxGLCodes=$TaxGLCodes;
-		echo '<td class="number">' . locale_number_format($TaxLineTotal ,$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</td>';
-		echo '<td class="number">' . locale_number_format($SubTotal + $TaxLineTotal ,$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</td>';
-		echo '<td><a class="pos-delete-link" href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?identifier='.$identifier . '&amp;Delete=' . $OrderLine->LineNumber . '" onclick="return confirm(\'' . __('Are You Sure?') . '\');">' . __('Delete') . '</a></td></tr>';
-
-		if ($_SESSION['AllowOrderLineItemNarrative'] == 1) {
-			echo $RowStarter;
-			echo '<td valign="top" colspan="11">' . __('Narrative') . ':<textarea name="Narrative_' . $OrderLine->LineNumber . '" cols="100" rows="1">' . stripslashes(AddCarriageReturns($OrderLine->Narrative)) . '</textarea><br /></td></tr>';
-		} else {
-			echo '<input type="hidden" name="Narrative" value="" />';
-		}
-
-		$_SESSION['Items'.$identifier]->total = $_SESSION['Items'.$identifier]->total + $SubTotal;
-		$_SESSION['Items'.$identifier]->totalVolume = $_SESSION['Items'.$identifier]->totalVolume + $OrderLine->Quantity * $OrderLine->Volume;
-		$_SESSION['Items'.$identifier]->totalWeight = $_SESSION['Items'.$identifier]->totalWeight + $OrderLine->Quantity * $OrderLine->Weight;
-
-	} /* end of loop around items */
-
-	echo '<tr class="striped_row">';
-	if (in_array($_SESSION['PageSecurityArray']['OrderEntryDiscountPricing'], $_SESSION['AllowedPageSecurityTokens'])) {
-		echo '<td colspan="8" class="number"><b>' . __('Total') . '</b></td>';
-	} else {
-		echo '<td colspan="6" class="number"><b>' . __('Total') . '</b></td>';
 	}
-	echo '<td class="number">' . locale_number_format(($_SESSION['Items'.$identifier]->total),$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</td>
-			<td class="number">' . locale_number_format($TaxTotal,$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</td>
-			<td class="number">' . locale_number_format(($_SESSION['Items'.$identifier]->total+$TaxTotal),$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</td>
-		</tr>
-		</table>';
-	echo '</section>';
-	echo '<input type="hidden" name="TaxTotal" value="'.$TaxTotal.'" />';
-	echo '<aside class="pos-sidebar">';
-	echo '<section class="pos-summary-card">
-			<h3>' . __('Billing Summary') . '</h3>
-			<div class="pos-summary-grid">
-				<div class="label">' . __('Subtotal') . '</div>
-				<div class="value">' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' ' . locale_number_format(($_SESSION['Items'.$identifier]->total),$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</div>
-				<div class="label">' . __('Tax') . '</div>
-				<div class="value">' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' ' . locale_number_format($TaxTotal,$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</div>
+	echo '</div>'; // end pos-cart-items
+
+	echo '<div class="pos-cart-footer">
+			<div class="pos-summary-line">
+				<span>' . __('Subtotal') . '</span>
+				<span>' . locale_number_format($_SESSION['Items'.$identifier]->total, $_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</span>
 			</div>
-			<div class="pos-summary-total">
-				<strong>' . __('Total') . '</strong>
-				<span>' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' ' . locale_number_format(($_SESSION['Items'.$identifier]->total+$TaxTotal),$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</span>
+			<div class="pos-summary-line">
+				<span>' . __('Tax') . '</span>
+				<span>' . locale_number_format($TaxTotal, $_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</span>
 			</div>
-		</section>';
-	echo '<fieldset class="pos-panel">
-			<legend>', __('Customer Details'), '</legend>';
+			<div class="pos-total-line" style="border-top: 2px dashed var(--border); padding-top: 15px; margin-top: 15px;">
+				<span>' . __('Total Amount') . '</span>
+				<span>' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' ' . locale_number_format($_SESSION['Items'.$identifier]->total + $TaxTotal, $_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</span>
+			</div>';
 
-	echo '<field>
-			<label for="DeliverTo">', __('Picked Up By'), ':</label>
-			<input type="text" size="25" maxlength="25" name="DeliverTo" value="', stripslashes($_SESSION['Items' . $identifier]->DeliverTo), '" />
-		</field>';
+    // Payment Section
+    echo '<div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+            <div style="font-weight: 700; margin-bottom: 10px;">' . __('Payment Method') . '</div>';
+    $PaymentMethodsResult = DB_query("SELECT paymentid, paymentname FROM paymentmethods");
+    echo '<select name="PaymentMethod" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 10px;">';
+    while ($PaymentMethodRow = DB_fetch_array($PaymentMethodsResult)) {
+        $selected = (isset($_POST['PaymentMethod']) && $_POST['PaymentMethod'] == $PaymentMethodRow['paymentid']) ? 'selected' : '';
+        echo '<option ' . $selected . ' value="' . $PaymentMethodRow['paymentid'] . '">' . $PaymentMethodRow['paymentname'] . '</option>';
+    }
+    echo '</select>';
 
-	echo '<field>
-			<label for="PhoneNo">', __('Contact Phone Number'), ':</label>
-			<input type="tel" size="25" maxlength="25" name="PhoneNo" value="', stripslashes($_SESSION['Items' . $identifier]->PhoneNo), '" />
-		</field>';
+    if (!isset($_POST['CashReceived'])) $_POST['CashReceived'] = 0;
+    if (!isset($_POST['AmountPaid'])) $_POST['AmountPaid'] = 0;
+    if (!isset($_POST['ChangeDue'])) $_POST['ChangeDue'] = 0;
 
-	echo '<field>
-			<label for="Email">', __('Contact Email'), ':</label>
-			<input type="email" size="25" maxlength="30" name="Email" value="', stripslashes($_SESSION['Items' . $identifier]->Email), '" />
-		</field>';
+    echo '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">' . __('Cash Received') . '</label>
+                <input type="text" class="number" id="CashReceived" name="CashReceived" value="' . $_POST['CashReceived'] . '" onblur="CounterSales.CalculateChangeDue()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-weight: 700;" />
+            </div>
+            <div>
+                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">' . __('Change Due') . '</label>
+                <input type="text" class="number" id="ChangeDue" name="ChangeDue" value="' . $_POST['ChangeDue'] . '" readonly style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-main); color: var(--primary); font-weight: 800;" />
+            </div>
+          </div>
+          <input type="hidden" id="AmountPaid" name="AmountPaid" value="' . $_POST['AmountPaid'] . '" />
+        </div>';
 
-	echo '<field>
-			<label for="CustRef">', __('Customer Reference'), ':</label>
-			<input type="text" size="25" maxlength="25" name="CustRef" value="', stripcslashes($_SESSION['Items' . $identifier]->CustRef), '" />
-		</field>';
+    // Quick Actions
+    echo '<div class="pos-quick-actions">
+            <button type="button" class="pos-action-btn" onclick="window.open(\'CounterSales.php?identifier=' . $identifier . '&NewOrder=Yes\', \'_self\')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg>
+                ' . __('New') . '
+            </button>
+            <button type="submit" name="Recalculate" class="pos-action-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                ' . __('Sync') . '
+            </button>
+            <button type="reset" name="CancelOrder" class="pos-action-btn" onclick="return confirm(\'' . __('Cancel sale?') . '\')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                ' . __('Cancel') . '
+            </button>
+        </div>';
 
-	echo '<field>
-			<label for="SalesPerson">', __('Sales person'), ':</label>';
-
-	if ($_SESSION['SalesmanLogin'] != '') {
-		echo '<div class="fieldtext">', $_SESSION['UsersRealName'], '</div>';
-	} else {
-		echo '<select name="SalesPerson">';
-		$SalesPeopleResult = DB_query("SELECT salesmancode, salesmanname FROM salesman WHERE current=1");
-		if (!isset($_POST['SalesPerson']) and $_SESSION['SalesmanLogin'] != NULL) {
-			$_SESSION['Items' . $identifier]->SalesPerson = $_SESSION['SalesmanLogin'];
-		}
-
-		while ($SalesPersonRow = DB_fetch_array($SalesPeopleResult)) {
-			if ($SalesPersonRow['salesmancode'] == $_SESSION['Items' . $identifier]->SalesPerson) {
-				echo '<option selected="selected" value="', $SalesPersonRow['salesmancode'], '">', $SalesPersonRow['salesmanname'], '</option>';
-			} else {
-				echo '<option value="', $SalesPersonRow['salesmancode'], '">', $SalesPersonRow['salesmanname'], '</option>';
-			}
-		}
-		echo '</select>';
-	}
-	echo '</field>';
-
-	echo '<field>
-			<label for="Comments">', __('Comments'), ':</label>
-			<textarea name="Comments" cols="23" rows="5">', stripcslashes($_SESSION['Items' . $identifier]->Comments), '</textarea>
-		</field>';
-
-	echo '</fieldset>';
-	echo '<fieldset class="pos-panel">
-			<legend>', __('Payment Details'), '</legend>'; // a new nested table in the second column of master table
-	//now the payment stuff in this column
-	$PaymentMethodsResult = DB_query("SELECT paymentid, paymentname FROM paymentmethods");
-
-	echo '<field>
-			<label for="PaymentMethod">', __('Payment Type'), ':</label>
-			<select name="PaymentMethod">';
-	while ($PaymentMethodRow = DB_fetch_array($PaymentMethodsResult)) {
-		if (isset($_POST['PaymentMethod']) and $_POST['PaymentMethod'] == $PaymentMethodRow['paymentid']) {
-			echo '<option selected="selected" value="', $PaymentMethodRow['paymentid'], '">', $PaymentMethodRow['paymentname'], '</option>';
-		} else {
-			echo '<option value="', $PaymentMethodRow['paymentid'], '">', $PaymentMethodRow['paymentname'], '</option>';
-		}
-	}
-	echo '</select>
-		</field>';
-
-	$BankAccountsResult = DB_query("SELECT bankaccountname, accountcode FROM bankaccounts ORDER BY bankaccountname");
-
-	echo '<field>
-			<label for="BankAccount">', __('Banked to'), ':</label>
-			<select name="BankAccount">';
-	while ($BankAccountsRow = DB_fetch_array($BankAccountsResult)) {
-		if (isset($_POST['BankAccount']) and $_POST['BankAccount'] == $BankAccountsRow['accountcode']) {
-			echo '<option selected="selected" value="', $BankAccountsRow['accountcode'], '">', $BankAccountsRow['bankaccountname'], '</option>';
-		} else {
-			echo '<option value="', $BankAccountsRow['accountcode'], '">', $BankAccountsRow['bankaccountname'], '</option>';
-		}
-	}
-	echo '</select>
-		</field>';
-
-	if (!isset($_POST['CashReceived'])) {
-		$_POST['CashReceived'] = 0;
-	}
-	echo '<field>
-			<label for="CashReceived">', __('Cash Received'), ':</label>
-			<input type="text" class="number" id="CashReceived" name="CashReceived" required="required"  maxlength="12" size="12" value="', $_POST['CashReceived'], '" onblur="CounterSales.CalculateChangeDue()" />
-		</field>';
-
-	if (!isset($_POST['AmountPaid'])) {
-		$_POST['AmountPaid'] = 0;
-	}
-	echo '<field>
-			<label for="AmountPaid">', __('Amount Paid'), ':</label>
-			<input type="text" class="number" id="AmountPaid" name="AmountPaid" required="required" data-title="', __('Enter the amount paid by the customer, this must equal the amount of the sale'), '" maxlength="12" size="12" value="', $_POST['AmountPaid'], '" readonly />
-		</field>';
-
-	if (!isset($_POST['ChangeDue'])) {
-		$_POST['ChangeDue'] = 0;
-	}
-
-	echo '<field>
-			<label for="ChangeDue">', __('Change'), ':</label>
-			<input type="text" class="number" id="ChangeDue" name="ChangeDue" maxlength="12" size="12" value="', $_POST['ChangeDue'], '" readonly />
-		</field>';
-
-	echo '</fieldset>';
-	if (!isset($_POST['ProcessSale'])) {
-		echo '<div class="pos-sidebar-actions">
-					<input type="submit" name="Recalculate" value="' . __('Re-Calculate') . '" />
-					<input type="submit" name="ProcessSale" value="' . __('Process The Sale') . '" />
-				</div>';
-	}
+	echo '<input type="submit" name="ProcessSale" value="' . __('Complete Payment') . '" class="pos-pay-btn" />';
+	echo '</div>'; // end pos-cart-footer
 	echo '</aside>';
+
+    // Customer details as hidden inputs to preserve state if not edited
+    echo '<input type="hidden" name="DeliverTo" value="' . htmlspecialchars($_SESSION['Items' . $identifier]->DeliverTo) . '" />';
+    echo '<input type="hidden" name="PhoneNo" value="' . htmlspecialchars($_SESSION['Items' . $identifier]->PhoneNo) . '" />';
+    echo '<input type="hidden" name="Email" value="' . htmlspecialchars($_SESSION['Items' . $identifier]->Email) . '" />';
+    echo '<input type="hidden" name="CustRef" value="' . htmlspecialchars($_SESSION['Items' . $identifier]->CustRef) . '" />';
+    echo '<input type="hidden" name="SalesPerson" value="' . htmlspecialchars($_SESSION['Items' . $identifier]->SalesPerson) . '" />';
+    echo '<input type="hidden" name="Comments" value="' . htmlspecialchars($_SESSION['Items' . $identifier]->Comments) . '" />';
+	echo '<input type="hidden" name="TaxTotal" value="'.$TaxTotal.'" />';
+    echo '</div>'; // end pos-catalog (closing the catalog div opened at line 778)
 
 } else {
 	echo '<section class="pos-cart-card pos-empty-cart">
@@ -2598,66 +2087,32 @@ if (!isset($_POST['ProcessSale'])) {
 
 
 		if (isset($SearchResult)) {
-			$j = 1;
-			echo '<div class="pos-search-results-card">';
-			echo '<table class="table1">';
-			echo '<tr>
-					<td class="centre" colspan="8"><input type="hidden" name="SelectingOrderItems" value="1" /><input tabindex="'.strval($j+8).'" type="submit" value="'.__('Add to Sale').'" /></td>
-				</tr>
-				<tr>
-					<th>' . __('Code') . '</th>
-		   			<th>' . __('Description') . '</th>
-		   			<th>' . __('Units') . '</th>
-		   			<th>' . __('On Hand') . '</th>
-		   			<th>' . __('On Demand') . '</th>
-		   			<th>' . __('On Order') . '</th>
-		   			<th>' . __('Available') . '</th>
-		   			<th>' . __('Quantity') . '</th>
-		   		</tr>';
+			echo '<div class="pos-product-grid">';
+			echo '<input type="hidden" name="SelectingOrderItems" value="1" />';
 			$i=0;
 
 			while ($MyRow=DB_fetch_array($SearchResult)) {
-
-				// Find the quantity in stock at location
 				$QOH = GetQuantityOnHand($MyRow['stockid'], $_SESSION['Items' . $identifier]->Location);
+				$stockStatus = ($QOH > 10) ? 'stock-high' : (($QOH > 0) ? 'stock-low' : 'stock-out');
+				$stockLabel = ($QOH > 0) ? locale_number_format($QOH, $MyRow['decimalplaces']) . ' ' . $MyRow['units'] . ' ' . __('in stock') : __('Out of Stock');
 
-				// Find the demand
-				$DemandQty = GetDemand($MyRow['stockid'], $_SESSION['Items' . $identifier]->Location);
-
-				// Get the QOO
-				$QOO = GetQuantityOnOrder($MyRow['stockid'], $_SESSION['Items' . $identifier]->Location);
-
-				$Available = $QOH - $DemandQty + $QOO;
-
-				echo '<tr class="striped_row">
-						<td>', $MyRow['stockid'], '</td>
-						<td>', $MyRow['description'], '</td>
-						<td>', $MyRow['units'], '</td>
-						<td class="number">', locale_number_format($QOH, $MyRow['decimalplaces']), '</td>
-						<td class="number">', locale_number_format($DemandQty, $MyRow['decimalplaces']), '</td>
-						<td class="number">', locale_number_format($QOO, $MyRow['decimalplaces']), '</td>
-						<td class="number">', locale_number_format($Available, $MyRow['decimalplaces']), '</td>
-						<td><input class="number"  tabindex="'.strval($j+7).'" type="text" size="6" required="required" ' . ($i==0?'autofocus="autofocus"':'') . ' name="OrderQty', $i, '" value="0" /><input type="hidden" name="StockID', $i, '" value="', $MyRow['stockid'], '" /></td>
-					</tr>';
+				echo '<div class="pos-product-card" onclick="CounterSales.AddProductToGrid(\'' . $MyRow['stockid'] . '\', ' . $i . ')">
+						<div class="pos-stock-badge ' . $stockStatus . '">' . $stockLabel . '</div>
+						<div class="pos-product-img">
+							<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2"></path><path d="M21 12v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-6"></path><path d="M3 8h18"></path><path d="M3 12h18"></path></svg>
+						</div>
+						<div class="pos-product-name">' . htmlspecialchars($MyRow['description']) . '</div>
+						<div class="pos-product-price">' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' ' . locale_number_format(GetPrice($MyRow['stockid'], $_SESSION['Items' . $identifier]->DebtorNo, $_SESSION['Items' . $identifier]->Branch), $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '</div>
+						<input type="hidden" name="OrderQty' . $i . '" id="OrderQty' . $i . '" value="0" />
+						<input type="hidden" name="StockID' . $i . '" value="' . $MyRow['stockid'] . '" />
+					</div>';
 				$i++;
 			}
-	#end of while loop
-            echo '<tr>
-					<td>
-						<input type="hidden" name="CustRef" value="'.$_SESSION['Items'.$identifier]->CustRef.'" />
-						<input type="hidden" name="Comments" value="'.$_SESSION['Items'.$identifier]->Comments.'" />
-						<input type="hidden" name="DeliverTo" value="'.$_SESSION['Items'.$identifier]->DeliverTo.'" />
-						<input type="hidden" name="PhoneNo" value="'.$_SESSION['Items'.$identifier]->PhoneNo.'" />
-						<input type="hidden" name="Email" value="'.$_SESSION['Items'.$identifier]->Email.'" />
-						<input type="hidden" name="SalesPerson" value="'.$_SESSION['Items'.$identifier]->SalesPerson.'" />
-					</td>
-				</tr>
-			<tr>
-					<td class="centre" colspan="8"><input type="hidden" name="SelectingOrderItems" value="1" /><input tabindex="'.strval($j+8).'" type="submit" value="'.__('Add to Sale').'" /></td>
-				</tr>
-				</table>
-				</div>';
-		}#end if SearchResults to show
+			echo '</div>';
+            echo '<div class="centre" style="margin-top: 24px; padding: 20px; background: var(--bg-main); border-radius: var(--radius-md);">
+					<input type="submit" name="SelectingOrderItems" value="' . __('Update Cart with Selected Quantities') . '" class="db-btn db-btn-primary" />
+				  </div>';
+		}
 		echo '</section>';
 	} /*end of PartSearch options to be displayed */
 		else { /* show the quick entry form variable */
