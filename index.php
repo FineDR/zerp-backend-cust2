@@ -57,7 +57,7 @@ if (isset($_GET['Application']) && ($_GET['Application'] == 'Sales' || $_GET['Ap
     $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/assets.css?v=' . time() . '">';
 } elseif (isset($_GET['Application']) && $_GET['Application'] == 'PC') {
     $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/pettycash.css?v=' . time() . '">';
-} elseif (isset($_GET['Application']) && $_GET['Application'] == 'Setup') {
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'system') {
     $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/setup.css?v=' . time() . '">';
 } elseif (isset($_GET['Application']) && $_GET['Application'] == 'Utilities') {
     $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/utilities.css?v=' . time() . '">';
@@ -488,14 +488,14 @@ if ($isDashboard) {
 	include(__DIR__ . '/includes/ModernFADashboard.php');
 } elseif (isset($_GET['Application']) && $_GET['Application'] == 'PC') {
 	include(__DIR__ . '/includes/ModernPCDashboard.php');
-} elseif (isset($_GET['Application']) && $_GET['Application'] == 'Setup') {
+} elseif (isset($_GET['Application']) && $_GET['Application'] == 'system') {
 	include(__DIR__ . '/includes/ModernSetupDashboard.php');
 } elseif (isset($_GET['Application']) && $_GET['Application'] == 'Utilities') {
 	include(__DIR__ . '/includes/ModernUtilitiesDashboard.php');
 } // end module Sales / orders / AR / PO / AP / stock / manuf / GL / FA / PC / Setup / Utilities
 
 // Legacy Menu (Only show if a specific module is selected and NOT Sales/orders/AR/PO/AP/stock/manuf/GL/FA/PC/Setup/Utilities)
-if (isset($_GET['Application']) && $_GET['Application'] != 'Dashboard' && $_GET['Application'] != 'Sales' && $_GET['Application'] != 'orders' && $_GET['Application'] != 'AR' && $_GET['Application'] != 'PO' && $_GET['Application'] != 'AP' && $_GET['Application'] != 'stock' && $_GET['Application'] != 'manuf' && $_GET['Application'] != 'GL' && $_GET['Application'] != 'FA' && $_GET['Application'] != 'PC' && $_GET['Application'] != 'Setup' && $_GET['Application'] != 'Utilities') {
+if (isset($_GET['Application']) && $_GET['Application'] != 'Dashboard' && $_GET['Application'] != 'Sales' && $_GET['Application'] != 'orders' && $_GET['Application'] != 'AR' && $_GET['Application'] != 'PO' && $_GET['Application'] != 'AP' && $_GET['Application'] != 'stock' && $_GET['Application'] != 'manuf' && $_GET['Application'] != 'GL' && $_GET['Application'] != 'FA' && $_GET['Application'] != 'PC' && $_GET['Application'] != 'system' && $_GET['Application'] != 'Utilities') {
 	echo '<div class="legacy-menu-container">
 			<div class="legacy-menu-header" onclick="document.getElementById(\'LegacyMenu\').style.display = (document.getElementById(\'LegacyMenu\').style.display==\'none\') ? \'flex\' : \'none\'">
 				<span>' . __('Module Menu') . ' (' . $_SESSION['Module'] . ')</span>
