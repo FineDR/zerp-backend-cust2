@@ -1,5 +1,7 @@
 <?php
+/*
 
+/ *
 The column categoryid in the table stockcategory could not be changed to type varchar(6) and returned error number 1833
 ALTER TABLE stockcategory CHANGE COLUMN categoryid categoryid varchar(6) NOT NULL; 
 
@@ -142,6 +144,7 @@ INSERT INTO debtorsmaster (debtorno, name, address1, address2, address3, address
 UPDATE debtorsmaster SET debtorno="RAH", name="Ludovick Rwabiz", address1="1", address2="2", address3="3", address4="4", address5="5", address6="TZS", currcode="TZS", salestype="01", paymentterms="2", edireference="TZS", clientsince="2025-11-27" WHERE debtorno=&apos;RAH&apos;<
 
 CONSTRAINT ` custitem _ibfk_2` FOREIGN KEY (`debtorno`) REFERENCES `debtorsmaster` (`debtorno`)
+* /
 
 $GetStockCatProperty_sig = array(
 	array(Value::$xmlrpcValue, Value::$xmlrpcString, Value::$xmlrpcString),
@@ -150,6 +153,7 @@ $GetStockCatProperty_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValu
 
 
 
+/ *
 INSERT INTO supptrans (transno,<&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;type,<&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;supplierno,<&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;suppreference,<&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;trandate,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;duedate,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;ovamount,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;ovgst,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;rate,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;transtext,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;inputdate)&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;VALUES (&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;5&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;20 ,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;104824986&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;2025-12-03&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;2025-12-03&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;11000&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;0&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;1&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&apos;&apos;,&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;CURRENT_DATE)
 
 
@@ -176,7 +180,7 @@ debtortrans.debtorno=custbranch.debtorno AND debtortrans.branchcode=custbranch.b
 		debtortrans.transno='2'
 
 SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debtortrans.ovfreight, debtortrans.ovgst, debtortrans.rate, debtortrans.invtext, debtortrans.consignment, debtortrans.packages, debtorsmaster.name, debtorsmaster.address1, debtorsmaster.address2, debtorsmaster.address3, debtorsmaster.address4, debtorsmaster.address5, debtorsmaster.address6, debtorsmaster.currcode, debtorsmaster.invaddrbranch, debtorsmaster.taxref, debtorsmaster.language_id, paymentterms.terms, paymentterms.dayinfollowingmonth, paymentterms.daysbeforedue, salesorders.deliverto, salesorders.deladd1, salesorders.deladd2, salesorders.deladd3, salesorders.deladd4, salesorders.deladd5, salesorders.deladd6, salesorders.customerref, salesorders.orderno, salesorders.orddate, locations.locationname, shippers.shippername, custbranch.brname, custbranch.braddress1, custbranch.braddress2, custbranch.braddress3, custbranch.braddress4, custbranch.braddress5, custbranch.braddress6, custbranch.brpostaddr1, custbranch.brpostaddr2, custbranch.brpostaddr3, custbranch.brpostaddr4, custbranch.brpostaddr5, custbranch.brpostaddr6, custbranch.salesman, salesman.salesmanname, debtortrans.debtorno, debtortrans.branchcode, currencies.decimalplaces FROM debtortrans INNER JOIN debtorsmaster ON debtortrans.debtorno=debtorsmaster.debtorno INNER JOIN custbranch ON debtortrans.debtorno=custbranch.debtorno AND debtortrans.branchcode=custbranch.branchcode INNER JOIN salesorders ON debtortrans.order_ = salesorders.orderno INNER JOIN shippers ON debtortrans.shipvia=shippers.shipper_id INNER JOIN salesman ON custbranch.salesman=salesman.salesmancode INNER JOIN locations ON salesorders.fromstkloc=locations.loccode INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='amran' AND locationusers.canview=1 INNER JOIN paymentterms ON debtorsmaster.paymentterms=paymentterms.termsindicator INNER JOIN currencies ON debtorsmaster.currcode=currencies.currabrev WHERE debtortrans.type=10 AND debtortrans.transno='3'
-SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debtortrans.ovfreight, debtortrans.ovgst, debtortrans.rate, debtortrans.invtext, debtortrans.consignment, debtortrans.packages, debtorsmaster.name, debtorsmaster.address1, debtorsmaster.address2, debtorsmaster.address3, debtorsmaster.address4, debtorsmaster.address5, debtorsmaster.address6, debtorsmaster.currcode, debtorsmaster.invaddrbranch, debtorsmaster.taxref, debtorsmaster.language_id, paymentterms.terms, paymentterms.dayinfollowingmonth, paymentterms.daysbeforedue, salesorders.deliverto, salesorders.deladd1, salesorders.deladd2, salesorders.deladd3, salesorders.deladd4, salesorders.deladd5, salesorders.deladd6, salesorders.customerref, salesorders.orderno, salesorders.orddate, locations.locationname, shippers.shippername, custbranch.brname, custbranch.braddress1, custbranch.braddress2, custbranch.braddress3, custbranch.braddress4, custbranch.braddress5, custbranch.braddress6, custbranch.brpostaddr1, custbranch.brpostaddr2, custbranch.brpostaddr3, custbranch.brpostaddr4, custbranch.brpostaddr5, custbranch.brpostaddr6, custbranch.salesman, salesman.salesmanname, debtortrans.debtorno, debtortrans.branchcode, currencies.decimalplaces FROM debtortrans INNER JOIN debtorsmaster ON debtortrans.debtorno=debtorsmaster.debtorno INNER JOIN custbranch ON debtortrans.debtorno=custbranch.debtorno AND debtortrans.branchcode=custbranch.branchcode INNER JOIN salesorders ON debtortrans.order_ = salesorders.orderno INNER JOIN shippers ON debtortrans.shipvia=shippers.shipper_id INNER JOIN salesman ON custbranch.salesman=salesman.salesmancode INNER JOIN locations ON salesorders.fromstkloc=locations.loccode INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='amran' AND locationusers.canview=1 INNER JOIN paymentterms ON debtorsmaster.paymentterms=paymentterms.termsindicator INNER JOIN currencies ON debtorsmaster.currcode=currencies.currabrev WHERE debtortrans.type=10 AND debtortrans.transno='124'
+SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debtortrans.ovfreight, debtortrans.ovgst, debtortrans.rate, debtortrans.invtext, debtortrans.consignment, debtortrans.packages, debtorsmaster.name, debtorsmaster.address1, debtorsmaster.address2, debtorsmaster.address3, debtorsmaster.address4, debtorsmaster.address5, debtorsmaster.address6, debtorsmaster.currcode, debtorsmaster.invaddrbranch, debtorsmaster.taxref, debtorsmaster.language_id, paymentterms.terms, paymentterms.dayinfollowingmonth, paymentterms.daysbeforedue, salesorders.deliverto, salesorders.deladd1, salesorders.deladd2, salesorders.deladd1, salesorders.deladd2, salesorders.deladd3, salesorders.deladd4, salesorders.deladd5, salesorders.deladd6, salesorders.customerref, salesorders.orderno, salesorders.orddate, locations.locationname, shippers.shippername, custbranch.brname, custbranch.braddress1, custbranch.braddress2, custbranch.braddress3, custbranch.braddress4, custbranch.braddress5, custbranch.braddress6, custbranch.brpostaddr1, custbranch.brpostaddr2, custbranch.brpostaddr3, custbranch.brpostaddr4, custbranch.brpostaddr5, custbranch.brpostaddr6, custbranch.salesman, salesman.salesmanname, debtortrans.debtorno, debtortrans.branchcode, currencies.decimalplaces FROM debtortrans INNER JOIN debtorsmaster ON debtortrans.debtorno=debtorsmaster.debtorno INNER JOIN custbranch ON debtortrans.debtorno=custbranch.debtorno AND debtortrans.branchcode=custbranch.branchcode INNER JOIN salesorders ON debtortrans.order_ = salesorders.orderno INNER JOIN shippers ON debtortrans.shipvia=shippers.shipper_id INNER JOIN salesman ON custbranch.salesman=salesman.salesmancode INNER JOIN locations ON salesorders.fromstkloc=locations.loccode INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='amran' AND locationusers.canview=1 INNER JOIN paymentterms ON debtorsmaster.paymentterms=paymentterms.termsindicator INNER JOIN currencies ON debtorsmaster.currcode=currencies.currabrev WHERE debtortrans.type=10 AND debtortrans.transno='124'
 
 select orderno, debtorno,branchcode,orddate,ordertype,salesperson,quotation,deliverydate,fromstkloc from salesorders;
 
@@ -254,16 +258,19 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
         </param>
     </params>
 </methodCall>
+* /
 
 
 
 
 
 
-	$test=ZALONGWA;
-    return $test;
+/ *
+	$test='ZALONGWA';
+    // return $test;
 ===============
-    /********************** expected parameters ****************************************  
+* /
+    / ********************** expected parameters ****************************************  
 	 * (1) InvoiceType (i. Purchase Order
 	 * 					ii. Shipments
 	 * 					iii. General Ledger (GL)
@@ -286,12 +293,14 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 	 *                         viii. terms
 	 *                        )
 	 *********************** expected parameters ****************************************  
-	*/
+	* /
+/ * DUPLICATE/SCRATCH LOGIC
 	foreach ($Header as $key => $Value) {
 		$HeaderData[$key] = DB_escape_string($Value);
 	}
+
 	$Errors=VerifySupplierNo($HeaderData['supplierid'], sizeof($Errors), $Errors);
-	/*Now retrieve supplier information - name, currency, default ex rate, terms, tax rate etc */
+	/ *Now retrieve supplier information - name, currency, default ex rate, terms, tax rate etc * /
 	$SQL = "SELECT suppliers.suppname,
 				suppliers.supplierid,
 				paymentterms.terms,
@@ -329,15 +338,15 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 	
 
     	//=========end of show==========
-	/*
+	/ *
 	if (DB_num_rows($Result)==0){
 		$Errors[0] = SupplierCannotbeRetrieved;
 		return $Errors;
 	}
-		\*/
+		\* /
 	$MyRow = DB_fetch_array($Result);
 	
-	/* listdown all the values from the submitted Invoice Header */
+	/ * listdown all the values from the submitted Invoice Header * /
 	$invoicetype = $HeaderData['invoicetype'];
 	$SupplierID = $HeaderData['supplierid'];
 	$InvoiceNo = $HeaderData['invoiceno'];
@@ -345,7 +354,7 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 	$Narrative = $HeaderData['narrative'];
 	$TotalInvoice = $HeaderData['totalinvoice'];
 	$TotalTax = $HeaderData['totaltax'];
-	/* listdown all the values from the retrieved Supplier Information */
+	/ * listdown all the values from the retrieved Supplier Information * /
 	//terms
 	if ($MyRow['daysbeforedue'] == 0) {
 		$Terms = '1' . $MyRow['dayinfollowingmonth'];
@@ -364,7 +373,7 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
     if($InvoiceDetails['InvoiceType']=='General Ledger'){
 		//set GLLink_creditors to true
 	   $GLLink_Creditors = 1;
-			/*Loop through the Invoice Header array to retrieve the values */
+			/ *Loop through the Invoice Header array to retrieve the values * /
 				foreach ($LineDetails as $LineData){
 					$InputError = false;
 					//validate the values
@@ -385,12 +394,12 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 						$InputError = true;
 						$Errors[0] = AmountNotNumeric;
 					} 
-					/*
+					/ *
 					if($InputError==false){
 						$TotalGLValue += $EnteredGLCode->Amount;
 						$TaxTotal += $EnteredGLCode->Tax;
 					}
-						*/
+						* /
 				}
 				if ($TaxTotal+$TotalInvoice < 0) {
 					$InputError = true;
@@ -436,7 +445,7 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 					$Result = DB_query($SQL, $ErrMsg, '', true);
 
 					$MyRow = DB_fetch_row($Result);
-					if ($MyRow[0] == 1) { /*Transaction reference already entered */
+					if ($MyRow[0] == 1) { / *Transaction reference already entered * /
 						$Errors[0]=DuplicateInvoiceNo;
 						return $Errors;
 					}
@@ -444,21 +453,21 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 					
 		if ($InputError == false) {
 
-			/* SQL to process the postings for purchase invoice */
-			/*Start an SQL transaction */
+			/ * SQL to process the postings for purchase invoice * /
+			/ *Start an SQL transaction * /
 
 			DB_Txn_Begin();
 
-			/*Get the next transaction number for internal purposes and the period to post GL transactions in based on the invoice date*/
+			/ *Get the next transaction number for internal purposes and the period to post GL transactions in based on the invoice date* /
 			$InvoiceNo = GetNextTransNo(20);
 			$PeriodNo = GetPeriod($TransDate);
 			$SQLInvoiceDate = FormatDateForSQL($TransDate);
 
 			if ($GLLink_Creditors == 1) {
-				/*Loop through the GL Entries and create a debit posting for each of the accounts entered */
+				/ *Loop through the GL Entries and create a debit posting for each of the accounts entered * /
 				$LocalTotal = 0;
 
-				/*the postings here are a little tricky, the logic goes like this:
+				/ *the postings here are a little tricky, the logic goes like this:
 				if its a shipment entry then the cost must go against the GRN suspense account defined in the company record
 
 				if its a general ledger amount it goes straight to the account specified
@@ -482,12 +491,12 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 
 				Or if its not a stock item
 				but a nominal item then the GL account in the orignal order is used for the price variance account.
-				*/
+				* /
 
 				foreach ($LineDetails as $EnteredGLCode) {
 
-				/*GL Items are straight forward - just do the debit postings to the GL accounts specified -
-				the credit is to creditors control act  done later for the total invoice value + tax*/
+				/ *GL Items are straight forward - just do the debit postings to the GL accounts specified -
+				the credit is to creditors control act  done later for the total invoice value + tax* /
 				//skamnev added tag
 				$SQL = "INSERT INTO gltrans (type,
 										typeno,
@@ -511,8 +520,8 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 
 		foreach ($Shipts as $ShiptChg) {
 
-			/*shipment postings are also straight forward - just do the debit postings to the GRN suspense account
-			these entries are reversed from the GRN suspense when the shipment is closed*/
+			/ *shipment postings are also straight forward - just do the debit postings to the GRN suspense account
+			these entries are reversed from the GRN suspense when the shipment is closed* /
 
 			$SQL = "INSERT INTO gltrans (type,
 										typeno,
@@ -534,7 +543,7 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 		}
 
 		foreach ($Assets as $AssetAddition) {
-			/* only the GL entries if the creditors/GL integration is enabled */
+			/ * only the GL entries if the creditors/GL integration is enabled * /
 			$SQL = "INSERT INTO gltrans (type,
 										typeno,
 										trandate,
@@ -556,9 +565,9 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 
 		foreach ($Contracts as $Contract) {
 
-			/*contract postings need to get the WIP from the contract items stock category record
+			/ *contract postings need to get the WIP from the contract items stock category record
 			*  debit postings to this WIP account
-			* the WIP account is tidied up when the contract is closed*/
+			* the WIP account is tidied up when the contract is closed* /
 			$Result = DB_query("SELECT wipact FROM stockcategory
 								INNER JOIN stockmaster ON
 								stockcategory.categoryid=stockmaster.categoryid
@@ -587,11 +596,11 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 		foreach ($GRNs as $EnteredGRN) {
 
 			if (mb_strlen($EnteredGRN->ShiptRef) == 0 OR $EnteredGRN->ShiptRef == 0) {
-				/*so its not a GRN shipment item
+				/ *so its not a GRN shipment item
 				enter the GL entry to reverse the GRN suspense entry created on delivery
-				* at standard cost/or weighted average cost used on delivery */
+				* at standard cost/or weighted average cost used on delivery * /
 
-				/*Always do this - for weighted average costing and also for standard costing */
+				/ *Always do this - for weighted average costing and also for standard costing * /
 
 				if ($EnteredGRN->StdCostUnit * ($EnteredGRN->This_QuantityInv) != 0) {
 					$SQL = "INSERT INTO gltrans (type,
@@ -615,39 +624,39 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 
 			$PurchPriceVar = $EnteredGRN->This_QuantityInv * (($EnteredGRN->ChgPrice / $ExRate) - $EnteredGRN->StdCostUnit);
 
-			/*Yes.... but where to post this difference to - if its a stock item the variance account must be retrieved from the stock category record
+			/ *Yes.... but where to post this difference to - if its a stock item the variance account must be retrieved from the stock category record
 			if its a nominal purchase order item with no stock item then there will be no standard cost and it will all be variance so post it to the
-			account specified in the purchase order detail record */
+			account specified in the purchase order detail record * /
 
-			if ($PurchPriceVar != 0) { /* don't bother with this lot if there is no difference ! */
-				if (mb_strlen($EnteredGRN->ItemCode) > 0 OR $EnteredGRN->ItemCode != '') { /*so it is a stock item */
+			if ($PurchPriceVar != 0) { / * don't bother with this lot if there is no difference ! * /
+				if (mb_strlen($EnteredGRN->ItemCode) > 0 OR $EnteredGRN->ItemCode != '') { / *so it is a stock item * /
 
-					/*need to get the stock category record for this stock item - this is function in SQL_CommonFunctions.php */
+					/ *need to get the stock category record for this stock item - this is function in SQL_CommonFunctions.php * /
 					$StockGLCode = GetStockGLCode($EnteredGRN->ItemCode);
 
-					/*We have stock item and a purchase price variance need to see whether we are using Standard or WeightedAverageCosting */
+					/ *We have stock item and a purchase price variance need to see whether we are using Standard or WeightedAverageCosting * /
 
-					if ($_SESSION['WeightedAverageCosting'] == 1) { /*Weighted Average costing */
+					if ($_SESSION['WeightedAverageCosting'] == 1) { / *Weighted Average costing * /
 
-						/* First off figure out the new weighted average cost Need the following data:
+						/ * First off figure out the new weighted average cost Need the following data:
 						- How many in stock now
 						- The quantity being invoiced here - $EnteredGRN->This_QuantityInv
-						- The cost of these items - $EnteredGRN->ChgPrice  / $_SESSION['SuppTrans']->ExRate */
+						- The cost of these items - $EnteredGRN->ChgPrice  / $_SESSION['SuppTrans']->ExRate * /
 
 						$TotalQuantityOnHand = GetQuantityOnHand($EnteredGRN->ItemCode, 'ALL');
 
-						/*The cost adjustment is the price variance / the total quantity in stock
+						/ *The cost adjustment is the price variance / the total quantity in stock
 						But that is only provided that the total quantity in stock is greater than the quantity charged on this invoice
 
-						If the quantity on hand is less the amount charged on this invoice then some must have been sold and the price variance on these must be written off to price variances*/
+						If the quantity on hand is less the amount charged on this invoice then some must have been sold and the price variance on these must be written off to price variances* /
 
 						$WriteOffToVariances = 0;
 
 						if ($EnteredGRN->This_QuantityInv > $TotalQuantityOnHand) {
 
-							/*So we need to write off some of the variance to variances and only the balance of the quantity in stock to go to stock value */
+							/ *So we need to write off some of the variance to variances and only the balance of the quantity in stock to go to stock value * /
 
-							/*if the TotalQuantityOnHand is negative then this variance to write off is inflated by the negative quantity - which makes sense */
+							/ *if the TotalQuantityOnHand is negative then this variance to write off is inflated by the negative quantity - which makes sense * /
 
 							$WriteOffToVariances = ($EnteredGRN->This_QuantityInv - $TotalQuantityOnHand) * (($EnteredGRN->ChgPrice / $_SESSION['SuppTrans']->ExRate) - $EnteredGRN->StdCostUnit);
 
@@ -668,7 +677,7 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 						//	$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added for the price variance of the stock item because');
 							$Result = api_DB_query($SQL,'', '', true);
 						} // end if the quantity being invoiced here is greater than the current stock on hand
-						/*Now post any remaining price variance to stock rather than price variances */
+						/ *Now post any remaining price variance to stock rather than price variances * /
 
 						$SQL = "INSERT INTO gltrans (type,
 													typeno,
@@ -709,12 +718,12 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 					}
 				}
 				else {
-					/* its a nominal purchase order item that is not on a shipment so post the whole lot to the GLCode specified in the order, the purchase price var is actually the diff between the
+					/ * its a nominal purchase order item that is not on a shipment so post the whole lot to the GLCode specified in the order, the purchase price var is actually the diff between the
 					order price and the actual invoice price since the std cost was made equal to the order price in local currency at the time
-					the goods were received */
+					the goods were received * /
 					$GLCode = $EnteredGRN->GLCode; //by default
 					if ($EnteredGRN->AssetID != 0) { //then it is an asset
-						/*Need to get the asset details  for posting */
+						/ *Need to get the asset details  for posting * /
 						$Result = DB_query("SELECT costact
 											FROM fixedassets INNER JOIN fixedassetcategories
 											ON fixedassets.assetcategoryid= fixedassetcategories.categoryid
@@ -746,7 +755,7 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 
 			}
 			else {
-				/*then its a purchase order item on a shipment - whole charge amount to GRN suspense pending closure of the shipment when the variance is calculated and the GRN act cleared up for the shipment */
+				/ *then its a purchase order item on a shipment - whole charge amount to GRN suspense pending closure of the shipment when the variance is calculated and the GRN act cleared up for the shipment * /
 				$SQL = "INSERT INTO gltrans (type,
 										typeno,
 										trandate,
@@ -766,10 +775,10 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 					$Result = api_DB_query($SQL,'', '', true);
 				}
 				$LocalTotal += ($EnteredGRN->ChgPrice * $EnteredGRN->This_QuantityInv) / $_SESSION['SuppTrans']->ExRate;
-			} /* end of GRN postings */
+			} / * end of GRN postings * /
 
 			foreach ($Taxes as $Tax) {
-				/* Now the TAX account */
+				/ * Now the TAX account * /
 				if ($Tax->TaxOvAmount <> 0) {
 					$SQL = "INSERT INTO gltrans (type,
 												typeno,
@@ -790,8 +799,8 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 					$Result = api_DB_query($SQL,'', '', true);
 				}
 
-			} /*end of loop to post the tax */
-			/* Now the control account */
+			} / *end of loop to post the tax * /
+			/ * Now the control account * /
 
 			$SQL = "INSERT INTO gltrans (type,
 								typeno,
@@ -812,9 +821,9 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 				$Result = api_DB_query($SQL,'', '', true);
 
 				EnsureGLEntriesBalance(20, $InvoiceNo);
-			} /*Thats the end of the GL postings */
+			} / *Thats the end of the GL postings * /
 
-			/*Now insert the invoice into the SuppTrans table*/
+			/ *Now insert the invoice into the SuppTrans table* /
 
 			$SQL = "INSERT INTO supptrans (transno,
 								type,
@@ -844,7 +853,7 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 			$Result = api_DB_query($SQL,'', '', true);
 			$SuppTransID = DB_Last_Insert_ID('supptrans', 'id');
 
-			/* Insert the tax totals for each tax authority where tax was charged on the invoice */
+			/ * Insert the tax totals for each tax authority where tax was charged on the invoice * /
 			foreach ($Taxes AS $TaxTotals) {
 
 				$SQL = "INSERT INTO supptranstaxes (supptransid,
@@ -859,7 +868,7 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 				$Result = api_DB_query($SQL,'', '', true);
 			}
 
-		/* Now update the GRN and PurchOrderDetails records for amounts invoiced  - can't use the other loop through the GRNs as this was only where the GL link to credtors is active */
+		/ * Now update the GRN and PurchOrderDetails records for amounts invoiced  - can't use the other loop through the GRNs as this was only where the GL link to credtors is active * /
 
 		foreach ($GRNs as $EnteredGRN) {
 
@@ -885,12 +894,12 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 
 			$SQL = "INSERT INTO suppinvstogrn VALUES ('" . $InvoiceNo . "',
 									'" . $EnteredGRN->GRNNo . "')";
-			/*$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The invoice could not be mapped to the
-					goods received record because'); */
+			/ *$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The invoice could not be mapped to the
+					goods received record because'); * /
 			$Result = api_DB_query($SQL,'', '', true);
 
 			if (mb_strlen($EnteredGRN->ShiptRef) > 0 AND $EnteredGRN->ShiptRef != '0') {
-				/* insert the shipment charge records */
+				/ * insert the shipment charge records * /
 				$SQL = "INSERT INTO shipmentcharges (shiptref,
 											transtype,
 											transno,
@@ -908,26 +917,26 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 
 			} //end of adding GRN shipment charges
 			else {
-				/*so its not a GRN shipment item its a plain old stock item */
+				/ *so its not a GRN shipment item its a plain old stock item * /
 
-				if ($PurchPriceVar != 0) { /* don't bother with any of this lot if there is no difference ! */
+				if ($PurchPriceVar != 0) { / * don't bother with any of this lot if there is no difference ! * /
 
-					if (mb_strlen($EnteredGRN->ItemCode) > 0 OR $EnteredGRN->ItemCode != '') { /*so it is a stock item */
+					if (mb_strlen($EnteredGRN->ItemCode) > 0 OR $EnteredGRN->ItemCode != '') { / *so it is a stock item * /
 
-				/*We need to:
+				/ *We need to:
 					*
 					* a) update the stockmove for the delivery to reflect the actual cost of the delivery
 					*
 					* b) If a WeightedAverageCosting system and the stock quantity on hand now is negative then the cost that has gone to sales analysis and the cost of sales stock movement records will have been incorrect ... attempt to fix it retrospectively
-				*/
-				/*Get the location that the stock was booked into */
+				* /
+				/ *Get the location that the stock was booked into * /
 				$Result = api_DB_query("SELECT intostocklocation
 									FROM purchorders
 									WHERE orderno='" . $EnteredGRN->PONo . "'");
 				$LocRow = DB_fetch_array($Result);
 				$LocCode = $LocRow['intostocklocation'];
 
-				/* First update the stockmoves delivery cost */
+				/ * First update the stockmoves delivery cost * /
 			//	$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The stock movement record for the delivery could not have the cost updated to the actual cost');
 				$SQL = "UPDATE stockmoves SET price = '" . $ActualCost . "'
 									WHERE stockid='" . $EnteredGRN->ItemCode . "'
@@ -938,26 +947,26 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 				$Result = api_DB_query($SQL,'', '', true);
 
 				if ($WeightedAverageCosting == 1) {
-					/*
+					/ *
 						* 	How many in stock now?
 						*  The quantity being invoiced here - $EnteredGRN->This_QuantityInv
 						*  If the quantity in stock now is less than the quantity being invoiced
 						*  here then some items sold will not have had this cost factored in
 						* The cost of these items = $ActualCost
-					*/
+					* /
 
 					$TotalQuantityOnHand = GetQuantityOnHand($EnteredGRN->ItemCode, 'ALL');
 
-					/* If the quantity on hand is less the quantity charged on this invoice then some must have been sold and the price variance should be reflected in the cost of sales*/
+					/ * If the quantity on hand is less the quantity charged on this invoice then some must have been sold and the price variance should be reflected in the cost of sales* /
 
 					if ($EnteredGRN->This_QuantityInv > $TotalQuantityOnHand) {
 
-						/* The variance to the extent of the quantity invoiced should also be written off against the sales analysis cost - as sales analysis would have been created using the cost at the time the sale was made... this was incorrect as hind-sight has shown here. However, how to determine when these were last sold? To update the sales analysis cost. Work through the last 6 months sales analysis from the latest period in which this invoice is being posted and prior.
+						/ * The variance to the extent of the quantity invoiced should also be written off against the sales analysis cost - as sales analysis would have been created using the cost at the time the sale was made... this was incorrect as hind-sight has shown here. However, how to determine when these were last sold? To update the sales analysis cost. Work through the last 6 months sales analysis from the latest period in which this invoice is being posted and prior.
 
 						The assumption here is that the goods have been sold prior to the purchase invoice  being entered so it is necessary to back track on the sales analysis cost.
 						* Note that this will mean that posting to GL COGS will not agree to the cost of sales from the sales analysis
 						* Of course the price variances will need to be included in COGS as well
-						* */
+						* * /
 
 						$QuantityVarianceAllocated = $EnteredGRN->This_QuantityInv;
 						$CostVarPerUnit = $ActualCost - $EnteredGRN->StdCostUnit;
@@ -1003,16 +1012,16 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 							} //end if there were sales in that period
 							$PeriodAllocated--; //decrement the period
 							if ($PeriodNo - $PeriodAllocated > 6) {
-								/*if more than 6 months ago when sales were made then forget it */
+								/ *if more than 6 months ago when sales were made then forget it * /
 								break;
 							}
-						} /*end loop around different periods to see which sales analysis records to update */
+						} / *end loop around different periods to see which sales analysis records to update * /
 
-						/*now we need to work back through the sales stockmoves up to the quantity on this purchase invoice to update costs
+						/ *now we need to work back through the sales stockmoves up to the quantity on this purchase invoice to update costs
 							* Only go back up to 6 months looking for stockmoves and
 							* Only in the stock location where the purchase order was received
 							* into - if the stock was transferred to another location then
-							* we cannot adjust for this */
+							* we cannot adjust for this * /
 						$Result = DB_query("SELECT stkmoveno,
 													type,
 													qty,
@@ -1045,11 +1054,11 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 							$QuantityVarianceAllocated += $StkMoveRow['qty'];
 						}
 					} // end if the quantity being invoiced here is greater than the current stock on hand
-					/*Now to update the stock cost with the new weighted average */
+					/ *Now to update the stock cost with the new weighted average * /
 
-					/*Need to consider what to do if the cost has been changed manually between receiving the stock and entering the invoice - this code assumes there has been no cost updates made manually and all the price variance is posted to stock.
+					/ *Need to consider what to do if the cost has been changed manually between receiving the stock and entering the invoice - this code assumes there has been no cost updates made manually and all the price variance is posted to stock.
 
-					A nicety or important?? */
+					A nicety or important?? * /
 
 					//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The cost could not be updated because');
 
@@ -1064,20 +1073,20 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 						$Result = DB_query($SQL, $ErrMsg, '', true);
 					}
 					else {
-						/* if stock is negative then update the cost to this cost */
+						/ * if stock is negative then update the cost to this cost * /
 						$SQL = "UPDATE stockmaster
 								SET lastcost=materialcost+overheadcost+labourcost,
 									materialcost='" . $ActualCost . "'
 											WHERE stockid='" . $EnteredGRN->ItemCode . "'";
 									$Result = DB_query($SQL, $ErrMsg, '', true);
 								}
-							} /* End if it is weighted average costing we are working with */
-						} /*Its a stock item */
-					} /* There was a price variance */
+							} / * End if it is weighted average costing we are working with * /
+						} / *Its a stock item * /
+					} / * There was a price variance * /
 				}
 				if ($EnteredGRN->AssetID != 0) { //then it is an asset
 					if ($PurchPriceVar != 0) {
-						/*Add the fixed asset trans for the difference in the cost */
+						/ *Add the fixed asset trans for the difference in the cost * /
 						$SQL = "INSERT INTO fixedassettrans (assetid,
 												transtype,
 												transno,
@@ -1097,7 +1106,7 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 						//$ErrMsg = __('CRITICAL ERROR! NOTE DOWN THIS ERROR AND SEEK ASSISTANCE The fixed asset transaction could not be inserted because');
 						$Result = DB_query($SQL, $ErrMsg, '', true);
 
-						/*Now update the asset cost in fixedassets table */
+						/ *Now update the asset cost in fixedassets table * /
 						$SQL = "UPDATE fixedassets SET cost = cost + " . ($PurchPriceVar) . "
 								WHERE assetid = '" . $EnteredGRN->AssetID . "'";
 
@@ -1107,9 +1116,9 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 
 				} //the item was an asset received on a purchase order
 
-			} /* end of the GRN loop to do the updates for the quantity of order items the supplier has invoiced */
+			} / * end of the GRN loop to do the updates for the quantity of order items the supplier has invoiced * /
 
-			/*Add shipment charges records as necessary */
+			/ *Add shipment charges records as necessary * /
 			foreach ($Shipts as $ShiptChg) {
 
 				$SQL = "INSERT INTO shipmentcharges (shiptref,
@@ -1126,7 +1135,7 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 				$Result = DB_query($SQL, $ErrMsg, '', true);
 
 			}
-			/*Add contract charges records as necessary */
+			/ *Add contract charges records as necessary * /
 
 			foreach ($Contracts as $Contract) {
 
@@ -1155,13 +1164,13 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 
 			foreach ($Assets as $AssetAddition) {
 
-				/*Asset additions need to have
+				/ *Asset additions need to have
 				* 	1. A fixed asset transaction inserted for the cost
 				* 	2. A general ledger transaction to fixed asset cost account if creditors linked
 				* 	3. The fixedasset table cost updated by the addition
-				*/
+				* /
 
-				/* First the fixed asset transaction */
+				/ * First the fixed asset transaction * /
 				$SQL = "INSERT INTO fixedassettrans (assetid,
 										transtype,
 										transno,
@@ -1181,7 +1190,7 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 			//$ErrMsg = __('CRITICAL ERROR! NOTE DOWN THIS ERROR AND SEEK ASSISTANCE The fixed asset transaction could not be inserted because');
 			$Result = DB_query($SQL, $ErrMsg, '', true);
 
-			/*Now update the asset cost in fixedassets table */
+			/ *Now update the asset cost in fixedassets table * /
 			$Result = DB_query("SELECT datepurchased
 								FROM fixedassets
 								WHERE assetid='" . $AssetAddition->AssetID . "'");
@@ -1198,18 +1207,21 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 			DB_Txn_Commit();
 			$Errors[0] = InvoiceProcessedSuccessfully;
 			return $Errors;
-			/*
-			unset($_SESSION['SuppTrans']->GRNs);
-			unset($_SESSION['SuppTrans']->Shipts);
-			unset($_SESSION['SuppTrans']->GLCodes);
-			unset($_SESSION['SuppTrans']->Contracts);
-			unset($_SESSION['SuppTrans']);
-			*/
+* /
+
+			// unset($_SESSION['SuppTrans']->GRNs);
+			// unset($_SESSION['SuppTrans']->Shipts);
+			// unset($_SESSION['SuppTrans']->GLCodes);
+			// unset($_SESSION['SuppTrans']->Contracts);
+			// unset($_SESSION['SuppTrans']);
+
 		}
 	}
 
 
+/ * SERVER AND SECURITY NOTES
 	About JICTS server
+
 
 	check file log size:
 	/var/log/apache2
@@ -1256,7 +1268,7 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
 
 	==== UPDATED -SSL.CONFIG ======
 	# Don't allow direct access to OJS internals
-	<DirectoryMatch "^.*/(classes|lib|controllers|cache)/">
+	<DirectoryMatch "^.* /(classes|lib|controllers|cache)/">
 		Require all denied
 	</DirectoryMatch>
 
@@ -1304,7 +1316,7 @@ SELECT debtortrans.trandate, debtortrans.ovamount, debtortrans.ovdiscount, debto
         </FilesMatch>
 
 		# Don't allow direct access to OJS internals
-		<DirectoryMatch "^.*/(classes|lib|controllers|cache)/">
+		<DirectoryMatch "^.* /(classes|lib|controllers|cache)/">
 			Require all denied
 		</DirectoryMatch>
 
@@ -1337,8 +1349,10 @@ SSLEngine on
 #SSLCertificateKeyFile /etc/letsencrypt/live/jgat.udsm.ac.tz-0001/privkey.pem
 
 ========== END =================
+* /
 
-/** Create a customer invoice in webERP. This function will bypass the
+
+/ ** Create a customer invoice in webERP. This function will bypass the
  * normal procedure in webERP for creating a sales order first, and then
  * delivering it.
 
@@ -1346,7 +1360,7 @@ SSLEngine on
  * to sales analysis records - no cost of sales entries in GL
 
  ************ USE ONLY WITH CAUTION********************
-*/
+* /
 function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
     $Errors = array();
 	$db = db($user, $password);
@@ -1355,7 +1369,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 		return $Errors;
 	}
 
-	/********************** expected parameters ****************************************  
+	/ ********************** expected parameters ****************************************  
 	 * (1) InvoiceType (i. Purchase Order
 	 * 					ii. Shipments
 	 * 					iii. General Ledger (GL)
@@ -1378,7 +1392,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 	 *                         viii. terms
 	 *                        )
 	 *********************** expected parameters ****************************************  
-	*/
+	* /
 	foreach ($Header as $key => $Value) {
 		$HeaderData[$key] = DB_escape_string($Value);
 	}
@@ -1386,7 +1400,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 	return $HeaderData['supplierid'];
 	
 	$Errors=VerifySupplierNo($HeaderData['supplierid'], sizeof($Errors), $Errors);
-	/*Now retrieve supplier information - name, currency, default ex rate, terms, tax rate etc */
+	/ *Now retrieve supplier information - name, currency, default ex rate, terms, tax rate etc * /
 	$SQL = "SELECT suppliers.suppname,
 				suppliers.supplierid,
 				paymentterms.terms,
@@ -1423,15 +1437,15 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 		}
 	
 	//=========end of show==========
-	/*
+	/ *
 	if (DB_num_rows($Result)==0){
 		$Errors[0] = SupplierCannotbeRetrieved;
 		return $Errors;
 	}
-		\*/
+		\* /
 	$MyRow = DB_fetch_array($Result);
 	
-	/* listdown all the values from the submitted Invoice Header */
+	/ * listdown all the values from the submitted Invoice Header * /
 	$invoicetype = $HeaderData['invoicetype'];
 	$SupplierID = $HeaderData['supplierid'];
 	$InvoiceNo = $HeaderData['invoiceno'];
@@ -1439,7 +1453,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 	$Narrative = $HeaderData['narrative'];
 	$TotalInvoice = $HeaderData['totalinvoice'];
 	$TotalTax = $HeaderData['totaltax'];
-	/* listdown all the values from the retrieved Supplier Information */
+	/ * listdown all the values from the retrieved Supplier Information * /
 	//terms
 	if ($MyRow['daysbeforedue'] == 0) {
 		$Terms = '1' . $MyRow['dayinfollowingmonth'];
@@ -1458,7 +1472,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
     if($InvoiceDetails['InvoiceType']=='General Ledger'){
 		//set GLLink_creditors to true
 	   $GLLink_Creditors = 1;
-			/*Loop through the Invoice Header array to retrieve the values */
+			/ *Loop through the Invoice Header array to retrieve the values * /
 				foreach ($LineDetails as $LineData){
 					$InputError = false;
 					//validate the values
@@ -1479,12 +1493,12 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 						$InputError = true;
 						$Errors[0] = AmountNotNumeric;
 					} 
-					/*
+					/ *
 					if($InputError==false){
 						$TotalGLValue += $EnteredGLCode->Amount;
 						$TaxTotal += $EnteredGLCode->Tax;
 					}
-						*/
+						* /
 				}
 				if ($TaxTotal+$TotalInvoice < 0) {
 					$InputError = true;
@@ -1530,7 +1544,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 					$Result = DB_query($SQL, $ErrMsg, '', true);
 
 					$MyRow = DB_fetch_row($Result);
-					if ($MyRow[0] == 1) { /*Transaction reference already entered */
+					if ($MyRow[0] == 1) { / *Transaction reference already entered * /
 						$Errors[0]=DuplicateInvoiceNo;
 						return $Errors;
 					}
@@ -1538,22 +1552,22 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 					
 		if ($InputError == false) {
 
-			/* SQL to process the postings for purchase invoice */
-			/*Start an SQL transaction */
+			/ * SQL to process the postings for purchase invoice * /
+			/ *Start an SQL transaction * /
 
 			//DB_Txn_Begin();
 
-			/*Get the next transaction number for internal purposes and the period to post GL transactions in based on the invoice date*/
+			/ *Get the next transaction number for internal purposes and the period to post GL transactions in based on the invoice date* /
 			$InvoiceNo = GetNextTransNo(20);
 			return $InvoiceNo;
 		//	$PeriodNo = GetPeriod($TransDate);
 			//$SQLInvoiceDate = FormatDateForSQL($TransDate);
 
 			if ($GLLink_Creditors == 1) {
-				/*Loop through the GL Entries and create a debit posting for each of the accounts entered */
+				/ *Loop through the GL Entries and create a debit posting for each of the accounts entered * /
 				$LocalTotal = 0;
 
-				/*the postings here are a little tricky, the logic goes like this:
+				/ *the postings here are a little tricky, the logic goes like this:
 				if its a shipment entry then the cost must go against the GRN suspense account defined in the company record
 
 				if its a general ledger amount it goes straight to the account specified
@@ -1577,12 +1591,12 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 
 				Or if its not a stock item
 				but a nominal item then the GL account in the orignal order is used for the price variance account.
-				*/
+				* /
 
 				foreach ($LineDetails as $EnteredGLCode) {
 
-				/*GL Items are straight forward - just do the debit postings to the GL accounts specified -
-				the credit is to creditors control act  done later for the total invoice value + tax*/
+				/ *GL Items are straight forward - just do the debit postings to the GL accounts specified -
+				the credit is to creditors control act  done later for the total invoice value + tax* /
 				//skamnev added tag
 				$SQL = "INSERT INTO gltrans (type,
 										typeno,
@@ -1606,8 +1620,8 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 
 		foreach ($Shipts as $ShiptChg) {
 
-			/*shipment postings are also straight forward - just do the debit postings to the GRN suspense account
-			these entries are reversed from the GRN suspense when the shipment is closed*/
+			/ *shipment postings are also straight forward - just do the debit postings to the GRN suspense account
+			these entries are reversed from the GRN suspense when the shipment is closed* /
 
 			$SQL = "INSERT INTO gltrans (type,
 										typeno,
@@ -1629,7 +1643,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 		}
 
 		foreach ($Assets as $AssetAddition) {
-			/* only the GL entries if the creditors/GL integration is enabled */
+			/ * only the GL entries if the creditors/GL integration is enabled * /
 			$SQL = "INSERT INTO gltrans (type,
 										typeno,
 										trandate,
@@ -1651,9 +1665,9 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 
 		foreach ($Contracts as $Contract) {
 
-			/*contract postings need to get the WIP from the contract items stock category record
+			/ *contract postings need to get the WIP from the contract items stock category record
 			*  debit postings to this WIP account
-			* the WIP account is tidied up when the contract is closed*/
+			* the WIP account is tidied up when the contract is closed* /
 			$Result = DB_query("SELECT wipact FROM stockcategory
 								INNER JOIN stockmaster ON
 								stockcategory.categoryid=stockmaster.categoryid
@@ -1682,11 +1696,11 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 		foreach ($GRNs as $EnteredGRN) {
 
 			if (mb_strlen($EnteredGRN->ShiptRef) == 0 OR $EnteredGRN->ShiptRef == 0) {
-				/*so its not a GRN shipment item
+				/ *so its not a GRN shipment item
 				enter the GL entry to reverse the GRN suspense entry created on delivery
-				* at standard cost/or weighted average cost used on delivery */
+				* at standard cost/or weighted average cost used on delivery * /
 
-				/*Always do this - for weighted average costing and also for standard costing */
+				/ *Always do this - for weighted average costing and also for standard costing * /
 
 				if ($EnteredGRN->StdCostUnit * ($EnteredGRN->This_QuantityInv) != 0) {
 					$SQL = "INSERT INTO gltrans (type,
@@ -1710,39 +1724,39 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 
 			$PurchPriceVar = $EnteredGRN->This_QuantityInv * (($EnteredGRN->ChgPrice / $ExRate) - $EnteredGRN->StdCostUnit);
 
-			/*Yes.... but where to post this difference to - if its a stock item the variance account must be retrieved from the stock category record
+			/ *Yes.... but where to post this difference to - if its a stock item the variance account must be retrieved from the stock category record
 			if its a nominal purchase order item with no stock item then there will be no standard cost and it will all be variance so post it to the
-			account specified in the purchase order detail record */
+			account specified in the purchase order detail record * /
 
-			if ($PurchPriceVar != 0) { /* don't bother with this lot if there is no difference ! */
-				if (mb_strlen($EnteredGRN->ItemCode) > 0 OR $EnteredGRN->ItemCode != '') { /*so it is a stock item */
+			if ($PurchPriceVar != 0) { / * don't bother with this lot if there is no difference ! * /
+				if (mb_strlen($EnteredGRN->ItemCode) > 0 OR $EnteredGRN->ItemCode != '') { / *so it is a stock item * /
 
-					/*need to get the stock category record for this stock item - this is function in SQL_CommonFunctions.php */
+					/ *need to get the stock category record for this stock item - this is function in SQL_CommonFunctions.php * /
 					$StockGLCode = GetStockGLCode($EnteredGRN->ItemCode);
 
-					/*We have stock item and a purchase price variance need to see whether we are using Standard or WeightedAverageCosting */
+					/ *We have stock item and a purchase price variance need to see whether we are using Standard or WeightedAverageCosting * /
 
-					if ($_SESSION['WeightedAverageCosting'] == 1) { /*Weighted Average costing */
+					if ($_SESSION['WeightedAverageCosting'] == 1) { / *Weighted Average costing * /
 
-						/* First off figure out the new weighted average cost Need the following data:
+						/ * First off figure out the new weighted average cost Need the following data:
 						- How many in stock now
 						- The quantity being invoiced here - $EnteredGRN->This_QuantityInv
-						- The cost of these items - $EnteredGRN->ChgPrice  / $_SESSION['SuppTrans']->ExRate */
+						- The cost of these items - $EnteredGRN->ChgPrice  / $_SESSION['SuppTrans']->ExRate * /
 
 						$TotalQuantityOnHand = GetQuantityOnHand($EnteredGRN->ItemCode, 'ALL');
 
-						/*The cost adjustment is the price variance / the total quantity in stock
+						/ *The cost adjustment is the price variance / the total quantity in stock
 						But that is only provided that the total quantity in stock is greater than the quantity charged on this invoice
 
-						If the quantity on hand is less the amount charged on this invoice then some must have been sold and the price variance on these must be written off to price variances*/
+						If the quantity on hand is less the amount charged on this invoice then some must have been sold and the price variance on these must be written off to price variances* /
 
 						$WriteOffToVariances = 0;
 
 						if ($EnteredGRN->This_QuantityInv > $TotalQuantityOnHand) {
 
-							/*So we need to write off some of the variance to variances and only the balance of the quantity in stock to go to stock value */
+							/ *So we need to write off some of the variance to variances and only the balance of the quantity in stock to go to stock value * /
 
-							/*if the TotalQuantityOnHand is negative then this variance to write off is inflated by the negative quantity - which makes sense */
+							/ *if the TotalQuantityOnHand is negative then this variance to write off is inflated by the negative quantity - which makes sense * /
 
 							$WriteOffToVariances = ($EnteredGRN->This_QuantityInv - $TotalQuantityOnHand) * (($EnteredGRN->ChgPrice / $_SESSION['SuppTrans']->ExRate) - $EnteredGRN->StdCostUnit);
 
@@ -1763,7 +1777,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 						//	$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The general ledger transaction could not be added for the price variance of the stock item because');
 							$Result = api_DB_query($SQL,'', '', true);
 						} // end if the quantity being invoiced here is greater than the current stock on hand
-						/*Now post any remaining price variance to stock rather than price variances */
+						/ *Now post any remaining price variance to stock rather than price variances * /
 
 						$SQL = "INSERT INTO gltrans (type,
 													typeno,
@@ -1804,12 +1818,12 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 					}
 				}
 				else {
-					/* its a nominal purchase order item that is not on a shipment so post the whole lot to the GLCode specified in the order, the purchase price var is actually the diff between the
+					/ * its a nominal purchase order item that is not on a shipment so post the whole lot to the GLCode specified in the order, the purchase price var is actually the diff between the
 					order price and the actual invoice price since the std cost was made equal to the order price in local currency at the time
-					the goods were received */
+					the goods were received * /
 					$GLCode = $EnteredGRN->GLCode; //by default
 					if ($EnteredGRN->AssetID != 0) { //then it is an asset
-						/*Need to get the asset details  for posting */
+						/ *Need to get the asset details  for posting * /
 						$Result = DB_query("SELECT costact
 											FROM fixedassets INNER JOIN fixedassetcategories
 											ON fixedassets.assetcategoryid= fixedassetcategories.categoryid
@@ -1841,7 +1855,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 
 			}
 			else {
-				/*then its a purchase order item on a shipment - whole charge amount to GRN suspense pending closure of the shipment when the variance is calculated and the GRN act cleared up for the shipment */
+				/ *then its a purchase order item on a shipment - whole charge amount to GRN suspense pending closure of the shipment when the variance is calculated and the GRN act cleared up for the shipment * /
 				$SQL = "INSERT INTO gltrans (type,
 										typeno,
 										trandate,
@@ -1861,10 +1875,10 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 					$Result = api_DB_query($SQL,'', '', true);
 				}
 				$LocalTotal += ($EnteredGRN->ChgPrice * $EnteredGRN->This_QuantityInv) / $_SESSION['SuppTrans']->ExRate;
-			} /* end of GRN postings */
+			} / * end of GRN postings * /
 
 			foreach ($Taxes as $Tax) {
-				/* Now the TAX account */
+				/ * Now the TAX account * /
 				if ($Tax->TaxOvAmount <> 0) {
 					$SQL = "INSERT INTO gltrans (type,
 												typeno,
@@ -1885,8 +1899,8 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 					$Result = api_DB_query($SQL,'', '', true);
 				}
 
-			} /*end of loop to post the tax */
-			/* Now the control account */
+			} / *end of loop to post the tax * /
+			/ * Now the control account * /
 
 			$SQL = "INSERT INTO gltrans (type,
 								typeno,
@@ -1907,9 +1921,9 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 				$Result = api_DB_query($SQL,'', '', true);
 
 				EnsureGLEntriesBalance(20, $InvoiceNo);
-			} /*Thats the end of the GL postings */
+			} / *Thats the end of the GL postings * /
 
-			/*Now insert the invoice into the SuppTrans table*/
+			/ *Now insert the invoice into the SuppTrans table* /
 
 			$SQL = "INSERT INTO supptrans (transno,
 								type,
@@ -1939,7 +1953,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 			$Result = api_DB_query($SQL,'', '', true);
 			$SuppTransID = DB_Last_Insert_ID('supptrans', 'id');
 
-			/* Insert the tax totals for each tax authority where tax was charged on the invoice */
+			/ * Insert the tax totals for each tax authority where tax was charged on the invoice * /
 			foreach ($Taxes AS $TaxTotals) {
 
 				$SQL = "INSERT INTO supptranstaxes (supptransid,
@@ -1954,7 +1968,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 				$Result = api_DB_query($SQL,'', '', true);
 			}
 
-		/* Now update the GRN and PurchOrderDetails records for amounts invoiced  - can't use the other loop through the GRNs as this was only where the GL link to credtors is active */
+		/ * Now update the GRN and PurchOrderDetails records for amounts invoiced  - can't use the other loop through the GRNs as this was only where the GL link to credtors is active * /
 
 		foreach ($GRNs as $EnteredGRN) {
 
@@ -1980,12 +1994,12 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 
 			$SQL = "INSERT INTO suppinvstogrn VALUES ('" . $InvoiceNo . "',
 									'" . $EnteredGRN->GRNNo . "')";
-			/*$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The invoice could not be mapped to the
-					goods received record because'); */
+			/ *$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The invoice could not be mapped to the
+					goods received record because'); * /
 			$Result = api_DB_query($SQL,'', '', true);
 
 			if (mb_strlen($EnteredGRN->ShiptRef) > 0 AND $EnteredGRN->ShiptRef != '0') {
-				/* insert the shipment charge records */
+				/ * insert the shipment charge records * /
 				$SQL = "INSERT INTO shipmentcharges (shiptref,
 											transtype,
 											transno,
@@ -2003,26 +2017,26 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 
 			} //end of adding GRN shipment charges
 			else {
-				/*so its not a GRN shipment item its a plain old stock item */
+				/ *so its not a GRN shipment item its a plain old stock item * /
 
-				if ($PurchPriceVar != 0) { /* don't bother with any of this lot if there is no difference ! */
+				if ($PurchPriceVar != 0) { / * don't bother with any of this lot if there is no difference ! * /
 
-					if (mb_strlen($EnteredGRN->ItemCode) > 0 OR $EnteredGRN->ItemCode != '') { /*so it is a stock item */
+					if (mb_strlen($EnteredGRN->ItemCode) > 0 OR $EnteredGRN->ItemCode != '') { / *so it is a stock item * /
 
-				/*We need to:
+				/ *We need to:
 					*
 					* a) update the stockmove for the delivery to reflect the actual cost of the delivery
 					*
 					* b) If a WeightedAverageCosting system and the stock quantity on hand now is negative then the cost that has gone to sales analysis and the cost of sales stock movement records will have been incorrect ... attempt to fix it retrospectively
-				*/
-				/*Get the location that the stock was booked into */
+				* /
+				/ *Get the location that the stock was booked into * /
 				$Result = api_DB_query("SELECT intostocklocation
 									FROM purchorders
 									WHERE orderno='" . $EnteredGRN->PONo . "'");
 				$LocRow = DB_fetch_array($Result);
 				$LocCode = $LocRow['intostocklocation'];
 
-				/* First update the stockmoves delivery cost */
+				/ * First update the stockmoves delivery cost * /
 			//	$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The stock movement record for the delivery could not have the cost updated to the actual cost');
 				$SQL = "UPDATE stockmoves SET price = '" . $ActualCost . "'
 									WHERE stockid='" . $EnteredGRN->ItemCode . "'
@@ -2033,26 +2047,26 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 				$Result = api_DB_query($SQL,'', '', true);
 
 				if ($WeightedAverageCosting == 1) {
-					/*
+					/ *
 						* 	How many in stock now?
 						*  The quantity being invoiced here - $EnteredGRN->This_QuantityInv
 						*  If the quantity in stock now is less than the quantity being invoiced
 						*  here then some items sold will not have had this cost factored in
 						* The cost of these items = $ActualCost
-					*/
+					* /
 
 					$TotalQuantityOnHand = GetQuantityOnHand($EnteredGRN->ItemCode, 'ALL');
 
-					/* If the quantity on hand is less the quantity charged on this invoice then some must have been sold and the price variance should be reflected in the cost of sales*/
+					/ * If the quantity on hand is less the quantity charged on this invoice then some must have been sold and the price variance should be reflected in the cost of sales* /
 
 					if ($EnteredGRN->This_QuantityInv > $TotalQuantityOnHand) {
 
-						/* The variance to the extent of the quantity invoiced should also be written off against the sales analysis cost - as sales analysis would have been created using the cost at the time the sale was made... this was incorrect as hind-sight has shown here. However, how to determine when these were last sold? To update the sales analysis cost. Work through the last 6 months sales analysis from the latest period in which this invoice is being posted and prior.
+						/ * The variance to the extent of the quantity invoiced should also be written off against the sales analysis cost - as sales analysis would have been created using the cost at the time the sale was made... this was incorrect as hind-sight has shown here. However, how to determine when these were last sold? To update the sales analysis cost. Work through the last 6 months sales analysis from the latest period in which this invoice is being posted and prior.
 
 						The assumption here is that the goods have been sold prior to the purchase invoice  being entered so it is necessary to back track on the sales analysis cost.
 						* Note that this will mean that posting to GL COGS will not agree to the cost of sales from the sales analysis
 						* Of course the price variances will need to be included in COGS as well
-						* */
+						* * /
 
 						$QuantityVarianceAllocated = $EnteredGRN->This_QuantityInv;
 						$CostVarPerUnit = $ActualCost - $EnteredGRN->StdCostUnit;
@@ -2098,16 +2112,16 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 							} //end if there were sales in that period
 							$PeriodAllocated--; //decrement the period
 							if ($PeriodNo - $PeriodAllocated > 6) {
-								/*if more than 6 months ago when sales were made then forget it */
+								/ *if more than 6 months ago when sales were made then forget it * /
 								break;
 							}
-						} /*end loop around different periods to see which sales analysis records to update */
+						} / *end loop around different periods to see which sales analysis records to update * /
 
-						/*now we need to work back through the sales stockmoves up to the quantity on this purchase invoice to update costs
+						/ *now we need to work back through the sales stockmoves up to the quantity on this purchase invoice to update costs
 							* Only go back up to 6 months looking for stockmoves and
 							* Only in the stock location where the purchase order was received
 							* into - if the stock was transferred to another location then
-							* we cannot adjust for this */
+							* we cannot adjust for this * /
 						$Result = DB_query("SELECT stkmoveno,
 													type,
 													qty,
@@ -2140,11 +2154,11 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 							$QuantityVarianceAllocated += $StkMoveRow['qty'];
 						}
 					} // end if the quantity being invoiced here is greater than the current stock on hand
-					/*Now to update the stock cost with the new weighted average */
+					/ *Now to update the stock cost with the new weighted average * /
 
-					/*Need to consider what to do if the cost has been changed manually between receiving the stock and entering the invoice - this code assumes there has been no cost updates made manually and all the price variance is posted to stock.
+					/ *Need to consider what to do if the cost has been changed manually between receiving the stock and entering the invoice - this code assumes there has been no cost updates made manually and all the price variance is posted to stock.
 
-					A nicety or important?? */
+					A nicety or important?? * /
 
 					//$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The cost could not be updated because');
 
@@ -2159,20 +2173,20 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 						$Result = DB_query($SQL, $ErrMsg, '', true);
 					}
 					else {
-						/* if stock is negative then update the cost to this cost */
+						/ * if stock is negative then update the cost to this cost * /
 						$SQL = "UPDATE stockmaster
 								SET lastcost=materialcost+overheadcost+labourcost,
 									materialcost='" . $ActualCost . "'
 											WHERE stockid='" . $EnteredGRN->ItemCode . "'";
 									$Result = DB_query($SQL, $ErrMsg, '', true);
 								}
-							} /* End if it is weighted average costing we are working with */
-						} /*Its a stock item */
-					} /* There was a price variance */
+							} / * End if it is weighted average costing we are working with * /
+						} / *Its a stock item * /
+					} / * There was a price variance * /
 				}
 				if ($EnteredGRN->AssetID != 0) { //then it is an asset
 					if ($PurchPriceVar != 0) {
-						/*Add the fixed asset trans for the difference in the cost */
+						/ *Add the fixed asset trans for the difference in the cost * /
 						$SQL = "INSERT INTO fixedassettrans (assetid,
 												transtype,
 												transno,
@@ -2192,7 +2206,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 						//$ErrMsg = __('CRITICAL ERROR! NOTE DOWN THIS ERROR AND SEEK ASSISTANCE The fixed asset transaction could not be inserted because');
 						$Result = DB_query($SQL, $ErrMsg, '', true);
 
-						/*Now update the asset cost in fixedassets table */
+						/ *Now update the asset cost in fixedassets table * /
 						$SQL = "UPDATE fixedassets SET cost = cost + " . ($PurchPriceVar) . "
 								WHERE assetid = '" . $EnteredGRN->AssetID . "'";
 
@@ -2202,9 +2216,9 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 
 				} //the item was an asset received on a purchase order
 
-			} /* end of the GRN loop to do the updates for the quantity of order items the supplier has invoiced */
+			} / * end of the GRN loop to do the updates for the quantity of order items the supplier has invoiced * /
 
-			/*Add shipment charges records as necessary */
+			/ *Add shipment charges records as necessary * /
 			foreach ($Shipts as $ShiptChg) {
 
 				$SQL = "INSERT INTO shipmentcharges (shiptref,
@@ -2221,7 +2235,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 				$Result = DB_query($SQL, $ErrMsg, '', true);
 
 			}
-			/*Add contract charges records as necessary */
+			/ *Add contract charges records as necessary * /
 
 			foreach ($Contracts as $Contract) {
 
@@ -2250,13 +2264,13 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 
 			foreach ($Assets as $AssetAddition) {
 
-				/*Asset additions need to have
+				/ *Asset additions need to have
 				* 	1. A fixed asset transaction inserted for the cost
 				* 	2. A general ledger transaction to fixed asset cost account if creditors linked
 				* 	3. The fixedasset table cost updated by the addition
-				*/
+				* /
 
-				/* First the fixed asset transaction */
+				/ * First the fixed asset transaction * /
 				$SQL = "INSERT INTO fixedassettrans (assetid,
 										transtype,
 										transno,
@@ -2276,7 +2290,7 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 			//$ErrMsg = __('CRITICAL ERROR! NOTE DOWN THIS ERROR AND SEEK ASSISTANCE The fixed asset transaction could not be inserted because');
 			$Result = DB_query($SQL, $ErrMsg, '', true);
 
-			/*Now update the asset cost in fixedassets table */
+			/ *Now update the asset cost in fixedassets table * /
 			$Result = DB_query("SELECT datepurchased
 								FROM fixedassets
 								WHERE assetid='" . $AssetAddition->AssetID . "'");
@@ -2293,13 +2307,13 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 			DB_Txn_Commit();
 			$Errors[0] = InvoiceProcessedSuccessfully;
 			return $Errors;
-			/*
+			/ *
 			unset($_SESSION['SuppTrans']->GRNs);
 			unset($_SESSION['SuppTrans']->Shipts);
 			unset($_SESSION['SuppTrans']->GLCodes);
 			unset($_SESSION['SuppTrans']->Contracts);
 			unset($_SESSION['SuppTrans']);
-			*/
+			* /
 		}
 	}
 
@@ -2385,19 +2399,11 @@ function InsertSupplierInvoice($Header, $LineDetails, $user, $password) {
 
 
 
+/ * FINAL SQL SCRATCHPAD
 						SELECT stockmoves.stockid,
-								stockmaster.description,
-								-stockmoves.qty as quantity,
-								stockmoves.discountpercent,
-								((1 - stockmoves.discountpercent) * stockmoves.price * 1* -stockmoves.qty) AS fxnet,
-								(stockmoves.price * 1) AS fxprice,
-								stockmoves.narrative,
-								stockmaster.controlled,
-								stockmaster.serialised,
-								stockmaster.units,
-								stockmoves.stkmoveno,
-								stockmaster.decimalplaces
-							FROM stockmoves INNER JOIN stockmaster
+...
+* /
+
 							ON stockmoves.stockid = stockmaster.stockid
 							WHERE stockmoves.type=10
 							AND stockmoves.transno='288'
@@ -2506,4 +2512,4 @@ update student_invoice set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2
 
 =====
 
-select * from student where regno='NP5513/0004/2021';
+select * from student where regno='NP5513/0004/2021';*/

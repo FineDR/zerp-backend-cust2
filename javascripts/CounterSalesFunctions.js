@@ -42,6 +42,149 @@ var CounterSales = {
 		this.autofillcashreceived = val;
 	},
 
+    identifier: "",
+    SetIdentifier: function(val) {
+        this.identifier = val;
+    },
+
+    formId: "",
+    SetFormId: function(val) {
+        this.formId = val;
+    },
+
+    // AJAX Cart Actions
+    _ajaxCartAction: function(data) {
+        data.identifier = this.identifier;
+        data.FormID = this.formId;
+        return fetch('CounterSales_Ajax.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                this._refreshCartUI(data);
+                return data;
+            } else {
+                console.error("Cart Action Failed:", data.message);
+                if (data.message) alert(data.message.replace(/<[^>]*>?/gm, ''));
+                throw new Error(data.message);
+            }
+        });
+    },
+
+    AddItem: function(stockid, qty = 1) {
+        return this._ajaxCartAction({ action: 'add', stockid: stockid, qty: qty });
+    },
+
+    RemoveItem: function(lineId) {
+        // Removed confirm() for better POS flow
+        return this._ajaxCartAction({ action: 'remove', line_id: lineId });
+    },
+
+    UpdateQty: function(lineId, qty) {
+        if (qty <= 0) return this.RemoveItem(lineId);
+        return this._ajaxCartAction({ action: 'update_qty', line_id: lineId, qty: qty });
+    },
+
+    UpdateDiscount: function(lineId, discount) {
+        return this._ajaxCartAction({ action: 'update_discount', line_id: lineId, discount: discount });
+    },
+
+    ClearCart: function() {
+        // Removed confirm() for better POS flow
+        return this._ajaxCartAction({ action: 'clear' });
+    },
+
+    _refreshCartUI: function(data) {
+        const cartContainer = document.getElementById('CartItemsContainer');
+        const summarySubtotal = document.getElementById('SummarySubtotal');
+        const summaryTax = document.getElementById('SummaryTax');
+        const taxRow = document.getElementById('TaxRow');
+        const summaryGrandTotal = document.getElementById('SummaryGrandTotal');
+        const totalToPay = document.getElementById('TotalAmountToPay');
+        const cartTabBtn = document.getElementById('TabCart');
+
+        if (cartContainer) {
+            cartContainer.innerHTML = data.cart_html;
+            cartContainer.classList.add('pulse-update');
+            setTimeout(() => cartContainer.classList.remove('pulse-update'), 500);
+        }
+        
+        // Update Subtotal (Net)
+        if (summarySubtotal) {
+            summarySubtotal.innerText = Number(data.cart_total).toLocaleString(undefined, {minimumFractionDigits: this.decimal});
+        }
+
+        // Update Tax Row visibility and values
+        if (taxRow && summaryTax) {
+            if (data.tax_total != 0) {
+                taxRow.style.display = 'flex';
+                summaryTax.innerText = Number(data.tax_total).toLocaleString(undefined, {minimumFractionDigits: this.decimal});
+            } else {
+                taxRow.style.display = 'none';
+            }
+        }
+        
+        // Update Grand Total (Label + Value)
+        if (summaryGrandTotal) {
+            summaryGrandTotal.innerText = data.currency + ' ' + Number(data.grand_total).toLocaleString(undefined, {minimumFractionDigits: this.decimal});
+        }
+        
+        // Update Hidden Total for Payment Logic
+        if (totalToPay) {
+            totalToPay.value = data.grand_total;
+            this.totaldue = data.grand_total; // Update the internal state for change calc
+            this.CalculateTotals();
+        }
+        
+        if (cartTabBtn) {
+            cartTabBtn.innerHTML = `<i class="fas fa-shopping-basket"></i> ${data.item_count}`;
+        }
+    },
+
+    // Unified Search & Barcode
+    HandleUnifiedSearch: function(input) {
+        const term = input.value.trim();
+        if (!term) {
+            this._filterProductGrid("");
+            return;
+        }
+
+        // Check for exact code/barcode match for instant add
+        const matchedCode = this._getMatchedCode(term);
+        if (matchedCode) {
+            this.AddItem(matchedCode).then(() => {
+                input.value = "";
+                this._filterProductGrid("");
+                // Audio/Visual feedback for barcode scan
+                this._vibrate();
+            });
+        } else {
+            // Filter grid results as user types
+            this._filterProductGrid(term);
+        }
+    },
+
+    _filterProductGrid: function(term) {
+        const cards = document.querySelectorAll('.pos-product-card');
+        const lowerTerm = term.toLowerCase();
+        cards.forEach(card => {
+            const name = card.querySelector('.pos-product-name').innerText.toLowerCase();
+            const code = card.getAttribute('data-stockid').toLowerCase();
+            if (name.includes(lowerTerm) || code.includes(lowerTerm)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    },
+
+    _vibrate: function() {
+        if (navigator.vibrate) navigator.vibrate(50);
+    },
+
 	// Core logic: find the matched stock code (case-insensitive) and add to cart table
 	_addItemByCode: function(code)
 	{
@@ -88,24 +231,7 @@ var CounterSales = {
 	// Called by the barcode scanner input (Enter key or Add Item button)
 	AddBarcodeItem: function(barcodeInput)
 	{
-		var code = barcodeInput.value.trim();
-		if (code !== '') {
-			var matchedCode = this._getMatchedCode(code);
-
-			if (matchedCode !== null) {
-				if (!this._incrementExistingCartLine(matchedCode)) {
-					this._addItemByCode(matchedCode);
-					this._submitFormButton("AutoQuickEntrySubmit", true);
-				} else {
-					this._submitFormButton("AutoRecalculateSubmit", true);
-				}
-			} else {
-				alert("Item code not found: " + code);
-			}
-
-			barcodeInput.value = "";
-			barcodeInput.focus();
-		}
+        this.HandleUnifiedSearch(barcodeInput);
 	},
 
 	_getMatchedCode: function(code)
@@ -240,5 +366,212 @@ var CounterSales = {
 			qtyInput.value = 1;
 			qtyInput.form.submit();
 		}
-	}
+	},
+
+	// AJAX Customer Search
+	SearchCustomers: function(term) {
+		var resultsDiv = document.getElementById('CustSearchResults');
+		if (term.length < 2) {
+			resultsDiv.style.display = 'none';
+			return;
+		}
+
+		fetch('CustomerSearch_Ajax.php?term=' + encodeURIComponent(term))
+			.then(response => response.json())
+			.then(data => {
+				resultsDiv.innerHTML = '';
+				if (data.length > 0) {
+					data.forEach(cust => {
+						var div = document.createElement('div');
+						div.className = 'pos-search-result-item';
+						div.innerHTML = `<strong>${cust.name}</strong><br><small>${cust.id} - ${cust.address || ''}</small>`;
+						div.onclick = () => this.SelectCustomer(cust.id, cust.name);
+						resultsDiv.appendChild(div);
+					});
+					resultsDiv.style.display = 'block';
+				} else {
+					resultsDiv.style.display = 'none';
+				}
+			});
+	},
+
+	SelectCustomer: function(id, name) {
+		document.querySelector('input[name="DebtorNo"]').value = id;
+		// We need to submit the form to update the session
+		var form = document.getElementById('SelectParts');
+		var input = document.createElement('input');
+		input.type = 'hidden';
+		input.name = 'SwitchCustomer';
+		input.value = id;
+		form.appendChild(input);
+		form.submit();
+	},
+
+	ToggleDiscount: function(lineNo) {
+		var el = document.getElementById('DiscRow' + lineNo);
+		el.style.display = (el.style.display === 'none') ? 'flex' : 'none';
+	},
+
+	// Split Payments
+	paymentRowCounter: 1,
+	AddPaymentRow: function() {
+		var container = document.getElementById('PaymentRowsContainer');
+		var totalToPay = parseFloat(document.getElementById('TotalAmountToPay').value);
+		var totalPaid = this._calculateCurrentTotalPaid();
+		var remaining = Math.max(0, totalToPay - totalPaid);
+
+		var firstRow = container.querySelector('.pos-payment-row');
+		var newRow = firstRow.cloneNode(true);
+		var i = this.paymentRowCounter++;
+		newRow.id = 'PaymentRow' + i;
+		
+		var select = newRow.querySelector('select');
+		select.name = 'PaymentMethods[' + i + ']';
+		
+		var hiddenBank = newRow.querySelector('input[type="hidden"]');
+		hiddenBank.name = 'BankAccounts[' + i + ']';
+
+		var amountInput = newRow.querySelector('input[type="text"]');
+		amountInput.name = 'PaymentAmounts[' + i + ']';
+		amountInput.value = remaining.toFixed(this.decimal);
+		amountInput.onchange = () => this.CalculateTotals();
+
+		var delBtn = document.createElement('button');
+		delBtn.type = 'button';
+		delBtn.className = 'pos-tool-btn delete';
+		delBtn.innerHTML = '<i class="fas fa-times"></i>';
+		delBtn.onclick = () => this.RemovePaymentRow(i);
+		newRow.appendChild(delBtn);
+
+		container.appendChild(newRow);
+		this.CalculateTotals();
+	},
+
+	RemovePaymentRow: function(i) {
+		var row = document.getElementById('PaymentRow' + i);
+		if (row) row.remove();
+		this.CalculateTotals();
+	},
+
+	OnPaymentMethodChange: function(select, i) {
+		var bankInput = select.parentElement.querySelector('input[type="hidden"]');
+		var selectedOption = select.options[select.selectedIndex];
+		bankInput.value = selectedOption.getAttribute('data-bank');
+	},
+
+	CalculateTotals: function() {
+		var totalToPay = parseFloat(document.getElementById('TotalAmountToPay').value);
+		var totalPaid = this._calculateCurrentTotalPaid();
+		var remaining = totalToPay - totalPaid;
+
+		document.getElementById('TotalPaidDisplay').innerText = totalPaid.toFixed(this.decimal);
+		document.getElementById('RemainingBalanceDisplay').innerText = Math.abs(remaining).toFixed(this.decimal);
+		
+		var remainingRow = document.getElementById('RemainingBalanceRow');
+		if (remaining <= 0.01) {
+			remainingRow.style.color = 'var(--success)';
+			remainingRow.querySelector('span').innerText = 'Change/Overpaid';
+		} else {
+			remainingRow.style.color = 'var(--danger)';
+			remainingRow.querySelector('span').innerText = 'Remaining';
+		}
+		this.CalculateChangeDue();
+	},
+
+	_calculateCurrentTotalPaid: function() {
+		var total = 0;
+		document.querySelectorAll('input[name^="PaymentAmounts"]').forEach(inp => {
+			total += parseFloat(inp.value) || 0;
+		});
+		return total;
+	},
+
+    AddPaymentRow: function() {
+        const container = document.getElementById('PaymentRowsContainer');
+        const rows = container.querySelectorAll('.pos-payment-row');
+        const rowCount = rows.length;
+        const firstRow = rows[0];
+        const newRow = firstRow.cloneNode(true);
+        
+        const i = rowCount;
+        newRow.id = 'PaymentRow' + i;
+        
+        const select = newRow.querySelector('select');
+        select.name = `PaymentMethods[${i}]`;
+        select.setAttribute('onchange', `CounterSales.OnPaymentMethodChange(this, ${i})`);
+        
+        const bankInput = newRow.querySelector('input[type="hidden"]');
+        bankInput.name = `BankAccounts[${i}]`;
+        bankInput.value = select.options[select.selectedIndex].getAttribute('data-bank');
+
+        const amountInput = newRow.querySelector('input[name^="PaymentAmounts"]');
+        amountInput.name = `PaymentAmounts[${i}]`;
+        amountInput.value = "0.00";
+        amountInput.setAttribute('onchange', 'CounterSales.CalculateTotals()');
+
+        // Add delete button if it's the second row or more
+        let delBtn = newRow.querySelector('.delete');
+        if (!delBtn) {
+            delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'pos-tool-btn delete';
+            delBtn.innerHTML = '<i class="fas fa-times"></i>';
+            newRow.appendChild(delBtn);
+        }
+        delBtn.onclick = () => this.RemovePaymentRow(i);
+
+        container.appendChild(newRow);
+        this.CalculateTotals();
+    },
+
+    RemovePaymentRow: function(index) {
+        const row = document.getElementById('PaymentRow' + index);
+        if (row) {
+            row.remove();
+            this.CalculateTotals();
+        }
+    },
+
+	CalculateChangeDue: function() {
+		var totalToPay = parseFloat(document.getElementById('TotalAmountToPay').value);
+		var cashIn = parseFloat(document.getElementById('CashReceived').value) || 0;
+		var totalPaid = this._calculateCurrentTotalPaid();
+		
+		var changeDue = 0;
+		if (cashIn > 0) {
+			// Find how much of the "Paid" is actually cash (for change calculation)
+			// Simplification: if only one payment row and it's cash, or totalPaid > totalToPay
+			if (totalPaid > totalToPay) {
+				changeDue = totalPaid - totalToPay;
+			}
+		}
+		document.getElementById('ChangeDue').value = changeDue.toFixed(this.decimal);
+	},
+
+    SwitchTab: function(tab) {
+        const catalog = document.getElementById('PosCatalogCol');
+        const sidebar = document.getElementById('PosSidebarCol');
+        const tabCatalog = document.getElementById('TabCatalog');
+        const tabCart = document.getElementById('TabCart');
+
+        if (tab === 'catalog') {
+            catalog.classList.remove('mobile-hidden');
+            sidebar.classList.add('mobile-hidden');
+            if (tabCatalog) tabCatalog.classList.add('active');
+            if (tabCart) tabCart.classList.remove('active');
+        } else {
+            catalog.classList.add('mobile-hidden');
+            sidebar.classList.remove('mobile-hidden');
+            if (tabCatalog) tabCatalog.classList.remove('active');
+            if (tabCart) tabCart.classList.add('active');
+        }
+        window.scrollTo(0,0);
+    }
 }
+
+// Initialize totals on load
+window.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('TotalAmountToPay')) {
+        CounterSales.CalculateTotals();
+    }
+});
