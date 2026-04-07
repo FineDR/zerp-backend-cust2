@@ -434,11 +434,6 @@ echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />'
 echo '<input type="hidden" id="AutoFillCashReceived" name="AutoFillCashReceived" value="0" />';
 echo '<div class="pos-layout">'; // Start Grid
 
-// Mobile Tab Toggle
-echo '<div class="pos-mobile-tabs" style="display: none;">
-        <button type="button" id="TabCatalog" class="pos-mobile-tab-btn active" onclick="CounterSales.SwitchTab(\'catalog\')"><i class="fas fa-th"></i> ' . __('Catalog') . '</button>
-        <button type="button" id="TabCart" class="pos-mobile-tab-btn" onclick="CounterSales.SwitchTab(\'cart\')"><i class="fas fa-shopping-cart"></i> ' . __('Cart') . ' (' . count($_SESSION['Items'.$identifier]->LineItems) . ')</button>
-      </div>';
 
 echo '<section class="pos-catalog" id="PosCatalogCol">';
 

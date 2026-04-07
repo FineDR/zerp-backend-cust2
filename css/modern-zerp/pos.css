@@ -538,67 +538,59 @@
 }
 
 
-/* Mobile Shell & Media Queries */
+
+/* Mobile Shell & Media Queries - Stacked Layout */
 @media (max-width: 1024px) {
     .pos-layout {
-        grid-template-columns: 1fr; /* Single column for mobile */
+        display: flex;
+        flex-direction: column;
         height: auto;
-        overflow-y: auto;
-        padding-bottom: 80px; /* Space for fixed tabs at bottom */
-    }
-
-    .pos-sidebar {
-        height: auto;
-        max-height: calc(100vh - 150px);
-    }
-
-    .pos-mobile-tabs {
-        display: flex !important; /* Force visible on mobile */
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background: white;
-        border-top: 1px solid var(--border);
-        box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
-        z-index: 1000;
+        min-height: 100vh;
+        overflow-y: visible;
         padding: var(--space-2);
         gap: var(--space-2);
     }
 
-    .pos-mobile-tab-btn {
-        flex: 1;
-        padding: var(--space-3);
-        border: none;
-        background: var(--bg-main);
+    .pos-catalog {
+        height: 55vh; /* Larger area for browsing */
+        overflow-y: auto;
+        border-bottom: 2px solid var(--border-soft);
+        background: white;
         border-radius: var(--radius-md);
-        color: var(--text-muted);
-        font-weight: 700;
-        font-size: 0.9rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        transition: all 0.2s ease;
+        margin-bottom: var(--space-2);
     }
 
-    .pos-mobile-tab-btn i {
-        font-size: 1.2rem;
+    .pos-product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: var(--space-2);
+        padding: var(--space-2);
     }
 
-    .pos-mobile-tab-btn.active {
-        background: var(--primary-soft);
-        color: var(--primary);
+    .pos-sidebar {
+        height: auto;
+        max-height: 80vh;
+        overflow-y: visible;
+        flex-shrink: 0;
+    }
+
+    .pos-cart-items {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .pos-mobile-tabs {
+        display: none !important; /* Remove tabs for stacked layout */
     }
 
     .mobile-hidden {
-        display: none !important;
+        display: block !important; /* Ensure everything is visible in stacked view */
     }
 
     .pos-cart-footer {
-        position: static;
-        box-shadow: none;
-        border-top: 1px solid var(--border-soft);
+        position: sticky;
+        bottom: 0;
+        z-index: 100;
+        margin-top: var(--space-2);
     }
 }
 
