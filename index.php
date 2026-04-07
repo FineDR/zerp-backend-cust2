@@ -385,7 +385,7 @@ if ($isDashboard) {
 							<span class="db-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h10M7 11h10M7 7h10"/></svg></span>
 							<span class="db-action-label"><?= __('POS') ?></span>
 						</a>
-						<a href="<?= $RootPath ?>/SearchCustomers.php" class="db-action-btn-row">
+						<a href="<?= $RootPath ?>/SelectCustomer.php" class="db-action-btn-row">
 							<span class="db-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg></span>
 							<span class="db-action-label"><?= __('Add Customer') ?></span>
 						</a>

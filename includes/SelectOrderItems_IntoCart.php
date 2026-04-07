@@ -95,7 +95,7 @@ if ($AlreadyOnThisOrder!=1){
 				$Result = DB_query("SELECT MAX(discountrate) AS discount
 										FROM discountmatrix
 										WHERE salestype='" .  $_SESSION['Items'.$identifier]->DefaultSalesType . "'
-										AND discountcategory ='" . $MyRow['discountcategory'] . "'
+										AND discountcategory ='" . $MyItemRow['discountcategory'] . "'
 										AND quantitybreak <" . $NewItemQty);
 				$DiscCatRow = DB_fetch_row($Result);
 				if ($DiscCatRow[0] != '' AND $DiscCatRow[0] > 0) {

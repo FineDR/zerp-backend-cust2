@@ -28,7 +28,8 @@
     /* Surfaces */
     --surface:      hsl(0, 0%, 100%);
     --surface-alt:  hsl(210, 20%, 98%);
-    --surface-glass: hsla(255, 100%, 100%, 0.85);
+    --surface-glass: hsla(0, 0%, 100%, 0.85);
+    --surface-glass-dark: hsla(145, 15%, 12%, 0.85);
 
     /* Borders */
     --border:       hsl(220, 15%, 88%);
@@ -59,11 +60,12 @@
     --sidebar-collapsed: 64px;
     --header-height: 64px;
 
-    /* Shadows */
+    /* Shadows Improved */
     --shadow-xs:  0 1px 2px rgba(0,0,0,0.06);
     --shadow-sm:  0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
     --shadow-md:  0 4px 16px rgba(0,0,0,0.07), 0 2px 6px rgba(0,0,0,0.04);
     --shadow-lg:  0 12px 32px rgba(0,0,0,0.09), 0 4px 12px rgba(0,0,0,0.05);
+    --shadow-xl:  0 20px 48px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.08);
 
     /* Feedback */
     --success:     hsl(145, 65%, 32%);
@@ -76,7 +78,7 @@
     --info-bg:     hsl(217, 80%, 96%);
 
     /* Transitions */
-    --transition-fast: 0.15s ease;
-    --transition-base: 0.2s ease;
-    --transition-slow: 0.3s ease;
+    --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }

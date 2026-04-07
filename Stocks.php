@@ -84,10 +84,25 @@ if (isset($_POST['New'])) {
 	$New = $_POST['New'];
 }
 
-echo '<a href="' . $RootPath . '/SelectProduct.php" class="toplink">' . __('Back to Items') . '</a>
-	<br />', '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/inventory.png" title="', // Icon image.
-$Title, '" /> ', // Icon title.
-$Title, '</p>'; // Page title.
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div class="db-page-title">
+				<i class="fas fa-boxes"></i> ' . $Title . '
+			</div>
+			<div class="db-page-actions">';
+
+if (isset($StockID) && $StockID != '' && $InputError == 0) {
+	echo '		<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" style="display:inline-block">
+					<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+					<input type="hidden" name="StockID" value="' . $StockID . '" />
+					<button ' . ($HasPrev ? '' : 'disabled') . ' name="PreviousItem" type="submit" class="db-btn db-btn-outline db-btn-small" title="' . __('Previous Item') . '"><i class="fas fa-chevron-left"></i></button>
+					<button ' . ($HasNext ? '' : 'disabled') . ' name="NextItem" type="submit" class="db-btn db-btn-outline db-btn-small" title="' . __('Next Item') . '"><i class="fas fa-chevron-right"></i></button>
+				</form>';
+}
+
+echo '			<a href="' . $RootPath . '/SelectProduct.php" class="db-btn db-btn-outline db-btn-small"><i class="fas fa-list"></i> ' . __('Back to Items') . '</a>
+			</div>
+		</div><br />';
 $SupportedImgExt = array('png', 'jpg', 'jpeg');
 
 if (isset($_FILES['ItemPicture']) and $_FILES['ItemPicture']['name'] != '') {
@@ -883,132 +898,49 @@ echo '<form name="ItemForm" enctype="multipart/form-data" method="post" action="
 echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
 	<input type="hidden" name="New" value="' . $New . '" />';
 
-if (isset($StockID) && $StockID != '' && $InputError == 0) {
-	echo '<table width="100%">
-			<tr>
-				<td>', '<button ', ($HasPrev ? '' : 'disabled'), ' name="PreviousItem" type="submit" value="">', '<img alt="" src="', $RootPath, '/css/', $Theme, '/images/previous.png" />',
-	/*__('Previous Item'),*/
-	'</button>', // "Previous" button.
-	'</td>', '<td width="80%">&nbsp;</td>', '<td>', '<button ', ($HasNext ? '' : 'disabled'), ' name="NextItem" type="submit" value="">',
-	/*__('Next Item'),*/
-	'<img alt="" src="', $RootPath, '/css/', $Theme, '/images/next.png" />', '</button>', // "Next" button.
-	'</td>
-			</tr>
-		</table>';
-}
+echo '<div class="db-grid db-grid-2">';
 
-echo '<fieldset>';
-
-if (!isset($StockID) or $StockID == '' or isset($_POST['UpdateCategories'])) {
-
-	/*If the page was called without $StockID passed to page then assume a new stock item is to be entered show a form with a part Code field other wise the form showing the fields with the existing entries against the part will show for editing with only a hidden StockID field. New is set to flag that the page may have called itself and still be entering a new part, in which case the page needs to know not to go looking up details for an existing part*/
-	if (!isset($StockID)) {
-		$StockID = '';
-	}
 	if ($New == 1) {
-		echo '<legend>', __('Create Stock Item Details'), '</legend>
-			<field>
-				<label for="StockID">' . __('Item Code') . ':</label>
-				<input type="text" ' . (in_array('StockID', $Errors) ? 'class="inputerror"' : '') . ' data-type="no-illegal-chars" autofocus="autofocus" required="required"  value="' . $StockID . '" name="StockID" size="20" maxlength="20"  title ="' . __('Input the stock code, the following characters are prohibited:') . ' \' &quot; + . &amp; \\ &gt; &lt;" placeholder="' . __('alpha-numeric only') . '" />
-			</field>';
+		echo '<div class="db-card">
+				<div class="db-card-header">
+					<div class="db-card-title"><i class="fas fa-plus-circle"></i> ' . __('Create Stock Item') . '</div>
+				</div>
+				<div class="db-card-body">
+					<div class="db-field">
+						<label for="StockID">' . __('Item Code') . '</label>
+						<input type="text" class="db-input ' . (in_array('StockID', $Errors) ? 'inputerror' : '') . '" data-type="no-illegal-chars" autofocus="autofocus" required="required" value="' . $StockID . '" name="StockID" maxlength="20" placeholder="' . __('alpha-numeric only') . '" />
+					</div>';
 	} else {
-		echo '<legend>', __('Edit Stock Item Details'), '</legend>
-			<field>
-				<label for="StockID">' . __('Item Code') . ':</label>
-				<fieldtext>' . $StockID . '<input type="hidden" name ="StockID" value="' . $StockID . '" /></fieldtext>
-			</field>';
+		echo '<div class="db-card">
+				<div class="db-card-header">
+					<div class="db-card-title"><i class="fas fa-tag"></i> ' . __('Identification') . '</div>
+				</div>
+				<div class="db-card-body">
+					<div class="db-field">
+						<label>' . __('Item Code') . '</label>
+						<div class="db-field-content">
+							<b>' . $StockID . '</b>
+							<input type="hidden" name="StockID" value="' . $StockID . '" />
+						</div>
+					</div>';
 	}
 
-} elseif (!isset($_POST['UpdateCategories']) and $InputError != 1) { // Must be modifying an existing item and no changes made yet
-	$SQL = "SELECT stockid,
-					description,
-					longdescription,
-					categoryid,
-					units,
-					mbflag,
-					discontinued,
-					controlled,
-					serialised,
-					perishable,
-					eoq,
-					volume,
-					grossweight,
-					netweight,
-					barcode,
-					discountcategory,
-					taxcatid,
-					decimalplaces,
-					nextserialno,
-					pansize,
-					shrinkfactor
-			FROM stockmaster
-			WHERE stockid = '" . $StockID . "'";
-
-	$Result = DB_query($SQL);
-	$MyRow = DB_fetch_array($Result);
-
-	$_POST['LongDescription'] = $MyRow['longdescription'];
-	$_POST['Description'] = $MyRow['description'];
-	$_POST['EOQ'] = $MyRow['eoq'];
-	$_POST['CategoryID'] = $MyRow['categoryid'];
-	$_POST['Units'] = $MyRow['units'];
-	$_POST['MBFlag'] = $MyRow['mbflag'];
-	$_POST['Discontinued'] = $MyRow['discontinued'];
-	$_POST['Controlled'] = $MyRow['controlled'];
-	$_POST['Serialised'] = $MyRow['serialised'];
-	$_POST['Perishable'] = $MyRow['perishable'];
-	$_POST['Volume'] = $MyRow['volume'];
-	$_POST['GrossWeight'] = $MyRow['grossweight'];
-	$_POST['NetWeight'] = $MyRow['netweight'];
-	$_POST['BarCode'] = $MyRow['barcode'];
-	$_POST['DiscountCategory'] = $MyRow['discountcategory'];
-	$_POST['TaxCat'] = $MyRow['taxcatid'];
-	$_POST['DecimalPlaces'] = $MyRow['decimalplaces'];
-	$_POST['NextSerialNo'] = $MyRow['nextserialno'];
-	$_POST['Pansize'] = $MyRow['pansize'];
-	$_POST['ShrinkFactor'] = $MyRow['shrinkfactor'];
-
-	$SQL = "SELECT descriptiontranslation, longdescriptiontranslation, language_id FROM stockdescriptiontranslations WHERE stockid='" . $StockID . "' AND (";
-	foreach ($ItemDescriptionLanguagesArray as $LanguageId) {
-		$SQL.= "language_id='" . $LanguageId . "' OR ";
-	}
-	$SQL = mb_substr($SQL, 0, mb_strlen($SQL) - 3) . ')';
-	$Result = DB_query($SQL);
-	while ($MyRow = DB_fetch_array($Result)) {
-		$_POST['Description_' . str_replace('.', '_', $MyRow['language_id']) ] = $MyRow['descriptiontranslation'];
-		$_POST['LongDescription_' . str_replace('.', '_', $MyRow['language_id']) ] = $MyRow['longdescriptiontranslation'];
-	}
-
-	echo '<field>
-			<label for="StockID">' . __('Item Code') . ':</label>
-			<fieldtext>' . $StockID . '</fieldtext><input type="hidden" name="StockID" value="' . $StockID . '" />
-		</field>';
-
-} else { // some changes were made to the data so don't re-set form variables to DB ie the code above
-	echo '<field>
-			<label for="StockID">' . __('Item Code') . ':</label>
-			<td>' . $StockID . '<input type="hidden" name="StockID" value="' . $StockID . '" /></td>
-		</field>';
-}
-
-$Description = $_POST['Description'] ?? '';
-echo '<field>
-		<label for="Description">' . __('Part Description') . ' (' . __('short') . '):</label>
-		<input ' . (in_array('Description', $Errors) ? 'class="inputerror"' : '') . ' type="text" ' . ($New == 0 ? 'autofocus="autofocus"' : '') . ' name="Description" required="required" size="52" maxlength="50" value="' . stripslashes($Description) . '" />
-	</field>';
+echo '		<div class="db-field">
+				<label for="Description">' . __('Part Description') . ' (' . __('short') . ')</label>
+				<input ' . (in_array('Description', $Errors) ? 'class="db-input inputerror"' : 'class="db-input"') . ' type="text" ' . ($New == 0 ? 'autofocus="autofocus"' : '') . ' name="Description" required="required" maxlength="50" value="' . stripslashes($Description) . '" />
+			</div>';
 
 foreach ($ItemDescriptionLanguagesArray as $LanguageId) {
 	if ($LanguageId != '') {
-		//unfortunately cannot have points in POST variables so have to mess with the language id
 		$PostVariableName = 'Description_' . str_replace('.', '_', $LanguageId);
 		if (!isset($_POST[$PostVariableName])) {
 			$_POST[$PostVariableName] = '';
 		}
-		echo '<field>
-				<label for="' . $PostVariableName . '">' . $LanguagesArray[$LanguageId]['LanguageName'] . ' ' . __('Description') . ':</label>
-				<input type="text" name="' . $PostVariableName . '" size="52" maxlength="50" value="' . $_POST[$PostVariableName] . '" title="" />
-				<fieldhelp>' . __('This language translation of the item will be used in invoices and credits to customers who are defined to use this language. The language translations to maintain here can be configured in the system parameters page') . '</fieldhelp>
-			</field>';
+		echo '<div class="db-field">
+				<label for="' . $PostVariableName . '">' . $LanguagesArray[$LanguageId]['LanguageName'] . ' ' . __('Description') . '</label>
+				<input class="db-input" type="text" name="' . $PostVariableName . '" maxlength="50" value="' . $_POST[$PostVariableName] . '" />
+				<div class="db-field-help">' . __('Used in invoices for customers with this language.') . '</div>
+			</div>';
 	}
 }
 
@@ -1017,324 +949,225 @@ if (isset($_POST['LongDescription'])) {
 } else {
 	$LongDescription = '';
 }
-echo '<field>
-		<label for="LongDescription">' . __('Part Description') . ' (' . __('long') . '):</label>
-		<textarea ' . (in_array('LongDescription', $Errors) ? 'class="texterror"' : '') . '  name="LongDescription" cols="40" rows="3">' . stripslashes($LongDescription) . '</textarea>
-	</field>';
+echo '		<div class="db-field">
+				<label for="LongDescription">' . __('Part Description') . ' (' . __('long') . ')</label>
+				<textarea ' . (in_array('LongDescription', $Errors) ? 'class="db-input texterror"' : 'class="db-input"') . ' name="LongDescription" rows="3">' . stripslashes($LongDescription) . '</textarea>
+			</div>';
 
 foreach ($ItemDescriptionLanguagesArray as $LanguageId) {
 	if ($LanguageId != '') {
-		//unfortunately cannot have points in POST variables so have to mess with the language id
 		$PostVariableName = 'LongDescription_' . str_replace('.', '_', $LanguageId);
 		if (!isset($_POST[$PostVariableName])) {
 			$_POST[$PostVariableName] = '';
 		}
-		echo '<field>
-				<label for="' . $PostVariableName . '">' . $LanguagesArray[$LanguageId]['LanguageName'] . ' ' . __('Long Description') . ':</label>
-				<textarea name="' . $PostVariableName . '" cols="40" rows="3">' . stripslashes(AddCarriageReturns($_POST[$PostVariableName])) . '</textarea>
-			</field>';
+		echo '		<div class="db-field">
+				<label for="' . $PostVariableName . '">' . $LanguagesArray[$LanguageId]['LanguageName'] . ' ' . __('Long Description') . '</label>
+				<textarea class="db-input" name="' . $PostVariableName . '" rows="2">' . stripslashes(AddCarriageReturns($_POST[$PostVariableName])) . '</textarea>
+			</div>';
 	}
 }
 
-echo '<field>
-		<label for="ItemPicture">' . __('Image File (' . implode(", ", $SupportedImgExt) . ')') . ':</label>
-		<input type="file" id="ItemPicture" name="ItemPicture" />
-	</field>
-	<field>
-		<label for="ClearImage"> ' . __('Clear Image') . '</label>
-		<input type="checkbox" name="ClearImage" id="ClearImage" value="1" >
-	</field>';
+echo '			<div class="db-field">
+					<label for="ItemPicture">' . __('Image File') . ' (' . implode(", ", $SupportedImgExt) . ')</label>
+					<div class="db-grid db-grid-2" style="align-items: center;">
+						<div>
+							<input type="file" id="ItemPicture" name="ItemPicture" class="db-input" />
+							<div style="margin-top: 5px;">
+								<input type="checkbox" name="ClearImage" id="ClearImage" value="1" >
+								<label for="ClearImage" style="display:inline; font-weight:normal; margin-left:5px;"> ' . __('Clear Image') . '</label>
+							</div>
+						</div>';
+
 if (sizeof(glob($_SESSION['part_pics_dir'] . '/' . $StockID . '.{' . implode(",", $SupportedImgExt) . '}')) > 0) {
 	$Glob = (glob($_SESSION['part_pics_dir'] . '/' . $StockID . '.{' . implode(",", $SupportedImgExt) . '}', GLOB_BRACE));
 	$ImageFile = reset($Glob);
 } else {
 	$ImageFile = '';
 }
-$StockImgLink = GetImageLink($ImageFile, $StockID, 64, 64, "", "");
+$StockImgLink = GetImageLink($ImageFile, $StockID, 80, 80, "", "db-image-preview");
 
-if ($StockImgLink != __('No Image')) {
-	echo '<span>' . __('Image') . '<br />' . $StockImgLink . '</span>';
-}
+echo '					<div class="centre">' . $StockImgLink . '</div>
+					</div>
+				</div>
+			</div>
+		</div>';
 
-if (isset($_POST['ClearImage'])) {
-	foreach ($SupportedImgExt as $Ext) {
-		$File = $_SESSION['part_pics_dir'] . '/' . $StockID . '.' . $Ext;
-		if (file_exists($File)) {
-			//workaround for many variations of permission issues that could cause unlink fail
-			@unlink($File);
-			if (is_file($ImageFile)) {
-				prnMsg(__('You do not have access to delete this item image file.'), 'error');
-			} else {
-				$StockImgLink = __('No Image');
-			}
-		}
+	echo '<div class="db-card">
+			<div class="db-card-header">
+				<div class="db-card-title"><i class="fas fa-truck-loading"></i> ' . __('Logistics') . '</div>
+			</div>
+			<div class="db-card-body">
+				<div class="db-field">
+					<label for="CategoryID">' . __('Category') . '</label>
+					<select name="CategoryID" class="db-select" onchange="ReloadForm(ItemForm.UpdateCategories)">';
+
+	$SQL = "SELECT categoryid, categorydescription FROM stockcategory";
+	$Result = DB_query($SQL);
+	while ($MyRow = DB_fetch_array($Result)) {
+		$selected = (isset($_POST['CategoryID']) && $MyRow['categoryid'] == $_POST['CategoryID']) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
+		$Category = $MyRow['categoryid'];
 	}
-}
-echo '</field>';
+	if (!isset($_POST['CategoryID'])) {
+		$_POST['CategoryID'] = $Category;
+	}
 
-echo '<field>
-		<label for="CategoryID">' . __('Category') . ':</label>
-		<select name="CategoryID" onchange="ReloadForm(ItemForm.UpdateCategories)">';
+	echo '			</select>
+					<div class="db-field-help"><a target="_blank" href="' . $RootPath . '/StockCategories.php" class="db-link">' . __('Manage Categories') . '</a></div>
+				</div>
 
-$SQL = "SELECT categoryid, categorydescription FROM stockcategory";
-$ErrMsg = __('The stock categories could not be retrieved because');
-$Result = DB_query($SQL, $ErrMsg);
+				<div class="db-field">
+					<label for="Units">' . __('Units of Measure') . '</label>
+					<select name="Units" class="db-select">';
+	$SQL = "SELECT unitname FROM unitsofmeasure ORDER by unitname";
+	$UOMResult = DB_query($SQL);
+	while ($UOMrow = DB_fetch_array($UOMResult)) {
+		$selected = (isset($_POST['Units']) && $_POST['Units'] == $UOMrow['unitname']) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="' . $UOMrow['unitname'] . '">' . $UOMrow['unitname'] . '</option>';
+	}
+	echo '			</select>
+				</div>
 
-while ($MyRow = DB_fetch_array($Result)) {
-	if (!isset($_POST['CategoryID']) or $MyRow['categoryid'] == $_POST['CategoryID']) {
-		echo '<option selected="selected" value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
+				<div class="db-field">
+					<label for="EOQ">' . __('Economic Order Qty (EOQ)') . '</label>
+					<input type="text" class="db-input number ' . (in_array('EOQ', $Errors) ? 'inputerror' : '') . '" name="EOQ" maxlength="10" value="' . locale_number_format($_POST['EOQ'], 'Variable') . '" />
+				</div>
+
+				<div class="db-field">
+					<label for="Volume">' . __('Packaged Volume (m³)') . '</label>
+					<input type="text" class="db-input number ' . (in_array('Volume', $Errors) ? 'inputerror' : '') . '" name="Volume" maxlength="10" value="' . locale_number_format($_POST['Volume'], 'Variable') . '" />
+				</div>
+
+				<div class="db-grid db-grid-2">
+					<div class="db-field">
+						<label for="GrossWeight">' . __('Gross Weight (KG)') . '</label>
+						<input type="text" class="db-input number ' . (in_array('GrossWeight', $Errors) ? 'inputerror' : '') . '" name="GrossWeight" maxlength="10" value="' . locale_number_format($_POST['GrossWeight'], 'Variable') . '" />
+					</div>
+					<div class="db-field">
+						<label for="NetWeight">' . __('Net Weight (KG)') . '</label>
+						<input type="text" class="db-input number ' . (in_array('NetWeight', $Errors) ? 'inputerror' : '') . '" name="NetWeight" maxlength="10" value="' . locale_number_format($_POST['NetWeight'], 'Variable') . '" />
+					</div>
+				</div>
+			</div>
+		</div><br />';
+
+	echo '<div class="db-card">
+			<div class="db-card-header">
+				<div class="db-card-title"><i class="fas fa-sync-alt"></i> ' . __('Lifecycle & Control') . '</div>
+			</div>
+			<div class="db-card-body">
+				<div class="db-field">
+					<label for="MBFlag">' . __('Item Type') . '</label>
+					<select name="MBFlag" class="db-select">';
+	$flags = [
+		'A' => __('Assembly'),
+		'K' => __('Kit'),
+		'M' => __('Manufactured'),
+		'G' => __('Phantom'),
+		'B' => __('Purchased'),
+		'D' => __('Service/Labour')
+	];
+	foreach ($flags as $val => $label) {
+		$selected = (isset($_POST['MBFlag']) && $_POST['MBFlag'] == $val) ? 'selected="selected"' : '';
+		if (!isset($_POST['MBFlag']) && ($val == 'K' || $val == 'M' || $val == 'B')) { /* defaults? */ }
+		echo '<option ' . $selected . ' value="' . $val . '">' . $label . '</option>';
+	}
+	echo '			</select>
+				</div>
+
+				<div class="db-grid db-grid-2">
+					<div class="db-field">
+						<label for="Discontinued">' . __('Status') . '</label>
+						<select name="Discontinued" class="db-select">
+							<option ' . ($_POST['Discontinued'] == 0 ? 'selected="selected"' : '') . ' value="0">' . __('Current') . '</option>
+							<option ' . ($_POST['Discontinued'] == 1 ? 'selected="selected"' : '') . ' value="1">' . __('Obsolete') . '</option>
+						</select>
+					</div>
+					<div class="db-field">
+						<label for="Perishable">' . __('Perishable') . '</label>
+						<select name="Perishable" class="db-select">
+							<option ' . ($_POST['Perishable'] == 0 ? 'selected="selected"' : '') . ' value="0">' . __('No') . '</option>
+							<option ' . ($_POST['Perishable'] == 1 ? 'selected="selected"' : '') . ' value="1">' . __('Yes') . '</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="db-field">
+					<label for="Controlled">' . __('Lot/Batch Control') . '</label>
+					<select name="Controlled" class="db-select">
+						<option ' . ($_POST['Controlled'] == 0 ? 'selected="selected"' : '') . ' value="0">' . __('No Control') . '</option>
+						<option ' . ($_POST['Controlled'] == 1 ? 'selected="selected"' : '') . ' value="1">' . __('Controlled') . '</option>
+					</select>
+				</div>
+
+				<div class="db-field">
+					<label for="Serialised">' . __('Serialised') . '</label>
+					<select name="Serialised" class="db-select ' . (in_array('Serialised', $Errors) ? 'selecterror' : '') . '">';
+	echo '				<option ' . ($_POST['Serialised'] == 0 ? 'selected="selected"' : '') . ' value="0">' . __('No') . '</option>
+						<option ' . ($_POST['Serialised'] == 1 ? 'selected="selected"' : '') . ' value="1">' . __('Yes') . '</option>
+					</select>
+					<div class="db-field-help"><i>' . __('Only effective if Controlled is enabled.') . '</i></div>
+				</div>';
+
+	if ($_POST['Serialised'] == 1 and $_POST['MBFlag'] == 'M') {
+		echo '	<div class="db-field">
+					<label for="NextSerialNo">' . __('Next Serial No') . '</label>
+					<input type="text" class="db-input ' . (in_array('NextSerialNo', $Errors) ? 'inputerror' : '') . '" name="NextSerialNo" maxlength="15" value="' . $_POST['NextSerialNo'] . '" />
+				</div>';
 	} else {
-		echo '<option value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
+		echo '	<input type="hidden" name="NextSerialNo" value="0" />';
 	}
-	$Category = $MyRow['categoryid'];
-}
 
-if (!isset($_POST['CategoryID'])) {
-	$_POST['CategoryID'] = $Category;
-}
+	echo '<div class="db-card">
+			<div class="db-card-header">
+				<div class="db-card-title"><i class="fas fa-file-invoice-dollar"></i> ' . __('Sales & Accounting') . '</div>
+			</div>
+			<div class="db-card-body">
+				<div class="db-field">
+					<label for="BarCode">' . __('Bar Code') . '</label>
+					<input type="text" class="db-input ' . (in_array('BarCode', $Errors) ? 'inputerror' : '') . '" name="BarCode" maxlength="20" value="' . ($_POST['BarCode'] ?? '') . '" />
+				</div>
 
-echo '</select><a target="_blank" href="' . $RootPath . '/StockCategories.php">' . __('Add or Modify Stock Categories') . '</a>
-	</field>';
-
-if (!isset($_POST['EOQ']) or $_POST['EOQ'] == '') {
-	$_POST['EOQ'] = 0;
-}
-
-if (!isset($_POST['Volume']) or $_POST['Volume'] == '') {
-	$_POST['Volume'] = 0;
-}
-if (!isset($_POST['GrossWeight']) or $_POST['GrossWeight'] == '') {
-	$_POST['GrossWeight'] = 0;
-}
-if (!isset($_POST['NetWeight']) or $_POST['NetWeight'] == '') {
-	$_POST['NetWeight'] = 0;
-}
-if (!isset($_POST['Controlled']) or $_POST['Controlled'] == '') {
-	$_POST['Controlled'] = 0;
-}
-if (!isset($_POST['Serialised']) or $_POST['Serialised'] == '' || $_POST['Controlled'] == 0) {
-	$_POST['Serialised'] = 0;
-}
-if (!isset($_POST['DecimalPlaces']) or $_POST['DecimalPlaces'] == '') {
-	$_POST['DecimalPlaces'] = 0;
-}
-if (!isset($_POST['Discontinued']) or $_POST['Discontinued'] == '') {
-	$_POST['Discontinued'] = 0;
-}
-if (!isset($_POST['Pansize'])) {
-	$_POST['Pansize'] = 0;
-}
-if (!isset($_POST['ShrinkFactor'])) {
-	$_POST['ShrinkFactor'] = 0;
-}
-if (!isset($_POST['NextSerialNo'])) {
-	$_POST['NextSerialNo'] = 0;
-}
-
-echo '<field>
-		<label for="EOQ">' . __('Economic Order Quantity') . ':</label>
-		<input ' . (in_array('EOQ', $Errors) ? 'class="inputerror"' : '') . '   type="text" class="number" name="EOQ" size="12" maxlength="10" value="' . locale_number_format($_POST['EOQ'], 'Variable') . '" />
-	</field>';
-
-echo '<field>
-		<label for="Volume">' . __('Packaged Volume (metres cubed)') . ':</label>
-		<input ' . (in_array('Volume', $Errors) ? 'class="inputerror"' : '') . '   type="text" class="number" name="Volume" size="12" maxlength="10" value="' . locale_number_format($_POST['Volume'], 'Variable') . '" />
-	</field>';
-
-echo '<field>
-		<label for="GrossWeight">' . __('Packaged Gross Weight (KGs)') . ':</label>
-		<input ' . (in_array('GrossWeight', $Errors) ? 'class="inputerror"' : '') . '   type="text" class="number" name="GrossWeight" size="12" maxlength="10" value="' . locale_number_format($_POST['GrossWeight'], 'Variable') . '" />
-	</field>';
-
-echo '<field>
-		<label for="NetWeight">' . __('Net Weight (KGs)') . ':</label>
-		<input ' . (in_array('NetWeight', $Errors) ? 'class="inputerror"' : '') . '   type="text" class="number" name="NetWeight" size="12" maxlength="10" value="' . locale_number_format($_POST['NetWeight'], 'Variable') . '" />
-	</field>';
-
-echo '<field>
-		<label for="Units">' . __('Units of Measure') . ':</label>
-		<select ' . (in_array('Description', $Errors) ? 'class="selecterror"' : '') . '  name="Units">';
-
-$SQL = "SELECT unitname FROM unitsofmeasure ORDER by unitname";
-$UOMResult = DB_query($SQL);
-
-if (!isset($_POST['Units'])) {
-	$UOMrow['unitname'] = __('each');
-}
-while ($UOMrow = DB_fetch_array($UOMResult)) {
-	if (isset($_POST['Units']) and $_POST['Units'] == $UOMrow['unitname']) {
-		echo '<option selected="selected" value="' . $UOMrow['unitname'] . '">' . $UOMrow['unitname'] . '</option>';
-	} else {
-		echo '<option value="' . $UOMrow['unitname'] . '">' . $UOMrow['unitname'] . '</option>';
+				<div class="db-field">
+					<label for="TaxCat">' . __('Tax Category') . '</label>
+					<select name="TaxCat" class="db-select">';
+	$SQL = "SELECT taxcatid, taxcatname FROM taxcategories ORDER BY taxcatname";
+	$Result = DB_query($SQL);
+	if (!isset($_POST['TaxCat'])) {
+		$_POST['TaxCat'] = $_SESSION['DefaultTaxCategory'];
 	}
-}
-
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label for="MBFlag">' . __('Assembly, Kit, Manufactured or Service/Labour') . ':</label>
-		<select name="MBFlag">';
-if (isset($_POST['MBFlag']) && $_POST['MBFlag'] == 'A') {
-	echo '<option selected="selected" value="A">' . __('Assembly') . '</option>';
-} else {
-	echo '<option value="A">' . __('Assembly') . '</option>';
-}
-if (!isset($_POST['MBFlag']) or $_POST['MBFlag'] == 'K') {
-	echo '<option selected="selected" value="K">' . __('Kit') . '</option>';
-} else {
-	echo '<option value="K">' . __('Kit') . '</option>';
-}
-if (!isset($_POST['MBFlag']) or $_POST['MBFlag'] == 'M') {
-	echo '<option selected="selected" value="M">' . __('Manufactured') . '</option>';
-} else {
-	echo '<option value="M">' . __('Manufactured') . '</option>';
-}
-if (!isset($_POST['MBFlag']) or $_POST['MBFlag'] == 'G' or !isset($_POST['MBFlag']) or $_POST['MBFlag'] == '') {
-	echo '<option selected="selected" value="G">' . __('Phantom') . '</option>';
-} else {
-	echo '<option value="G">' . __('Phantom') . '</option>';
-}
-if (!isset($_POST['MBFlag']) or $_POST['MBFlag'] == 'B' or !isset($_POST['MBFlag']) or $_POST['MBFlag'] == '') {
-	echo '<option selected="selected" value="B">' . __('Purchased') . '</option>';
-} else {
-	echo '<option value="B">' . __('Purchased') . '</option>';
-}
-
-if (isset($_POST['MBFlag']) and $_POST['MBFlag'] == 'D') {
-	echo '<option selected="selected" value="D">' . __('Service/Labour') . '</option>';
-} else {
-	echo '<option value="D">' . __('Service/Labour') . '</option>';
-}
-
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label for="Discontinued">' . __('Current or Obsolete') . ':</label>
-		<select name="Discontinued">';
-
-if ($_POST['Discontinued'] == 0) {
-	echo '<option selected="selected" value="0">' . __('Current') . '</option>';
-} else {
-	echo '<option value="0">' . __('Current') . '</option>';
-}
-if ($_POST['Discontinued'] == 1) {
-	echo '<option selected="selected" value="1">' . __('Obsolete') . '</option>';
-} else {
-	echo '<option value="1">' . __('Obsolete') . '</option>';
-}
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label for="Controlled">' . __('Batch, Serial or Lot Control') . ':</label>
-		<select name="Controlled">';
-
-if ($_POST['Controlled'] == 0) {
-	echo '<option selected="selected" value="0">' . __('No Control') . '</option>';
-} else {
-	echo '<option value="0">' . __('No Control') . '</option>';
-}
-if ($_POST['Controlled'] == 1) {
-	echo '<option selected="selected" value="1">' . __('Controlled') . '</option>';
-} else {
-	echo '<option value="1">' . __('Controlled') . '</option>';
-}
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label for="Serialised">' . __('Serialised') . ':</label>
-		<select ' . (in_array('Serialised', $Errors) ? 'class="selecterror"' : '') . '  name="Serialised">';
-
-if ($_POST['Serialised'] == 0) {
-	echo '<option selected="selected" value="0">' . __('No') . '</option>';
-} else {
-	echo '<option value="0">' . __('No') . '</option>';
-}
-if ($_POST['Serialised'] == 1) {
-	echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-} else {
-	echo '<option value="1">' . __('Yes') . '</option>';
-}
-echo '</select>
-	<fieldhelp><i>' . __('Note') . ', ' . __('this has no effect if the item is not Controlled') . '</i></fieldhelp>
-</field>';
-
-if ($_POST['Serialised'] == 1 and $_POST['MBFlag'] == 'M') {
-	echo '<field>
-			<label for="NextSerialNo">' . __('Next Serial No (>0 for auto numbering)') . ':</label>
-			<input ' . (in_array('NextSerialNo', $Errors) ? 'class="inputerror"' : '') . ' type="text" name="NextSerialNo" size="15" maxlength="15" value="' . $_POST['NextSerialNo'] . '" />
-		</field>';
-} else {
-	echo '<field><td><input type="hidden" name="NextSerialNo" value="0" /></td></field>';
-}
-
-echo '<field>
-		<label for="Perishable">' . __('Perishable') . ':</label>
-		<select name="Perishable">';
-
-if (!isset($_POST['Perishable']) or $_POST['Perishable'] == 0) {
-	echo '<option selected="selected" value="0">' . __('No') . '</option>';
-} else {
-	echo '<option value="0">' . __('No') . '</option>';
-}
-if (isset($_POST['Perishable']) and $_POST['Perishable'] == 1) {
-	echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-} else {
-	echo '<option value="1">' . __('Yes') . '</option>';
-}
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label for="DecimalPlaces">' . __('Decimal Places for display Quantity') . ':</label>
-		<input type="text" class="number" name="DecimalPlaces" size="1" maxlength="1" value="' . $_POST['DecimalPlaces'] . '" /></td>
-	</field>';
-
-$BarCode = $_POST['BarCode'] ?? '';
-echo '<field>
-		<label for="BarCode">' . __('Bar Code') . ':</label>
-		<input ' . (in_array('BarCode', $Errors) ? 'class="inputerror"' : '') . '  type="text" name="BarCode" size="22" maxlength="20" value="' . $BarCode . '" />
-	</field>';
-
-$DiscountCategory = $_POST['DiscountCategory'] ?? '';
-echo '<field>
-		<label for="DiscountCategory">' . __('Discount Category') . ':</label>
-		<input type="text" name="DiscountCategory" size="2" maxlength="2" value="' . $DiscountCategory . '" />
-	</field>';
-
-echo '<field>
-		<label for="TaxCat">' . __('Tax Category') . ':</label>
-		<select name="TaxCat">';
-$SQL = "SELECT taxcatid, taxcatname FROM taxcategories ORDER BY taxcatname";
-$Result = DB_query($SQL);
-
-if (!isset($_POST['TaxCat'])) {
-	$_POST['TaxCat'] = $_SESSION['DefaultTaxCategory'];
-}
-
-while ($MyRow = DB_fetch_array($Result)) {
-	if ($_POST['TaxCat'] == $MyRow['taxcatid']) {
-		echo '<option selected="selected" value="' . $MyRow['taxcatid'] . '">' . $MyRow['taxcatname'] . '</option>';
-	} else {
-		echo '<option value="' . $MyRow['taxcatid'] . '">' . $MyRow['taxcatname'] . '</option>';
+	while ($MyRow = DB_fetch_array($Result)) {
+		$selected = ($_POST['TaxCat'] == $MyRow['taxcatid']) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="' . $MyRow['taxcatid'] . '">' . $MyRow['taxcatname'] . '</option>';
 	}
-} //end while loop
-echo '</select>
-	</field>';
+	echo '			</select>
+				</div>
 
-echo '<field>
-		<label for="PanSize">' . __('Pan Size') . ':</label>
-		<input class="number" id="PanSize" maxlength="6" name="Pansize" size="6" title="' . __('Order multiple. It is the minimum packing quantity.') . '" type="text" value="' . locale_number_format($_POST['Pansize'], 0) . '" />
-	</field>
-	 <field>
-		<label for="ShrinkageFactor">' . __('Shrinkage Factor') . ':</label>
-		<input class="number" id="ShrinkageFactor" maxlength="6" name="ShrinkFactor" size="6" title="' . __('Amount by which an output falls short of the estimated or planned output.') . '" type="text" value="' . locale_number_format($_POST['ShrinkFactor'], 'Variable') . '" />
-	</field>';
+				<div class="db-grid db-grid-2">
+					<div class="db-field">
+						<label for="DiscountCategory">' . __('Discount Category') . '</label>
+						<input type="text" class="db-input" name="DiscountCategory" maxlength="2" value="' . ($_POST['DiscountCategory'] ?? '') . '" />
+					</div>
+					<div class="db-field">
+						<label for="DecimalPlaces">' . __('Decimal Places') . '</label>
+						<input type="text" class="db-input number" name="DecimalPlaces" maxlength="1" value="' . $_POST['DecimalPlaces'] . '" />
+					</div>
+				</div>
 
-echo '</fieldset>';
+				<div class="db-grid db-grid-2">
+					<div class="db-field">
+						<label for="PanSize">' . __('Pan Size') . '</label>
+						<input type="text" class="db-input number" name="Pansize" maxlength="6" value="' . locale_number_format($_POST['Pansize'], 0) . '" />
+						<div class="db-field-help">' . __('Min packing qty.') . '</div>
+					</div>
+					<div class="db-field">
+						<label for="ShrinkageFactor">' . __('Shrinkage Factor') . '</label>
+						<input type="text" class="db-input number" name="ShrinkFactor" maxlength="6" value="' . locale_number_format($_POST['ShrinkFactor'], 'Variable') . '" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div><br />';
 
 if (!isset($_POST['CategoryID'])) {
 	$_POST['CategoryID'] = '';
@@ -1357,86 +1190,72 @@ $PropertyCounter = 0;
 $PropertyWidth = array();
 
 if (DB_num_rows($PropertiesResult) > 0) {
-	echo '<br />
-    <table class="selection">';
-	echo '<tr>
-			<th colspan="2">' . __('Item Category Properties') . '</th>
-		</tr>';
+	echo '<div class="db-card">
+			<div class="db-card-header">
+				<div class="db-card-title"><i class="fas fa-list-ul"></i> ' . __('Item Category Properties') . '</div>
+			</div>
+			<div class="db-card-body">';
 
 	while ($PropertyRow = DB_fetch_array($PropertiesResult)) {
-
 		if (isset($StockID)) {
-			$PropValResult = DB_query("SELECT value FROM
-									stockitemproperties
-									WHERE stockid='" . $StockID . "'
-									AND stkcatpropid ='" . $PropertyRow['stkcatpropid'] . "'");
+			$PropValResult = DB_query("SELECT value FROM stockitemproperties WHERE stockid='" . $StockID . "' AND stkcatpropid ='" . $PropertyRow['stkcatpropid'] . "'");
 			$PropValRow = DB_fetch_row($PropValResult);
-			$PropertyValue = $PropValRow[0];
+			$PropertyValue = $PropValRow[0] ?? '';
 		} else {
 			$PropertyValue = '';
 		}
-		echo '<tr>
-            <td>';
-		echo '<input type="hidden" name="PropID' . $PropertyCounter . '" value="' . $PropertyRow['stkcatpropid'] . '" />';
-		echo '<input type="hidden" name="PropNumeric' . $PropertyCounter . '" value="' . $PropertyRow['numericvalue'] . '" />';
-		echo $PropertyRow['label'] . '</td>
 
-			<td>';
+		echo '<div class="db-field">
+				<label>' . $PropertyRow['label'] . '</label>
+				<input type="hidden" name="PropID' . $PropertyCounter . '" value="' . $PropertyRow['stkcatpropid'] . '" />
+				<input type="hidden" name="PropNumeric' . $PropertyCounter . '" value="' . $PropertyRow['numericvalue'] . '" />
+				<input type="hidden" name="PropType' . $PropertyCounter . '" value="' . $PropertyRow['controltype'] . '" />';
+
 		switch ($PropertyRow['controltype']) {
 			case 0: //textbox
 				if ($PropertyRow['numericvalue'] == 1) {
 					echo '<input type="hidden" name="PropMin' . $PropertyCounter . '" value="' . $PropertyRow['minimumvalue'] . '" />';
 					echo '<input type="hidden" name="PropMax' . $PropertyCounter . '" value="' . $PropertyRow['maximumvalue'] . '" />';
-
-					echo '<input type="text" class="number" name="PropValue' . $PropertyCounter . '" size="20" maxlength="100" value="' . locale_number_format($PropertyValue, 'Variable') . '" />';
-					echo __('A number between') . ' ' . locale_number_format($PropertyRow['minimumvalue'], 'Variable') . ' ' . __('and') . ' ' . locale_number_format($PropertyRow['maximumvalue'], 'Variable') . ' ' . __('is expected');
+					echo '<input type="text" class="db-input number" name="PropValue' . $PropertyCounter . '" maxlength="100" value="' . locale_number_format($PropertyValue, 'Variable') . '" />';
+					echo '<div class="db-field-help">' . __('Expected range:') . ' ' . locale_number_format($PropertyRow['minimumvalue'], 'Variable') . ' - ' . locale_number_format($PropertyRow['maximumvalue'], 'Variable') . '</div>';
 				} else {
-					echo '<input type="text" name="PropValue' . $PropertyCounter . '" size="20" maxlength="100" value="' . $PropertyValue . '" />';
+					echo '<input type="text" class="db-input" name="PropValue' . $PropertyCounter . '" maxlength="100" value="' . $PropertyValue . '" />';
 				}
 				break;
 			case 1: //select box
 				$OptionValues = explode(',', $PropertyRow['defaultvalue']);
-				echo '<select name="PropValue' . $PropertyCounter . '">';
+				echo '<select name="PropValue' . $PropertyCounter . '" class="db-select">';
 				foreach ($OptionValues as $PropertyOptionValue) {
-					if ($PropertyOptionValue == $PropertyValue) {
-						echo '<option selected="selected" value="' . $PropertyOptionValue . '">' . $PropertyOptionValue . '</option>';
-					} else {
-						echo '<option value="' . $PropertyOptionValue . '">' . $PropertyOptionValue . '</option>';
-					}
+					$selected = ($PropertyOptionValue == $PropertyValue) ? 'selected="selected"' : '';
+					echo '<option ' . $selected . ' value="' . $PropertyOptionValue . '">' . $PropertyOptionValue . '</option>';
 				}
 				echo '</select>';
 				break;
 			case 2: //checkbox
-				echo '<input type="checkbox" name="PropValue' . $PropertyCounter . '"';
-				if ($PropertyValue == 1) {
-					echo 'checked';
-				}
-				echo ' />';
-			break;
-		} //end switch
-		echo '<input type="hidden" name="PropType' . $PropertyCounter . '" value="' . $PropertyRow['controltype'] . '" />';
-		echo '</td></tr>';
+				echo '<div style="margin-top:10px;"><input type="checkbox" name="PropValue' . $PropertyCounter . '" ' . ($PropertyValue == 1 ? 'checked' : '') . ' /></div>';
+				break;
+		}
+		echo '</div>';
 		$PropertyCounter++;
-
-	} //end loop round properties for the item category
-	unset($StockID);
-	echo '</table>';
+	}
+	echo '	</div>
+		</div><br />';
 }
 echo '<input type="hidden" name="PropertyCounter" value="' . $PropertyCounter . '" />';
 
-echo '<div class="centre">';
+echo '<div class="db-card">
+		<div class="db-card-body centre">';
 if ($New == 1) {
-	echo '<input type="submit" name="submit" value="' . __('Insert New Item') . '" />';
+	echo '<button type="submit" name="submit" class="db-btn db-btn-primary"><i class="fas fa-plus"></i> ' . __('Insert New Item') . '</button>';
 	echo '<input type="submit" name="UpdateCategories" style="visibility:hidden;width:1px" value="' . __('Categories') . '" />';
-
 } else {
-
-	// Now the form to enter the item properties
-	echo '<input type="submit" name="submit" value="' . __('Update') . '" /><br />';
-	echo '<input type="submit" name="delete" value="' . __('Delete This Item') . '" onclick="return confirm(\'' . __('Are You Sure?') . '\');" />';
+	echo '<button type="submit" name="submit" class="db-btn db-btn-primary"><i class="fas fa-save"></i> ' . __('Update Details') . '</button> ';
+	echo '<button type="submit" name="delete" class="db-btn db-btn-outline" style="color:var(--danger-color); border-color:var(--danger-color);" onclick="return confirm(\'' . __('Are You Sure?') . '\');"><i class="fas fa-trash"></i> ' . __('Delete This Item') . '</button>';
 	echo '<input type="submit" name="UpdateCategories" style="visibility:hidden;width:1px" value="' . __('Categories') . '" />';
 }
+echo '	</div>
+	</div>';
 
-echo '</div>
-	</form>';
+echo '	</form>
+	</div>'; // End of db-page
 include(__DIR__ . '/includes/footer.php');

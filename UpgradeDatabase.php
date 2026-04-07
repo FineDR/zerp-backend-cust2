@@ -7,56 +7,69 @@ require(__DIR__ . '/includes/session.php');
 $Title = __('Upgrade webERP Database');
 include(__DIR__ . '/includes/header.php');
 
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div class="db-page-title">
+				<i class="fas fa-database"></i> ' . $Title . '
+			</div>
+			<div class="db-page-actions">
+				<a href="' . $RootPath . '/index.php" class="db-btn db-btn-outline db-btn-small"><i class="fas fa-home"></i> ' . __('Back to Dashboard') . '</a>
+			</div>
+		</div><br />';
+
 if (!isset($_POST['DoUpgrade'])) {
 
-	echo '<br /><form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
-    echo '<div>';
+	echo '<div class="db-card">
+			<div class="db-card-header">
+				<div class="db-card-title"><i class="fas fa-info-circle"></i> ' . __('System Version Status') . '</div>
+			</div>
+			<div class="db-card-body">';
+    echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
 	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
 	if (!isset($_SESSION['VersionNumber'])){
 		prnMsg(__('The webERP code is version')  . ' ' . $Version . ' ' . __('and the database version is not actually recorded at this version'),'info');
-		echo '<table class="selection">
-			<tr>
-				<td>' . __('Select the version you are upgrading from:') . '</td>
-				<td><select name="OldVersion" >
-					<option selected="selected" value="Manual">' . __('Apply database changes manually') . '</option>
-					<option value="3.00">' . __('Version 3.00') . '</option>
-					<option value="3.01">' . __('Version 3.01') . '</option>
-					<option value="3.02">' . __('Version 3.02') . '</option>
-					<option value="3.03">' . __('Version 3.03') . '</option>
-					<option value="3.04">' . __('Version 3.04') . '</option>
-					<option value="3.05">' . __('Version 3.05') . '</option>
-					<option value="3.06">' . __('Version 3.06') . '</option>
-					<option value="3.07">' . __('Version 3.07') . '</option>
-					<option value="3.08">' . __('Version 3.08') . '</option>
-					<option value="3.09">' . __('Version 3.09') . '</option>
-					<option value="3.10">' . __('Version 3.10') . '</option>
-					<option value="3.11.x">' . __('Version 3.11 or 4.01 - 4.02') . '</option>
-				</select></td>
-			</tr>
-		</table>';
-		prnMsg(__('This script will perform any modifications to the database required to allow the additional functionality in later scripts.') . '<br /><a target="_blank" href="' . $RootPath . '/BackupDatabase.php">' .__('Click to do a database backup now before proceeding!') . '</a>','info');
-		echo '<div class="centre">
-					<input type="submit" name="DoUpgrade" value="' . __('Perform Database Upgrade') . '" />
+		echo '	<div class="db-field">
+					<label>' . __('Select the version you are upgrading from:') . '</label>
+					<select name="OldVersion" class="db-select">
+						<option selected="selected" value="Manual">' . __('Apply database changes manually') . '</option>
+						<option value="3.00">' . __('Version 3.00') . '</option>
+						<option value="3.01">' . __('Version 3.01') . '</option>
+						<option value="3.02">' . __('Version 3.02') . '</option>
+						<option value="3.03">' . __('Version 3.03') . '</option>
+						<option value="3.04">' . __('Version 3.04') . '</option>
+						<option value="3.05">' . __('Version 3.05') . '</option>
+						<option value="3.06">' . __('Version 3.06') . '</option>
+						<option value="3.07">' . __('Version 3.07') . '</option>
+						<option value="3.08">' . __('Version 3.08') . '</option>
+						<option value="3.09">' . __('Version 3.09') . '</option>
+						<option value="3.10">' . __('Version 3.10') . '</option>
+						<option value="3.11.x">' . __('Version 3.11 or 4.01 - 4.02') . '</option>
+					</select>
+				</div><br />';
+		prnMsg(__('This script will perform any modifications to the database required to allow the additional functionality in later scripts.') . '<br /><a target="_blank" href="' . $RootPath . '/BackupDatabase.php" class="db-link">' .__('Click to do a database backup now before proceeding!') . '</a>','info');
+		echo '	<div class="centre" style="margin-top:20px;">
+					<button type="submit" name="DoUpgrade" class="db-btn db-btn-primary"><i class="fas fa-sync"></i> ' . __('Perform Database Upgrade') . '</button>
 				</div>';
 	} else {
 		if ($_SESSION['VersionNumber']=='4.00RC1'){
 			$_SESSION['VersionNumber']='3.12';
 		}
 		if (strcmp($Version,$_SESSION['VersionNumber'])==0){
-			prnMsg(__('The database is up to date, there are no upgrades to perform'),'info');
+			prnMsg(__('The database is up to date, there are no upgrades to perform'),'success');
 		} else {
-			prnMsg(__('This script will perform any modifications to the database required to allow the additional functionality in later scripts.') . '<br />' . __('The webERP code is version')  . ' ' . $Version . ' ' . __('and the database version is') . ' ' . $_SESSION['VersionNumber'] . '<br /><a target="_blank" href="' . $RootPath . '/BackupDatabase.php">' .__('Click to do a database backup now before proceeding!') . '</a>','info');
+			prnMsg(__('This script will perform any modifications to the database required to allow the additional functionality in later scripts.') . '<br />' . __('The webERP code is version')  . ' ' . $Version . ' ' . __('and the database version is') . ' ' . $_SESSION['VersionNumber'] . '<br /><a target="_blank" href="' . $RootPath . '/BackupDatabase.php" class="db-link">' .__('Click to do a database backup now before proceeding!') . '</a>','info');
 
-			echo '<input type="hidden" name="OldVersion" value="' . $_SESSION['VersionNumber'] . '" />';
-			echo '<div class="centre">
-					<input type="submit" name="DoUpgrade" value="' . __('Perform Database Upgrade') . '" />
-				</div>';
+			echo '	<input type="hidden" name="OldVersion" value="' . $_SESSION['VersionNumber'] . '" />';
+			echo '	<div class="centre" style="margin-top:20px;">
+						<button type="submit" name="DoUpgrade" class="db-btn db-btn-primary"><i class="fas fa-sync"></i> ' . __('Perform Database Upgrade') . '</button>
+					</div>';
 		}
 	}
 
-	echo '</div>
-          </form>';
+	echo '	</div>
+		</div>';
+	echo '</form>';
 }
 
 if (isset($_POST['DoUpgrade'])) {
@@ -222,11 +235,19 @@ if (isset($_POST['DoUpgrade'])) {
 		$ScriptFileEntries = sizeof($SQLEntries);
 		$SQL ='';
 		$InAFunction = false;
-		echo '<br />
-			<table>
-			<tr>
-				<th colspan="2">' . __('Applying') . ' ' . $SQLScriptFile . '</th>
-			</tr>';
+		echo '<div class="db-card">
+				<div class="db-card-header">
+					<div class="db-card-title"><i class="fas fa-file-invoice"></i> ' . __('Applying') . ' ' . $SQLScriptFile . '</div>
+				</div>
+				<div class="db-card-body">
+					<table class="db-table">
+						<thead>
+							<tr>
+								<th>' . __('SQL Statement') . '</th>
+								<th style="width:120px">' . __('Results') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
 		for ($i=0; $i<=$ScriptFileEntries; $i++) {
 
@@ -252,43 +273,26 @@ if (isset($_POST['DoUpgrade'])) {
 					$Result = DB_query($SQL, '','', false, false);
 					echo '<tr><td>' . $SQL . '</td>';
 					echo match (DB_error_no()) {
-						0       => '<td style="background-color:green">' . __('Success') . '</td></tr>',
-						1025    => '<td style="background-color:yellow">' . __('Note') . ' - ' . __(
-								'Foreign Key already removed'
-							) . '</td></tr>',
-						1050    => '<td style="background-color:yellow">' . __('Note') . ' - ' . __(
-								'Table has already been created'
-							) . '</td></tr>',
-						1054    => '<td style="background-color:yellow">' . __('Note') . ' - ' . __(
-								'Column has already been changed'
-							) . '</td></tr>',
-						1060    => '<td style="background-color:yellow">' . __('Note') . ' - ' . __(
-								'Column has already been created'
-							) . '</td></tr>',
-						1061    => '<td style="background-color:yellow">' . __('Note') . ' - ' . __(
-								'Index already exists'
-							) . '</td></tr>',
-						1062    => '<td style="background-color:yellow">' . __('Note') . ' - ' . __(
-								'Entry has already been done'
-							) . '</td></tr>',
-						1064    => '<td style="background-color:red">' . __('Note') . ' - ' . __(
-								'SQL syntax error. The SQL error message is'
-							) . ' ' . DB_error_msg() . '</td></tr>',
-						1068    => '<td style="background-color:yellow">' . __('Note') . ' - ' . __(
-								'Primary key already exists'
-							) . '</td></tr>',
-						1091    => '<td style="background-color:yellow">' . __('Note') . ' - ' . __(
-								'Index already dropped previously'
-							) . '</td></tr>',
-						default => '<td style="background-color:red">' . __('Failure') . ' - ' . __(
-								'Error number'
-							) . ' - ' . DB_error_no() . ' ' . DB_error_msg() . '</td></tr>',
+						0       => '<td class="db-table-success"> <i class="fas fa-check-circle"></i> ' . __('Success') . '</td></tr>',
+						1025    => '<td class="db-table-warning"> <i class="fas fa-exclamation-triangle"></i> ' . __('Note') . ' - ' . __('Foreign Key already removed') . '</td></tr>',
+						1050    => '<td class="db-table-warning"> <i class="fas fa-exclamation-triangle"></i> ' . __('Note') . ' - ' . __('Table has already been created') . '</td></tr>',
+						1054    => '<td class="db-table-warning"> <i class="fas fa-exclamation-triangle"></i> ' . __('Note') . ' - ' . __('Column has already been changed') . '</td></tr>',
+						1060    => '<td class="db-table-warning"> <i class="fas fa-exclamation-triangle"></i> ' . __('Note') . ' - ' . __('Column has already been created') . '</td></tr>',
+						1061    => '<td class="db-table-warning"> <i class="fas fa-exclamation-triangle"></i> ' . __('Note') . ' - ' . __('Index already exists') . '</td></tr>',
+						1062    => '<td class="db-table-warning"> <i class="fas fa-exclamation-triangle"></i> ' . __('Note') . ' - ' . __('Entry has already been done') . '</td></tr>',
+						1064    => '<td class="db-table-error"> <i class="fas fa-times-circle"></i> ' . __('Note') . ' - ' . __('SQL syntax error. The SQL error message is') . ' ' . DB_error_msg() . '</td></tr>',
+						1068    => '<td class="db-table-warning"> <i class="fas fa-exclamation-triangle"></i> ' . __('Note') . ' - ' . __('Primary key already exists') . '</td></tr>',
+						1091    => '<td class="db-table-warning"> <i class="fas fa-exclamation-triangle"></i> ' . __('Note') . ' - ' . __('Index already dropped previously') . '</td></tr>',
+						default => '<td class="db-table-error"> <i class="fas fa-times-circle"></i> ' . __('Failure') . ' - ' . __('Error number') . ' - ' . DB_error_no() . ' ' . DB_error_msg() . '</td></tr>',
 					};
 					$SQL='';
 				}
 			} //end if its a valid sql line not a comment
 		} //end of for loop around the lines of the sql script
-	echo '</table>';
+		echo '	</tbody>
+					</table>
+				</div>
+			</div>';
 	} //end of loop around SQLScripts  apply
 	DB_ReinstateForeignKeys();
 	/*Now get the modified VersionNumber and script pagesecurities */
@@ -297,4 +301,5 @@ if (isset($_POST['DoUpgrade'])) {
 	$ForceConfigReload = false;
 } /*Dont do upgrade */
 
+echo '</div>'; // End of db-page
 include(__DIR__ . '/includes/footer.php');

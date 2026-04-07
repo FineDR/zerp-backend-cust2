@@ -16,8 +16,11 @@ if (isset($_POST['Process'])) {
 	if ($_SESSION['RequirePickingNote'] == 0) {
 		$Title = __('Picking Lists Not Enabled');
 		include ('includes/header.php');
-		echo '<br />';
+		echo '<div class="dashboard-shell-container">
+				<div class="MainBody">';
 		prnMsg(__('The system is not configured for picking lists. A configuration parameter is required where picking slips are required. Please consult your system administrator.'), 'info');
+		echo '	</div>
+			  </div>';
 		include ('includes/footer.php');
 		exit();
 	}
@@ -110,15 +113,16 @@ if (isset($_POST['Process'])) {
 		if (DB_num_rows($Result) == 0) {
 			$Title = __('Print Picking List Error');
 			include ('includes/header.php');
-			echo '<br />';
+			echo '<div class="dashboard-shell-container">
+					<div class="MainBody">';
 			prnMsg(__('Unable to Locate any orders for this criteria '), 'info');
-			echo '<br />
-				<table class="selection">
-				<tr>
-					<td><a href="' . $RootPath . '/PDFPickingList.php">' . __('Enter Another Date') . '</a></td>
-				</tr>
-				</table>
-				<br />';
+			echo '		<div class="card-v2" style="margin-top: var(--space-4);">
+							<div class="card-footer-v2">
+								<a href="' . $RootPath . '/PDFPickingList.php" class="btn-secondary">' . __('Enter Another Date') . '</a>
+							</div>
+						</div>
+					</div>
+				  </div>';
 			include ('includes/footer.php');
 			exit();
 		}
@@ -281,28 +285,44 @@ if (isset($_POST['Process'])) {
 			FROM locations
 			INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1";
 		$Result = DB_query($SQL);
-		echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/sales.png" title="' . __('Search') . '" alt="" />' . ' ' . $Title . '</p>';
-		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" name="form" target="_blank">
-		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-		<fieldset>
-			<legend>', __('Selection Criteria'), '</legend>
-		<field>
-			<label for="TransDate">' . __('Create picking lists for all deliveries to be made on') . ' : ' . '</label>
-			<input required="required" autofocus="autofocus" type="date" name="TransDate" maxlength="10" size="11" value="' . date('Y-m-d', mktime(date('m'), date('Y'), date('d') + 1)) . '" />
-		</field>
-		<field>
-			<label for="loccode">' . __('From Warehouse') . ' : ' . '</label>
-			<select required="required" name="loccode">';
+		
+		echo '<div class="dashboard-shell-container">
+				<div class="db-page-header">
+					<div>
+						<h2 class="db-page-title">' . $Title . '</h2>
+						<p class="db-page-subtitle">' . __('Generate picking lists for warehouse operations') . '</p>
+					</div>
+				</div>
+				<div class="MainBody">
+					<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" name="form" target="_blank">
+						<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+						
+						<div class="card-v2">
+							<div class="card-header-v2">
+								<h3>' . __('Selection Criteria') . '</h3>
+							</div>
+							<div class="db-field-group">
+								<div class="form-group">
+									<label for="TransDate">' . __('Deliveries to be made on') . '</label>
+									<input required="required" autofocus="autofocus" type="date" name="TransDate" value="' . date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') + 1, date('Y'))) . '" />
+								</div>
+								<div class="form-group">
+									<label for="loccode">' . __('From Warehouse') . '</label>
+									<select required="required" name="loccode">';
 		while ($MyRow = DB_fetch_array($Result)) {
 			echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 		}
-		echo '</select>
-		</field>
-		</fieldset>';
-		echo '<div class="centre">
-			<input type="submit" name="Process" value="' . __('Print Picking Lists') . '" />
-		</div>
-		</form>';
+		echo '				</select>
+								</div>
+							</div>
+							<div class="form-footer-actions">
+								<input type="submit" name="Process" value="' . __('Print Picking Lists') . '" class="primary-btn-modern" />
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>';
+
 		include ('includes/footer.php');
 		exit();
 	}

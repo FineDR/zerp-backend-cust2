@@ -1,7 +1,6 @@
 <?php
 /*
 
-/ *
 The column categoryid in the table stockcategory could not be changed to type varchar(6) and returned error number 1833
 ALTER TABLE stockcategory CHANGE COLUMN categoryid categoryid varchar(6) NOT NULL; 
 

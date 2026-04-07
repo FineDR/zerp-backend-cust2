@@ -419,12 +419,21 @@ if (isset($_POST['PlacePO'])) { /*user hit button to place PO for selected order
 }/*end of purchase order creation code */
 /* ******************************************************************************************* */
 
-/*To the sales order selection form */
+/* To the sales order selection form */
 
-echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/sales.png" title="' . __('Sales') . '" alt="" />' . ' ' . __('Outstanding Sales Orders') . '</p> ';
-
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+echo '<div class="dashboard-shell-container">
+		<div class="db-page-header">
+			<div>
+				<h2 class="db-page-title">' . __('Outstanding Sales Orders') . '</h2>
+				<p class="db-page-subtitle">' . __('Search and manage your active sales orders') . '</p>
+			</div>
+			<div class="db-header-actions">
+				<a href="' . $RootPath . '/SelectOrderItems.php?NewOrder=Yes" class="primary-btn-modern">+ ' . __('New Sales Order') . '</a>
+			</div>
+		</div>
+		<div class="MainBody">
+			<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
+				<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
 
 if (isset($_POST['ResetPart'])) {
@@ -447,23 +456,30 @@ if (isset($_POST['CustomerRef'])) {
 if (isset($OrderNumber) AND $OrderNumber != '') {
 	$OrderNumber = trim($OrderNumber);
 	if (!is_numeric($OrderNumber)) {
-		echo '<br />
-			<b>' . __('The Order Number entered MUST be numeric') . '</b>
-			<br />';
+		prnMsg(__('The Order Number entered MUST be numeric'), 'error');
 		unset ($OrderNumber);
 		include(__DIR__ . '/includes/footer.php');
 		exit();
-	} else {
-		echo __('Order Number') . ' - ' . $OrderNumber;
 	}
-} else {
+}
+
+if ((isset($OrderNumber) AND $OrderNumber != '') OR isset($SelectedCustomer) OR isset($SelectedStockItem)) {
+	echo '<div class="card-v2" style="background: var(--primary-soft); border-color: var(--primary-subtle); margin-bottom: var(--space-4);">
+			<div style="display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;">
+				<span style="font-weight: 700; color: var(--primary); font-size: 0.85rem;">' . __('Active Filters') . ':</span>';
+	if (isset($OrderNumber) AND $OrderNumber != '') {
+		echo '<span class="db-badge info"># ' . $OrderNumber . '</span>';
+	}
 	if (isset($SelectedCustomer)) {
-		echo __('For customer') . ': ' . $SelectedCustomer . ' ' . __('and') . ' ';
-		echo '<input type="hidden" name="SelectedCustomer" value="' . $SelectedCustomer . '" />';
+		echo '<span class="db-badge info">' . __('Customer') . ': ' . $SelectedCustomer . '</span>
+			  <input type="hidden" name="SelectedCustomer" value="' . $SelectedCustomer . '" />';
 	}
 	if (isset($SelectedStockItem)) {
-		 echo __('for the part') . ': ' . $SelectedStockItem . ' ' . __('and') . ' <input type="hidden" name="SelectedStockItem" value="' . $SelectedStockItem . '" />';
+		echo '<span class="db-badge info">' . __('Part') . ': ' . $SelectedStockItem . '</span>
+			  <input type="hidden" name="SelectedStockItem" value="' . $SelectedStockItem . '" />';
 	}
+	echo '	</div>
+		  </div>';
 }
 
 if (isset($_POST['SearchParts'])) {
@@ -487,15 +503,18 @@ if (!isset($StockID)) {
 
 	if (!isset($OrderNumber) OR $OrderNumber == '') {
 
-		echo '<fieldset>
-				<legend class="search">', __('Search Criteria'), '</legend>
-				<field>
-					<label for="OrderNumber">' . __('Order number') . ': </label>
-					<input type="text" name="OrderNumber" maxlength="8" size="9" />
-				</field>
-				<field>
-				<label for="StockLocation">' . __('From Stock Location') . ':</label>
-				<select name="StockLocation"> ';
+		echo '<div class="card-v2">
+				<div class="card-header-v2">
+					<h3>' . __('Search Criteria') . '</h3>
+				</div>
+				<div class="db-field-group" style="margin-bottom: var(--space-4);">
+					<div class="form-group">
+						<label for="OrderNumber">' . __('Order number') . '</label>
+						<input type="text" name="OrderNumber" maxlength="8" size="9" placeholder="' . __('Enter Order #') . '" />
+					</div>
+					<div class="form-group">
+						<label for="StockLocation">' . __('From Stock Location') . '</label>
+						<select name="StockLocation"> ';
 
 		$SQL = "SELECT locationname,
 						locations.loccode
@@ -521,25 +540,16 @@ if (!isset($StockID)) {
 		}
 
 		echo '</select>
-			</field>';
+					</div>';
 
-		echo '<field>
-				<label for="Quotations">', __('Search in'), '</label>
-				<select name="Quotations">';
-
-		if ( $_POST['Quotations'] == 'Quotes_Only' ) {
-			echo '<option selected="selected" value="Quotes_Only">' . __('Quotations Only') . '</option>';
-			echo '<option value="Orders_Only">' . __('Orders Only')  . '</option>';
-			echo '<option value="Overdue_Only">' . __('Overdue Only') . '</option>';
-		} elseif ( $_POST['Quotations'] == 'Overdue_Only' ) {
-			echo '<option selected="selected" value="Overdue_Only">' . __('Overdue Only') . '</option>';
-			echo '<option value="Quotes_Only">' . __('Quotations Only') . '</option>';
-			echo '<option value="Orders_Only">' . __('Orders Only') . '</option>';
-		} else {
-			echo '<option selected="selected" value="Orders_Only">' . __('Orders Only') . '</option>';
-			echo '<option value="Quotes_Only">' . __('Quotations Only') . '</option>';
-			echo '<option value="Overdue_Only">' . __('Overdue Only') . '</option>';
-		}
+					echo '<div class="form-group" style="grid-column: 1 / -1; margin-bottom: var(--space-4);">
+						<label>' . __('Show Only') . '</label>
+						<div class="db-tabs">
+							<button type="submit" name="Quotations" value="Orders_Only" class="db-tab-btn ' . ($_POST['Quotations'] == 'Orders_Only' ? 'active' : '') . '">' . __('Orders') . '</button>
+							<button type="submit" name="Quotations" value="Quotes_Only" class="db-tab-btn ' . ($_POST['Quotations'] == 'Quotes_Only' ? 'active' : '') . '">' . __('Quotations') . '</button>
+							<button type="submit" name="Quotations" value="Overdue_Only" class="db-tab-btn ' . ($_POST['Quotations'] == 'Overdue_Only' ? 'active' : '') . '">' . __('Overdue') . '</button>
+						</div>
+					</div>';
 
 		if (!isset($_POST['DueDateFrom'])) {
 			$_POST['DueDateFrom'] = date($_SESSION['DefaultDateFormat']);
@@ -557,36 +567,34 @@ if (!isset($StockID)) {
 			$_POST['OrderDateTo'] = date($_SESSION['DefaultDateFormat']);
 		}
 
+		echo '		<div class="db-field-group">
 
-		echo '</select>
-			</field>';
-
-		echo '<field>
-				<label for="CustomerRef">' . __('Customer Ref') . '</label>
-				<input type="text" name="CustomerRef" value="' . $_POST['CustomerRef'] . '" size="12" />
-			</field>
-			<field>
-				<label for"DueDateFrom">' . __('Due Date From') . '</label>
-				<input type="date" name="DueDateFrom" value="' . FormatDateForSQL($_POST['DueDateFrom']) . '" size="10" />
-			</field>
-			<field>
-				<label for="DueDateTo">' . __('Due Date To') . '</label>
-				<input type="date" name="DueDateTo" value="' . FormatDateForSQL($_POST['DueDateTo']) . '" size="10" />
-			</field>
-			<field>
-				<label for="OrderDateFrom">' . __('Order Date From') . '</label>
-				<input type="date" name="OrderDateFrom" value="' . FormatDateForSQL($_POST['OrderDateFrom']) . '" size="10" />
-			</field>
-			<field>
-				<label for="OrderDateTo">' . __('Order Date To') . '</label>
-				<input type="date" name="OrderDateTo" value="' . FormatDateForSQL($_POST['OrderDateTo']) . '" size="10" />
-			</field>
-		</fieldset>
-		<div class="centre">
-			<input type="submit" name="SearchOrders" value="' . __('Search') . '" />
-			<input type="reset" name="Reset" value="' . __('Reset') . '" />
-			<a href="' . $RootPath . '/SelectOrderItems.php?NewOrder=Yes">' . __('Add Sales Order') . '</a>
-		</div>';
+					<div class="form-group">
+						<label for="CustomerRef">' . __('Customer Ref') . '</label>
+						<input type="text" name="CustomerRef" value="' . $_POST['CustomerRef'] . '" size="12" />
+					</div>
+					<div class="form-group">
+						<label for="DueDateFrom">' . __('Due Date From') . '</label>
+						<input type="date" name="DueDateFrom" value="' . FormatDateForSQL($_POST['DueDateFrom']) . '" />
+					</div>
+					<div class="form-group">
+						<label for="DueDateTo">' . __('Due Date To') . '</label>
+						<input type="date" name="DueDateTo" value="' . FormatDateForSQL($_POST['DueDateTo']) . '" />
+					</div>
+					<div class="form-group">
+						<label for="OrderDateFrom">' . __('Order Date From') . '</label>
+						<input type="date" name="OrderDateFrom" value="' . FormatDateForSQL($_POST['OrderDateFrom']) . '" />
+					</div>
+					<div class="form-group">
+						<label for="OrderDateTo">' . __('Order Date To') . '</label>
+						<input type="date" name="OrderDateTo" value="' . FormatDateForSQL($_POST['OrderDateTo']) . '" />
+					</div>
+				</div>
+				<div class="form-footer-actions">
+					<input type="submit" name="SearchOrders" value="' . __('Search Orders Now') . '" class="primary-btn-modern" />
+					<input type="reset" name="Reset" value="' . __('Clear Filters') . '" class="btn-secondary" />
+				</div>
+			</div>';
 	}
 
 	$SQL="SELECT categoryid,
@@ -603,12 +611,16 @@ if (!isset($StockID)) {
 		$_POST['StockCode'] = '';
 	}
 
-	echo '<fieldset>
-			<legend class="search">' . __('To search for sales orders for a specific part use the part selection facilities below') . '</legend>
-			<field>
-			<label for="StockCat">' . __('Select a stock category') . ':</label>
-			<select name="StockCat">';
-		echo '<option value="All">' . __('All') . '</option>';
+	echo '<div class="card-v2" style="margin-top: var(--space-6);">
+				<div class="card-header-v2">
+					<h3>' . __('Search by Part') . '</h3>
+					<span class="tag">' . __('Find orders by stock item') . '</span>
+				</div>
+				<div class="db-field-group">
+					<div class="form-group">
+						<label for="StockCat">' . __('Stock Category') . '</label>
+						<select name="StockCat">';
+	echo '<option value="All">' . __('All Categories') . '</option>';
 
 	while ($MyRow1 = DB_fetch_array($Result1)) {
 		if (isset($_POST['StockCat']) and $_POST['StockCat'] == $MyRow1['categoryid']) {
@@ -619,25 +631,27 @@ if (!isset($StockID)) {
 	}
 
 	echo '</select>
-		</field>
-		<field>
-			<label for="Keywords">' . __('Enter text extract(s) in the description') . ':</label>
-			<input type="text" name="Keywords" size="20" maxlength="25" />
-		</field>
-		<field>
-			<label for="StockCode">' . '<b>' . __('OR') . ' </b>' . __('Enter extract of the Stock Code') . ':</label>
-			<input type="text" name="StockCode" size="15" maxlength="18"  value="' . $_POST['StockCode'] . '" />
-		</field>
-	</fieldset>';
-	echo '<div class="centre">
-			<input type="submit" name="SearchParts" value="' . __('Search Parts Now') . '" />
-			<input type="reset" name="ResetPart" value="' . __('Show All') . '" />
-		</div>';
+					</div>
+					<div class="form-group">
+						<label for="Keywords">' . __('Description Keywords') . '</label>
+						<input type="text" name="Keywords" size="20" maxlength="25" placeholder="' . __('Enter keywords...') . '" />
+					</div>
+					<div class="form-group">
+						<label for="StockCode">' . __('OR') . ' ' . __('Stock Code Extract') . '</label>
+						<input type="text" name="StockCode" size="15" maxlength="18" value="' . $_POST['StockCode'] . '" placeholder="' . __('Enter code extract...') . '" />
+					</div>
+				</div>
+				<div class="form-footer-actions">
+					<input type="submit" name="SearchParts" value="' . __('Search Parts Now') . '" class="primary-btn-modern" />
+					<input type="submit" name="ResetPart" value="' . __('Show All Parts') . '" class="btn-secondary" />
+				</div>
+			</div>';
 
 if (isset($StockItemsResult)
 	AND DB_num_rows($StockItemsResult) > 1) {
 
-	echo '<table cellpadding="2" class="selection">
+	echo '<div class="activity-table-wrapper">
+				<table class="activity-row-v2">
 		<thead>
 			<tr>
 			<th class="SortedColumn" >' . __('Code') . '</th>
@@ -651,16 +665,16 @@ if (isset($StockItemsResult)
 	while ($MyRow = DB_fetch_array($StockItemsResult)) {
 
 		echo '<tr class="striped_row">
-				<td><input type="submit" name="SelectedStockItem" value="', $MyRow['stockid'], '" /></td>
-				<td>', $MyRow['description'], '</td>
-				<td class="number">', locale_number_format($MyRow['qoh'],$MyRow['decimalplaces']), '</td>
-				<td>', $MyRow['units'], '</td>
+				<td><button type="submit" name="SelectedStockItem" value="', $MyRow['stockid'], '" class="text-link" style="background:none; border:none; padding:0; cursor:pointer; font-weight:700;">', $MyRow['stockid'], '</button></td>
+				<td class="cust-name">', $MyRow['description'], '</td>
+				<td class="number val-bold">', locale_number_format($MyRow['qoh'],$MyRow['decimalplaces']), '</td>
+				<td><span class="tag">', $MyRow['units'], '</span></td>
 			</tr>';
 //end of page full new headings if
 	}
 //end of while loop
 
-	echo '</tbody></table>';
+	echo '</tbody></table></div>';
 
 }
 //end if stock search results to show
@@ -888,7 +902,22 @@ if (isset($StockItemsResult)
 
 		$AuthRow = DB_fetch_array($AuthResult);
 
-		echo '<table cellpadding="2" width="95%" class="selection">';
+		$StatusBadge = '';
+		if ($_POST['Quotations'] == 'Quotes_Only') {
+			$StatusBadge = '<span class="db-status-badge info">' . __('Quotation') . '</span>';
+		} elseif ($_POST['Quotations'] == 'Overdue_Only') {
+			$StatusBadge = '<span class="db-status-badge" style="background:var(--danger-bg); color:var(--danger);">' . __('Overdue') . '</span>';
+		} else {
+			$StatusBadge = '<span class="db-status-badge" style="background:var(--success-bg); color:var(--success);">' . __('Order') . '</span>';
+		}
+
+		echo '<div class="card-v2" style="margin-top: var(--space-6);">
+				<div class="card-header-v2">
+					<h3>' . ($_POST['Quotations'] == 'Quotes_Only' ? __('Quotations') : __('Outstanding Orders')) . ' ' . $StatusBadge . '</h3>
+					<span class="tag">' . DB_num_rows($SalesOrdersResult) . ' ' . __('Found') . '</span>
+				</div>
+				<div class="activity-table-wrapper">
+					<table class="activity-row-v2">';
 		if (is_null($AuthRow)) {
 			$canCreate = 1;
 		} else {
@@ -993,13 +1022,13 @@ if (isset($StockItemsResult)
 
 				if ($_POST['Quotations'] == 'Orders_Only' OR $_POST['Quotations'] == 'Overdue_Only') {
 					echo '<tr class="striped_row">
-								<td class="number"><a href="', $ModifyPage, '">', $MyRow['orderno'], '</a></td>
-								<td><a href="', $PrintAck, '" target="_blank">', __('Acknowledge'), '</a>', $PrintDummyFlag, '</td>
+								<td class="number"><a href="', $ModifyPage, '" class="ref-badge">', $MyRow['orderno'], '</a></td>
+								<td><a href="', $PrintAck, '" target="_blank" class="text-link">', __('Acknowledge'), '</a>', $PrintDummyFlag, '</td>
 								', $PrintPickLabel, '
-								<td><a href="', $Confirm_Invoice, '">', __('Invoice'), '</a></td>
-								<td><a href="', $PrintDispatchNote, '" target="_blank"><img width="16px" src="', $RootPath, '/css/', $Theme, '/images/pdf.png" title="', __('Click for PDF'), '" alt="" /> ', $PrintText, ' </a></td>
-								<td><a href="', $PrintLabels, '" target="_blank">', __('Labels'), '</a></td>
-								<td>', $MyRow['name'], '</td>
+								<td><a href="', $Confirm_Invoice, '" class="text-link">', __('Invoice'), '</a></td>
+								<td><a href="', $PrintDispatchNote, '" target="_blank" class="text-link"><img width="16px" src="', $RootPath, '/css/', $Theme, '/images/pdf.png" title="', __('Click for PDF'), '" alt="" style="display:inline; vertical-align:middle; margin-right:4px;" /> ', $PrintText, ' </a></td>
+								<td><a href="', $PrintLabels, '" target="_blank" class="text-link">', __('Labels'), '</a></td>
+								<td class="cust-name">', $MyRow['name'], '</td>
 								<td>', $MyRow['brname'], '</td>
 								<td>', $CustomerRef, '</td>
 								<td class="date">', $FormatedOrderDate, '</td>
@@ -1018,9 +1047,13 @@ if (isset($StockItemsResult)
 
 				} else { /*must be quotes only */
 					echo '<tr class="striped_row">
-							<td><a href="', $ModifyPage, '">', $MyRow['orderno'], '</a></td>
-							<td><a href="', $PrintQuotation, '" target="_blank">' . __('Landscape') . '</a>&nbsp;&nbsp;<a target="_blank" href="', $PrintQuotationPortrait, '">' . __('Portrait') . '</a></td>
-							<td>', $MyRow['name'], '</td>
+							<td><a href="', $ModifyPage, '" class="ref-badge">', $MyRow['orderno'], '</a></td>
+							<td>
+								<a href="', $PrintQuotation, '" target="_blank" class="text-link">' . __('Landscape') . '</a>
+								<span class="text-muted" style="margin: 0 4px;">|</span>
+								<a target="_blank" href="', $PrintQuotationPortrait, '" class="text-link">' . __('Portrait') . '</a>
+							</td>
+							<td class="cust-name">', $MyRow['name'], '</td>
 							<td>', $MyRow['brname'], '</td>
 							<td>', $MyRow['customerref'], '</td>
 							<td>', $FormatedOrderDate, '</td>
@@ -1051,18 +1084,21 @@ if (isset($StockItemsResult)
 
 		if ($_POST['Quotations'] == 'Orders_Only' AND $canCreate == 0) { //cancreate == 0 means can create POs
 			echo '<td>
-					<input type="submit" name="PlacePO" value="' . __('Place') . " " . __('PO') . '" onclick="return confirm(\'' . __('This will create purchase orders for all the items on the checked sales orders above, based on the preferred supplier purchasing data held in the system. Are You Absolutely Sure?') . '\');" />
+					<input type="submit" name="PlacePO" value="' . __('Place') . " " . __('PO') . '" class="primary-btn-modern" onclick="return confirm(\'' . __('This will create purchase orders for all the items on the checked sales orders above, based on the preferred supplier purchasing data held in the system. Are You Absolutely Sure?') . '\');" />
 				</td>';
 		}
 
 		echo '</tr>
 			</tfoot>
-		</table>';
+		</table>
+		</div>
+		</div>';
 	} //end if there are some orders to show
 }
 
-echo '</div>
-	  </form>';
+echo '		</div> <!-- End MainBody -->
+	  </form>
+	</div> <!-- End dashboard-shell-container -->';
 
 } //end StockID already selected
 

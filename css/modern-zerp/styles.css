@@ -2422,3 +2422,230 @@ body.has-sticky-footer {
     cursor: pointer;
     z-index: 2;
 }
+
+/* --- Customer Search Hub (UX Polish) --- */
+.db-search-hero {
+    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.05), rgba(var(--primary-rgb), 0.01));
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 30px;
+    border: 1px solid var(--border-soft);
+    text-align: center;
+}
+
+.db-search-form {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.db-search-input-wrap {
+    display: flex;
+    position: relative;
+    background: var(--surface);
+    border: 2px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 4px;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.db-search-input-wrap:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1);
+}
+
+.db-search-icon {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.db-search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 12px 0;
+    font-size: 1.1rem;
+    color: var(--text);
+    outline: none;
+}
+
+.db-search-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.db-search-btn:hover {
+    background: var(--primary-hover);
+}
+
+/* Advanced Filters */
+.db-advanced-filters {
+    margin-top: 16px;
+    text-align: left;
+}
+
+.db-filters-summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.db-filters-summary:hover {
+    background: var(--border-soft);
+    color: var(--text);
+}
+
+.db-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 16px;
+    background: var(--surface-alt);
+    border-radius: 10px;
+    margin-top: 8px;
+    border: 1px solid var(--border-soft);
+}
+
+/* Customer Cards */
+.db-customer-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.db-customer-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.db-cust-card-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.db-cust-initials {
+    width: 48px;
+    height: 48px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.db-cust-name {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text);
+    line-height: 1.2;
+}
+
+.db-cust-code {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.db-cust-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.db-cust-detail {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.db-cust-detail i {
+    width: 16px;
+    color: var(--primary);
+    opacity: 0.7;
+}
+
+/* Action Toolbar */
+.db-action-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.db-action-toolbar .db-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+}
+
+/* Accordion/Details Polish */
+.db-accordion {
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    background: var(--surface);
+}
+
+.db-accordion summary {
+    padding: 16px 20px;
+    background: var(--surface-alt);
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid transparent;
+}
+
+.db-accordion[open] summary {
+    border-bottom-color: var(--border-soft);
+}
+
+.db-accordion summary::-webkit-details-marker {
+    display: none;
+}
+
+.db-accordion summary::after {
+    content: '\f078';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    margin-left: auto;
+    transition: transform 0.2s;
+    font-size: 0.8rem;
+    opacity: 0.5;
+}
+
+.db-accordion[open] summary::after {
+    transform: rotate(180deg);
+}
+
+.db-accordion .db-card-body {
+    padding: 20px;
+}
