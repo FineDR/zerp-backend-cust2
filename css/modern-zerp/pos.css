@@ -537,15 +537,68 @@
     100% { transform: scale(1); }
 }
 
-/* Mobile Adjustments */
+
+/* Mobile Shell & Media Queries */
 @media (max-width: 1024px) {
     .pos-layout {
+        grid-template-columns: 1fr; /* Single column for mobile */
         height: auto;
         overflow-y: auto;
+        padding-bottom: 80px; /* Space for fixed tabs at bottom */
     }
-    
+
     .pos-sidebar {
-        height: 70vh;
+        height: auto;
+        max-height: calc(100vh - 150px);
+    }
+
+    .pos-mobile-tabs {
+        display: flex !important; /* Force visible on mobile */
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: white;
+        border-top: 1px solid var(--border);
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+        z-index: 1000;
+        padding: var(--space-2);
+        gap: var(--space-2);
+    }
+
+    .pos-mobile-tab-btn {
+        flex: 1;
+        padding: var(--space-3);
+        border: none;
+        background: var(--bg-main);
+        border-radius: var(--radius-md);
+        color: var(--text-muted);
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .pos-mobile-tab-btn i {
+        font-size: 1.2rem;
+    }
+
+    .pos-mobile-tab-btn.active {
+        background: var(--primary-soft);
+        color: var(--primary);
+    }
+
+    .mobile-hidden {
+        display: none !important;
+    }
+
+    .pos-cart-footer {
+        position: static;
+        box-shadow: none;
+        border-top: 1px solid var(--border-soft);
     }
 }
 
