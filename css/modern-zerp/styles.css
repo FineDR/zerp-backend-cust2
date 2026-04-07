@@ -1763,7 +1763,662 @@ hr {
     .db-page-header { flex-direction: column; }
 }
 
-@media (max-width: 480px) {
-    .db-kpi-row { grid-template-columns: 1fr; }
-    .db-kpi-value { font-size: 1.3rem; }
+/* --- POS & SINGLE PANE ORDER ENTRY LAYOUT --- */
+.db-pos-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: var(--space-6);
+    align-items: start;
+    margin-top: var(--space-6);
+    padding-bottom: 150px; /* Space for sticky footer if needed */
+}
+
+.db-pos-main {
+    min-width: 0; /* Prevents overflow in grid */
+}
+
+.db-pos-sidebar {
+    position: sticky;
+    top: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    max-height: calc(100vh - 40px);
+}
+
+.db-sidebar-cart {
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.db-sidebar-cart-header {
+    padding: var(--space-4) var(--space-5);
+    background: var(--bg-workspace);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.db-sidebar-cart-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-4);
+    min-height: 200px;
+    max-height: 500px;
+}
+
+.db-sidebar-cart-footer {
+    padding: var(--space-5);
+    border-top: 2px solid var(--bg-workspace);
+    background: white;
+}
+
+/* Condensed Cart Item for Sidebar */
+.db-sidebar-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.db-sidebar-item:last-child {
+    border-bottom: none;
+}
+
+.db-sidebar-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.db-sidebar-item-name {
+    font-size: var(--font-sm);
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.3;
+}
+
+.db-sidebar-item-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.db-sidebar-item-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-2);
+}
+
+.db-sidebar-item-qty {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.db-sidebar-total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--space-2);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.db-sidebar-total-main {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--space-4);
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+/* Global Search Bar Styling */
+.db-global-search-container {
+    background: white;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--space-6);
+}
+
+.db-search-input-group {
+    display: flex;
+    gap: var(--space-3);
+}
+
+.db-search-input-group .db-input {
+    flex: 1;
+    font-size: 1rem;
+    height: 48px;
+}
+
+/* Mobile Responsiveness for 2-column POS */
+@media (max-width: 1100px) {
+    .db-pos-wrapper {
+        grid-template-columns: 1fr;
+    }
+    .db-pos-sidebar {
+        position: static;
+        max-height: none;
+    }
+}
+
+/* Tabs */
+.db-tab-container {
+    margin-bottom: var(--space-4);
+}
+
+.db-tabs {
+    display: flex;
+    gap: var(--space-1);
+    border-bottom: 2px solid var(--border-soft);
+    padding-bottom: 0;
+}
+
+.db-tab-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: var(--space-3) var(--space-4);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: -2px;
+}
+
+.db-tab-btn:hover {
+    color: var(--primary);
+    background: var(--primary-soft);
+}
+
+.db-tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.db-tab-pane {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.db-tab-pane.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Row Variants */
+.db-row-danger td {
+    background-color: var(--danger-bg-subtle, rgba(255, 0, 0, 0.05));
+    border-left: 3px solid var(--danger);
+}
+
+/* Badges */
+.db-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-workspace);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.db-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.db-status-badge.info {
+    background: var(--info-bg);
+    color: var(--info);
+}
+
+/* Icon Buttons */
+.db-btn-icon {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    color: var(--text-muted);
+    background: var(--bg-workspace);
+    border: 1px solid var(--border);
+}
+
+.db-btn-icon:hover {
+    background: var(--primary-soft);
+    color: var(--primary);
+    border-color: var(--primary-subtle);
+}
+
+.db-btn-icon.db-btn-danger:hover {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border-color: var(--danger);
+}
+
+/* Field Group Utility */
+.db-field-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+}
+
+
+/* Info Grid for Professional Cards */
+.db-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-4);
+}
+
+.db-info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-fast);
+}
+
+.db-info-item:hover {
+    background: var(--bg-workspace);
+}
+
+.db-info-item i {
+    font-size: 1.25rem;
+    padding-top: 4px;
+}
+
+.db-info-item div {
+    display: flex;
+    flex-direction: column;
+}
+
+.db-info-item label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    margin-bottom: 2px;
+}
+
+.db-info-item span {
+    font-size: 0.9375rem;
+    color: var(--text-dark);
+    line-height: 1.4;
+}
+
+.db-icon-green {
+    color: var(--primary);
+}
+
+/* Page Header Adjustments */
+.db-customer-info-card {
+    border-left: 4px solid var(--primary);
+}
+
+
+/* Sticky Action Footer */
+.db-sticky-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: var(--space-4) var(--space-8);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--space-8);
+    box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+}
+
+/* If there is a sidebar, we need to offset it */
+@media (min-width: 1101px) {
+    .db-sticky-footer {
+        left: 240px; /* Standard sidebar width */
+    }
+}
+
+.db-sticky-total {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+}
+
+.db-sticky-total .db-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.db-sticky-total .db-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+body.has-sticky-footer {
+    padding-bottom: 100px;
+}
+
+
+/* Mobile Responsive Adjustments for Sticky Footer */
+@media (max-width: 768px) {
+    .db-sticky-footer {
+        flex-direction: column;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-4);
+        align-items: stretch;
+        left: 0 !important;
+    }
+    .db-sticky-total {
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: var(--space-1);
+        margin-bottom: var(--space-1);
+    }
+    .db-sticky-total .db-label {
+        font-size: 0.65rem;
+    }
+    .db-sticky-total .db-value {
+        font-size: 1.15rem;
+    }
+    .db-sticky-footer .db-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-2);
+    }
+    .db-sticky-footer .db-btn {
+        padding: var(--space-2);
+        font-size: 0.875rem;
+    }
+    
+    body.has-sticky-footer {
+        padding-bottom: 140px; /* More space for stacked footer */
+    }
+}
+
+
+/* Product Grid & Card Styles */
+.db-product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-8);
+    margin-top: var(--space-6);
+}
+
+.db-product-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all var(--transition-normal);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.db-product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0, 50, 0, 0.08);
+    border-color: var(--primary-light);
+}
+
+.db-product-image {
+    aspect-ratio: 16/10;
+    background: linear-gradient(135deg, var(--bg-workspace) 0%, var(--border) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 4rem;
+    position: relative;
+}
+
+.db-product-image .db-badge {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    box-shadow: var(--shadow-sm);
+}
+
+.db-product-content {
+    padding: var(--space-6);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.db-product-id {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: var(--space-1);
+    text-transform: uppercase;
+}
+
+.db-product-name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+    color: var(--text-dark);
+    line-height: 1.3;
+}
+
+.db-product-price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-top: auto;
+}
+
+.db-product-meta {
+    display: flex;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border);
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+.db-product-meta i {
+    color: var(--primary);
+    width: 16px;
+    text-align: center;
+}
+
+/* Add to Order controls inside card */
+.db-product-card-footer {
+    padding: var(--space-4) var(--space-6);
+    background: var(--bg-workspace);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    border-top: 1px solid var(--border);
+}
+
+.db-product-card-footer .db-input-sm {
+    width: 80px;
+    text-align: center;
+}
+
+/* Horizontal Scroll for Frequent Items */
+.db-horizontal-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: var(--space-6);
+    padding: var(--space-2) var(--space-2) var(--space-6) var(--space-2);
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+.db-horizontal-scroll .db-product-card {
+    min-width: 300px;
+    max-width: 300px;
+    scroll-snap-align: start;
+}
+
+/* Custom Scrollbar for Horizontal Scroll */
+.db-horizontal-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+.db-horizontal-scroll::-webkit-scrollbar-track {
+    background: var(--bg-workspace);
+    border-radius: 10px;
+}
+.db-horizontal-scroll::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+}
+.db-horizontal-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+
+/* Customer Selection Overhaul */
+.db-customer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-6);
+    margin-top: var(--space-6);
+}
+
+.db-customer-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    transition: all var(--transition-normal) ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.db-customer-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.db-customer-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.db-customer-card:hover::before {
+    opacity: 1;
+}
+
+.db-customer-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.db-customer-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: var(--primary-soft);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.db-customer-details h4 {
+    margin: 0;
+    color: var(--text-dark);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.db-customer-details p {
+    margin: 2px 0 0;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+}
+
+.db-customer-meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-top: auto;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border-soft);
+}
+
+.db-customer-meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.db-customer-meta-item i {
+    width: 14px;
+    color: var(--primary);
+    text-align: center;
+}
+
+.db-customer-select-btn {
+    margin-top: var(--space-4);
+    width: 100%;
+}
+
+.db-customer-card input[type="submit"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
 }
