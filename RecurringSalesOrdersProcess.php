@@ -28,9 +28,17 @@ $Title = __('Recurring Orders Process');
 $ViewTopic = "SalesOrders";
 $BookMark = "RecurringSalesOrders";
 include(__DIR__ . '/includes/header.php');
-
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/GetSalesTransGLCodes.php');
+
+echo '<div class="dashboard-shell-container">
+		<header class="db-page-header">
+			<div>
+				<h2 class="db-page-title">' . $Title . '</h2>
+				<p class="db-page-subtitle">' . __('Automated processing of scheduled recurring sales orders') . '</p>
+			</div>
+		</header>
+		<div class="MainBody">';
 
 $SQL = "SELECT recurringsalesorders.recurrorderno,
 			recurringsalesorders.debtorno,
@@ -80,17 +88,33 @@ $SQL = "SELECT recurringsalesorders.recurrorderno,
 $RecurrOrdersDueResult = DB_query($SQL,__('There was a problem retrieving the recurring sales order templates. The database reported:'));
 
 if (DB_num_rows($RecurrOrdersDueResult)==0){
-	prnMsg(__('There are no recurring order templates that are due to have another recurring order created'),'warn');
+	echo '<div class="card-v2">
+			<div class="prnInfo">
+				' . __('There are no recurring order templates that are due to have another recurring order created') . '
+			</div>
+		</div>
+		</div></div><!-- .MainBody & .dashboard-shell-container -->';
 	include(__DIR__ . '/includes/footer.php');
 	exit();
 }
 
-prnMsg(__('The number of recurring orders to process is') .' : ' . DB_num_rows($RecurrOrdersDueResult),'info');
+echo '<div class="card-v2">
+		<div class="card-header-v2">
+			<h3>' . __('Processing Queue') . '</h3>
+			<span class="badge-v2 badge-info">' . DB_num_rows($RecurrOrdersDueResult) . ' ' . __('Templates Due') . '</span>
+		</div>
+		<div class="card-body-v2">
+			<div class="processing-log">';
 
 while ($RecurrOrderRow = DB_fetch_array($RecurrOrdersDueResult)){
 
 	$EmailText ='';
-	echo '<br />' . __('Recurring order') . ' ' . $RecurrOrderRow['recurrorderno'] . ' ' . __('for') . ' ' . $RecurrOrderRow['debtorno'] . ' - ' . $RecurrOrderRow['branchcode'] . ' ' . __('is being processed');
+	echo '<div class="log-entry">
+			<div class="log-header">
+				<strong>' . __('Recurring Order') . ': ' . $RecurrOrderRow['recurrorderno'] . '</strong>
+				<span class="log-customer">' . $RecurrOrderRow['debtorno'] . ' - ' . $RecurrOrderRow['name'] . '</span>
+			</div>
+			<div class="log-details">';
 
 	DB_Txn_Begin();
 
@@ -100,7 +124,7 @@ while ($RecurrOrderRow = DB_fetch_array($RecurrOrdersDueResult)){
 
 	$DelDate = FormatDateforSQL(DateAdd(ConvertSQLDate($RecurrOrderRow['lastrecurrence']),'d',(365/$RecurrOrderRow['frequency'])));
 
-	echo '<br />' . __('Date calculated for the next recurrence was') .': ' . $DelDate;
+	echo '<div class="log-step">' . __('Next recurrence calculated for') .': <span class="log-highlight">' . $DelDate . '</span></div>';
 	$OrderNo = GetNextTransNo(30);
 
 	$HeaderSQL = "INSERT INTO salesorders (
@@ -202,7 +226,7 @@ while ($RecurrOrderRow = DB_fetch_array($RecurrOrdersDueResult)){
 
 	DB_Txn_Commit();
 
-	prnMsg(__('Recurring order was created for') . ' ' . $RecurrOrderRow['name'] . ' ' . __('with order Number') . ' ' . $OrderNo, 'success');
+	echo '<div class="log-step success">' . __('New sales order created') . ': <span class="log-link">#' . $OrderNo . '</span></div>';
 
 	if ($RecurrOrderRow['autoinvoice']==1){
 		/*Only dummy item orders can have autoinvoice =1
@@ -688,7 +712,7 @@ while ($RecurrOrderRow = DB_fetch_array($RecurrOrdersDueResult)){
 
 		DB_Txn_Commit();
 
-		prnMsg(__('Invoice number'). ' '. $InvoiceNo .' '. __('processed'),'success');
+		echo '<div class="log-step success">' . __('Auto-invoice processed') . ': <span class="log-link">#' . $InvoiceNo . '</span></div>';
 
 		$EmailText .= "\n" . __('This recurring order was set to produce the invoice automatically on invoice number') . ' ' . $InvoiceNo;
 	} /*end if the recurring order is set to auto invoice */
@@ -704,9 +728,13 @@ while ($RecurrOrderRow = DB_fetch_array($RecurrOrdersDueResult)){
 		}
 
 	} else {
-		prnMsg(__('No email advice was sent for this order because the location has no email contact defined with a valid email address'),'warn');
+		echo '<div class="log-step warning">' . __('No email advice sent (no valid email contact defined)') . '</div>';
 	}
+	echo '</div></div>'; // Close log-details and log-entry
 
 }/*end while there are recurring orders due to have a new order created */
+
+echo '</div></div></div>'; // Close processing-log, card-body-v2, and card-v2
+echo '</div></div><!-- .MainBody & .dashboard-shell-container -->';
 
 include(__DIR__ . '/includes/footer.php');
