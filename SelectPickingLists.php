@@ -9,10 +9,14 @@ $ViewTopic = 'Sales';
 $BookMark = 'SelectPickingLists';
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme,
-	'/images/magnifier.png" title="', // Icon image.
-	__('Pick Lists'), '" /> ', // Icon title.
-	__('Pick Lists'), '</p>';// Page title.
+echo '<div class="dashboard-shell-container">
+		<header class="db-page-header">
+			<div>
+				<h2 class="db-page-title">' . $Title . '</h2>
+				<p class="db-page-subtitle">' . __('Manage and search picking lists across locations') . '</p>
+			</div>
+		</header>
+		<div class="MainBody">';
 
 if (isset($_GET['SelectedStockItem'])) {
 	$SelectedStockItem = $_GET['SelectedStockItem'];
@@ -42,8 +46,27 @@ if (!isset($_POST['Status'])) {
 	$_POST['Status'] = 'New';
 }
 
+// Status Tabs
+$statuses = [
+    'New' => __('New'),
+    'Picked' => __('Picked'),
+    'Shipped' => __('Shipped'),
+    'Invoiced' => __('Invoiced'),
+    'Cancelled' => __('Cancelled')
+];
+
+echo '<div class="db-tabs-container" style="margin-bottom: var(--space-4);">
+		<div class="db-tabs">';
+foreach ($statuses as $statusValue => $statusLabel) {
+    $activeClass = ($_POST['Status'] == $statusValue) ? 'active' : '';
+    echo '<button type="button" class="db-tab ' . $activeClass . '" onclick="document.getElementById(\'StatusSelector\').value=\'' . $statusValue . '\'; this.form.submit();">' . $statusLabel . '</button>';
+}
+echo '  </div>
+	  </div>';
+
 echo '<form action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" method="post">
-	<input type="hidden" name="FormID" value="', $_SESSION['FormID'], '" />';
+	<input type="hidden" name="FormID" value="', $_SESSION['FormID'], '" />
+    <input type="hidden" name="Status" id="StatusSelector" value="' . $_POST['Status'] . '" />';
 
 if (isset($_POST['ResetPart'])) {
 	unset($SelectedStockItem);
@@ -165,20 +188,26 @@ if (isset($_POST['SearchParts'])) {
 }
 
 if (true or !isset($OrderNumber) or $OrderNumber == "") { //revisit later, right now always show all inputs
-	echo '<fieldset>
-			<legend class="search">', __('Picking List Search'), '</legend>
-			<field>';
+	echo '<div class="card-v2">
+            <div class="card-header-v2">
+                <h3>' . __('Search Filters') . '</h3>
+            </div>
+            <div class="card-body-v2">
+                <div class="db-field-group">';
 	if (isset($SelectedStockItem) and $SelectedStockItem != '') {
-		echo '<td>', __('For the part'), ': <b>', $SelectedStockItem, '</b>', ' ', __('and'), '<input type="hidden" name="SelectedStockItem" value="', $SelectedStockItem, '" /></td>';
+		echo '<div class="db-field" style="grid-column: span 12;">
+                <div class="alert-v2 alert-info">' . __('For the part') . ': <b>' . $SelectedStockItem . '</b> <input type="hidden" name="SelectedStockItem" value="' . $SelectedStockItem . '" /></div>
+              </div>';
 	}
 
-	echo '<label for="OrderNumber">', __('Sales Order'), ':</label>
-			<input name="OrderNumber" autofocus="autofocus" maxlength="8" size="9" value="', $OrderNumber, '"/>
-		</field>';
-	echo '<field>
-			<label for="PickList">', __('Pick List'), ':</label>
-			<input name="PickList" maxlength="10" size="10" value="', $PickList, '"/>
-		</field>';
+	echo '<div class="db-field">
+            <label>' . __('Sales Order') . '</label>
+            <input name="OrderNumber" autofocus="autofocus" maxlength="8" value="' . $OrderNumber . '" placeholder="' . __('Enter Order #') . '"/>
+          </div>';
+	echo '<div class="db-field">
+            <label>' . __('Pick List') . '</label>
+            <input name="PickList" maxlength="10" value="' . $PickList . '" placeholder="' . __('Enter Pick List #') . '"/>
+          </div>';
 
 	$SQL = "SELECT locations.loccode,
 					locationname
@@ -188,9 +217,9 @@ if (true or !isset($OrderNumber) or $OrderNumber == "") { //revisit later, right
 					AND locationusers.userid='" . $_SESSION['UserID'] . "'
 					AND locationusers.canview=1";
 	$ResultStkLocs = DB_query($SQL);
-	echo '<field>
-			<label for="StockLocation">', __('Into Stock Location'), ':</label>
-			<select name="StockLocation">';
+	echo '<div class="db-field">
+            <label>' . __('Stock Location') . '</label>
+            <select name="StockLocation">';
 
 	while ($MyRow = DB_fetch_array($ResultStkLocs)) {
 		if (isset($_POST['StockLocation'])) {
@@ -206,45 +235,16 @@ if (true or !isset($OrderNumber) or $OrderNumber == "") { //revisit later, right
 		}
 	}
 	echo '</select>
-		</field>';
-
-	echo '<field>
-			<label for="Status">', __('Pick List Status'), ':</label>
-			<select name="Status">';
-
-	if ($_POST['Status'] == 'New') {
-		echo '<option selected="selected" value="New">', __('New'), '</option>';
-	} else {
-		echo '<option value="New">', __('New'), '</option>';
-	}
-	if ($_POST['Status'] == 'Picked') {
-		echo '<option selected="selected" value="Picked">', __('Picked'), '</option>';
-	} else {
-		echo '<option value="Picked">', __('Picked'), '</option>';
-	}
-	if ($_POST['Status'] == 'Shipped') {
-		echo '<option selected="selected" value="Shipped">', __('Shipped'), '</option>';
-	} else {
-		echo '<option value="Shipped">', __('Shipped'), '</option>';
-	}
-	if ($_POST['Status'] == 'Invoiced') {
-		echo '<option selected="selected" value="Invoiced">', __('Invoiced'), '</option>';
-	} else {
-		echo '<option value="Invoiced">', __('Invoiced'), '</option>';
-	}
-	if ($_POST['Status'] == 'Cancelled') {
-		echo '<option selected="selected" value="Cancelled">', __('Cancelled'), '</option>';
-	} else {
-		echo '<option value="Cancelled">', __('Cancelled'), '</option>';
-	}
-
-	echo '</select>
-		</field>
-	</fieldset>';
-
-	echo '<div class="centre">
-			<input type="submit" name="SearchPickLists" value="' . __('Search Pick Lists') . '" />
 		</div>';
+
+    echo '</div>'; // End db-field-group
+
+    echo '<div class="form-actions" style="margin-top: var(--space-4);">
+            <button type="submit" name="SearchPickLists" class="primary-btn-modern">
+                <i class="fas fa-search"></i> ' . __('Search Pick Lists') . '
+            </button>
+          </div>';
+    echo '</div></div><br />';
 }
 $SQL = "SELECT categoryid,
 			categorydescription
@@ -252,11 +252,15 @@ $SQL = "SELECT categoryid,
 		ORDER BY categorydescription";
 $Result1 = DB_query($SQL);
 
-echo '<fieldset>
-		<legend class="search">', __('To search for Pick Lists for a specific part use the part selection facilities below'), '</legend>';
-echo '<field>
-		<label for="StockCat">', __('Select a stock category'), ':</label>
-		<select name="StockCat">';
+echo '<div class="card-v2">
+        <div class="card-header-v2">
+            <h3>' . __('Search by Stock Item') . '</h3>
+        </div>
+        <div class="card-body-v2">
+            <div class="db-field-group">
+                <div class="db-field">
+                    <label>' . __('Stock Category') . '</label>
+                    <select name="StockCat">';
 
 while ($MyRow1 = DB_fetch_array($Result1)) {
 	if (isset($_POST['StockCat']) and $MyRow1['categoryid'] == $_POST['StockCat']) {
@@ -266,39 +270,50 @@ while ($MyRow1 = DB_fetch_array($Result1)) {
 	}
 }
 
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label for="Keywords">', __('Enter text extracts in the'), ' <b>', __('description'), '</b>:</label>
-		<input type="text" name="Keywords" size="20" maxlength="25" />
-	</field>
-	<field>
-		<label for="StockCode">', '<b>' . __('OR') . ' </b>' . __('Enter extract of the'), '<b> ', __('Stock Code'), '</b>:</label>
-		<input type="text" name="StockCode" size="15" maxlength="18" />
-	</field>
-	</fieldset>
-	<div class="centre">
-		<input type="submit" name="SearchParts" value="', __('Search Parts Now'), '" />
-		<input type="submit" name="ResetPart" value="', __('Show All'), '" />
-	</div>';
+echo '              </select>
+                </div>
+                <div class="db-field">
+                    <label>' . __('Keywords') . '</label>
+                    <input type="text" name="Keywords" maxlength="25" placeholder="' . __('e.g. Spare Parts') . '" />
+                </div>
+                <div class="db-field">
+                    <label>' . __('Stock Code') . '</label>
+                    <input type="text" name="StockCode" maxlength="18" placeholder="' . __('e.g. COMP01') . '" />
+                </div>
+            </div>
+            <div class="form-actions" style="margin-top: var(--space-4);">
+                <button type="submit" name="SearchParts" class="primary-btn-modern">
+                    <i class="fas fa-barcode"></i> ' . __('Search Parts Now') . '
+                </button>
+                <button type="submit" name="ResetPart" class="btn-secondary">
+                    <i class="fas fa-undo"></i> ' . __('Show All') . '
+                </button>
+            </div>
+        </div>
+    </div><br />';
 
 if (isset($StockItemsResult)) {
-	echo '<table class="selection">
-			<thead>
-				<tr>
-					<th class="SortedColumn">', __('Code'), '</th>
-					<th class="SortedColumn">', __('Description'), '</th>
-					<th class="SortedColumn">', __('On Hand'), '</th>
-					<th class="SortedColumn">', __('Picked'), '</th>
-					<th class="SortedColumn">', __('Units'), '</th>
-				</tr>
-			</thead>';
-	echo '<tbody>';
+	echo '<div class="card-v2">
+            <div class="card-header-v2">
+                <h3>' . __('Stock Search Results') . '</h3>
+            </div>
+            <div class="card-body-v2">
+                <div class="activity-table-wrapper">
+                    <table class="activity-table">
+                        <thead>
+                            <tr>
+                                <th>', __('Code'), '</th>
+                                <th>', __('Description'), '</th>
+                                <th>', __('On Hand'), '</th>
+                                <th>', __('Picked'), '</th>
+                                <th>', __('Units'), '</th>
+                            </tr>
+                        </thead>
+                        <tbody>';
 
 	while ($MyRow = DB_fetch_array($StockItemsResult)) {
-		echo '<tr class="striped_row">
-				<td><input type="submit" name="SelectedStockItem" value="', $MyRow['stockid'], '"</td>
+		echo '<tr>
+				<td><input type="submit" name="SelectedStockItem" class="primary-btn-modern" value="', $MyRow['stockid'], '"</td>
 				<td>', $MyRow['description'], '</td>
 				<td class="number">', locale_number_format($MyRow['qoh'], $MyRow['decimalplaces']), '</td>
 				<td class="number">', locale_number_format($MyRow['qpicked'], $MyRow['decimalplaces']), '</td>
@@ -306,8 +321,11 @@ if (isset($StockItemsResult)) {
 			</tr>';
 	}//end of while loop
 
-	echo '</tbody>';
-	echo '</table>';
+	echo '      </tbody>
+                    </table>
+                </div>
+            </div>
+        </div><br />';
 }//end if stock search results to show
 else {
 	//figure out the SQL required from the inputs available
@@ -432,23 +450,27 @@ else {
 	$PickReqResult = DB_query($SQL, $ErrMsg);
 
 	if (DB_num_rows($PickReqResult) > 0) {
-		/*show a table of the pick lists returned by the SQL */
-		echo '<table cellpadding="2" width="90%" class="selection">
-				<thead>
-					<tr>
-						<th class="SortedColumn">', __('Modify'), '</th>
-						<th class="SortedColumn">', __('Picking List'), '</th>
-						<th class="SortedColumn">', __('Packing List'), '</th>
-						<th class="SortedColumn">', __('Labels'), '</th>
-						<th class="SortedColumn">', __('Order'), '</th>
-						<th class="SortedColumn">', __('Customer'), '</th>
-						<th class="SortedColumn">', __('Request Date'), '</th>
-						<th class="SortedColumn">', __('Ship Date'), '</th>
-						<th class="SortedColumn">', __('Shipped By'), '</th>
-						<th class="SortedColumn">', __('Initiated On'), '</th>
-						<th class="SortedColumn">', __('Initiated By'), '</th>
-					</tr>
-				</thead>';
+		echo '<div class="card-v2">
+                <div class="card-header-v2">
+                    <h3>' . __('Pick List Results') . '</h3>
+                </div>
+                <div class="card-body-v2">
+                    <div class="activity-table-wrapper">
+                        <table class="activity-table">
+                            <thead>
+                                <tr>
+                                    <th>', __('View/Modify'), '</th>
+                                    <th>', __('Picking List'), '</th>
+                                    <th>', __('Packing List'), '</th>
+                                    <th>', __('Labels'), '</th>
+                                    <th>', __('Order'), '</th>
+                                    <th>', __('Customer'), '</th>
+                                    <th>', __('Request Date'), '</th>
+                                    <th>', __('Ship Date'), '</th>
+                                    <th>', __('Status'), '</th>
+                                </tr>
+                            </thead>
+                            <tbody>';
 
 		echo '<tbody>';
 
@@ -482,31 +504,33 @@ else {
 				$Confirm_Invoice = '<td><a href="' . $RootPath . '/ConfirmDispatch_Invoice.php?OrderNumber=' . $MyRow['orderno'] . '">' . __('Invoice Order') . '</a></td>';
 			}
 
-			echo '<tr class="striped_row">
-					<td><a href="', $ModifyPickList, '">', str_pad($MyRow['prid'], 10, '0', STR_PAD_LEFT), '</a></td>
-					<td><a href="', $PrintPickList, '">Print <img src="', $RootPath, '/css/', $_SESSION['Theme'], '/images/pdf.png" title="', __('Click for PDF'), '" alt="" /></a></td>
-					<td><a target="_blank" href="', $PrintDispatchNote, '">', $PrintText, ' <img src="', $RootPath, '/css/', $_SESSION['Theme'], '/images/pdf.png" title="', __('Click for PDF'), '" alt="" /></a></td>
-					<td><a target="_blank" href="', $PrintLabels . '">' . __('Labels') . '</a></td>
-					<td>', $MyRow['orderno'], '</td>
-					<td>', $MyRow['name'], '</td>
-					<td class="date">', $FormatedRequestDate, '</td>
-					<td class="date">', $FormatedShipDate, '</td>
-					<td>', $MyRow['shippedby'], '</td>
-					<td class="date">', $FormatedInitDate, '</td>
-					<td>', $MyRow['initiator'], '</td>
-					', $Confirm_Invoice, '
+			echo '<tr>
+					<td><a href="', $ModifyPickList, '" class="primary-btn-modern" style="padding: 4px 12px; font-size: 0.8rem;">' . str_pad($MyRow['prid'], 10, '0', STR_PAD_LEFT) . '</a></td>
+					<td><a href="', $PrintPickList, '" class="btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;"><i class="fas fa-file-pdf"></i> ' . __('Print') . '</a></td>
+					<td><a target="_blank" href="', $PrintDispatchNote, '" class="btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;"><i class="fas fa-file-pdf"></i> ' . $PrintText . '</a></td>
+					<td><a target="_blank" href="', $PrintLabels . '" class="btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;"><i class="fas fa-tag"></i> ' . __('Labels') . '</a></td>
+					<td><span class="ref-badge">#', $MyRow['orderno'], '</span></td>
+					<td><span class="cust-name">', $MyRow['name'], '</span></td>
+					<td><span class="date-stmp">', $FormatedRequestDate, '</span></td>
+					<td><span class="date-stmp">', $FormatedShipDate, '</span></td>
+					<td><span class="badge-v2 badge-info">', $MyRow['status'], '</span></td>
+					', ($Confirm_Invoice != '' ? '<td><a href="' . $RootPath . '/ConfirmDispatch_Invoice.php?OrderNumber=' . $MyRow['orderno'] . '" class="primary-btn-modern" style="padding: 4px 12px; font-size: 0.8rem;">' . __('Invoice') . '</a></td>' : ''), '
 				</tr>';
 		} //end of while loop
 
-		echo '</tbody>';
-		echo '</table>';
+		echo '</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>';
 	} // end if Pick Lists to show
 }
 echo '</form>';
+echo '</div></div><!-- .MainBody & .dashboard-shell-container -->';
 
-if ($_POST['Status'] == 'New') {
-	//office is gnerating picks.  Warehouse needs to see latest "To Do" list so refresh every 5 minutes
-	echo '<meta http-equiv="refresh" content="300" url="', $RootPath, htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" />';
+if (isset($_POST['Status']) && $_POST['Status'] == 'New') {
+	//office is generating picks. Warehouse needs to see latest "To Do" list so refresh every 5 minutes
+	echo '<meta http-equiv="refresh" content="300" url="' . $RootPath . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" />';
 }
 
 include(__DIR__ . '/includes/footer.php');
