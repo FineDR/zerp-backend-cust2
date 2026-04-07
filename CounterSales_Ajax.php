@@ -25,7 +25,21 @@ include_once(__DIR__ . '/includes/StockFunctions.php');
 include_once(__DIR__ . '/includes/GetSalesTransGLCodes.php');
 include_once(__DIR__ . '/includes/MiscFunctions.php');
 
+
 $identifier = $_POST['identifier'] ?? $_GET['identifier'] ?? '';
+$action = $_POST['action'] ?? '';
+
+// Debug Logging
+$logData = [
+    'time' => date('Y-m-d H:i:s'),
+    'identifier' => $identifier,
+    'action' => $action,
+    'stockid' => $_POST['stockid'] ?? 'n/a',
+    'has_session_cart' => isset($_SESSION['Items'.$identifier]),
+    'user' => $_SESSION['UserID'] ?? 'guest'
+];
+file_put_contents(__DIR__ . '/pos_ajax_debug.log', json_encode($logData) . "\n", FILE_APPEND);
+
 if (empty($identifier)) {
     echo json_encode(['error' => 'Missing identifier']);
     exit;
@@ -33,16 +47,24 @@ if (empty($identifier)) {
 
 if (!isset($_SESSION['Items'.$identifier]) || !($_SESSION['Items'.$identifier] instanceof Cart)) {
     $_SESSION['Items'.$identifier] = new Cart;
+    // Fallback initialization if session cart is lost
+    $_SESSION['Items'.$identifier]->Location = $_SESSION['UserStockLocation'] ?? '';
+    $_SESSION['Items'.$identifier]->DebtorNo = $_SESSION['CompanyRecord']['cashsalecustomer'] ?? '';
 }
 
-$action = $_POST['action'] ?? '';
 $response = ['success' => false, 'message' => ''];
 
 switch ($action) {
     case 'add':
         $NewItem = trim($_POST['stockid']);
         $NewItemQty = filter_number_format($_POST['qty'] ?? 1);
-        $NewItemDue = DateAdd(date($_SESSION['DefaultDateFormat']), 'd', $_SESSION['Items'.$identifier]->DeliveryDays);
+        
+        // Ensure cart has necessary metadata for GetPrice/SelectOrderItems
+        if (empty($_SESSION['Items'.$identifier]->Location)) {
+             $_SESSION['Items'.$identifier]->Location = $_SESSION['UserStockLocation'];
+        }
+        
+        $NewItemDue = DateAdd(date($_SESSION['DefaultDateFormat']), 'd', (int)($_SESSION['Items'.$identifier]->DeliveryDays ?? 0));
         $NewPOLine = 0;
         
         // POS Consolidation: Check if item already exists in cart

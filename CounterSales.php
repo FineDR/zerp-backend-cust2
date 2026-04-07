@@ -485,7 +485,7 @@ echo '<section class="pos-catalog" id="PosCatalogCol">';
 				$stockStatus = ($QOH > 10) ? 'stock-high' : (($QOH > 0) ? 'stock-low' : 'stock-out');
 				$stockLabel = ($QOH > 0) ? locale_number_format($QOH, $MyRow['decimalplaces']) : __('0');
 
-				echo '<div class="pos-product-card" data-stockid="' . $MyRow['stockid'] . '" onclick="CounterSales.AddItem(\'' . $MyRow['stockid'] . '\', 1)">
+								echo '<div class="pos-product-card" data-stockid="' . htmlspecialchars($MyRow['stockid']) . '" onclick="CounterSales.AddItem(' . json_encode($MyRow['stockid'], JSON_HEX_QUOT | JSON_HEX_APOS) . ', 1)">
 						<div class="pos-stock-badge ' . $stockStatus . '"><i class="fas fa-layer-group"></i> ' . $stockLabel . '</div>
 						<div class="pos-product-img">
 							<i class="fas fa-box" style="opacity: 0.5;"></i>
