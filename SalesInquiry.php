@@ -10,15 +10,14 @@ $ViewTopic = 'Sales';
 $BookMark = '';
 include(__DIR__ . '/includes/header.php');
 
-echo '<div class="db-page">
+echo '<div class="dashboard-shell-container">
 		<header class="db-page-header">
-			<div class="db-page-title">
-				<div class="db-page-icon">
-					<i class="fas fa-search-dollar"></i>
-				</div>
-				<h1>' . $Title . '</h1>
+			<div>
+				<h2 class="db-page-title">' . $Title . '</h2>
+				<p class="db-page-subtitle">' . __('In-depth analysis of sales orders and invoices') . '</p>
 			</div>
-		</header>';
+		</header>
+		<div class="MainBody">';
 
 if (isset($_POST['FromDate'])){$_POST['FromDate'] = ConvertSQLDate($_POST['FromDate']);}
 if (isset($_POST['ToDate'])){$_POST['ToDate'] = ConvertSQLDate($_POST['ToDate']);}
@@ -806,14 +805,20 @@ function submit($PartNumber,$PartNumberOp,$DebtorNo,$DebtorNoOp,$DebtorName,$Deb
 	$Detail_Array['debtorsmaster.debtorno,salesorderdetails.orderno'] = __('Customer Code');
 	$Detail_Array['debtorsmaster.name,debtorsmaster.debtorno,salesorderdetails.orderno'] = __('Customer Name');
 	$Detail_Array['tempstockmoves.transno,salesorderdetails.stkcode'] = __('Transaction Number');
+	$Detail_Array['salesorderdetails.itemdue,salesorderdetails.orderno'] = __('Item Due Date');
 
-		echo '<div class="db-card">
-				<div class="db-card-header">
-					<div class="db-card-title">' . __('Inquiry Results') . ' - ' . $_POST['ReportType'] . ' ' . __('By') . ' ' . $SortBy_Display . '</div>
+	if ($_POST['ReportType'] == 'Detail') {
+		$SortBy_Display = $Detail_Array[$_POST['SortBy']];
+	} else {
+		$SortBy_Display = $Summary_Array[$_POST['SummaryType']];
+	}
+
+		echo '<div class="card-v2" style="margin-top: var(--space-6);">
+				<div class="card-header-v2">
+					<h3>' . __('Inquiry Results') . ' - ' . $_POST['ReportType'] . ' ' . __('By') . ' ' . $SortBy_Display . '</h3>
 				</div>
-				<div class="db-card-body">
-					<div class="db-table-container">
-						<table class="db-table">';
+				<div class="activity-table-wrapper">
+					<table class="activity-table">';
 		if ($_POST['ReportType'] == 'Detail') {
 			if ($_POST['DateType'] == 'Order') {
 				echo '<thead>
@@ -976,13 +981,12 @@ function submit($PartNumber,$PartNumberOp,$DebtorNo,$DebtorNoOp,$DebtorName,$Deb
 				$SummaryHeader =  __('Month');
 				$DescriptionHeader =  __('Month');
 			}
-		echo '<div class="db-card">
-				<div class="db-card-header">
-					<div class="db-card-title">' . __('Inquiry Results') . ' - ' . $_POST['ReportType'] . ' ' . __('By') . ' ' . $SortBy_Display . ' (' . ($_POST['DateType'] == 'Order' ? __('Order Date') : __('Invoice Date')) . ': ' . $_POST['FromDate'] . ' ' . __('To') . ' ' . $_POST['ToDate'] . ')</div>
+		echo '<div class="card-v2" style="margin-top: var(--space-6);">
+				<div class="card-header-v2">
+					<h3>' . __('Inquiry Results') . ' - ' . $_POST['ReportType'] . ' ' . __('By') . ' ' . $SortBy_Display . ' (' . ($_POST['DateType'] == 'Order' ? __('Order Date') : __('Invoice Date')) . ': ' . $_POST['FromDate'] . ' ' . __('To') . ' ' . $_POST['ToDate'] . ')</h3>
 				</div>
-				<div class="db-card-body">
-					<div class="db-table-container">
-						<table class="db-table">
+				<div class="activity-table-wrapper">
+					<table class="activity-table">
 							<thead>
 								<tr>
 									<th>' . __($SummaryHeader) . '</th>
@@ -1031,8 +1035,7 @@ function submit($PartNumber,$PartNumberOp,$DebtorNo,$DebtorNoOp,$DebtorName,$Deb
 			echo '</tbody>
 					</table>
 				</div>
-			</div>
-		</div>';
+			</div>';
 		} // End of if ($_POST['ReportType']
 
     } // End of if inputerror != 1
@@ -1044,100 +1047,97 @@ function display()  //####DISPLAY_DISPLAY_DISPLAY_DISPLAY_DISPLAY_DISPLAY_#####
 // Display form fields. This function is called the first time
 // the page is called.
 
-	echo '<div class="db-card">
-			<div class="db-card-header">
-				<div class="db-card-title">' . __('Inquiry Criteria') . '</div>
+	echo '<div class="card-v2">
+			<div class="card-header-v2">
+				<h3>' . __('Inquiry Criteria') . '</h3>
 			</div>
-			<div class="db-card-body">
+			<div class="card-body-v2">
 				<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
 				<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-				<div class="db-fieldset">
-					<div class="db-field">
-						<label class="db-label">' . __('Report Type') . ':</label>
-						<select name="ReportType" class="db-input">
+				<div class="db-field-group">
+					<div class="form-group">
+						<label>' . __('Report Type') . '</label>
+						<select name="ReportType">
 							<option selected="selected" value="Detail">' . __('Detail') . '</option>
 							<option value="Summary">' . __('Summary') . '</option>
 						</select>
 					</div>
-					<div class="db-field">
-						<label class="db-label">' . __('Order Type') . ':</label>
-						<select name="OrderType" class="db-input">
+					<div class="form-group">
+						<label>' . __('Order Type') . '</label>
+						<select name="OrderType">
 							<option selected="selected" value="0">' . __('Sales Order') . '</option>
 							<option value="1">' . __('Quotation') . '</option>
 						</select>
 					</div>
-					<div class="db-field">
-						<label class="db-label">' . __('Date Type') . ':</label>
-						<select name="DateType" class="db-input">
+					<div class="form-group">
+						<label>' . __('Date Type') . '</label>
+						<select name="DateType">
 							<option selected="selected" value="Order">' . __('Order Date') . '</option>
 							<option value="Invoice">' . __('Invoice Date') . '</option>
 						</select>
 					</div>
-					<div class="db-field">
-						<label class="db-label">' . __('Invoice Type') . ':</label>
-						<select name="InvoiceType" class="db-input">
+					<div class="form-group">
+						<label>' . __('Invoice Type') . '</label>
+						<select name="InvoiceType">
 							<option selected="selected" value="All">' . __('All') . '</option>
 							<option value="10">' . __('Sales Invoice') . '</option>
 							<option value="11">' . __('Credit Note') . '</option>
 						</select>
-						<span class="db-field-help">' . __('Only Applies To Invoice Date Type') . '</span>
+						<span class="field-help">' . __('Only Applies To Invoice Date Type') . '</span>
 					</div>
-					<div class="db-field">
-						<label class="db-label">' . __('Date Range') . ':</label>
-						<div class="db-date-range">
-							<input type="date" name="FromDate" class="db-input" value="' . FormatDateForSQL($_POST['FromDate']) . '" />
-							<span>' . __('To') . '</span>
-							<input type="date" name="ToDate" class="db-input" value="' . FormatDateForSQL($_POST['ToDate']) . '" />
-						</div>
+					<div class="form-group">
+						<label>' . __('From Date') . '</label>
+						<input type="date" name="FromDate" value="' . FormatDateForSQL($_POST['FromDate']) . '" />
 					</div>
-					<div class="db-field">
-						<label class="db-label">' . __('Stock Code') . ':</label>
-						<div class="db-input-group">
-							<select name="PartNumberOp" class="db-input db-input-small">
+					<div class="form-group">
+						<label>' . __('To Date') . '</label>
+						<input type="date" name="ToDate" value="' . FormatDateForSQL($_POST['ToDate']) . '" />
+					</div>
+					<div class="form-group">
+						<label>' . __('Stock Code') . '</label>
+						<div style="display: flex; gap: var(--space-2);">
+							<select name="PartNumberOp" style="width: auto;">
 								<option selected="selected" value="Equals">' . __('Equals') . '</option>
 								<option value="LIKE">' . __('Begins With') . '</option>
 							</select>
-							<input type="text" name="PartNumber" class="db-input" value="'. ($_POST['PartNumber'] ?? '') . '" />
+							<input type="text" name="PartNumber" placeholder="Enter Part #" value="'. ($_POST['PartNumber'] ?? '') . '" />
 						</div>
 					</div>
-					<div class="db-field">
-						<label class="db-label">' . __('Customer Number') . ':</label>
-						<div class="db-input-group">
-							<select name="DebtorNoOp" class="db-input db-input-small">
+					<div class="form-group">
+						<label>' . __('Customer Number') . '</label>
+						<div style="display: flex; gap: var(--space-2);">
+							<select name="DebtorNoOp" style="width: auto;">
 								<option selected="selected" value="Equals">' . __('Equals') . '</option>
 								<option value="LIKE">' . __('Begins With') . '</option>
 							</select>
-							<input type="text" name="DebtorNo" class="db-input" value="' . ($_POST['DebtorNo'] ?? '') . '" />
+							<input type="text" name="DebtorNo" placeholder="Enter Cust #" value="' . ($_POST['DebtorNo'] ?? '') . '" />
 						</div>
 					</div>
-					<div class="db-field">
-						<label class="db-label">' . __('Customer Name') . ':</label>
-						<div class="db-input-group">
-							<select name="DebtorNameOp" class="db-input db-input-small">
+					<div class="form-group">
+						<label>' . __('Customer Name') . '</label>
+						<div style="display: flex; gap: var(--space-2);">
+							<select name="DebtorNameOp" style="width: auto;">
 								<option selected="selected" value="LIKE">' . __('Begins With') . '</option>
 								<option value="Equals">' . __('Equals') . '</option>
 							</select>
-							<input type="text" name="DebtorName" class="db-input" value="' . ($_POST['DebtorName'] ?? '') .'" />
+							<input type="text" name="DebtorName" placeholder="Enter Name" value="' . ($_POST['DebtorName'] ?? '') .'" />
 						</div>
 					</div>
-					<div class="db-field">
-						<label class="db-label">' . __('Order Number') . ':</label>
-						<div class="db-input-group">
-							<span class="db-input-addon">' . __('Equals') . '</span>
-							<input type="text" name="OrderNo" class="db-input" value="' . ($_POST['OrderNo'] ?? '') . '" />
-						</div>
+					<div class="form-group">
+						<label>' . __('Order Number') . '</label>
+						<input type="text" name="OrderNo" placeholder="Equals #" value="' . ($_POST['OrderNo'] ?? '') . '" />
 					</div>
-					<div class="db-field">
-						<label class="db-label">' . __('Line Item Status') . ':</label>
-						<select name="LineStatus" class="db-input">
+					<div class="form-group">
+						<label>' . __('Line Item Status') . '</label>
+						<select name="LineStatus">
 							<option selected="selected" value="All">' . __('All') . '</option>
 							<option value="Completed">' . __('Completed') . '</option>
 							<option value="Open">' . __('Not Completed') . '</option>
 						</select>
 					</div>
-					<div class="db-field">
-						<label class="db-label">' . __('Stock Categories') . ':</label>
-						<select name="Category" class="db-input">';
+					<div class="form-group">
+						<label>' . __('Stock Categories') . '</label>
+						<select name="Category">';
 	$CategoryResult = DB_query("SELECT categoryid, categorydescription FROM stockcategory");
 	echo '<option selected="selected" value="All">' . __('All Categories')  . '</option>';
 	while($MyRow = DB_fetch_array($CategoryResult)) {
@@ -1145,12 +1145,12 @@ function display()  //####DISPLAY_DISPLAY_DISPLAY_DISPLAY_DISPLAY_DISPLAY_#####
 	}
 	echo '</select>
 					</div>
-					<div class="db-field">
-						<label class="db-label">' . __('For Sales Person') . ':</label>';
+					<div class="form-group">
+						<label>' . __('Sales Person') . '</label>';
 	if ($_SESSION['SalesmanLogin'] != '') {
-		echo '<span class="db-input-text">' . $_SESSION['UsersRealName'] . '</span>';
+		echo '<input type="text" readonly value="' . $_SESSION['UsersRealName'] . '" />';
 	} else {
-		echo '<select name="Salesman" class="db-input">';
+		echo '<select name="Salesman">';
 		$SQL="SELECT salesmancode, salesmanname FROM salesman";
 		$SalesmanResult = DB_query($SQL);
 		echo '<option selected="selected" value="All">' . __('All Salespeople')  . '</option>';
@@ -1160,9 +1160,9 @@ function display()  //####DISPLAY_DISPLAY_DISPLAY_DISPLAY_DISPLAY_DISPLAY_#####
 		echo '</select>';
 	}
 	echo '</div>
-					<div class="db-field">
-						<label class="db-label">' . __('For Sales Areas') . ':</label>
-						<select name="Area" class="db-input">';
+					<div class="form-group">
+						<label>' . __('Sales Areas') . '</label>
+						<select name="Area">';
 	$AreasResult = DB_query("SELECT areacode, areadescription FROM areas");
 	echo '<option selected="selected" value="All">' . __('All Areas')  . '</option>';
 	while($MyRow = DB_fetch_array($AreasResult)) {
@@ -1170,20 +1170,20 @@ function display()  //####DISPLAY_DISPLAY_DISPLAY_DISPLAY_DISPLAY_DISPLAY_#####
 	}
 	echo '</select>
 					</div>
-					<div class="db-field">
-						<label class="db-label">' . __('Sort By') . ':</label>
-						<select name="SortBy" class="db-input">
+					<div class="form-group">
+						<label>' . __('Sort By') . '</label>
+						<select name="SortBy">
 							<option selected="selected" value="salesorderdetails.orderno">' . __('Order Number') . '</option>
 							<option value="salesorderdetails.stkcode">' . __('Stock Code') . '</option>
 							<option value="debtorsmaster.debtorno,salesorderdetails.orderno">' . __('Customer Number') . '</option>
 							<option value="debtorsmaster.name,debtorsmaster.debtorno,salesorderdetails.orderno">' . __('Customer Name') . '</option>
 							<option value="tempstockmoves.transno,salesorderdetails.stkcode">' . __('Transaction Number') . '</option>
 						</select>
-						<span class="db-field-help">' . __('Transaction Number sort only valid for Invoice Date Type') . '</span>
+						<span class="field-help">' . __('Trans. # sort only valid for Invoice Date Type') . '</span>
 					</div>
-					<div class="db-field">
-						<label class="db-label">' . __('Summary Type') . ':</label>
-						<select name="SummaryType" class="db-input">
+					<div class="form-group">
+						<label>' . __('Summary Type') . '</label>
+						<select name="SummaryType">
 							<option selected="selected" value="orderno">' . __('Order Number') . '</option>
 							<option value="transno">' . __('Transaction Number') . '</option>
 							<option value="stkcode">' . __('Stock Code') . '</option>
@@ -1195,15 +1195,12 @@ function display()  //####DISPLAY_DISPLAY_DISPLAY_DISPLAY_DISPLAY_DISPLAY_#####
 							<option value="salesman">' . __('Salesman') . '</option>
 							<option value="area">' . __('Sales Area') . '</option>
 						</select>
-						<span class="db-field-help">' . __('Transaction Number summary only valid for Invoice Date Type') . '</span>
+						<span class="field-help">' . __('Trans. # summary only valid for Invoice Date type') . '</span>
 					</div>
 				</div>
-			</div>
-			<div class="db-card-footer">
-				<div class="db-actions">
-					<input type="submit" name="submit" class="db-btn db-btn-primary" value="' . __('Run Inquiry') . '" />
+				<div class="form-footer-actions">
+					<input type="submit" name="submit" class="primary-btn-modern" value="' . __('Run Inquiry') . '" />
 				</div>
-			</div>
 			</form>
 		</div>';
 
@@ -1244,6 +1241,6 @@ function TempStockmoves() {
 
 } // End of function TempStockmoves
 
-echo '</div><!-- .db-page -->';
+echo '</div></div><!-- .MainBody & .dashboard-shell-container -->';
 
 include(__DIR__ . '/includes/footer.php');
