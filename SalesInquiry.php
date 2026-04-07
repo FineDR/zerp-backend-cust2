@@ -782,7 +782,6 @@ function submit($PartNumber,$PartNumberOp,$DebtorNo,$DebtorNoOp,$DebtorName,$Deb
 		$ErrMsg = __('The SQL to find the parts selected failed with the message');
 		$Result = DB_query($SQL, $ErrMsg);
 		$ctr = 0;
-		echo '<pre>';
 		$TotalQty = 0;
 		$TotalExtCost = 0;
 		$TotalExtPrice = 0;
