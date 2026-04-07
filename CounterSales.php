@@ -434,25 +434,7 @@ echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />'
 echo '<input type="hidden" id="AutoFillCashReceived" name="AutoFillCashReceived" value="0" />';
 echo '<div class="pos-layout">'; // Start Grid
 
-// 1. Column 1: Categories (Icons)
-$CatSQL = "SELECT categoryid, categorydescription FROM stockcategory WHERE stocktype IN ('F', 'D', 'L')";
-$CatResult = DB_query($CatSQL);
-echo '<aside class="pos-categories" id="PosCategoryCol">';
-$activeAll = (!isset($_POST['StockCat']) || $_POST['StockCat'] == 'All') ? 'active' : '';
-echo '<button type="button" onclick="document.getElementById(\'StockCatInput\').value=\'All\'; this.form.submit();" class="pos-category-btn ' . $activeAll . '" title="' . __('All Items') . '">
-        <i class="fas fa-th-large"></i>
-        <span>' . __('All') . '</span>
-      </button>';
-while ($MyRow = DB_fetch_array($CatResult)) {
-    $active = (isset($_POST['StockCat']) && $_POST['StockCat'] == $MyRow['categoryid']) ? 'active' : '';
-    echo '<button type="button" onclick="document.getElementById(\'StockCatInput\').value=\'' . $MyRow['categoryid'] . '\'; this.form.submit();" class="pos-category-btn ' . $active . '" title="' . htmlspecialchars($MyRow['categorydescription']) . '">
-            <i class="fas fa-folder"></i>
-            <span>' . substr($MyRow['categorydescription'], 0, 8) . '</span>
-          </button>';
-}
-echo '</aside>';
-
-// 2. Column 2: Product Catalog
+// 1. Column 1: Product Catalog (Wider center column)
 echo '<section class="pos-catalog" id="PosCatalogCol">';
 
     echo '<div class="pos-search-container">
@@ -467,6 +449,22 @@ echo '<section class="pos-catalog" id="PosCatalogCol">';
                 <div class="pos-search-hint" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">' . __('F4 to focus') . '</div>
             </div>
           </div>';
+
+		// Reverted Category Navigation pills
+		$CatSQL = "SELECT categoryid, categorydescription FROM stockcategory WHERE stocktype IN ('F', 'D', 'L')";
+		$CatResult = DB_query($CatSQL);
+		echo '<div class="pos-categories">';
+		$activeAll = (!isset($_POST['StockCat']) || $_POST['StockCat'] == 'All') ? 'active' : '';
+		echo '<button type="button" onclick="document.getElementById(\'StockCatInput\').value=\'All\'; this.form.submit();" class="pos-category-pill ' . $activeAll . '">
+                <i class="fas fa-th-large"></i> ' . __('All Items') . '
+              </button>';
+		while ($CatRow = DB_fetch_array($CatResult)) {
+			$active = (isset($_POST['StockCat']) && $_POST['StockCat'] == $CatRow['categoryid']) ? 'active' : '';
+			echo '<button type="button" onclick="document.getElementById(\'StockCatInput\').value=\'' . $CatRow['categoryid'] . '\'; this.form.submit();" class="pos-category-pill ' . $active . '">' . htmlspecialchars($CatRow['categorydescription']) . '</button>';
+		}
+        echo '<input type="hidden" name="StockCat" id="StockCatInput" value="' . ($_POST['StockCat'] ?? 'All') . '" />';
+        echo '<input type="hidden" name="PartSearch" value="Yes" />';
+		echo '</div>';
 
         echo '<input type="hidden" name="StockCat" id="StockCatInput" value="' . ($_POST['StockCat'] ?? 'All') . '" />';
         echo '<input type="hidden" name="PartSearch" value="Yes" />';
