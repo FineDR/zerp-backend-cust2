@@ -289,7 +289,6 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 			"Attachment" => false
 		));
 	} else {
-	} else {
 		$Title = __('Aged Creditor Analysis');
 		include(__DIR__ . '/includes/header.php');
 		echo '<div class="db-page">';
