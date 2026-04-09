@@ -338,20 +338,7 @@ var CounterSales = {
 		this.changedueid = val;
 	},
 
-	CalculateChangeDue: function()
-	{
-		var received_amount = document.getElementById(this.cashreceivedid);
-		var paid_amount = document.getElementById(this.amountpaidid);
-		var change_due = document.getElementById(this.changedueid);
 
-		if (received_amount.value >= this.totaldue) {
-			paid_amount.value = Number(this.totaldue).toFixed(this.decimal);
-			change_due.value = Number(received_amount.value - this.totaldue).toFixed(this.decimal);
-		} else {
-			paid_amount.value = 0;
-			change_due.value = 0;
-		}
-	},
 
 	ApplyAutoPaymentDefaults: function()
 	{
@@ -416,47 +403,6 @@ var CounterSales = {
 	ToggleDiscount: function(lineNo) {
 		var el = document.getElementById('DiscRow' + lineNo);
 		el.style.display = (el.style.display === 'none') ? 'flex' : 'none';
-	},
-
-	// Split Payments
-	paymentRowCounter: 1,
-	AddPaymentRow: function() {
-		var container = document.getElementById('PaymentRowsContainer');
-		var totalToPay = parseFloat(document.getElementById('TotalAmountToPay').value);
-		var totalPaid = this._calculateCurrentTotalPaid();
-		var remaining = Math.max(0, totalToPay - totalPaid);
-
-		var firstRow = container.querySelector('.pos-payment-row');
-		var newRow = firstRow.cloneNode(true);
-		var i = this.paymentRowCounter++;
-		newRow.id = 'PaymentRow' + i;
-		
-		var select = newRow.querySelector('select');
-		select.name = 'PaymentMethods[' + i + ']';
-		
-		var hiddenBank = newRow.querySelector('input[type="hidden"]');
-		hiddenBank.name = 'BankAccounts[' + i + ']';
-
-		var amountInput = newRow.querySelector('input[type="text"]');
-		amountInput.name = 'PaymentAmounts[' + i + ']';
-		amountInput.value = remaining.toFixed(this.decimal);
-		amountInput.onchange = () => this.CalculateTotals();
-
-		var delBtn = document.createElement('button');
-		delBtn.type = 'button';
-		delBtn.className = 'pos-tool-btn delete';
-		delBtn.innerHTML = '<i class="fas fa-times"></i>';
-		delBtn.onclick = () => this.RemovePaymentRow(i);
-		newRow.appendChild(delBtn);
-
-		container.appendChild(newRow);
-		this.CalculateTotals();
-	},
-
-	RemovePaymentRow: function(i) {
-		var row = document.getElementById('PaymentRow' + i);
-		if (row) row.remove();
-		this.CalculateTotals();
 	},
 
 	OnPaymentMethodChange: function(select, i) {

@@ -697,9 +697,18 @@ echo '</div>'; // end pos-layout
 if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 	$InputError = false; //always assume the best
 	//but check for the worst
-	if ($_SESSION['Items'.$identifier]->LineCounter == 0) {
+	if (count($_SESSION['Items'.$identifier]->LineItems) == 0) {
 		prnMsg(__('There are no lines on this sale. Please enter lines to invoice first'),'error');
 		$InputError = true;
+	}
+	// Determine the Exchange Rate for the customer currency
+	if (!isset($_SESSION['Items'.$identifier]->DefaultCurrency) ||
+	    $_SESSION['Items'.$identifier]->DefaultCurrency == $_SESSION['CompanyRecord']['currencydefault']) {
+		$ExRate = 1;
+	} else {
+		$ExRateResult = DB_query("SELECT rate FROM currencies WHERE currabrev='" . $_SESSION['Items'.$identifier]->DefaultCurrency . "'");
+		$ExRateRow = DB_fetch_row($ExRateResult);
+		$ExRate = ($ExRateRow && $ExRateRow[0] > 0) ? $ExRateRow[0] : 1;
 	}
 	$TotalAmountPaid = 0;
 	if (isset($_POST['PaymentAmounts'])) {
@@ -1044,11 +1053,11 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 				'" . $_SESSION['Items'.$identifier]->DefaultSalesType . "',
 				'" . $OrderNo . "',
 				'" . $_SESSION['Items'.$identifier]->total . "',
-				'" . filter_number_format($_POST['TaxTotal']) . "',
+				'" . filter_number_format($_POST['TaxAmount']) . "',
 				'" . $ExRate . "',
 				'" . $_SESSION['Items'.$identifier]->Comments . "',
 				'" . $_SESSION['Items'.$identifier]->ShipVia . "',
-				'" . ($_SESSION['Items'.$identifier]->total + filter_number_format($_POST['TaxTotal'])) . "',
+				'" . ($_SESSION['Items'.$identifier]->total + filter_number_format($_POST['TaxAmount'])) . "',
 				'1',
 				'" . $_SESSION['Items'.$identifier]->SalesPerson . "')";
 
@@ -1520,7 +1529,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 		if ($_SESSION['CompanyRecord']['gllink_debtors']==1) {
 
 	/*Post debtors transaction to GL debit debtors, credit freight re-charged and credit sales */
-			if (($_SESSION['Items'.$identifier]->total + filter_number_format($_POST['TaxTotal'])) !=0) {
+			if (($_SESSION['Items'.$identifier]->total + filter_number_format($_POST['TaxAmount'])) !=0) {
 				$SQL = "INSERT INTO gltrans (	type,
 												typeno,
 												trandate,
@@ -1534,7 +1543,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 												'" . $PeriodNo . "',
 												'" . $_SESSION['CompanyRecord']['debtorsact'] . "',
 												'" . mb_substr($_SESSION['Items'.$identifier]->DebtorNo, 0, 200) . "',
-												'" . (($_SESSION['Items'.$identifier]->total + filter_number_format($_POST['TaxTotal']))/$ExRate) . "')";
+												'" . (($_SESSION['Items'.$identifier]->total + filter_number_format($_POST['TaxAmount']))/$ExRate) . "')";
 
 				$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The total debtor GL posting could not be inserted because');
 				$Result = DB_query($SQL, $ErrMsg, '', true);
@@ -1748,13 +1757,13 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 
 <script defer="defer">
 	CounterSales.SetTotalDue(<?=$_SESSION['Items'.$identifier]->total+$TaxTotal?>);
-	CounterSales.SetItemList(<?php echo json_encode($_SESSION['ItemList']); ?>);
+	CounterSales.SetItemList(<?php echo json_encode($_SESSION['ItemList'] ?? []); ?>);
 	CounterSales.SetQuickEntryTableId('QuickEntryTable');
 	CounterSales.SetRowCounter(<?php echo empty($i) ? 0 : $i; ?>);
 	CounterSales.SetDefaultDeliveryDate(<?php echo json_encode(empty($DefaultDeliveryDate) ? '' : $DefaultDeliveryDate); ?>);
 	CounterSales.SetTotalQuickEntryRowsId('TotalQuickEntryRows');
 
-	CounterSales.SetDecimal(<?php echo $_SESSION['Items'.$identifier]->CurrDecimalPlaces; ?>);
+	CounterSales.SetDecimal(<?php echo $_SESSION['Items'.$identifier]->CurrDecimalPlaces ?? 2; ?>);
 	CounterSales.SetCashReceivedId('CashReceived');
 	CounterSales.SetAmountPaidId('AmountPaid');
 	CounterSales.SetChangeDueId('ChangeDue');

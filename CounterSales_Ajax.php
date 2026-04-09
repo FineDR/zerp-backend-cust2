@@ -100,11 +100,23 @@ switch ($action) {
                 $ExRate = 1;
             }
 
+            // Variables required by SelectOrderItems_IntoCart.php
+            $AlreadyWarnedAboutCredit = false;
+            if (!isset($_SESSION['SO_AllowSameItemMultipleTimes'])) {
+                $_SESSION['SO_AllowSameItemMultipleTimes'] = 1; // Allow by default for POS
+            }
+            if (!isset($_SESSION['CheckCreditLimits'])) {
+                $_SESSION['CheckCreditLimits'] = 0;
+            }
+            if (!isset($_SESSION['AllowSalesOfZeroCostItems'])) {
+                $_SESSION['AllowSalesOfZeroCostItems'] = true;
+            }
             ob_start();
             try {
                 include(__DIR__ . '/includes/SelectOrderItems_IntoCart.php');
             } catch (Throwable $e) {
                 file_put_contents(__DIR__ . '/pos_debug.log', $e->getMessage() . "\n" . $e->getTraceAsString(), FILE_APPEND);
+                ob_end_clean();
                 echo json_encode(['success' => false, 'error' => $e->getMessage()]);
                 exit;
             }
@@ -230,6 +242,36 @@ if (isset($_SESSION['Items'.$identifier]->LineItems)) {
     }
 }
 $_SESSION['Items'.$identifier]->total = $total;
+
+// Recalculate taxes for all lines after any cart change
+$_SESSION['Items'.$identifier]->TaxTotals = [];
+$_SESSION['Items'.$identifier]->TaxGLCodes = [];
+if (isset($_SESSION['Items'.$identifier]->TaxGroup) && $_SESSION['Items'.$identifier]->TaxGroup > 0
+    && isset($_SESSION['Items'.$identifier]->DispatchTaxProvince) && isset($_SESSION['Items'.$identifier]->LineItems)) {
+    foreach ($_SESSION['Items'.$identifier]->LineItems as $lineNo => $line) {
+        if (!isset($line->TaxCategory) || $line->TaxCategory == 0) {
+            continue;
+        }
+        $_SESSION['Items'.$identifier]->GetTaxes($lineNo);
+        if (isset($_SESSION['Items'.$identifier]->LineItems[$lineNo]->Taxes)) {
+            $NetLineValue = $line->Quantity * $line->Price * (1 - $line->DiscountPercent);
+            $TaxBaseValue = $NetLineValue;
+            foreach ($_SESSION['Items'.$identifier]->LineItems[$lineNo]->Taxes as $Tax) {
+                if ($Tax->TaxOnTax == 1) {
+                    $LineTax = round($TaxBaseValue * ($Tax->TaxRate / 100), $_SESSION['Items'.$identifier]->CurrDecimalPlaces ?? 2);
+                } else {
+                    $LineTax = round($NetLineValue * ($Tax->TaxRate / 100), $_SESSION['Items'.$identifier]->CurrDecimalPlaces ?? 2);
+                }
+                $TaxBaseValue += $LineTax;
+                if (!isset($_SESSION['Items'.$identifier]->TaxTotals[$Tax->TaxAuthID])) {
+                    $_SESSION['Items'.$identifier]->TaxTotals[$Tax->TaxAuthID] = 0;
+                }
+                $_SESSION['Items'.$identifier]->TaxTotals[$Tax->TaxAuthID] += $LineTax;
+                $_SESSION['Items'.$identifier]->TaxGLCodes[$Tax->TaxAuthID] = $Tax->TaxGLCode;
+            }
+        }
+    }
+}
 
 // After any action, render the updated cart HTML
 if ($response['success']) {
