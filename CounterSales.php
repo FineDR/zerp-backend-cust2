@@ -285,11 +285,28 @@ if (isset($_POST['CancelOrder'])) {
 	</div>';
 
 	if (isset($CompletedInvoiceNo)) {
-		prnMsg('<a class="pos-success-link" target="_blank" rel="noopener" href="' . htmlspecialchars($CompletedInvoiceURL, ENT_QUOTES, 'UTF-8') . '">' . __('Invoice number') . ' ' . $CompletedInvoiceNo . ' ' . __('processed') . '</a>', 'success');
-		echo '<div class="centre">';
-		echo '<p><a target="_blank" rel="noopener" href="' . htmlspecialchars($CompletedInvoiceURL, ENT_QUOTES, 'UTF-8') . '">' . __('Open invoice PDF in a new tab') . '</a></p>';
-		echo '<script>window.open(' . json_encode($CompletedInvoiceURL) . ', "_blank", "noopener");</script>';
-		echo '</div>';
+		$DownloadURL = $CompletedInvoiceURL . '&Download=True';
+		echo '<div class="pos-modal-overlay">
+				<div class="pos-modal-content">
+					<div class="pos-modal-icon">
+						<i class="fas fa-check"></i>
+					</div>
+					<h2 class="pos-modal-title">' . __('Sale Completed Successfully') . '</h2>
+					<p class="pos-modal-subtitle">' . __('Invoice #') . $CompletedInvoiceNo . ' ' . __('has been processed.') . '</p>
+					
+					<div class="pos-modal-actions">
+						<a href="' . htmlspecialchars($CompletedInvoiceURL, ENT_QUOTES, 'UTF-8') . '" target="_blank" class="pos-btn-primary">
+							<i class="fas fa-print"></i> ' . __('Print Receipt') . '
+						</a>
+						<a href="' . htmlspecialchars($DownloadURL, ENT_QUOTES, 'UTF-8') . '" class="pos-btn-outline">
+							<i class="fas fa-download"></i> ' . __('Download PDF') . '
+						</a>
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" class="pos-btn-ghost">
+							' . __('Start New Sale') . '
+						</a>
+					</div>
+				</div>
+			  </div>';
 	}
 }
 
@@ -665,8 +682,9 @@ echo '      </div>
         </div>'; // End pos-payment-card
 
 echo '  <button type="submit" name="ProcessSale" value="1" class="pos-pay-btn">
-    <i class="fas fa-check-circle"></i> ' . __('Complete Payment') . '
-  </button>';
+    <i class="fas fa-check-circle"></i> ' . __('Process the Sale') . '
+  </button>
+';
 echo '</div>'; // end pos-cart-footer
 
 echo '</aside>';
