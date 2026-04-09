@@ -222,6 +222,14 @@ switch ($action) {
         $response['success'] = true;
         break;
 }
+// Sync session cart total after any action
+$total = 0;
+if (isset($_SESSION['Items'.$identifier]->LineItems)) {
+    foreach ($_SESSION['Items'.$identifier]->LineItems as $line) {
+        $total += ($line->Quantity * $line->Price * (1 - $line->DiscountPercent));
+    }
+}
+$_SESSION['Items'.$identifier]->total = $total;
 
 // After any action, render the updated cart HTML
 if ($response['success']) {

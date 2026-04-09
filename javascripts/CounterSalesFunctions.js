@@ -136,8 +136,14 @@ var CounterSales = {
         if (totalToPay) {
             totalToPay.value = data.grand_total;
             this.totaldue = data.grand_total; // Update the internal state for change calc
-            this.CalculateTotals();
         }
+
+        const hiddenTax = document.getElementById('HiddenTaxTotal');
+        if (hiddenTax) {
+            hiddenTax.value = data.tax_total;
+        }
+
+        this.CalculateTotals();
         
         if (cartTabBtn) {
             cartTabBtn.innerHTML = `<i class="fas fa-shopping-basket"></i> ${data.item_count}`;
@@ -460,7 +466,8 @@ var CounterSales = {
 	},
 
 	CalculateTotals: function() {
-		var totalToPay = parseFloat(document.getElementById('TotalAmountToPay').value);
+		var totalToPayEl = document.getElementById('TotalAmountToPay');
+        var totalToPay = totalToPayEl ? parseFloat(totalToPayEl.value) : this.totaldue;
 		var totalPaid = this._calculateCurrentTotalPaid();
 		var remaining = totalToPay - totalPaid;
 
@@ -566,6 +573,23 @@ var CounterSales = {
             if (tabCart) tabCart.classList.add('active');
         }
         window.scrollTo(0,0);
+    },
+
+    // Initialize Event Delegation for Product Clicks
+    InitCatalog: function() {
+        const catalog = document.getElementById('PosCatalogCol');
+        if (!catalog) return;
+
+        // Use event delegation to handle clicks on product cards
+        catalog.addEventListener('click', (e) => {
+            const card = e.target.closest('.pos-product-card');
+            if (card) {
+                const stockid = card.getAttribute('data-stockid');
+                if (stockid) {
+                    this.AddItem(stockid, 1);
+                }
+            }
+        });
     }
 }
 
@@ -574,4 +598,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('TotalAmountToPay')) {
         CounterSales.CalculateTotals();
     }
+    // Initialize catalog event delegation
+    CounterSales.InitCatalog();
 });

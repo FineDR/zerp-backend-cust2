@@ -274,10 +274,10 @@ function userLogin($Name, $Password, $SysAdminEmail = '') {
 			// Incorrect password
 			$_SESSION['AttemptsCounter']++;
 
-			// after 5 login attempts, show failed login screen
+			// after 20 login attempts, show failed login screen
 			if (!isset($_SESSION['AttemptsCounter'])) {
 				$_SESSION['AttemptsCounter'] = 0;
-			} elseif ($_SESSION['AttemptsCounter'] >= 5 AND isset($Name)) {
+			} elseif ($_SESSION['AttemptsCounter'] >= 20 AND isset($Name)) {
 				/*User blocked from future accesses until sysadmin releases */
 				$SQL = "UPDATE www_users
 							SET blocked=1

@@ -13,10 +13,12 @@ $Title = __('Counter Sales');
 $ViewTopic = 'SalesOrders';
 $BookMark = 'SalesOrderCounterSales';
 
-if (empty($_GET['identifier'])) {
-	$identifier=date('U');
-} else {
+if (isset($_POST['identifier'])) {
+	$identifier=$_POST['identifier'];
+} elseif (isset($_GET['identifier'])) {
 	$identifier=$_GET['identifier'];
+} else {
+	$identifier=date('U');
 }
 
 $ExtraHeadContent = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -429,10 +431,11 @@ if (isset($_POST['Search']) or isset($_POST['Next']) or isset($_POST['Previous']
 
 /* Always do the stuff below */
 
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" id="SelectParts" method="post">';
+echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" id="SelectParts" method="post">';
 echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 echo '<input type="hidden" id="AutoFillCashReceived" name="AutoFillCashReceived" value="0" />';
 echo '<div class="pos-layout">'; // Start Grid
+echo '<input type="hidden" name="identifier" value="' . htmlspecialchars($identifier) . '" />';
 
 // 1. Column 1: Product Catalog (Wider center column)
 echo '<section class="pos-catalog" id="PosCatalogCol">';
@@ -465,9 +468,6 @@ echo '<section class="pos-catalog" id="PosCatalogCol">';
         echo '<input type="hidden" name="StockCat" id="StockCatInput" value="' . ($_POST['StockCat'] ?? 'All') . '" />';
         echo '<input type="hidden" name="PartSearch" value="Yes" />';
 		echo '</div>';
-
-        echo '<input type="hidden" name="StockCat" id="StockCatInput" value="' . ($_POST['StockCat'] ?? 'All') . '" />';
-        echo '<input type="hidden" name="PartSearch" value="Yes" />';
 	// Add some useful help as the order progresses
 		if (isset($SearchResult)) {
 			echo '<br />
@@ -485,7 +485,7 @@ echo '<section class="pos-catalog" id="PosCatalogCol">';
 				$stockStatus = ($QOH > 10) ? 'stock-high' : (($QOH > 0) ? 'stock-low' : 'stock-out');
 				$stockLabel = ($QOH > 0) ? locale_number_format($QOH, $MyRow['decimalplaces']) : __('0');
 
-								echo '<div class="pos-product-card" data-stockid="' . htmlspecialchars($MyRow['stockid']) . '" onclick="CounterSales.AddItem(' . json_encode($MyRow['stockid'], JSON_HEX_QUOT | JSON_HEX_APOS) . ', 1)">
+								echo '<div class="pos-product-card" data-stockid="' . htmlspecialchars($MyRow['stockid']) . '">
 						<div class="pos-stock-badge ' . $stockStatus . '"><i class="fas fa-layer-group"></i> ' . $stockLabel . '</div>
 						<div class="pos-product-img">
 							<i class="fas fa-box" style="opacity: 0.5;"></i>
@@ -660,7 +660,8 @@ echo '      </div>
             
             </div>
             
-            <input type="hidden" id="TotalAmountToPay" name="TaxTotal" value="' . $DisplayGrandTotal . '" />
+            <input type="hidden" id="TotalAmountToPay" name="InvoiceTotal" value="' . $DisplayGrandTotal . '" />
+            <input type="hidden" id="HiddenTaxTotal" name="TaxAmount" value="' . $DisplayTaxTotal . '" />
         </div>'; // End pos-payment-card
 
 echo '  <button type="submit" name="ProcessSale" value="1" class="pos-pay-btn">
@@ -689,8 +690,9 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 		}
 	}
 
-	if (abs($TotalAmountPaid - (round($_SESSION['Items'.$identifier]->total + filter_number_format($_POST['TaxTotal']), $_SESSION['Items'.$identifier]->CurrDecimalPlaces))) >= CurrencyTolerance($_SESSION['Items' . $identifier]->DefaultCurrency)) {
-		prnMsg(__('The total amount entered as payment') . ' (' . $TotalAmountPaid . ') ' . __('does not equal the amount of the invoice') . ' (' . round($_SESSION['Items'.$identifier]->total + filter_number_format($_POST['TaxTotal']), $_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '). ' . __('Please ensure the customer has paid the correct amount and re-enter'),'error');
+	$ExpectedTotal = round($_SESSION['Items'.$identifier]->total + filter_number_format($_POST['TaxAmount']), $_SESSION['Items'.$identifier]->CurrDecimalPlaces);
+	if (abs($TotalAmountPaid - $ExpectedTotal) >= CurrencyTolerance($_SESSION['Items' . $identifier]->DefaultCurrency)) {
+		prnMsg(__('The total amount entered as payment') . ' (' . $TotalAmountPaid . ') ' . __('does not equal the amount of the invoice') . ' (' . $ExpectedTotal . '). ' . __('Please ensure the customer has paid the correct amount and re-enter'),'error');
 		$InputError = true;
 	}
 
@@ -775,10 +777,15 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 		DB_free_result($Result);
 
 	/*company record read in on login with info on GL Links and debtors GL account*/
+		if (empty($_SESSION['CompanyRecord']) || $_SESSION['CompanyRecord'] === 0) {
+			// Force reload config if lost
+			$ForceConfigReload = true;
+			include($PathPrefix . 'includes/GetConfig.php');
+		}
 
-		if ($_SESSION['CompanyRecord']==0) {
+		if (empty($_SESSION['CompanyRecord']) || $_SESSION['CompanyRecord'] === 0) {
 			/*The company data and preferences could not be retrieved for some reason */
-			prnMsg( __('The company information and preferences could not be retrieved. See your system administrator'), 'error');
+			prnMsg( __('The company information and preferences could not be retrieved (Retry failed). See your system administrator'), 'error');
 			include(__DIR__ . '/includes/footer.php');
 			exit();
 		}
