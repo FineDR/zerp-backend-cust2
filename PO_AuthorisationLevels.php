@@ -7,10 +7,13 @@ $ViewTopic = '';
 $BookMark = 'PO_AuthorisationLevels';
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme,
-	'/images/group_add.png" title="', // Icon image.
-	$Title, '" /> ', // Icon title.
-	$Title, '</p>';// Page title.
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div>
+				<h1 class="db-page-title">' . $Title . '</h1>
+				<p class="db-page-subtitle">' . __('Manage user authority for purchase order approvals') . '</p>
+			</div>
+		</div>';
 
 /*Note: If CanCreate==0 then this means the user can create orders
  *     Also if OffHold==0 then the user can release purchase invocies
@@ -120,45 +123,47 @@ $SQL="SELECT purchorderauth.userid,
 $ErrMsg = __('The authentication details cannot be retrieved because');
 $Result = DB_query($SQL, $ErrMsg);
 
-echo '<table class="selection">
-		<thead>
-			<tr>
-				<th class="SortedColumn">' . __('User ID') . '</th>
-				<th class="SortedColumn">' . __('User Name') . '</th>
-				<th class="SortedColumn">' . __('Currency') . '</th>
-				<th class="SortedColumn">' . __('Create Order') . '</th>
-				<th class="SortedColumn">' . __('Can Release') . '<br />' .  __('Invoices') . '</th>
-				<th class="SortedColumn">' . __('Authority Level') . '</th>
-				<th colspan="2">&nbsp;</th>
-			</tr>
-		</thead>';
+echo '<div class="db-card">
+		<div class="db-card-title">' . __('Existing Authorisation Levels') . '</div>
+		<div class="db-card-body">
+			<div class="db-table-wrapper">
+				<table class="db-table">
+					<thead>
+						<tr>
+							<th>' . __('User') . '</th>
+							<th>' . __('Currency') . '</th>
+							<th class="text-center">' . __('Create') . '</th>
+							<th class="text-center">' . __('Rel. Inv.') . '</th>
+							<th class="text-right">' . __('Authority Level') . '</th>
+							<th class="text-center">' . __('Actions') . '</th>
+						</tr>
+					</thead>
+					<tbody>';
 
-while ($MyRow=DB_fetch_array($Result)) {
-	if ($MyRow['cancreate']==0) {
-		$DisplayCanCreate=__('Yes');
-	} else {
-		$DisplayCanCreate=__('No');
-	}
-	if ($MyRow['offhold']==0) {
-		$DisplayOffHold=__('Yes');
-	} else {
-		$DisplayOffHold=__('No');
-	}
-	echo '<tr class="striped_row">
-			<td>' . $MyRow['userid'] . '</td>
-			<td>' . $MyRow['realname'] . '</td>
+	while ($MyRow = DB_fetch_array($Result)) {
+		echo '<tr>
+			<td>
+				<div class="db-font-bold text-primary">' . $MyRow['userid'] . '</div>
+				<div class="db-text-muted db-font-sm">' . $MyRow['realname'] . '</div>
+			</td>
 			<td>', __($MyRow['currency']), '</td>
-			<td>' . $DisplayCanCreate . '</td>
-			<td>' . $DisplayOffHold . '</td>
-			<td class="number">' . locale_number_format($MyRow['authlevel'],$MyRow['decimalplaces']) . '</td>
-			<td><a href="'.$RootPath.'/PO_AuthorisationLevels.php?Edit=Yes&amp;UserID=' . $MyRow['userid'] .
-	'&amp;Currency='.$MyRow['currabrev'].'">' . __('Edit') . '</a></td>
-			<td><a href="'.$RootPath.'/PO_AuthorisationLevels.php?Delete=Yes&amp;UserID=' . $MyRow['userid'] .
-	'&amp;Currency='.$MyRow['currabrev'].'" onclick="return confirm(\'' . __('Are you sure you wish to delete this authorisation level?') . '\');">' . __('Delete') . '</a></td>
+			<td class="text-center">' . ($MyRow['cancreate']==0 ? '<span class="db-badge db-badge-success">' . __('Yes') . '</span>' : '<span class="db-badge db-badge-danger">' . __('No') . '</span>') . '</td>
+			<td class="text-center">' . ($MyRow['offhold']==0 ? '<span class="db-badge db-badge-success">' . __('Yes') . '</span>' : '<span class="db-badge db-badge-danger">' . __('No') . '</span>') . '</td>
+			<td class="text-right db-font-semibold">' . locale_number_format($MyRow['authlevel'], $MyRow['decimalplaces']) . '</td>
+			<td class="text-center">
+				<div class="db-table-actions">
+					<a href="'.$RootPath.'/PO_AuthorisationLevels.php?Edit=Yes&amp;UserID=' . $MyRow['userid'] . '&amp;Currency='.$MyRow['currabrev'].'" class="db-btn db-btn-outline db-btn-sm">' . __('Edit') . '</a>
+					<a href="'.$RootPath.'/PO_AuthorisationLevels.php?Delete=Yes&amp;UserID=' . $MyRow['userid'] . '&amp;Currency='.$MyRow['currabrev'].'" class="db-btn db-btn-danger db-btn-sm" onclick="return confirm(\'' . __('Are you sure?') . '\');">' . __('Delete') . '</a>
+				</div>
+			</td>
 		</tr>';
 }
 
-echo '</table>';
+echo '					</tbody>
+					</table>
+				</div>
+			</div>
+		</div>';
 
 if (!isset($_GET['Edit'])) {
 	$UserID=$_SESSION['UserID'];
@@ -168,113 +173,85 @@ if (!isset($_GET['Edit'])) {
 	$AuthLevel=0;
 }
 
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post" id="form1">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-echo '<fieldset>
-		<legend>', __('Set Authorisation Levels'), '</legend>';
+echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post" id="form1">
+	<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+	<div class="db-card" style="margin-top: var(--space-4);">
+		<div class="db-card-title">
+			<span><svg class="db-card-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="17" y1="11" x2="23" y2="11"/></svg> ' . (isset($_GET['Edit']) ? __('Update Authorisation Level') : __('Define New Authorisation Level')) . '</span>
+		</div>
+		<div class="db-card-body">
+			<div class="db-grid db-grid-2">';
 
 if (isset($_GET['Edit'])) {
-	echo '<field>
-			<label for="UserID">' . __('User ID') . '</label>
-			<fieldtext>' . $_GET['UserID'] . '</fieldtext>
-		</field>';
-	echo '<input type="hidden" name="UserID" value="'.$_GET['UserID'].'" />';
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('User Account') . ':</label>
+			<div class="db-form-static">' . $_GET['UserID'] . '</div>
+			<input type="hidden" name="UserID" value="'.$_GET['UserID'].'" />
+		  </div>';
 } else {
-	echo '<field>
-			<label for="UserID">' . __('User ID') . '</label>
-			<select name="UserID">';
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('Select User Account') . ':</label>
+			<select name="UserID" class="db-form-select">';
 	$UserSQL="SELECT userid FROM www_users";
 	$Userresult=DB_query($UserSQL);
 	while ($MyRow=DB_fetch_array($Userresult)) {
-		if ($MyRow['userid']==$UserID) {
-			echo '<option selected="selected" value="'.$MyRow['userid'].'">' . $MyRow['userid'] . '</option>';
-		} else {
-			echo '<option value="'.$MyRow['userid'].'">' . $MyRow['userid'] . '</option>';
-		}
+		$selected = ($MyRow['userid']==$UserID) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="'.$MyRow['userid'].'">' . $MyRow['userid'] . '</option>';
 	}
-	echo '</select>
-		</field>';
+	echo '	</select>
+		  </div>';
 }
 
 if (isset($_GET['Edit'])) {
-	$SQL="SELECT cancreate,
-				offhold,
-				authlevel,
-				currency,
-				decimalplaces
-			FROM purchorderauth INNER JOIN currencies
-			ON purchorderauth.currabrev=currencies.currabrev
-			WHERE userid='".$_GET['UserID']."'
-			AND purchorderauth.currabrev='".$_GET['Currency']."'";
-	$ErrMsg = __('The authentication details cannot be retrieved because');
-	$Result = DB_query($SQL, $ErrMsg);
+	$SQL="SELECT currency, decimalplaces FROM purchorderauth INNER JOIN currencies ON purchorderauth.currabrev=currencies.currabrev WHERE userid='".$_GET['UserID']."' AND purchorderauth.currabrev='".$_GET['Currency']."'";
+	$Result = DB_query($SQL);
 	$MyRow=DB_fetch_array($Result);
-	$UserID=$_GET['UserID'];
-	$Currency=$_GET['Currency'];
-	$CanCreate=$MyRow['cancreate'];
-	$OffHold=$MyRow['offhold'];
-	$AuthLevel=$MyRow['authlevel'];
 	$CurrDecimalPlaces=$MyRow['decimalplaces'];
 
-	echo '<field>
-			<label for="CurrCode">' . __('Currency') . '</label>
-			<fieldtext>' . $MyRow['currency'] . '</fieldtext>
-		</field>';
-	echo '<input type="hidden" name="CurrCode" value="'.$Currency.'" />';
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('Currency') . ':</label>
+			<div class="db-form-static">' . $MyRow['currency'] . '</div>
+			<input type="hidden" name="CurrCode" value="'.$_GET['Currency'].'" />
+		  </div>';
 } else {
-	echo '<field>
-			<label for="CurrCode">' . __('Currency') . '</label>
-			<select name="CurrCode">';
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('Select Currency') . ':</label>
+			<select name="CurrCode" class="db-form-select">';
 	$Currencysql="SELECT currabrev,currency,decimalplaces FROM currencies";
 	$Currencyresult=DB_query($Currencysql);
 	while ($MyRow=DB_fetch_array($Currencyresult)) {
-		if ($MyRow['currabrev']==$Currency) {
-			echo '<option selected="selected" value="'.$MyRow['currabrev'].'">' . $MyRow['currency'] . '</option>';
-		} else {
-			echo '<option value="'.$MyRow['currabrev'].'">' . $MyRow['currency'] . '</option>';
-		}
+		$selected = ($MyRow['currabrev']==$Currency) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="'.$MyRow['currabrev'].'">' . $MyRow['currency'] . '</option>';
 	}
-	$CurrDecimalPlaces=$MyRow['decimalplaces'];
-	echo '</select>
-		</field>';
+	$CurrDecimalPlaces=2;
+	echo '	</select>
+		  </div>';
 }
 
-echo '<field>
-		<label for="CanCreate">' . __('User can create orders') . '</label>';
-if ($CanCreate==1) {
-	echo '<input type="checkbox" name="CanCreate" />
-		</field>';
-} else {
-	echo '<input type="checkbox" checked="checked" name="CanCreate" />
-		</field>';
-}
-
-echo '<field>
-		<label for="OffHold">' . __('User can release invoices') . '</label>';
-if ($OffHold==1) {
-	echo '<input type="checkbox" name="OffHold" />
-		</field>';
-} else {
-	echo '<input type="checkbox" checked="checked" name="OffHold" />
-		</field>';
-}
-
-echo '<field>
-		<label for="AuthLevel">' . __('User can authorise orders up to :') . '</label>
-		<input type="text" name="AuthLevel" size="11" class="integer" title="" value="'  . locale_number_format($AuthLevel,$CurrDecimalPlaces) . '" />
-		<fieldhelp>' . __('Enter the amount that this user is premitted to authorise purchase orders up to') . '</fieldhelp>
-	</field>
-	</fieldset>';
-
+echo '		<div class="db-form-group">
+				<label class="db-form-label">' . __('Authority Level Amount') . ':</label>
+				<input type="text" name="AuthLevel" class="db-form-input text-right" value="'  . locale_number_format($AuthLevel,$CurrDecimalPlaces) . '" placeholder="0.00" />
+				<p class="db-form-help">' . __('Maximum amount this user can authorize') . '</p>
+			</div>
+			<div class="db-form-group" style="display:flex; flex-direction:column; gap:var(--space-2); justify-content:center;">
+				<label class="db-checkbox-container">
+					<input type="checkbox" name="CanCreate" ' . ($CanCreate==0 ? 'checked="checked"' : '') . ' />
+					<span class="db-checkbox-label">' . __('Allow this user to create purchase orders') . '</span>
+				</label>
+				<label class="db-checkbox-container">
+					<input type="checkbox" name="OffHold" ' . ($OffHold==0 ? 'checked="checked"' : '') . ' />
+					<span class="db-checkbox-label">' . __('Allow this user to release supplier invoices') . '</span>
+				</label>
+			</div>
+		</div>
+		</div>
+		<div class="db-card-footer db-form-actions">
+			<button type="submit" name="' . (isset($_GET['Edit']) ? 'Update' : 'Submit') . '" class="db-btn db-btn-primary">' . (isset($_GET['Edit']) ? __('Update Information') : __('Create Authority Level')) . '</button>';
 if (isset($_GET['Edit'])) {
-	echo '<div class="centre">
-			<input type="submit" name="Update" value="'.__('Update Information').'" />
-		</div>';
-} else {
-	echo '<div class="centre">
-			<input type="submit" name="Submit" value="'.__('Enter Information').'" />
-		</div>';
+	echo '	<a href="'.$RootPath.'/PO_AuthorisationLevels.php" class="db-btn db-btn-secondary">' . __('Cancel') . '</a>';
 }
-echo '</div>
-        </form>';
+echo '		</div>
+	</div>
+</form>
+</div> <!-- End db-page -->';
 include(__DIR__ . '/includes/footer.php');

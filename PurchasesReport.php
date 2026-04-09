@@ -15,6 +15,14 @@ $ViewTopic = 'PurchaseOrdering';
 $BookMark = 'PurchasesReport';
 include(__DIR__ . '/includes/header.php');
 
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div>
+				<h1 class="db-page-title">' . $Title . '</h1>
+				<p class="db-page-subtitle">' . __('Analyze supplier purchases across selected periods') . '</p>
+			</div>
+		</div>';
+
 if (isset($_POST['PeriodFrom'])){$_POST['PeriodFrom'] = ConvertSQLDate($_POST['PeriodFrom']);}
 if (isset($_POST['PeriodTo'])){$_POST['PeriodTo'] = ConvertSQLDate($_POST['PeriodTo']);}
 
@@ -41,32 +49,23 @@ if (isset($_POST['PeriodFrom']) AND isset($_POST['PeriodTo'])) {
 // Main code:
 if (isset($_POST['PeriodFrom']) AND isset($_POST['PeriodTo']) AND !$_POST['NewReport']) {
 	// If PeriodFrom and PeriodTo are set and it is not a NewReport, generates the report:
-	echo '<div class="sheet">', // Division to identify the report block.
-		'<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/reports.png" title="', // Icon image.
-		$Title, '" /> ', // Icon title.
-		$Title, '</p>', // Page title.
-		'<p>', __('Period from'), ': ', $_POST['PeriodFrom'],
-		'<br />', __('Period to'), ': ', $_POST['PeriodTo'], '</p>',
-		'<table class="selection">
-		<thead>
-			<tr>';
+	echo '<div class="db-card">
+			<div class="db-card-title">' . __('Report Results') . ' (' . $_POST['PeriodFrom'] . ' ' . __('to') . ' ' . $_POST['PeriodTo'] . ')</div>
+			<div class="db-card-body">
+				<div class="db-table-wrapper">
+					<table class="db-table">
+						<thead>
+							<tr>';
 	// $CommonHead is the common table head between ShowDetails=off and ShowDetails=on:
 	$CommonHead =
-				'<th>' . __('Original Overall Amount') . '</th>' .
-				'<th>' . __('Original Overall Taxes') . '</th>' .
-				'<th>' . __('Original Overall Total') . '</th>' .
-				'<th>' . __('GL Overall Amount') . '</th>' .
-				'<th>' . __('GL Overall Taxes') . '</th>' .
-				'<th>' . __('GL Overall Total') . '</th>' .
+				'<th>' . __('Orig. Amount') . '</th>' .
+				'<th>' . __('Orig. Taxes') . '</th>' .
+				'<th>' . __('Orig. Total') . '</th>' .
+				'<th>' . __('GL Amount') . '</th>' .
+				'<th>' . __('GL Taxes') . '</th>' .
+				'<th>' . __('GL Total') . '</th>' .
 			'</tr>' .
-		'</thead><tfoot>' .
-			'<tr>' .
-				'<td colspan="9"><br /><b>' .
-					__('Notes') . '</b><br />' .
-					__('Original amounts in the supplier\'s currency. GL amounts in the functional currency.') .
-				'</td>' .
-			'</tr>' .
-		'</tfoot><tbody>';
+		'</thead><tbody>';
 	$TotalGlAmount = 0;
 	$TotalGlTax = 0;
 	$PeriodFrom = FormatDateForSQL($_POST['PeriodFrom']);
@@ -198,75 +197,60 @@ if (isset($_POST['PeriodFrom']) AND isset($_POST['PeriodTo']) AND !$_POST['NewRe
 		}
 	}
 	// Prints all suppliers total:
-	echo	'<tr>
-				<td class="text" colspan="6">&nbsp;</td>
-				<td class="number">', locale_number_format($TotalGlAmount, $_SESSION['CompanyRecord']['decimalplaces']), '</td>
-				<td class="number">', locale_number_format($TotalGlTax, $_SESSION['CompanyRecord']['decimalplaces']), '</td>
-				<td class="number">', locale_number_format($TotalGlAmount+$TotalGlTax, $_SESSION['CompanyRecord']['decimalplaces']), '</td>
+	echo	'<tr class="db-font-bold" style="background: var(--bg-workspace);">
+				<td class="text" colspan="' . ($_POST['ShowDetails'] ? '6' : '6') . '"><div class="text-right">' . __('GRAND TOTAL') . '</div></td>
+				<td class="text-right">', locale_number_format($TotalGlAmount, $_SESSION['CompanyRecord']['decimalplaces']), '</td>
+				<td class="text-right">', locale_number_format($TotalGlTax, $_SESSION['CompanyRecord']['decimalplaces']), '</td>
+				<td class="text-right">', locale_number_format($TotalGlAmount+$TotalGlTax, $_SESSION['CompanyRecord']['decimalplaces']), '</td>
 			</tr>',
-		'</tbody></table>',
-		'</div>', // div id="Report".
+		'</tbody></table></div>
+		<div class="db-alert db-alert-info" style="margin-top: var(--space-4);">
+			<strong>' . __('Notes') . ':</strong> ' . __('Original amounts in the supplier\'s currency. GL amounts in the functional currency.') . '
+		</div>
+		</div>';
 	// Shows a form to select an action after the report was shown:
-		'<form action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" method="post">',
-		'<input name="FormID" type="hidden" value="', $_SESSION['FormID'], '" />',
-	// Resend report parameters:
-		'<input name="PeriodFrom" type="hidden" value="', $_POST['PeriodFrom'], '" />',
-		'<input name="PeriodTo" type="hidden" value="', $_POST['PeriodTo'], '" />',
-		'<input name="ShowDetails" type="hidden" value="', $_POST['ShowDetails'], '" />',
-		'<div class="centre noPrint">', // Form buttons:
-			'<button onclick="window.print()" type="button"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/printer.png" /> ', __('Print'), '</button>', // "Print" button.
-			'<button name="NewReport" type="submit" value="on"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/reports.png" /> ', __('New Report'), '</button>', // "New Report" button.
-			'<button onclick="window.location=\'' . $RootPath . '/index.php?Application=PO\'" type="button"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/return.svg" /> ', __('Return'), '</button>', // "Return" button.
-		'</div>';
+		echo '<div class="db-card-footer db-form-actions" style="margin-top: var(--space-4);">
+				<form action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" method="post" style="display: contents;">
+					<input name="FormID" type="hidden" value="', $_SESSION['FormID'], '" />
+					<input name="PeriodFrom" type="hidden" value="', $_POST['PeriodFrom'], '" />
+					<input name="PeriodTo" type="hidden" value="', $_POST['PeriodTo'], '" />
+					<input name="ShowDetails" type="hidden" value="', $_POST['ShowDetails'], '" />
+					<button class="db-btn db-btn-secondary" onclick="window.print()" type="button">' . __('Print Report') . '</button>
+					<button class="db-btn db-btn-primary" name="NewReport" type="submit" value="on">' . __('New Report') . '</button>
+					<a href="' . $RootPath . '/index.php?Application=PO" class="db-btn db-btn-secondary">' . __('Return') . '</a>
+				</form>
+			</div>
+		</div>';
 } else {
-	// If PeriodFrom or PeriodTo are NOT set or it is a NewReport, shows a parameters input form:
-	echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/gl.png" title="', // Icon image.
-		$Title, '" /> ', // Icon title.
-		$Title, '</p>';// Page title.
-	fShowPageHelp(// Shows the page help text if $_SESSION['ShowFieldHelp'] is true or is not set
-		__('Shows a report of purchases from suppliers for the range of selected dates.'));// Function fShowPageHelp() in ~/includes/MiscFunctions.php
-	echo // Shows a form to input the report parameters:
-		'<form action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" method="post">',
-		'<input name="FormID" type="hidden" value="', $_SESSION['FormID'], '" />', // Input table:
-		'<fieldset>
-			<legend>', __('Report Criteria'), '</legend>', // Content of the header and footer of the input table:
-/*		'<thead>
-			<field>
-				<th colspan="2">', __('Report Parameters'), '</th>
-			</field>
-		</thead>',*/
-	// Content of the body of the input table:
-	// Select period from:
-			'<field>',
-				'<label for="PeriodFrom">', __('Period from'), '</label>';
-	if (!isset($_POST['PeriodFrom'])) {
-		$_POST['PeriodFrom'] = date($_SESSION['DefaultDateFormat'], strtotime("-1 year", time()));// One year before current date.
-	}
-	echo '<td><input type="date" id="PeriodFrom" maxlength="10" name="PeriodFrom" required="required" size="11" value="', FormatDateForSQL($_POST['PeriodFrom']), '" />',
-				'<fieldhelp>', __('Select the beginning of the reporting period'), '</fieldhelp>
-			</field>',
-			// Select period to:
-			'<field>',
-				'<label for="PeriodTo">', __('Period to'), '</label>';
-	if (!isset($_POST['PeriodTo'])) {
-		$_POST['PeriodTo'] = date($_SESSION['DefaultDateFormat']);
-	}
-	echo 		'<input type="date" id="PeriodTo" maxlength="10" name="PeriodTo" required="required" size="11" value="', FormatDateForSQL($_POST['PeriodTo']), '" />',
-				'<fieldhelp>', __('Select the end of the reporting period'), '</fieldhelp>
-			</field>';
-	// Show the budget for the period:
-	echo '<field>',
-			 	'<label for="ShowDetails">', __('Show details'), '</label>',
-			 	'<input', (isset($_POST['ShowDetails']) && $_POST['ShowDetails'] ? ' checked="checked"' : ''), ' id="ShowDetails" name="ShowDetails" type="checkbox">', // If $_POST['ShowDetails'] is set AND it is true, shows this input checked.
-				'<fieldhelp>', __('Check this box to show purchase invoices'), '</fieldhelp>
-			</field>';
-	echo '</fieldset>';
+	echo '<form action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" method="post">
+			<input name="FormID" type="hidden" value="', $_SESSION['FormID'] . '" />
+			<div class="db-card">
+				<div class="db-card-title">' . __('Report Criteria') . '</div>
+				<div class="db-card-body">
+					<div class="db-grid db-grid-3">
+						<div class="db-form-group">
+							<label class="db-form-label" for="PeriodFrom">' . __('Period from') . ':</label>
+							<input type="date" id="PeriodFrom" name="PeriodFrom" class="db-form-input" required="required" value="' . FormatDateForSQL($_POST['PeriodFrom']) . '" />
+						</div>
+						<div class="db-form-group">
+							<label class="db-form-label" for="PeriodTo">' . __('Period to') . ':</label>
+							<input type="date" id="PeriodTo" name="PeriodTo" class="db-form-input" required="required" value="' . FormatDateForSQL($_POST['PeriodTo']) . '" />
+						</div>
+						<div class="db-form-group" style="display: flex; align-items: flex-end; padding-bottom: 5px;">
+							<label class="db-checkbox-container">
+								<input' . (isset($_POST['ShowDetails']) && $_POST['ShowDetails'] ? ' checked="checked"' : '') . ' id="ShowDetails" name="ShowDetails" type="checkbox" />
+								<span class="db-checkbox-label">' . __('Show Transaction Details') . '</span>
+							</label>
+						</div>
+					</div>
+				</div>
+				<div class="db-card-footer db-form-actions">
+					<button name="Submit" type="submit" value="submit" class="db-btn db-btn-primary">' . __('Generate Report') . '</button>
+					<a href="' . $RootPath . '/index.php?Application=PO" class="db-btn db-btn-secondary">' . __('Return') . '</a>
+				</div>
+			</div>
+		</form>';
 }
-echo '<div class="centre">',
-		'<button name="Submit" type="submit" value="submit"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/tick.svg" /> ', __('Submit'), '</button>', // "Submit" button.
-		'<button onclick="window.location=\'' . $RootPath . '/index.php?Application=PO\'" type="button"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/return.svg" /> ', __('Return'), '</button>', // "Return" button.
-	'</div>';
-
-echo	'</form>';
+echo '</div> <!-- End db-page -->';
 include(__DIR__ . '/includes/footer.php');
 // END Procedure division ======================================================

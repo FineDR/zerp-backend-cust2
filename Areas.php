@@ -6,6 +6,20 @@ $ViewTopic = 'CreatingNewSystem';
 $BookMark = 'Areas';
 include ('includes/header.php');
 
+echo '<div class="db-page">
+		<header class="db-page-header">
+			<div>
+				<h2 class="db-page-title">' . $Title . '</h2>
+				<p class="db-page-subtitle">' . __('Define geographical or logical sales territories') . '</p>
+			</div>
+			<div class="db-header-actions">
+				<a href="' . $RootPath . '/SelectCustomer.php" class="db-btn db-btn-secondary">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+					' . __('Back to Search') . '
+				</a>
+			</div>
+		</header>';
+
 if (isset($_GET['SelectedArea'])) {
 	$SelectedArea = mb_strtoupper($_GET['SelectedArea']);
 } elseif (isset($_POST['SelectedArea'])) {
@@ -131,96 +145,127 @@ if (isset($_POST['submit'])) {
 	unset($_GET['delete']);
 }
 
-echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/maintenance.png" title="' . __('Search') . '" alt="" />' . ' ' . $Title . '</p><br />';
 
-if (!isset($SelectedArea)) {
 
-	$SQL = "SELECT areacode,
-					areadescription
-				FROM areas";
+	$SQL = "SELECT areacode, areadescription FROM areas";
 	$Result = DB_query($SQL);
 
-	echo '<table class="selection">
-			<tr>
-				<th>' . __('Area Code') . '</th>
-				<th>' . __('Area Name') . '</th>
-				<th colspan="3"></th>
-			</tr>';
+	echo '<div class="card-v2" style="margin-bottom: var(--space-6);">
+			<div class="card-header-v2">
+				<h3>
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+					' . __('Defined Sales Areas') . '
+				</h3>
+			</div>
+			<div class="db-card-body">
+				<div class="db-table-wrapper">
+					<table class="db-table divider">
+						<thead>
+							<tr>
+								<th>' . __('Code') . '</th>
+								<th>' . __('Area Name') . '</th>
+								<th class="text-center">' . __('Actions') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
 	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<tr class="striped_row">
-				<td>' . $MyRow['areacode'] . '</td>
+		echo '<tr>
+				<td class="font-bold">' . $MyRow['areacode'] . '</td>
 				<td>' . $MyRow['areadescription'] . '</td>
-				<td><a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedArea=' . $MyRow['areacode'] . '">' . __('Edit') . '</a></td>
-				<td><a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedArea=' . $MyRow['areacode'] . '&amp;delete=yes">' . __('Delete') . '</a></td>
-				<td><a href="' . $RootPath . '/SelectCustomer.php?Area=' . $MyRow['areacode'] . '">' . __('View Customers from this Area') . '</a></td>
+				<td class="text-center">
+					<div class="db-action-group" style="justify-content:center;">
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedArea=' . $MyRow['areacode'] . '" class="db-btn db-btn-icon db-btn-ghost" title="' . __('Edit') . '">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+						</a>
+						<a href="' . $RootPath . '/SelectCustomer.php?Area=' . $MyRow['areacode'] . '" class="db-btn db-btn-icon db-btn-ghost" title="' . __('View Customers') . '">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+						</a>
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedArea=' . $MyRow['areacode'] . '&amp;delete=yes" class="db-btn db-btn-icon db-btn-ghost text-danger" title="' . __('Delete') . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this area?') . '\');">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+						</a>
+					</div>
+				</td>
 			</tr>';
 	}
-	//END WHILE LIST LOOP
-	echo '</table>';
-}
+	echo '				</tbody>
+					</table>
+				</div>
+			</div>
+		</div>';
 
 //end of ifs and buts!
-if (isset($SelectedArea)) {
-	echo '<div class="centre"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">' . __('Review Areas Defined') . '</a></div>';
-}
-
-if (!isset($_GET['delete'])) {
-
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
 	if (isset($SelectedArea)) {
-		//editing an existing area
-		$SQL = "SELECT areacode,
-						areadescription
-					FROM areas
-					WHERE areacode='" . $SelectedArea . "'";
-
-		$Result = DB_query($SQL);
-		$MyRow = DB_fetch_array($Result);
-
-		$_POST['AreaCode'] = $MyRow['areacode'];
-		$_POST['AreaDescription'] = $MyRow['areadescription'];
-
-		echo '<input type="hidden" name="SelectedArea" value="' . $SelectedArea . '" />';
-		echo '<input type="hidden" name="AreaCode" value="' . $_POST['AreaCode'] . '" />';
-		echo '<fieldset>
-				<legend>', __('Edit existing Sales Area details'), '</legend>
-				<field>
-					<label for="AreaCode">' . __('Area Code') . ':</label>
-					<fieldtext>' . $_POST['AreaCode'] . '</fieldtext>
-				</field>';
-
-	}
-	else {
-		if (!isset($_POST['AreaCode'])) {
-			$_POST['AreaCode'] = '';
-		}
-		if (!isset($_POST['AreaDescription'])) {
-			$_POST['AreaDescription'] = '';
-		}
-		echo '<fieldset>
-				<legend>', __('Create New Sales Area details'), '</legend>
-			<field>
-				<label for="AreaCode">' . __('Area Code') . ':</label>
-				<input tabindex="1" ' . (in_array('AreaCode', $Errors) ? 'class="inputerror"' : '') . ' type="text" name="AreaCode" required="required" autofocus="autofocus" value="' . $_POST['AreaCode'] . '" size="3" maxlength="3" title="" />
-				<fieldhelp>' . __('Enter the sales area code - up to 3 characters are allowed') . '</fieldhelp>
-			</field>';
+		echo '<div class="centre"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">' . __('Review Areas Defined') . '</a></div>';
 	}
 
-	echo '<field>
-			<label for="AreaDescription">' . __('Area Name') . ':</label>
-			<input tabindex="2" ' . (in_array('AreaDescription', $Errors) ? 'class="inputerror"' : '') . '  type="text" required="required" name="AreaDescription" value="' . $_POST['AreaDescription'] . '" size="26" maxlength="25" title="" />
-			<fieldhelp>' . __('Enter the description of the sales area') . '</fieldhelp>
-		</field>';
+	if (!isset($_GET['delete'])) {
+		echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
+		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-	echo '</fieldset>
-				<div class="centre">
-					<input tabindex="3" type="submit" name="submit" value="' . __('Enter Information') . '" />
-				</div>
-	</form>';
+		if (isset($SelectedArea)) {
+			// Editing an existing area
+			$Res = DB_query("SELECT areacode, areadescription FROM areas WHERE areacode='" . $SelectedArea . "'");
+			$MyRow = DB_fetch_array($Res);
 
-} //end if record deleted no point displaying form to add record
+			$_POST['AreaCode'] = $MyRow['areacode'];
+			$_POST['AreaDescription'] = $MyRow['areadescription'];
+
+			echo '<input type="hidden" name="SelectedArea" value="' . $SelectedArea . '" />';
+			echo '<input type="hidden" name="AreaCode" value="' . $_POST['AreaCode'] . '" />';
+
+			echo '<div class="card-v2">
+					<div class="card-header-v2">
+						<h3>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+							' . __('Edit Area Details') . ': ' . $_POST['AreaCode'] . '
+						</h3>
+					</div>
+					<div class="db-card-body">
+						<div class="db-grid db-grid-2">
+							<div class="db-field">
+								<label class="db-label">' . __('Area Code') . '</label>
+								<input type="text" class="db-input" value="' . $_POST['AreaCode'] . '" disabled />
+							</div>';
+
+		} else {
+			if (!isset($_POST['AreaCode'])) {
+				$_POST['AreaCode'] = '';
+			}
+			if (!isset($_POST['AreaDescription'])) {
+				$_POST['AreaDescription'] = '';
+			}
+			echo '<div class="card-v2">
+					<div class="card-header-v2">
+						<h3>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 5v14M5 12h14"></path></svg>
+							' . __('Define New Sales Area') . '
+						</h3>
+					</div>
+					<div class="db-card-body">
+						<div class="db-grid db-grid-2">
+							<div class="db-field">
+								<label class="db-label">' . __('Area Code') . '</label>
+								<input type="text" name="AreaCode" class="db-input" required maxlength="3" autofocus value="' . $_POST['AreaCode'] . '" />
+								<p class="db-field-help">' . __('Enter a unique 3-character code') . '</p>
+							</div>';
+		}
+
+		echo '<div class="db-field">
+				<label class="db-label">' . __('Area Name') . '</label>
+				<input type="text" name="AreaDescription" class="db-input" required maxlength="25" value="' . $_POST['AreaDescription'] . '" />
+			</div>
+		</div></div>'; // End db-grid & db-card-body
+
+		echo '<div class="db-card-actions" style="justify-content: center; padding: 2rem; background: var(--surface-alt); border-top: 1px solid var(--border-color);">
+				<button type="submit" name="submit" class="db-btn db-btn-primary db-btn-large">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:10px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+					' . __('Save Area Information') . '
+				</button>
+			</div>
+		</div></form>'; // End card-v2 & form
+	}
+
+	echo '</div>'; // End db-page
 include ('includes/footer.php');
 

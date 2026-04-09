@@ -7,6 +7,20 @@ $ViewTopic = 'Setup';
 $BookMark = 'CustomerTypes';
 include(__DIR__ . '/includes/header.php');
 
+echo '<div class="db-page">
+		<header class="db-page-header">
+			<div>
+				<h2 class="db-page-title">' . $Title . '</h2>
+				<p class="db-page-subtitle">' . __('Categorize customers for reporting and pricing') . '</p>
+			</div>
+			<div class="db-header-actions">
+				<a href="' . $RootPath . '/SelectCustomer.php" class="db-btn db-btn-secondary">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+					' . __('Back to Search') . '
+				</a>
+			</div>
+		</header>';
+
 if (isset($_POST['SelectedType'])){
 	$SelectedType = mb_strtoupper($_POST['SelectedType']);
 } elseif (isset($_GET['SelectedType'])){
@@ -15,9 +29,7 @@ if (isset($_POST['SelectedType'])){
 
 $Errors = array();
 
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/maintenance.png" title="' . __('Customer Types') .
-	'" alt="" />' . __('Customer Type Setup') . '</p>';
-echo '<div class="page_help_text">' . __('Add/edit/delete Customer Types') . '</div>';
+
 
 if (isset($_POST['submit'])) {
 
@@ -171,95 +183,118 @@ if (isset($_POST['submit'])) {
 	} //end if sales type used in debtor transactions or in customers set up
 }
 
-if (!isset($SelectedType)){
-
-/* It could still be the second time the page has been run and a record has been selected for modification - SelectedType will exist because it was sent with the new call. If its the first time the page has been displayed with no parameters
-then none of the above are true and the list of sales types will be displayed with
-links to delete or edit each. These will call the same page again and allow update/input
-or deletion of the records*/
-
 	$SQL = "SELECT typeid, typename FROM debtortype";
 	$Result = DB_query($SQL);
 
-	echo '<table class="selection">';
-	echo '<thead>
-			<tr>
-				<th class="SortedColumn">' . __('Type ID') . '</th>
-				<th class="SortedColumn">' . __('Type Name') . '</th>
-				<th colspan="2"></th>
-			</tr>
-		</thead>
-		<tbody>';
+	echo '<div class="card-v2" style="margin-bottom: var(--space-6);">
+			<div class="card-header-v2">
+				<h3>
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+					' . __('Defined Customer Types') . '
+				</h3>
+			</div>
+			<div class="db-card-body">
+				<div class="db-table-wrapper">
+					<table class="db-table divider">
+						<thead>
+							<tr>
+								<th>' . __('ID') . '</th>
+								<th>' . __('Type Name') . '</th>
+								<th class="text-center">' . __('Actions') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
-while ($MyRow = DB_fetch_row($Result)) {
-
-	echo '<tr class="striped_row">
-			<td>', $MyRow[0], '</td>
-			<td>', $MyRow[1], '</td>
-			<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedType=', $MyRow[0], '">' . __('Edit') . '</a></td>
-			<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedType=', $MyRow[0], '&amp;delete=yes" onclick=\'return confirm("' . __('Are you sure you wish to delete this Customer Type?') . '");\'>' . __('Delete') . '</a></td>
-		</tr>';
+	while ($MyRow = DB_fetch_row($Result)) {
+		echo '<tr>
+				<td class="font-bold">' . $MyRow[0] . '</td>
+				<td>' . $MyRow[1] . '</td>
+				<td class="text-center">
+					<div class="db-action-group" style="justify-content:center;">
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedType=' . $MyRow[0] . '" class="db-btn db-btn-icon db-btn-ghost" title="' . __('Edit') . '">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+						</a>
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedType=' . $MyRow[0] . '&amp;delete=yes" class="db-btn db-btn-icon db-btn-ghost text-danger" title="' . __('Delete') . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this Customer Type?') . '\');">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+						</a>
+					</div>
+				</td>
+			</tr>';
 	}
-	//END WHILE LIST LOOP
-	echo '</tbody></table>';
-}
+	echo '				</tbody>
+					</table>
+				</div>
+			</div>
+		</div>';
 
 //end of ifs and buts!
-if (isset($SelectedType)) {
-
-	echo '<div class="centre"><br /><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">' . __('Show All Types Defined') . '</a></div>';
-}
-if (! isset($_GET['delete'])) {
-
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') .  '">
-		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-	// The user wish to EDIT an existing type
-	if ( isset($SelectedType) AND $SelectedType!= '' ) {
-
-		$SQL = "SELECT typeid,
-			       typename
-		        FROM debtortype
-		        WHERE typeid='".$SelectedType."'";
-
-		$Result = DB_query($SQL);
-		$MyRow = DB_fetch_array($Result);
-
-		$_POST['typeid'] = $MyRow['typeid'];
-		$_POST['TypeName']  = $MyRow['typename'];
-
-		echo '<input type="hidden" name="SelectedType" value="' . $SelectedType . '" />
-			<input type="hidden" name="typeid" value="' . $_POST['typeid'] . '" />';
-
-		echo '<fieldset>
-				<legend>', __('Edit Customer Type'), '</legend>';
-
-		// We dont allow the user to change an existing type code
-
-		echo '<field>
-				<label for="typeid">' . __('Type ID') . ':</label>
-				<fieldtext>' . $_POST['typeid'] . '</fieldtext>
-			</field>';
-	} else 	{
-		// This is a new type so the user may volunteer a type code
-		echo '<fieldset>
-				<legend>', __('Create New Customer Type'), '</legend>';
+	if (isset($SelectedType)) {
+		echo '<div class="centre" style="margin-bottom: var(--space-6);">
+				<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" class="db-btn db-btn-secondary">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M4 19h16M4 14h16M4 9h16M4 4h16"></path></svg>
+					' . __('Show All Types Defined') . '
+				</a>
+			</div>';
 	}
 
-	if (!isset($_POST['TypeName'])) {
-		$_POST['TypeName']='';
-	}
-	echo '<field>
-			<label for="TypeName">' . __('Type Name') . ':</label>
-			<input type="text" name="TypeName"  required="required" title="" value="' . $_POST['TypeName'] . '" />
-			<fieldhelp>' . __('The customer type name is required') . '</fieldhelp
-		</field>
-		</fieldset>
-		<div class="centre">
-			<input type="submit" name="submit" value="' . __('Accept') . '" />
-		</div>
-	</form>';
+	if (!isset($_GET['delete'])) {
+		echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
+		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-} // end if user wish to delete
+		if (isset($SelectedType) AND $SelectedType != '') {
+			$Res = DB_query("SELECT typeid, typename FROM debtortype WHERE typeid='" . $SelectedType . "'");
+			$MyRow = DB_fetch_array($Res);
+			$_POST['typeid'] = $MyRow['typeid'];
+			$_POST['TypeName'] = $MyRow['typename'];
+
+			echo '<input type="hidden" name="SelectedType" value="' . $SelectedType . '" />
+				<input type="hidden" name="typeid" value="' . $_POST['typeid'] . '" />';
+
+			echo '<div class="card-v2">
+					<div class="card-header-v2">
+						<h3>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+							' . __('Edit Customer Type') . ': ' . $_POST['typeid'] . '
+						</h3>
+					</div>
+					<div class="db-card-body">
+						<div class="db-grid db-grid-2">
+							<div class="db-field">
+								<label class="db-label">' . __('Type ID') . '</label>
+								<input type="text" class="db-input" value="' . $_POST['typeid'] . '" disabled />
+							</div>';
+
+		} else {
+			echo '<div class="card-v2">
+					<div class="card-header-v2">
+						<h3>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 5v14M5 12h14"></path></svg>
+							' . __('Create New Customer Type') . '
+						</h3>
+					</div>
+					<div class="db-card-body">
+						<div class="db-grid db-grid-2">';
+		}
+
+		if (!isset($_POST['TypeName'])) {
+			$_POST['TypeName'] = '';
+		}
+
+		echo '<div class="db-field">
+				<label class="db-label">' . __('Type Name') . '</label>
+				<input type="text" name="TypeName" class="db-input" required maxlength="100" value="' . $_POST['TypeName'] . '" autofocus />
+			</div>
+		</div></div>'; // End db-grid & db-card-body
+
+		echo '<div class="db-card-actions" style="justify-content: center; padding: 2rem; background: var(--surface-alt); border-top: 1px solid var(--border-color);">
+				<button type="submit" name="submit" class="db-btn db-btn-primary db-btn-large">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:10px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+					' . __('Save Customer Type') . '
+				</button>
+			</div>
+		</div></form>'; // End card-v2 & form
+	}
+
+	echo '</div>'; // End db-page
 
 include(__DIR__ . '/includes/footer.php');

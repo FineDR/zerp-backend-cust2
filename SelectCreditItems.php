@@ -14,6 +14,8 @@ $ViewTopic = 'ARTransactions';
 $BookMark = 'CreateCreditNote';
 include(__DIR__ . '/includes/header.php');
 
+echo '<div class="db-page">';
+
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/ImageFunctions.php');
 include(__DIR__ . '/includes/GetSalesTransGLCodes.php');
@@ -208,73 +210,89 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 	OR !isset($_SESSION['CreditItems'.$identifier]->DebtorNo)
 	OR $_SESSION['CreditItems'.$identifier]->DebtorNo=='' ) {
 
-	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/magnifier.png" title="' .
-		__('Search') . '" alt="" />' . ' ' . __('Select Customer For Credit Note') . '</p>';
-
-	echo '<fieldset>';
-	echo '<legend class="search"> ' . __('Customer Selection')  . '</legend>';
-	echo '<field>
-			<label for="Keywords">' . __('Enter text in the customer name') . ':</label>
-			<input type="text" name="Keywords" size="20" maxlength="25" />
-		</field>
-		<field>
-			<label for="CustCode">' . '<b>'. __('OR'). ' </b>'. __('Enter text extract in the customer code') . ':</label>
-			<input type="text" name="CustCode" size="15" maxlength="18" />
-		</field>';
-	echo '</fieldset>
-		<div class="centre">
-			<input type="submit" name="SearchCust" value="' . __('Search Now') . '" />
+	echo '<div class="db-page-header">
+			<div>
+				<h2 class="db-page-title">' . $Title . '</h2>
+				<p class="db-page-subtitle">' . __('Identify the customer to issue a credit note for') . '</p>
+			</div>
 		</div>';
 
+	echo '<div class="card-v2">
+			<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post">
+				<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+				<div class="db-card-body">
+					<div class="db-field-group">
+						<div class="db-field">
+							<label class="db-label">' . __('Customer Name Keywords') . '</label>
+							<input type="text" name="Keywords" placeholder="' . __('e.g. Acme Corp') . '" />
+						</div>
+						<div class="db-field">
+							<label class="db-label">' . __('OR Customer Code') . '</label>
+							<input type="text" name="CustCode" placeholder="' . __('e.g. ACME-01') . '" />
+						</div>
+					</div>
+					<div style="margin-top: var(--space-4); display: flex; justify-content: center;">
+						<button type="submit" name="SearchCust" class="db-btn db-btn-primary">' . __('Search Now') . '</button>
+					</div>
+				</div>';
+
 	if (isset($Result_CustSelect)) {
-
-		echo '<br /><table cellpadding="2">';
-
-		$TableHeader = '<tr>
-						<th>' . __('Customer') . '</th>
-						<th>' . __('Branch') . '</th>
-						<th>' . __('Contact') . '</th>
-						<th>' . __('Phone') . '</th>
-						<th>' . __('Fax') . '</th>
-					</tr>';
-		echo $TableHeader;
+		echo '<div class="db-table-wrapper" style="margin-top: var(--space-6);">
+				<table class="db-table">
+					<thead>
+						<tr>
+							<th>' . __('Customer Selection') . '</th>
+							<th>' . __('Contact') . '</th>
+							<th>' . __('Phone') . '</th>
+							<th>' . __('Fax') . '</th>
+						</tr>
+					</thead>
+					<tbody>';
 
 		$j = 1;
 		$LastCustomer='';
 		while ($MyRow=DB_fetch_array($Result_CustSelect)) {
-
 			if (isset($MyRow['name']) and $LastCustomer != $MyRow['name']) {
-				echo '<td>' . $MyRow['name'] . '</td>';
-			} else {
-				echo '<td></td>';
+				echo '<tr class="db-table-highlight">
+						<td colspan="4" style="font-weight: 700; background: var(--surface-alt);">' . $MyRow['name'] . '</td>
+					</tr>';
 			}
-			echo '<tr class="striped_row">
-				<td><input tabindex="'.($j+5).'" type="submit" name="SubmitCustomerSelection' . $j .'" value="' . htmlspecialchars($MyRow['brname'], ENT_QUOTES,'UTF-8'). '" />
-				<input type="hidden" name="SelectedCustomer' . $j .'" value="'.$MyRow['debtorno'].'" />
-				<input type="hidden" name="SelectedBranch' . $j .'" value="'. $MyRow['branchcode'].'" /></td>
-				<td>' . $MyRow['contactname'] . '</td>
-				<td>' . $MyRow['phoneno'] . '</td>
-				<td>' . $MyRow['faxno'] . '</td>
+			echo '<tr>
+					<td>
+						<button type="submit" name="SubmitCustomerSelection' . $j . '" class="db-btn db-btn-secondary" style="padding: 4px 12px; font-size: 0.8rem; width: 100%; text-align: left;">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+							' . htmlspecialchars($MyRow['brname'], ENT_QUOTES, 'UTF-8') . '
+						</button>
+						<input type="hidden" name="SelectedCustomer' . $j . '" value="' . $MyRow['debtorno'] . '" />
+						<input type="hidden" name="SelectedBranch' . $j . '" value="' . $MyRow['branchcode'] . '" />
+					</td>
+					<td>' . $MyRow['contactname'] . '</td>
+					<td>' . $MyRow['phoneno'] . '</td>
+					<td>' . $MyRow['faxno'] . '</td>
 				</tr>';
 			$LastCustomer=$MyRow['name'];
 			$j++;
-		//end of page full new headings if
-		} //end of while loop
-		echo '</table><input type="hidden" name="JustSelectedACustomer" value="Yes" />';
-	}//end if results to show
-    echo '</div>
-          </form>';
-
-
-//end if RequireCustomerSelection
+		}
+		echo '</tbody>
+			</table>
+			<input type="hidden" name="JustSelectedACustomer" value="Yes" />
+		</div>';
+	}
+	echo '</form>
+		</div>';
 } else {
 /* everything below here only do if a customer is selected
    first add a header to show who we are making a credit note for */
 
-	echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/magnifier.png" title="' .
-		__('Search') . '" alt="" />' . ' ' . $_SESSION['CreditItems'.$identifier]->CustomerName  . ' - ' . $_SESSION['CreditItems'.$identifier]->DeliverTo . '</p>';
+	echo '<div class="db-page-header">
+			<div>
+				<h2 class="db-page-title">' . $Title . '</h2>
+				<p class="db-page-subtitle">' . __('Crediting Customer') . ': <span class="db-badge db-badge-success" style="font-size: 1rem; padding: 4px 12px;">' . $_SESSION['CreditItems' . $identifier]->CustomerName . '</span></p>
+			</div>
+			<div class="db-header-actions">
+				<span class="db-badge db-badge-info">' . $_SESSION['CreditItems' . $identifier]->DeliverTo . '</span>
+			</div>
+		</div>';
 
 	if (isset($_POST['SalesPerson'])){
 		$_SESSION['CreditItems' . $identifier]->SalesPerson = $_POST['SalesPerson'];
@@ -662,21 +680,32 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 
 /* This is where the credit note as selected should be displayed  reflecting any deletions or insertions*/
 
-		  echo '<table cellpadding="2" class="selection">
-				<tr>
-					<th>' . __('Item Code') . '</th>
-					<th>' . __('Item Description') . '</th>
-					<th>' . __('Quantity') . '</th>
-					<th>' . __('Unit') . '</th>
-					<th>' . __('Price') . '</th>
-					<th>' . __('Gross') . '</th>
-					<th>' . __('Discount') . '</th>
-					<th>' . __('Total') . '<br />' . __('Excl Tax') . '</th>
-					<th>' . __('Tax Authority') . '</th>
-					<th>' . __('Tax') . '<br />' . __('Rate') . '</th>
-					<th>' . __('Tax') . '<br />' . __('Amount') . '</th>
-					<th>' . __('Total') . '<br />' . __('Incl Tax') . '</th>
-				</tr>';
+		echo '<div class="card-v2">
+				<div class="card-header-v2">
+					<h3>
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+						' . __('Credit Note Items') . '
+					</h3>
+				</div>
+				<div class="db-card-body">
+					<div class="db-table-wrapper">
+						<table class="db-table">
+							<thead>
+								<tr>
+									<th>' . __('Item') . '</th>
+									<th class="number">' . __('Quantity') . '</th>
+									<th>' . __('Unit') . '</th>
+									<th class="number">' . __('Price') . '</th>
+									<th>' . __('Gross') . '</th>
+									<th class="number">' . __('Discount') . '</th>
+									<th class="number">' . __('Total Excl Tax') . '</th>
+									<th>' . __('Tax Detail') . '</th>
+									<th class="number">' . __('Tax Amount') . '</th>
+									<th class="number">' . __('Total Incl Tax') . '</th>
+									<th>' . __('Actions') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
 
 		  $_SESSION['CreditItems'.$identifier]->total = 0;
 		  $_SESSION['CreditItems'.$identifier]->totalVolume = 0;
@@ -691,67 +720,66 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 			   $LineTotal =  round($LineItem->Quantity * $LineItem->Price * (1 - $LineItem->DiscountPercent),$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces);
 			   $DisplayLineTotal = locale_number_format($LineTotal,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces);
 
-			   echo '<tr class="striped_row">
-						<td>' . $LineItem->StockID . '</td>
-									<td title="'. $LineItem->LongDescription . '">' . $LineItem->ItemDescription . '</td>';
+				echo '<tr>
+						<td>
+							<div style="font-weight: 600;">' . $LineItem->StockID . '</div>
+							<div style="font-size: 0.75rem; color: var(--text-muted);">' . $LineItem->ItemDescription . '</div>
+						</td>';
 
-			   if ($LineItem->Controlled==0){
-			   	echo '<td><input type="text" class="number" name="Quantity_' . $LineItem->LineNumber . '" maxlength="8" size="6" value="' . locale_number_format(round($LineItem->Quantity,$LineItem->DecimalPlaces),$LineItem->DecimalPlaces) . '" /></td>';
-			   } else {
-				echo '<td class="number"><a href="' . $RootPath . '/CreditItemsControlled.php?LineNo=' . $LineItem->LineNumber . '&identifier=' . $identifier . '">' . locale_number_format($LineItem->Quantity,$LineItem->DecimalPlaces) . '</a>
-                      <input type="hidden" name="Quantity_' . $LineItem->LineNumber . '" value="' . locale_number_format(round($LineItem->Quantity,$LineItem->DecimalPlaces),$LineItem->DecimalPlaces) . '" /></td>';
-			   }
-
-			echo '<td>' . $LineItem->Units . '</td>
-			<td><input type="text" class="number" name="Price_' . $LineItem->LineNumber . '" size="10" maxlength="12" value="' . locale_number_format($LineItem->Price,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces) . '" /></td>
-			<td><input type="CheckBox" name="Gross" value="false" /></td>
-			<td><input type="text" class="number" name="Discount_' . $LineItem->LineNumber . '" size="3" maxlength="3" value="' . locale_number_format(($LineItem->DiscountPercent * 100),'Variable') . '" />%</td>
-			<td class="number">' . $DisplayLineTotal . '</td>';
-
-
-			/*Need to list the taxes applicable to this line */
-			echo '<td>';
-			foreach ($_SESSION['CreditItems'.$identifier]->LineItems[$LineItem->LineNumber]->Taxes AS $Tax) {
-				echo '<br />';
-				echo $Tax->TaxAuthDescription;
-			}
-			echo '</td>';
-			echo '<td>';
-
-			$i=0; // initialise the number of taxes iterated through
-			$TaxLineTotal =0; //initialise tax total for the line
-
-			foreach ($LineItem->Taxes AS $TaxKey=>$Tax) {
-
-				if ($i>0){
-					echo '<br />';
-				}
-				echo '<input type="text" class="number" name="' . $LineItem->LineNumber . $TaxKey . '_TaxRate" maxlength="4" size="4" value="' . locale_number_format($Tax->TaxRate*100,'Variable') . '" />';
-				$i++;
-				if ($Tax->TaxOnTax ==1){
-					$TaxTotals[$Tax->TaxAuthID] += ($Tax->TaxRate * ($LineTotal + $TaxLineTotal));
-					$TaxLineTotal += ($Tax->TaxRate * ($LineTotal + $TaxLineTotal));
+				if ($LineItem->Controlled==0){
+					echo '<td class="number"><input type="text" class="number" name="Quantity_' . $LineItem->LineNumber . '" style="width: 80px;" value="' . locale_number_format(round($LineItem->Quantity,$LineItem->DecimalPlaces),$LineItem->DecimalPlaces) . '" /></td>';
 				} else {
-					$TaxTotals[$Tax->TaxAuthID] += ($Tax->TaxRate * $LineTotal);
-					$TaxLineTotal += ($Tax->TaxRate * $LineTotal);
+					echo '<td class="number">
+							<a href="' . $RootPath . '/CreditItemsControlled.php?LineNo=' . $LineItem->LineNumber . '&identifier=' . $identifier . '" class="db-link">' . locale_number_format($LineItem->Quantity,$LineItem->DecimalPlaces) . '</a>
+							<input type="hidden" name="Quantity_' . $LineItem->LineNumber . '" value="' . locale_number_format(round($LineItem->Quantity,$LineItem->DecimalPlaces),$LineItem->DecimalPlaces) . '" />
+						</td>';
 				}
-				$TaxGLCodes[$Tax->TaxAuthID] = $Tax->TaxGLCode;
-			}
-			echo '</td>';
 
-			$TaxTotal += $TaxLineTotal;
+				echo '<td>' . $LineItem->Units . '</td>
+					<td class="number"><input type="text" class="number" name="Price_' . $LineItem->LineNumber . '" style="width: 100px;" value="' . locale_number_format($LineItem->Price,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces) . '" /></td>
+					<td class="centre"><input type="CheckBox" name="Gross" value="false" /></td>
+					<td class="number"><div style="display:flex; align-items:center; justify-content: flex-end; gap:4px;"><input type="text" class="number" name="Discount_' . $LineItem->LineNumber . '" style="width: 50px;" value="' . locale_number_format(($LineItem->DiscountPercent * 100),'Variable') . '" />%</div></td>
+					<td class="number">' . $DisplayLineTotal . '</td>
+					<td>';
 
-			$DisplayTaxAmount = locale_number_format($TaxLineTotal ,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces);
-			$DisplayGrossLineTotal = locale_number_format($LineTotal + $TaxLineTotal, $_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces);
+				$i=0;
+				$TaxLineTotal =0;
+				foreach ($LineItem->Taxes AS $TaxKey=>$Tax) {
+					if ($i>0) echo '<br />';
+					echo '<div style="font-size: 0.75rem;">' . $Tax->TaxAuthDescription . ': ';
+					echo '<input type="text" class="number" name="' . $LineItem->LineNumber . $TaxKey . '_TaxRate" style="width: 50px; font-size: 0.75rem; padding: 2px 4px; height: auto;" value="' . locale_number_format($Tax->TaxRate*100,'Variable') . '" />%</div>';
+					$i++;
+					if ($Tax->TaxOnTax ==1){
+						$TaxTotals[$Tax->TaxAuthID] += ($Tax->TaxRate * ($LineTotal + $TaxLineTotal));
+						$TaxLineTotal += ($Tax->TaxRate * ($LineTotal + $TaxLineTotal));
+					} else {
+						$TaxTotals[$Tax->TaxAuthID] += ($Tax->TaxRate * $LineTotal);
+						$TaxLineTotal += ($Tax->TaxRate * $LineTotal);
+					}
+					$TaxGLCodes[$Tax->TaxAuthID] = $Tax->TaxGLCode;
+				}
+				echo '</td>';
 
-			echo '<td class="number">' . $DisplayTaxAmount . '</td>
-				<td class="number">' . $DisplayGrossLineTotal . '</td>
-				<td><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?identifier=' . $identifier . '&Delete=' . $LineItem->LineNumber . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this line item from the credit note?') . '\');">' . __('Delete') . '</a></td>
+				$TaxTotal += $TaxLineTotal;
+				$DisplayTaxAmount = locale_number_format($TaxLineTotal ,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces);
+				$DisplayGrossLineTotal = locale_number_format($LineTotal + $TaxLineTotal, $_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces);
+
+				echo '<td class="number">' . $DisplayTaxAmount . '</td>
+					<td class="number" style="font-weight: 600;">' . $DisplayGrossLineTotal . '</td>
+					<td class="centre">
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?identifier=' . $identifier . '&Delete=' . $LineItem->LineNumber . '" class="db-btn db-btn-danger" style="padding: 4px 8px;" title="' . __('Delete') . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this line item from the credit note?') . '\');">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+						</a>
+					</td>
 				</tr>';
 
-			echo '<tr class="striped_row">
-					<td colspan="11"><textarea  name="Narrative_' . $LineItem->LineNumber . '" cols="100%" rows="1">' . $LineItem->Narrative . '</textarea><br /></td>
-				</tr>';
+				echo '<tr class="db-table-row-meta">
+						<td colspan="11">
+							<div class="db-field" style="margin:0;">
+								<textarea name="Narrative_' . $LineItem->LineNumber . '" placeholder="' . __('Line Narrative') . '..." style="height: 40px; font-size: 0.85rem;">' . $LineItem->Narrative . '</textarea>
+							</div>
+						</td>
+					</tr>';
 
 
 			$_SESSION['CreditItems'.$identifier]->total += $LineTotal;
@@ -763,70 +791,67 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 			AND !isset($_SESSION['CreditItems'.$identifier]->FreightCost)){
 			$_POST['ChargeFreightCost']=0;
 		}
-		echo '<tr>
-				<td colspan="5"></td>';
+				<tr class="db-table-highlight">
+					<td colspan="6" class="number" style="font-weight: 600;">' . __('Freight Services') . '</td>
+					<td class="number"><input type="text" class="number" style="width: 100px;" name="ChargeFreightCost" value="' . locale_number_format($_SESSION['CreditItems'.$identifier]->FreightCost,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces) . '" /></td>
+					<td>';
 
-		echo '<td colspan="2" class="number">' .  __('Credit Freight') . '</td>
-			<td><input type="text" class="number" size="6" maxlength="6" name="ChargeFreightCost" value="' . locale_number_format($_SESSION['CreditItems'.$identifier]->FreightCost,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces) . '" /></td>';
+				$FreightTaxTotal =0;
+				$i=0;
+				foreach ($_SESSION['CreditItems'.$identifier]->FreightTaxes as $FreightTaxKey=>$FreightTaxLine) {
+					if ($i>0) echo '<br />';
+					echo '<div style="font-size: 0.75rem;">' . $FreightTaxLine->TaxAuthDescription . ': ';
+					echo '<input type="text" class="number" name="FreightTaxRate' . $FreightTaxLine->TaxCalculationOrder . '" style="width: 50px; font-size: 0.75rem; padding: 2px 4px; height: auto;" value="' . locale_number_format(($FreightTaxLine->TaxRate * 100),'Variable') . '" />%</div>';
 
-		$FreightTaxTotal =0; //initialise tax total
+					if ($FreightTaxLine->TaxOnTax ==1){
+						$TaxTotals[$FreightTaxLine->TaxAuthID] += ($FreightTaxLine->TaxRate * ($_SESSION['CreditItems'.$identifier]->FreightCost + $FreightTaxTotal));
+						$FreightTaxTotal += ($FreightTaxLine->TaxRate * ($_SESSION['CreditItems'.$identifier]->FreightCost + $FreightTaxTotal));
+					} else {
+						$TaxTotals[$FreightTaxLine->TaxAuthID] += ($FreightTaxLine->TaxRate * $_SESSION['CreditItems'.$identifier]->FreightCost);
+						$FreightTaxTotal += ($FreightTaxLine->TaxRate * $_SESSION['CreditItems'.$identifier]->FreightCost);
+					}
+					$i++;
+					$TaxGLCodes[$FreightTaxLine->TaxAuthID] = $FreightTaxLine->TaxGLCode;
+				}
+				echo '</td>
+					<td class="number">' . locale_number_format($FreightTaxTotal,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces) . '</td>
+					<td class="number" style="font-weight: 600;">' . locale_number_format($FreightTaxTotal+ $_SESSION['CreditItems'.$identifier]->FreightCost,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces) . '</td>
+					<td></td>
+				</tr>';
 
-		echo '<td>';
+				$TaxTotal += $FreightTaxTotal;
+				$DisplayTotal = locale_number_format($_SESSION['CreditItems'.$identifier]->total + $_SESSION['CreditItems'.$identifier]->FreightCost,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces);
 
-		$i=0; // initialise the number of taxes iterated through
-		foreach ($_SESSION['CreditItems'.$identifier]->FreightTaxes as $FreightTaxLine) {
-			if ($i>0){
-				echo '<br />';
-			}
-			echo  $FreightTaxLine->TaxAuthDescription;
-			$i++;
-		}
-
-		echo '</td><td>';
-
-		$i=0;
-		foreach ($_SESSION['CreditItems'.$identifier]->FreightTaxes as $FreightTaxLine) {
-			if ($i>0){
-				echo '<br />';
-			}
-
-			echo  '<input type="text" class="number" name=FreightTaxRate' . $FreightTaxLine->TaxCalculationOrder . ' maxlength="4" size="4" value="' . locale_number_format(($FreightTaxLine->TaxRate * 100),'Variable') . '" />';
-
-			if ($FreightTaxLine->TaxOnTax ==1){
-				$TaxTotals[$FreightTaxLine->TaxAuthID] += ($FreightTaxLine->TaxRate * ($_SESSION['CreditItems'.$identifier]->FreightCost + $FreightTaxTotal));
-				$FreightTaxTotal += ($FreightTaxLine->TaxRate * ($_SESSION['CreditItems'.$identifier]->FreightCost + $FreightTaxTotal));
-			} else {
-				$TaxTotals[$FreightTaxLine->TaxAuthID] += ($FreightTaxLine->TaxRate * $_SESSION['CreditItems'.$identifier]->FreightCost);
-				$FreightTaxTotal += ($FreightTaxLine->TaxRate * $_SESSION['CreditItems'.$identifier]->FreightCost);
-			}
-			$i++;
-			$TaxGLCodes[$FreightTaxLine->TaxAuthID] = $FreightTaxLine->TaxGLCode;
-		}
-		echo '</td>';
-
-		echo '<td class="number">' . locale_number_format($FreightTaxTotal,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces) . '</td>
-			<td class="number">' . locale_number_format($FreightTaxTotal+ $_SESSION['CreditItems'.$identifier]->FreightCost,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces) . '</td>
-			</tr>';
-
-		$TaxTotal += $FreightTaxTotal;
-		$DisplayTotal = locale_number_format($_SESSION['CreditItems'.$identifier]->total + $_SESSION['CreditItems'.$identifier]->FreightCost,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces);
-
-		echo '<tr>
-				<td colspan="7" class="number">' . __('Credit Totals') . '</td>
-				<td class="number"><b>' . $DisplayTotal . '</b></td>
-				<td colspan="2"></td>
-				<td class="number"><b>' . locale_number_format($TaxTotal,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces) . '</td>
-				<td class="number"><b>' . locale_number_format($TaxTotal+($_SESSION['CreditItems'.$identifier]->total + $_SESSION['CreditItems'.$identifier]->FreightCost),$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces) . '</b></td>
-			</tr>
-			</table>';
+				echo '</tbody>
+				<tfoot>
+					<tr style="background: var(--surface-alt); font-size: 1.1rem;">
+						<td colspan="6" class="number" style="font-weight: 700;">' . __('Grand Totals') . '</td>
+						<td class="number" style="font-weight: 700;">' . $DisplayTotal . '</td>
+						<td></td>
+						<td class="number" style="font-weight: 700;">' . locale_number_format($TaxTotal,$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces) . '</td>
+						<td class="number" style="font-weight: 700; color: var(--primary);">' . locale_number_format($TaxTotal+($_SESSION['CreditItems'.$identifier]->total + $_SESSION['CreditItems'.$identifier]->FreightCost),$_SESSION['CreditItems'.$identifier]->CurrDecimalPlaces) . '</td>
+						<td></td>
+					</tr>
+				</tfoot>
+			</table>
+		</div>
+	</div>
+</div>';
 
 /*Now show options for the credit note */
 
-		echo '<fieldset>
-				<legend>', __('Credit Note Header'), '</legend>
-				<field>
-					<label for="CreditType">' . __('Credit Note Type') . ' :</label>
-					<select name="CreditType" onchange="ReloadForm(MainForm.Update)" >';
+		echo '<div class="card-v2" style="margin-top: var(--space-6);">
+				<div class="card-header-v2">
+					<h3>
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+						' . __('Credit Note Header') . '
+					</h3>
+				</div>
+				<div class="db-card-body">
+					<div class="db-field-group">
+						<div class="db-field">
+							<label class="db-label">' . __('Credit Note Type') . '</label>
+							<select name="CreditType" onchange="ReloadForm(MainForm.Update)">';
 
 		if (!isset($_POST['CreditType']) OR $_POST['CreditType']=='Return'){
 			   echo '<option selected="selected" value="Return">' . __('Goods returned to store') . '</option>
@@ -841,100 +866,58 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 				<option value="Return">' . __('Goods Returned To Store') . '</option>
 				<option value="WriteOff">' . __('Good written off') . '</option>';
 		}
-
-		echo '</select>
-			</field>';
+		echo '			</select>
+						</div>';
 
 		if (!isset($_POST['CreditType']) OR $_POST['CreditType']=='Return'){
-
-/*if the credit note is a return of goods then need to know which location to receive them into */
-
-			echo '<field>
-					<label for="Location">' . __('Goods Returned to Location') . ' :</label>
-					<select name="Location">';
-
+			echo '		<div class="db-field">
+							<label class="db-label">' . __('Goods Returned to Location') . '</label>
+							<select name="Location">';
 			$SQL="SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canupd=1";
 			$Result = DB_query($SQL);
-
-			if (!isset($_POST['Location'])){
-				$_POST['Location'] = $_SESSION['CreditItems'.$identifier]->Location;
-			}
+			if (!isset($_POST['Location'])){ $_POST['Location'] = $_SESSION['CreditItems'.$identifier]->Location; }
 			while ($MyRow = DB_fetch_array($Result)) {
-
-				if ($_POST['Location']==$MyRow['loccode']){
-					echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-				} else {
-					echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-				}
+				echo '<option ' . ($_POST['Location']==$MyRow['loccode'] ? 'selected="selected"' : '') . ' value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 			}
-			echo '</select>
-				</field>';
-
-		} elseif ($_POST['CreditType']=='WriteOff') { /* the goods are to be written off to somewhere */
-
-			echo '<field>
-					<label for="WriteOffGLCode">' . __('Write off the cost of the goods to') . '</label>
-					<select name=WriteOffGLCode>';
-
-			$SQL="SELECT accountcode,
-						accountname
-					FROM chartmaster INNER JOIN accountgroups
-					ON chartmaster.group_=accountgroups.groupname
-					WHERE accountgroups.pandl=1
-					ORDER BY accountcode";
+			echo '			</select>
+						</div>';
+		} elseif ($_POST['CreditType']=='WriteOff') {
+			echo '		<div class="db-field">
+							<label class="db-label">' . __('Write off GL Account') . '</label>
+							<select name="WriteOffGLCode">';
+			$SQL="SELECT accountcode, accountname FROM chartmaster INNER JOIN accountgroups ON chartmaster.group_=accountgroups.groupname WHERE accountgroups.pandl=1 ORDER BY accountcode";
 			$Result = DB_query($SQL);
-
 			while ($MyRow = DB_fetch_array($Result)) {
-
-				if ($_POST['WriteOffGLCode']==$MyRow['accountcode']){
-					echo '<option selected="selected" value="' . $MyRow['accountcode'] . '">' . $MyRow['accountcode'] . ' - ' . $MyRow['accountname'] . '</option>';
-				} else {
-					echo '<option value="' . $MyRow['accountcode'] . '">' . $MyRow['accountcode'] . ' - ' . $MyRow['accountname'] . '</option>';
-				}
+				echo '<option ' . (isset($_POST['WriteOffGLCode']) && $_POST['WriteOffGLCode']==$MyRow['accountcode'] ? 'selected="selected"' : '') . ' value="' . $MyRow['accountcode'] . '">' . $MyRow['accountcode'] . ' - ' . $MyRow['accountname'] . '</option>';
 			}
-			   echo '</select>
-				</field>';
-		  }
-		echo '<field>
-				<label for="SalesPerson">' . __('Sales person'). ':</label>
-				<select name="SalesPerson">';
+			echo '			</select>
+						</div>';
+		}
+
+		echo '			<div class="db-field">
+							<label class="db-label">' . __('Sales Person') . '</label>
+							<select name="SalesPerson">';
 		$SalesPeopleResult = DB_query("SELECT salesmancode, salesmanname FROM salesman WHERE current=1");
-		if (!isset($_POST['SalesPerson']) AND $_SESSION['SalesmanLogin']!=NULL ){
-			$_SESSION['CreditItems'.$identifier]->SalesPerson = $_SESSION['SalesmanLogin'];
-		}
-
+		if (!isset($_POST['SalesPerson']) AND $_SESSION['SalesmanLogin']!=NULL ){ $_SESSION['CreditItems'.$identifier]->SalesPerson = $_SESSION['SalesmanLogin']; }
 		while ($SalesPersonRow = DB_fetch_array($SalesPeopleResult)){
-			if ($SalesPersonRow['salesmancode']==$_SESSION['CreditItems'.$identifier]->SalesPerson){
-				echo '<option selected="selected" value="' . $SalesPersonRow['salesmancode'] . '">' . $SalesPersonRow['salesmanname'] . '</option>';
-			} else {
-				echo '<option value="' . $SalesPersonRow['salesmancode'] . '">' . $SalesPersonRow['salesmanname'] . '</option>';
-			}
+			echo '<option ' . ($SalesPersonRow['salesmancode']==$_SESSION['CreditItems'.$identifier]->SalesPerson ? 'selected="selected"' : '') . ' value="' . $SalesPersonRow['salesmancode'] . '">' . $SalesPersonRow['salesmanname'] . '</option>';
 		}
-
-		echo '</select>
-			</field>';
-		  if (!isset($_POST['CreditText'])) {
-			  $_POST['CreditText']='';
-		  }
-		  echo '<field>
-					<label for="CreditText">' . __('Credit Note Text') . ' :</label>
-					<textarea name="CreditText" cols="31" rows="5">' . $_POST['CreditText'] . '</textarea>
-			</field>
-			</fieldset>';
-
-		  $OKToProcess = true;
-		/*Check for the worst */
-		  if (isset($_POST['CreditType']) and $_POST['CreditType']=='WriteOff' AND !isset($_POST['WriteOffGLCode'])){
-			prnMsg(__('The GL code to write off the credit value to must be specified. Please select the appropriate GL code for the selection box'),'info');
-			$OKToProcess = false;
-		  }
-		  echo '<div class="centre">
-				<input type="submit" name="Update" value="' . __('Update') . '" />
-				<input type="reset" name="CancelCredit" value="' . __('Cancel') . '" onclick="return confirm(\'' . __('Are you sure you wish to cancel the whole of this credit note?') . '\');" />';
-		  if (!isset($_POST['ProcessCredit']) AND $OKToProcess == true){
-			echo '<input type="submit" name="ProcessCredit" value="' . __('Process Credit Note') . '" />';
-		  }
-		  echo '</div>';
+		echo '			</select>
+						</div>
+					</div>
+					<div class="db-field">
+						<label class="db-label">' . __('Credit Note Text') . '</label>
+						<textarea name="CreditText" rows="3">' . ($_POST['CreditText'] ?? '') . '</textarea>
+					</div>
+					<div style="margin-top: var(--space-4); display: flex; justify-content: flex-end; gap: var(--space-3);">
+						<button type="submit" name="Update" class="db-btn db-btn-secondary">' . __('Update') . '</button>
+						<button type="reset" name="CancelCredit" class="db-btn db-btn-danger" onclick="return confirm(\'' . __('Are you sure you wish to cancel the whole of this credit note?') . '\');">' . __('Cancel') . '</button>';
+		if (!isset($_POST['ProcessCredit']) AND $OKToProcess == true){
+			echo '		<button type="submit" name="ProcessCredit" class="db-btn db-btn-primary">' . __('Process Credit Note') . '</button>';
+		}
+		echo '		</div>
+				</div>
+			</div>';
 	 } # end of if lines
 
 
@@ -944,109 +927,121 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 
 		 echo '<input type="hidden" name="PartSearch" value="' . __('Yes Please') . '" />';
 
-		 $SQL="SELECT categoryid,
-					categorydescription
-				FROM stockcategory
-				WHERE stocktype='F'
-				ORDER BY categorydescription";
+		 echo '<div class="card-v2" style="margin-top: var(--space-6);">
+				<div class="card-header-v2">
+					<h3>
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+						' . __('Stock Item Search') . '
+					</h3>
+					<div class="db-header-actions">
+						<button type="submit" name="ChangeCustomer" class="db-btn db-btn-secondary" style="font-size: 0.8rem; padding: 4px 12px;">' . __('Change Customer') . '</button>
+						<button type="submit" name="Quick" class="db-btn db-btn-secondary" style="font-size: 0.8rem; padding: 4px 12px;">' . __('Quick Entry') . '</button>
+					</div>
+				</div>
+				<div class="db-card-body">
+					<div class="db-field-group">
+						<div class="db-field">
+							<label class="db-label">' . __('Select a stock category') . '</label>
+							<select name="StockCat">
+								<option value="All">' . __('All') . '</option>';
 
+		 $SQL="SELECT categoryid, categorydescription FROM stockcategory WHERE stocktype='F' ORDER BY categorydescription";
 		 $Result1 = DB_query($SQL);
 
-		 echo '<fieldset>
-				<legend class="search">', __('Stock Item Search'), '</legend>
-				<field>
-					<label for="StockCat">' . __('Select a stock category') . '</label>
-					<select name="StockCat">';
-
-		 echo '<option selected="selected" value="All">' . __('All') . '</option>';
 		 while ($MyRow1 = DB_fetch_array($Result1)) {
-			  if (isset($_POST['StockCat']) and $_POST['StockCat']==$MyRow1['categoryid']){
-				   echo '<option selected="selected" value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
-			  } else {
-				   echo '<option value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
-			  }
+			echo '<option ' . (isset($_POST['StockCat']) && $_POST['StockCat']==$MyRow1['categoryid'] ? 'selected="selected"' : '') . ' value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
 		 }
 
-		 echo '</select>
-			</field>';
-		 if (!isset($_POST['Keywords'])) {
-		 	$_POST['Keywords'] = '';
-		 }
-		 if (!isset($_POST['StockCode'])) {
-		 	$_POST['StockCode'] = '';
-		 }
-		 echo '<field>
-					<label for="Keywords">' . __('Enter text extracts in the description') . ':</label>
-					<input type="text" name="Keywords" size="20" maxlength="25" value="' . $_POST['Keywords'] . '" />
-				</field>';
-		 echo '<field>';
-		 echo '<field>
-					<label>'. '<b>' . __('OR') . ' </b>' . __('Enter extract of the Stock Code') . ':</label>
-					<input type="text" name="StockCode" size="15" maxlength="18" value="' . $_POST['StockCode'] . '" />
-				</tfield>';
-		 echo '</field>';
-		 echo '</fieldset>';
-
-		echo '<div class="centre">
-				<input type="submit" name="Search" value="' . __('Search Now') .'" />
-				<input type="submit" name="ChangeCustomer" value="' . __('Change Customer') . '" />
-				<input type="submit" name="Quick" value="' . __('Quick Entry') . '" />
+		 echo '			</select>
+						</div>
+						<div class="db-field">
+							<label class="db-label">' . __('Description Keywords') . '</label>
+							<input type="text" name="Keywords" placeholder="' . __('e.g. Widget') . '" value="' . ($_POST['Keywords'] ?? '') . '" />
+						</div>
+						<div class="db-field">
+							<label class="db-label">' . __('OR Stock Code') . '</label>
+							<input type="text" name="StockCode" placeholder="' . __('e.g. STK-001') . '" value="' . ($_POST['StockCode'] ?? '') . '" />
+						</div>
+					</div>
+					<div style="margin-top: var(--space-4); display: flex; justify-content: center;">
+						<button type="submit" name="Search" class="db-btn db-btn-primary">' . __('Search Now') . '</button>
+					</div>
+				</div>
 			</div>';
 
 		 if (isset($SearchResult)) {
-
-			  echo '<table cellpadding="2" class="selection">';
-			  $TableHeader = '<tr>
+			echo '<div class="db-table-wrapper" style="margin-top: var(--space-4);">
+					<table class="db-table">
+						<thead>
+							<tr>
 								<th>' . __('Code') . '</th>
-					  			<th>' . __('Description') . '</th>
-								<th>' . __('Units')  . '</th>
-								<th></th>
-							</tr>';
-			  echo $TableHeader;
-
-			  $j = 1;
+								<th>' . __('Description') . '</th>
+								<th>' . __('Units') . '</th>
+								<th>' . __('Image') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
 			  while ($MyRow=DB_fetch_array($SearchResult)) {
-
 				$SupportedImgExt = array('png','jpg','jpeg');
 				$Glob = (glob($_SESSION['part_pics_dir'] . '/' . $MyRow['stockid'] . '.{' . implode(",", $SupportedImgExt) . '}', GLOB_BRACE));
 				$ImageFile = reset($Glob);
-				$ImageSource = GetImageLink($ImageFile, $MyRow['stockid'], 64, 64, "", "");
+				$ImageSource = GetImageLink($ImageFile, $MyRow['stockid'], 48, 48, "", "");
 
-				echo '<tr class="striped_row">
-						<td><input type="submit" name="NewItem" value="', $MyRow['stockid'], '" /></td>
+				echo '<tr>
+						<td>
+							<button type="submit" name="NewItem" value="' . $MyRow['stockid'] . '" class="db-btn db-btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+								' . $MyRow['stockid'] . '
+							</button>
+						</td>
 						<td>', $MyRow['description'], '</td>
 						<td>', $MyRow['units'], '</td>
 						<td>' . $ImageSource . '</td>
 					</tr>';
-	#end of page full new headings if
 			  }
-	#end of while loop
-			  echo '</table>';
+			  echo '</tbody>
+					</table>
+				</div>';
 		 }#end if SearchResults to show
 	} /*end if part searching required */ elseif (!isset($_POST['ProcessCredit'])) { /*quick entry form */
 
 /*FORM VARIABLES TO POST TO THE CREDIT NOTE 10 AT A TIME WITH PART CODE AND QUANTITY */
-	     echo '<table class="selection">';
-	     echo '<tr><th colspan="2"><h3>' . __('Quick Entry') . '</h3></th></tr>';
-	     echo '<tr>
-	           	<th>' . __('Part Code') . '</th>
-	           	<th>' . __('Quantity') . '</th>
-	           </tr>';
+	     echo '<div class="card-v2" style="margin-top: var(--space-6);">
+					<div class="card-header-v2">
+						<h3>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 2v20M2 12h20"></path></svg>
+							' . __('Quick Entry') . '
+						</h3>
+						<div class="db-header-actions">
+							<button type="submit" name="PartSearch" class="db-btn db-btn-secondary" style="font-size: 0.8rem; padding: 4px 12px;">' . __('Search Parts') . '</button>
+						</div>
+					</div>
+					<div class="db-card-body">
+						<div class="db-table-wrapper">
+							<table class="db-table">
+								<thead>
+									<tr>
+										<th>' . __('Part Code') . '</th>
+										<th>' . __('Quantity') . '</th>
+									</tr>
+								</thead>
+								<tbody>';
 
 	      for ($i=1;$i<=$_SESSION['QuickEntries'];$i++){
-
-	     	echo '<tr class="striped_row">
-					<td><input type="text" name="part_' . $i . '" size="21" maxlength="20" /></td>
-					<td><input type="text" class="number" name="qty_' . $i . '" size="6" maxlength="6" /></td>
+	     	echo '<tr>
+					<td><input type="text" name="part_' . $i . '" placeholder="' . __('Part Code') . '" /></td>
+					<td><input type="text" class="number" name="qty_' . $i . '" placeholder="0" /></td>
 				</tr>';
-	     }
+	      }
 
-	     echo '</table>
-				<br />
-				<div class="centre">
-				<input type="submit" name="QuickEntry" value="' . __('Process Entries') . '" />
-				<input type="submit" name="PartSearch" value="' . __('Search Parts') . '" />
+	     echo '					</tbody>
+							</table>
+						</div>
+						<div style="margin-top: var(--space-4); display: flex; justify-content: center;">
+							<button type="submit" name="QuickEntry" class="db-btn db-btn-primary">' . __('Process Entries') . '</button>
+						</div>
+					</div>
 				</div>';
 
 	}
@@ -1944,14 +1939,38 @@ then debit the expense account the stock is to written off to */
 	 unset($_SESSION['CreditItems'.$identifier]->LineItems);
 	 unset($_SESSION['CreditItems'.$identifier]);
 
-	 echo __('Credit Note number') . ' ' . $CreditNo . ' ' . __('processed') . '<br />';
-	 echo '<a target="_blank" href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $CreditNo . '&InvOrCredit=Credit">' . __('Show this Credit Note on screen') . '</a><br />';
+	 echo '<div class="card-v2" style="max-width: 600px; margin: 2rem auto; text-align: center;">
+				<div class="db-card-body">
+					<div style="width: 64px; height: 64px; background: var(--success-soft); color: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+						<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+					</div>
+					<h2 style="margin-bottom: 0.5rem;">' . __('Credit Note Processed') . '</h2>
+					<p style="color: var(--text-muted); margin-bottom: 2rem;">' . __('Credit Note number') . ' <b>' . $CreditNo . '</b> ' . __('has been successfully entered.') . '</p>
+
+					<div style="display: flex; flex-direction: column; gap: 0.75rem;">
+						<a target="_blank" href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $CreditNo . '&InvOrCredit=Credit" class="db-btn db-btn-primary">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+							' . __('View Online') . '
+						</a>';
 	if ($_SESSION['InvoicePortraitFormat']==0){
-	 	echo '<a href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $CreditNo . '&InvOrCredit=Credit&PrintPDF=True&orientation=landscape">' . __('Print this Credit Note') . '</a>';
+	 	echo '			<a href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $CreditNo . '&InvOrCredit=Credit&PrintPDF=True&orientation=landscape" class="db-btn db-btn-secondary">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+							' . __('Print Credit Note') . '
+						</a>';
 	} else {
-		echo '<a href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $CreditNo . '&InvOrCredit=Credit&PrintPDF=True&orientation=portrait">' . __('Print this Credit Note') . '</a>';
+		echo '			<a href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $CreditNo . '&InvOrCredit=Credit&PrintPDF=True&orientation=portrait" class="db-btn db-btn-secondary">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+							' . __('Print Credit Note') . '
+						</a>';
 	}
-	 echo '<br /><a href="' . $RootPath . '/SelectCreditItems.php">' . __('Enter Another Credit Note') . '</a>';
+	echo '				<hr style="border: 0; border-top: 1px solid var(--border-soft); margin: 1rem 0;" />
+						<a href="' . $RootPath . '/SelectCreditItems.php" class="text-link">
+							' . __('Enter Another Credit Note') . '
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>';
 
 } /*end of process credit note */
 

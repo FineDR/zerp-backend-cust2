@@ -16,6 +16,8 @@ $ViewTopic = 'ARTransactions';
 $BookMark = 'CustomerAllocations';
 include(__DIR__ . '/includes/header.php');
 
+echo '<div class="db-page">';
+
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 
 if ( isset($_POST['Cancel']) ) {
@@ -339,21 +341,26 @@ if (isset($_GET['AllocTrans'])) {
 }
 
 
-echo '<p class="page_title_text">
-		<img src="'.$RootPath.'/css/'.$Theme.'/images/transactions.png" title="' . __('Allocate Receipt') . '" alt="" />' . ' ' . __('Allocate Receipts') . '
-	</p>';
+	echo '<div class="db-page-header">
+			<div>
+				<h2 class="db-page-title">' . $Title . '</h2>
+				<p class="db-page-subtitle">' . __('Link receipts and credits to outstanding invoices') . '</p>
+			</div>
+		</div>';
 
-$TableHeader = '<tr>
-					<th>' . __('Trans Type') . '</th>
-					<th>' . __('Customer') . '</th>
-					<th>' . __('Cust No') . '</th>
-					<th>' . __('Number') . '</th>
-					<th>' . __('Date') . '</th>
-					<th>' . __('Total') . '</th>
-					<th>' . __('To Alloc') . '</th>
-					<th>' . __('Currency') . '</th>
-					<th>' . __('Action') . '</th>
-				</tr>';
+$TableHeader = '<thead>
+					<tr>
+						<th>' . __('Type') . '</th>
+						<th>' . __('Customer') . '</th>
+						<th>' . __('Code') . '</th>
+						<th>' . __('No') . '</th>
+						<th>' . __('Date') . '</th>
+						<th class="number">' . __('Total') . '</th>
+						<th class="number">' . __('To Alloc') . '</th>
+						<th>' . __('Cur') . '</th>
+						<th class="number">' . __('Action') . '</th>
+					</tr>
+				</thead>';
 
 if (isset($_POST['AllocTrans'])) {
 	/* Page called with trans number
@@ -363,27 +370,35 @@ if (isset($_POST['AllocTrans'])) {
 		<div>
 		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
 		<input type="hidden" name="AllocTrans" value="' . $_POST['AllocTrans'] . '" />
-		<table class="selection">
-		<tr>
-			<th colspan="7">
-			<div class="centre">
-				<b>' . $_SESSION['Alloc']->DebtorNo . ' - ' . $_SESSION['Alloc']->CustomerName . '</b>
-			</div>';
 
-	if ($_SESSION['Alloc']->TransExRate !=  1) {
-			echo '<br />' . __('Amount in customer currency') . ' <b>' . locale_number_format(-$_SESSION['Alloc']->TransAmt,$_SESSION['Alloc']->CurrDecimalPlaces) . '</b><i> (' .  __('converted into local currency at an exchange rate of'). ' ' . $_SESSION['Alloc']->TransExRate . ')</i>';
+		<div class="card-v2">
+			<div class="card-header-v2">
+				<h3>
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+					' . $_SESSION['Alloc']->CustomerName . ' (' . $_SESSION['Alloc']->DebtorNo . ')
+				</h3>
+				<div class="db-header-actions">';
+	if ($_SESSION['Alloc']->TransExRate != 1) {
+		echo '		<span class="db-badge db-badge-info">' . __('Ex-Rate') . ': ' . $_SESSION['Alloc']->TransExRate . '</span>';
 	}
-	echo '</th>
-		</tr>
-		<tr>
-			<th>' . __('Trans') . '<br />' . __('Type') . '</th>
-			<th>' . __('Trans') . '<br />' . __('Number') . '</th>
-			<th>' . __('Trans') . '<br />' . __('Date') . '</th>
-			<th>' . __('Total') . '<br />' . __('Amount') . '</th>
-			<th>' . __('Yet to') . '<br />' . __('Allocate') . '</th>
-			<th>' . __('This') . '<br />' . __('Allocation') . '</th>
-			<th>' . __('Running') . '<br />' . __('Balance') . '</th>
-		</tr>';
+	echo '			<span class="db-badge db-badge-primary">' . $_SESSION['Alloc']->Currency . ' ' . locale_number_format(-$_SESSION['Alloc']->TransAmt, $_SESSION['Alloc']->CurrDecimalPlaces) . '</span>
+				</div>
+			</div>
+			<div class="db-card-body">
+				<div class="db-table-wrapper">
+					<table class="db-table">
+						<thead>
+							<tr>
+								<th>' . __('Type') . '</th>
+								<th>' . __('No') . '</th>
+								<th>' . __('Date') . '</th>
+								<th class="number">' . __('Total') . '</th>
+								<th class="number">' . __('Yet to Alloc') . '</th>
+								<th>' . __('Allocation') . '</th>
+								<th class="number">' . __('Balance') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
 	$Counter = 0;
 	$TotalAllocated = 0;
@@ -432,26 +447,33 @@ if (isset($_POST['AllocTrans'])) {
 		$Counter++;
 	}
 
-	echo '<tr>
-			<td colspan="5" class="number"><b>' . __('Total Allocated').':</b></td>
-			<td class="number"><b>' . locale_number_format($TotalAllocated,$_SESSION['Alloc']->CurrDecimalPlaces) . '</b></td>';
-	$j++;
-	echo '<td colspan="2">
-			<input tabindex="'.$j.'" type="submit" name="RefreshAllocTotal" value="' . __('Recalculate Total To Allocate') . '" /></td>
-        </tr>
-		<tr>
-			<td colspan="5" class="number"><b>' . __('Left to allocate') . '</b></td>
-			<td class="number"><b>' . locale_number_format(-$_SESSION['Alloc']->TransAmt-$TotalAllocated,$_SESSION['Alloc']->CurrDecimalPlaces) . '</b></td>
-		</tr>
-		</table>
-		<br />
-		<input type="hidden" name="TotalNumberOfAllocs" value="' . $Counter . '" />
-		<div class="centre">
-			<input tabindex="' . $j . '" type="submit" name="UpdateDatabase" value="' . __('Process Allocations') . '" />
-			<input tabindex="' . $j . '" type="submit" name="Cancel" value="' . __('Cancel') . '" />
+	echo '		</tbody>
+					<tfoot>
+						<tr style="background: var(--surface-alt); font-weight: 700;">
+							<td colspan="5" class="number">' . __('Total Allocated') . ':</td>
+							<td style="display: flex; align-items: center; gap: var(--space-2);">
+								' . locale_number_format($TotalAllocated, $_SESSION['Alloc']->CurrDecimalPlaces) . '
+								<button type="submit" name="RefreshAllocTotal" class="db-btn db-btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;">
+									<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+								</button>
+							</td>
+							<td></td>
+						</tr>
+						<tr style="background: var(--surface-vibrant); color: var(--primary);">
+							<td colspan="5" class="number"><b>' . __('Left to Allocate') . ':</b></td>
+							<td colspan="2"><b>' . locale_number_format(-$_SESSION['Alloc']->TransAmt - $TotalAllocated, $_SESSION['Alloc']->CurrDecimalPlaces) . '</b></td>
+						</tr>
+					</tfoot>
+				</table>
+			</div>
+			<div style="margin-top: var(--space-4); display: flex; justify-content: center; gap: var(--space-3);">
+				<input type="hidden" name="TotalNumberOfAllocs" value="' . $Counter . '" />
+				<button type="submit" name="UpdateDatabase" class="db-btn db-btn-primary">' . __('Process Allocations') . '</button>
+				<button type="submit" name="Cancel" class="db-btn db-btn-danger">' . __('Cancel') . '</button>
+			</div>
 		</div>
-        </div>
-        </form>';
+	</div>
+</form>';
 
 } elseif (isset($_GET['DebtorNo'])) {
 	// Page called with customer code
@@ -494,11 +516,21 @@ if (isset($_POST['AllocTrans'])) {
 		include(__DIR__ . '/includes/footer.php');
 		exit();
 	}
-	 echo '<table class="selection">';
-	echo $TableHeader;
+	echo '<div class="card-v2" style="margin-top: var(--space-6);">
+			<div class="card-header-v2">
+				<h3>
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+					' . __('Pending Allocations for Customer') . '
+				</h3>
+			</div>
+			<div class="db-card-body">
+				<div class="db-table-wrapper">
+					<table class="db-table">
+						' . $TableHeader . '
+						<tbody>';
 
 	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<tr class="striped_row">
+		echo '<tr>
 				<td>' . __($MyRow['typename']) . '</td>
 				<td>' . $MyRow['name'] . '</td>
 				<td>' . $MyRow['debtorno'] . '</td>
@@ -507,10 +539,18 @@ if (isset($_POST['AllocTrans'])) {
 				<td class="number">' . locale_number_format($MyRow['total'],$MyRow['currdecimalplaces']) . '</td>
 				<td class="number">' . locale_number_format($MyRow['total']-$MyRow['alloc'],$MyRow['currdecimalplaces']) . '</td>
 				<td>' . $MyRow['currcode'] . '</td>
-				<td><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'). '?AllocTrans=' . $MyRow['id'] . '">' . __('Allocate') . '</a></td>
+				<td class="number">
+					<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'). '?AllocTrans=' . $MyRow['id'] . '" class="db-btn db-btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;">
+						' . __('Allocate') . '
+					</a>
+				</td>
 			</tr>';
 	}
-	echo '</table>';
+	echo '				</tbody>
+					</table>
+				</div>
+			</div>
+		</div>';
 } else {
 	/* Page called with no parameters */
 	unset($_SESSION['Alloc']->Allocs);
@@ -554,19 +594,29 @@ if (isset($_POST['AllocTrans'])) {
 	else {
 	$CurrentTransaction = 1;
 	$CurrentDebtor = '';
-	echo '<table class="selection">';
-	echo $TableHeader;
+	echo '<div class="card-v2" style="margin-top: var(--space-6);">
+			<div class="card-header-v2">
+				<h3>
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 2v20M2 12h20"></path></svg>
+					' . __('All Outstanding Receipts/Credits') . '
+				</h3>
+			</div>
+			<div class="db-card-body">
+				<div class="db-table-wrapper">
+					<table class="db-table">
+						' . $TableHeader . '
+						<tbody>';
 
 	while ($MyRow = DB_fetch_array($Result)) {
 
-		$AllocateLink = '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'). '?AllocTrans=' . $MyRow['id'] . '">' . __('Allocate') . '</a>';
+		$AllocateLink = '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'). '?AllocTrans=' . $MyRow['id'] . '" class="db-btn db-btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;">' . __('Allocate') . '</a>';
 
 		if ( $CurrentDebtor !=  $MyRow['debtorno'] ) {
 			if ( $CurrentTransaction > 1 ) {
-				echo '<tr class="striped_row">
-						<td colspan="7" class="number"><b>' . locale_number_format($Balance,$CurrDecimalPlaces)  . '</b></td>
-						<td><b>' . $CurrCode . '</b></td>
-						<td><b>' . __('Balance') . '</b></td>
+				echo '<tr style="background: var(--surface-alt); font-weight: 700;">
+						<td colspan="7" class="number">' . locale_number_format($Balance,$CurrDecimalPlaces)  . '</td>
+						<td>' . $CurrCode . '</td>
+						<td class="number">' . __('Balance') . '</td>
 					</tr>';
 			}
 
@@ -589,7 +639,7 @@ if (isset($_POST['AllocTrans'])) {
 			$AllocateLink = '&nbsp;';
 		}
 
-		echo '<tr class="striped_row">
+		echo '<tr>
 				<td>' . __($MyRow['typename']) . '</td>
 				<td>' . $MyRow['name'] . '</td>
 				<td>' . $MyRow['debtorno'] . '</td>
@@ -598,7 +648,7 @@ if (isset($_POST['AllocTrans'])) {
 				<td class="number">' . locale_number_format($MyRow['total'],$CurrDecimalPlaces) . '</td>
 				<td class="number">' . locale_number_format($MyRow['total']-$MyRow['alloc'],$CurrDecimalPlaces) . '</td>
 				<td>' . $CurrCode . '</td>
-				<td>' . $AllocateLink . '</td>
+				<td class="number">' . $AllocateLink . '</td>
 			</tr>';
 
 	} //end loop around unallocated receipts and credit notes
@@ -607,15 +657,18 @@ if (isset($_POST['AllocTrans'])) {
 		$Balance=0;
 	}
 
-		echo '<tr class="striped_row">
-				<td colspan="7" class="number"><b>' . locale_number_format($Balance,$CurrDecimalPlaces)  . '</b></td>
-				<td><b>' . $CurrCode . '</b></td>
-				<td><b>' . __('Balance') . '</b></td>
-			</tr>
-		</table>';
+		echo '<tr style="background: var(--surface-alt); font-weight: 700;">
+					<td colspan="7" class="number">' . locale_number_format($Balance,$CurrDecimalPlaces)  . '</td>
+					<td>' . $CurrCode . '</td>
+					<td class="number">' . __('Balance') . '</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	</div>
+	</div>';
 	}
-
-	echo '<br />';
+	}
+	echo '</div>'; // Close db-page
 }
-
 include(__DIR__ . '/includes/footer.php');

@@ -55,6 +55,20 @@ $ViewTopic = 'AccountsPayable';
 $BookMark = 'SelectSupplier';
 include(__DIR__ . '/includes/header.php');
 
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div>
+				<h1 class="db-page-title">' . $Title . '</h1>
+				<p class="db-page-subtitle">' . __('Select a supplier to manage their account, orders, and transactions') . '</p>
+			</div>
+			<div class="db-page-actions">
+				<a href="' . $RootPath . '/Suppliers.php" class="db-btn db-btn-primary">
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="17" y1="11" x2="23" y2="11"></line></svg>
+					' . __('Add New Supplier') . '
+				</a>
+			</div>
+		</div>';
+
 if (!isset($_POST['PageOffset'])) {
 	$_POST['PageOffset'] = 1;
 } else {
@@ -133,22 +147,6 @@ if (isset($_POST['Search'])
         }
 } //end of if search
 
-$TableHead =
-	'<table cellpadding="4" width="90%" class="selection">
-		<thead>
-			<tr>
-				<th style="width:33%">' .
-					'<img style="margin-right:4px" alt="" src="' . $RootPath . '/css/' . $Theme . '/images/reports.png" title="' . __('Inquiries and Reports') . '" />' .
-					__('Supplier Inquiries') . '</th>
-				<th style="width:33%">' .
-					'<img style="margin-right:4px" alt="" src="' . $RootPath . '/css/' . $Theme . '/images/transactions.png" title="' . __('Transactions') . '" />' .
-					__('Supplier Transactions') . '</th>
-				<th style="width:33%">' .
-					'<img style="margin-right:4px" alt="" src="' . $RootPath . '/css/' . $Theme . '/images/maintenance.png" title="' . __('Maintenance') . '" />' .
-					__('Supplier Maintenance') . '</th>
-			</tr>
-		</thead>
-		<tbody>';
 if (isset($_SESSION['SupplierID'])) {
 	// A supplier is selected
 	$SupplierName = '';
@@ -161,84 +159,96 @@ if (isset($_SESSION['SupplierID'])) {
 		$SupplierName = $MyRow[0];
 	}
 
-	echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme,
-		'/images/supplier.png" title="', // Icon image.
-		__('Supplier'), '" /> ', // Icon title.
-		__('Supplier'), ': ', $_SESSION['SupplierID'], ' - ', $SupplierName, '</p>',// Page title.
-		'<div class="page_help_text">', __('Select a menu option to operate using this supplier.'), '</div>',// Page help text.
-		'<br />',
-		$TableHead,
-			'<tr>
-				<td valign="top" class="select">';
-	// Supplier inquiries options:
-	echo '<a href="' . $RootPath . '/SupplierInquiry.php?SupplierID=' . $_SESSION['SupplierID'] . '">' . __('Supplier Account Inquiry') . '</a>
-		<br />
-		<a href="' . $RootPath . '/SupplierGRNAndInvoiceInquiry.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '&amp;SupplierName='.urlencode($SupplierName).'">' . __('Supplier Delivery Note AND GRN inquiry') . '</a>
-		<br />
-		<br />';
+	echo '<div class="db-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-6); margin-bottom: var(--space-8);">
+			
+			<!-- Inquiries & Reports -->
+			<div class="db-card">
+				<div class="db-card-header" style="border-bottom: 1px solid var(--border-soft); padding: var(--space-4);">
+					<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px; color: var(--primary);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> ' . __('Inquiries & Reports') . '</h3>
+				</div>
+				<div class="db-card-body" style="padding: var(--space-3);">
+					<ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px;">
+						<li><a href="' . $RootPath . '/SupplierInquiry.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Account Inquiry') . '</a></li>
+						<li><a href="' . $RootPath . '/SupplierGRNAndInvoiceInquiry.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '&SupplierName='.urlencode($SupplierName).'" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Delivery & GRN Inquiry') . '</a></li>
+						<li><a href="' . $RootPath . '/PO_SelectOSPurchOrder.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Outstanding Purchase Orders') . '</a></li>
+						<li><a href="' . $RootPath . '/PO_SelectPurchOrder.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('All Purchase Orders') . '</a></li>
+						<li><a href="' . $RootPath . '/ShiptsList.php?SupplierID=' . $_SESSION['SupplierID'] . '&SupplierName=' . urlencode($SupplierName) . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Open Shipments') . '</a></li>
+						<li><a href="' . $RootPath . '/Shipt_Select.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Search/Manage Shipments') . '</a></li>
+						<li><a href="' . $RootPath . '/SuppPriceList.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Supplier Price List') . '</a></li>
+					</ul>
+				</div>
+			</div>
 
-	echo '<br /><a href="' . $RootPath . '/PO_SelectOSPurchOrder.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '">' . __('Add / Receive / View Outstanding Purchase Orders') . '</a>';
-	echo '<br /><a href="' . $RootPath . '/PO_SelectPurchOrder.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '">' . __('View All Purchase Orders') . '</a><br />';
-	wikiLink('Supplier', $_SESSION['SupplierID']);
-	echo '<br /><a href="' . $RootPath . '/ShiptsList.php?SupplierID=' . $_SESSION['SupplierID'] . '&amp;SupplierName=' . urlencode($SupplierName) . '">' . __('List all open shipments for') .' '.$SupplierName. '</a>';
-	echo '<br /><a href="' . $RootPath . '/Shipt_Select.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '">' . __('Search / Modify / Close Shipments') . '</a>';
-	echo '<br /><a href="' . $RootPath . '/SuppPriceList.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '">' . __('Supplier Price List') . '</a>';
-	echo '</td><td valign="top" class="select">'; /* Supplier Transactions */
-	echo '<a href="' . $RootPath . '/PO_Header.php?NewOrder=Yes&amp;SupplierID=' . $_SESSION['SupplierID'] . '">' . __('Enter a Purchase Order for This Supplier') . '</a><br />';
-	echo '<a href="' . $RootPath . '/SupplierInvoice.php?SupplierID=' . $_SESSION['SupplierID'] . '">' . __('Enter a Suppliers Invoice') . '</a><br />';
-	echo '<a href="' . $RootPath . '/SupplierCredit.php?New=true&amp;SupplierID=' . $_SESSION['SupplierID'] . '">' . __('Enter a Suppliers Credit Note') . '</a><br />';
-	echo '<a href="' . $RootPath . '/Payments.php?SupplierID=' . $_SESSION['SupplierID'] . '">' . __('Enter a Payment to, or Receipt from the Supplier') . '</a><br />';
-	echo '<br />';
-	echo '<br /><a href="' . $RootPath . '/ReverseGRN.php?SupplierID=' . $_SESSION['SupplierID'] . '">' . __('Reverse an Outstanding Goods Received Note (GRN)') . '</a>';
-	echo '</td><td valign="top" class="select">'; /* Supplier Maintenance */
-	echo '<a href="' . $RootPath . '/Suppliers.php">' . __('Add a New Supplier') . '</a>
-		<br /><a href="' . $RootPath . '/Suppliers.php?SupplierID=' . $_SESSION['SupplierID'] . '">' . __('Modify Or Delete Supplier Details') . '</a>
-		<br /><a href="' . $RootPath . '/SupplierContacts.php?SupplierID=' . $_SESSION['SupplierID'] . '">' . __('Add/Edit/Delete Supplier Contacts') . '</a>
-		<br />
-		<br /><a href="' . $RootPath . '/SellThroughSupport.php?SupplierID=' . $_SESSION['SupplierID'] . '">' . __('Set Up Sell Through Support Deals') . '</a>
-		<br /><a href="' . $RootPath . '/Shipments.php?NewShipment=Yes">' . __('Set Up A New Shipment') . '</a>
-		<br /><a href="' . $RootPath . '/SuppLoginSetup.php">' . __('Supplier Login Configuration') . '</a>
-		</td>
-		</tr>
-		<tbody></table>';
+			<!-- Transactions -->
+			<div class="db-card">
+				<div class="db-card-header" style="border-bottom: 1px solid var(--border-soft); padding: var(--space-4);">
+					<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px; color: var(--primary);"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg> ' . __('Transactions') . '</h3>
+				</div>
+				<div class="db-card-body" style="padding: var(--space-3);">
+					<ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px;">
+						<li><a href="' . $RootPath . '/PO_Header.php?NewOrder=Yes&SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('New Purchase Order') . '</a></li>
+						<li><a href="' . $RootPath . '/SupplierInvoice.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Enter Supplier Invoice') . '</a></li>
+						<li><a href="' . $RootPath . '/SupplierCredit.php?New=true&SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Enter Credit Note') . '</a></li>
+						<li><a href="' . $RootPath . '/Payments.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Enter Payment / Receipt') . '</a></li>
+						<li><a href="' . $RootPath . '/ReverseGRN.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Reverse GRN') . '</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<!-- Maintenance -->
+			<div class="db-card">
+				<div class="db-card-header" style="border-bottom: 1px solid var(--border-soft); padding: var(--space-4);">
+					<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px; color: var(--primary);"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg> ' . __('Maintenance') . '</h3>
+				</div>
+				<div class="db-card-body" style="padding: var(--space-3);">
+					<ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px;">
+						<li><a href="' . $RootPath . '/Suppliers.php" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Add New Supplier') . '</a></li>
+						<li><a href="' . $RootPath . '/Suppliers.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Modify/Delete Supplier') . '</a></li>
+						<li><a href="' . $RootPath . '/SupplierContacts.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Manage Contacts') . '</a></li>
+						<li><a href="' . $RootPath . '/SellThroughSupport.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Sell Through Support') . '</a></li>
+						<li><a href="' . $RootPath . '/Shipments.php?NewShipment=Yes" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('New Shipment Setup') . '</a></li>
+						<li><a href="' . $RootPath . '/SuppLoginSetup.php" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Login Configuration') . '</a></li>
+					</ul>
+				</div>
+			</div>
+
+		</div>';
+}
 } else {
 	// Supplier is not selected yet
-	echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme,
-		'/images/supplier.png" title="', // Icon image.
-		__('Suppliers'), '" /> ', // Icon title.
-		__('Suppliers'), '</p>',// Page title.
-		'<br />',
-		$TableHead,
-		'<tr>',
-			'<td class="select"></td>',// Supplier inquiries options.
-			'<td class="select"></td>',// Supplier transactions options.
-			'<td class="select"><a href="', $RootPath, '/Suppliers.php">', __('Add a New Supplier'), '</a></td>',// Supplier Maintenance options.
-		'</tr><tbody></table>';
+	echo '<div class="db-alert db-alert-info" style="margin-bottom: var(--space-6);">
+			<div style="display: flex; align-items: center; gap: var(--space-3);">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+				<div>' . __('No supplier currently selected. Please use the search form below to find a supplier.') . '</div>
+			</div>
+		</div>';
 }
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/magnifier.png" title="' . __('Search') . '" alt="" />' . ' ' . __('Search for Suppliers') . '</p>';
-
-echo '<fieldset>
-		<legend class="search">', __('Search Criteria'), '</legend>
-		<field>
-			<label for="Keywords">' . __('Enter a partial Name') . ':</label>';
-if (isset($_POST['Keywords'])) {
-	echo '<input type="text" name="Keywords" value="' . $_POST['Keywords'] . '" size="20" maxlength="25" />';
-} else {
-	echo '<input type="text" name="Keywords" size="20" maxlength="25" />';
-}
-echo '<field>
-		<label for="SupplierCode">' . '<b>' . __('OR') . ' </b>' . __('Enter a partial Code') . ':</label>';
-if (isset($_POST['SupplierCode'])) {
-	echo '<input type="text" autofocus="autofocus" name="SupplierCode" value="' . $_POST['SupplierCode'] . '" size="15" maxlength="18" />';
-} else {
-	echo '<input type="text" autofocus="autofocus" name="SupplierCode" size="15" maxlength="18" />';
-}
-echo '</field>
-	</fieldset>';
-
-echo '<div class="centre"><input type="submit" name="Search" value="' . __('Search Now') . '" /></div>';
+echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">
+		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+		
+		<div class="db-card" style="margin-bottom: var(--space-6);">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> ' . __('Search for Suppliers') . '</h3>
+			</div>
+			<div class="db-card-body">
+				<div class="db-grid db-grid-3">
+					<div class="db-form-group">
+						<label class="db-form-label">' . __('Search by Name (Keywords)') . '</label>
+						<input type="text" name="Keywords" class="db-form-input" value="' . (isset($_POST['Keywords']) ? $_POST['Keywords'] : '') . '" placeholder="' . __('Enter partial name...') . '" maxlength="25" />
+					</div>
+					<div class="db-form-group">
+						<label class="db-form-label">' . __('Search by Supplier Code') . '</label>
+						<input type="text" autofocus="autofocus" name="SupplierCode" class="db-form-input" value="' . (isset($_POST['SupplierCode']) ? $_POST['SupplierCode'] : '') . '" placeholder="' . __('Enter partial code...') . '" maxlength="18" />
+					</div>
+					<div class="db-form-group" style="display: flex; align-items: flex-end;">
+						<button type="submit" name="Search" class="db-btn db-btn-primary" style="width: 100%;">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+							' . __('Search Now') . '
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>';
 //if (isset($Result) AND !isset($SingleSupplierReturned)) {
 if (isset($_POST['Search'])) {
 	$ListCount = DB_num_rows($Result);
@@ -254,43 +264,39 @@ if (isset($_POST['Search'])) {
 		}
 	}
 	if ($ListPageMax > 1) {
-		echo '<p>&nbsp;&nbsp;' . $_POST['PageOffset'] . ' ' . __('of') . ' ' . $ListPageMax . ' ' . __('pages') . '. ' . __('Go to Page') . ': </p>';
-		echo '<select name="PageOffset">';
+		echo '<div class="db-pagination" style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-4); background: var(--surface-alt); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--border-soft);">
+				<span style="font-size: 0.85rem; font-weight: 600;">' . $_POST['PageOffset'] . ' ' . __('of') . ' ' . $ListPageMax . ' ' . __('pages') . '</span>
+				<div style="flex: 1;"></div>
+				<label style="display: inline; margin-right: 8px;">' . __('Go to Page') . ':</label>
+				<select name="PageOffset" style="width: auto; padding: 4px 8px;">';
 		$ListPage = 1;
 		while ($ListPage <= $ListPageMax) {
-			if ($ListPage == $_POST['PageOffset']) {
-				echo '<option value="' . $ListPage . '" selected="selected">' . $ListPage . '</option>';
-			} else {
-				echo '<option value="' . $ListPage . '">' . $ListPage . '</option>';
-			}
+			$selected = ($ListPage == $_POST['PageOffset']) ? 'selected="selected"' : '';
+			echo '<option value="' . $ListPage . '" ' . $selected . '>' . $ListPage . '</option>';
 			$ListPage++;
 		}
 		echo '</select>
-			<input type="submit" name="Go" value="' . __('Go') . '" />
-			<input type="submit" name="Previous" value="' . __('Previous') . '" />
-			<input type="submit" name="Next" value="' . __('Next') . '" />';
-		echo '<br />';
+				<button type="submit" name="Go" class="db-btn db-btn-secondary" style="padding: 4px 12px;">' . __('Go') . '</button>
+				<button type="submit" name="Previous" class="db-btn db-btn-secondary" style="padding: 4px 12px;">' . __('Previous') . '</button>
+				<button type="submit" name="Next" class="db-btn db-btn-secondary" style="padding: 4px 12px;">' . __('Next') . '</button>
+			</div>';
 	}
 	echo '<input type="hidden" name="Search" value="' . __('Search Now') . '" />';
-	echo '<br />
-		<br />
-		<br />
-		<table cellpadding="2">
-		<thead>
-			<tr>
-	  		<th class="SortedColumn">' . __('Code') . '</th>
-			<th class="SortedColumn">' . __('Supplier Name') . '</th>
-			<th class="SortedColumn">' . __('Currency') . '</th>
-			<th class="SortedColumn">' . __('Address 1') . '</th>
-			<th class="SortedColumn">' . __('Address 2') . '</th>
-			<th class="SortedColumn">' . __('Address 3') . '</th>
-			<th class="SortedColumn">' . __('Address 4') . '</th>
-			<th class="SortedColumn">' . __('Telephone') . '</th>
-			<th class="SortedColumn">' . __('Email') . '</th>
-			<th class="SortedColumn">' . __('URL') . '</th>
-			</tr>
-		</thead>
-		<tbody>';
+
+	echo '<div class="db-card">
+			<div class="db-table-wrapper">
+				<table class="db-table">
+					<thead>
+						<tr>
+							<th>' . __('Select') . '</th>
+							<th>' . __('Code') . '</th>
+							<th>' . __('Supplier Name') . '</th>
+							<th>' . __('Currency') . '</th>
+							<th>' . __('Address') . '</th>
+							<th>' . __('Contact Info') . '</th>
+						</tr>
+					</thead>
+					<tbody>';
 
 	$RowIndex = 0;
 	if (DB_num_rows($Result) <> 0) {
@@ -298,67 +304,46 @@ if (isset($_POST['Search'])) {
 	}
 	while (($MyRow = DB_fetch_array($Result)) AND ($RowIndex <> $_SESSION['DisplayRecordsMax'])) {
 		echo '<tr class="striped_row">
-				<td><input type="submit" name="Select" value="'.$MyRow['supplierid'].'" /></td>
-				<td>' . $MyRow['suppname'] . '</td>
-				<td>' . $MyRow['currcode'] . '</td>
-				<td>' . $MyRow['address1'] . '</td>
-				<td>' . $MyRow['address2'] . '</td>
-				<td>' . $MyRow['address3'] . '</td>
-				<td>' . $MyRow['address4'] . '</td>
-				<td>' . $MyRow['telephone'] . '</td>
-				<td><a href="mailto://'.$MyRow['email'].'">' . $MyRow['email']. '</a></td>
-				<td><a href="'.$MyRow['url'].'"target="_blank">' . $MyRow['url']. '</a></td>
+				<td style="width: 80px;">
+					<button type="submit" name="Select" value="'.$MyRow['supplierid'].'" class="db-btn db-btn-primary" style="padding: 4px 12px; font-size: 0.75rem;">' . __('Select') . '</button>
+				</td>
+				<td><span class="ref-badge">' . $MyRow['supplierid'] . '</span></td>
+				<td><div class="cust-name">' . $MyRow['suppname'] . '</div></td>
+				<td><span class="tag">' . $MyRow['currcode'] . '</span></td>
+				<td>
+					<div style="font-size: 0.8rem; line-height: 1.4;">
+						' . $MyRow['address1'] . (empty($MyRow['address2']) ? '' : ', ' . $MyRow['address2']) . '<br>
+						<span style="color: var(--text-muted);">' . $MyRow['address3'] . (empty($MyRow['address4']) ? '' : ' ' . $MyRow['address4']) . '</span>
+					</div>
+				</td>
+				<td>
+					<div style="display: flex; flex-direction: column; gap: 2px; font-size: 0.8rem;">
+						' . (empty($MyRow['telephone']) ? '' : '<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: middle;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>' . $MyRow['telephone'] . '</span>') . '
+						' . (empty($MyRow['email']) ? '' : '<a href="mailto:'.$MyRow['email'].'" style="color: var(--primary);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: middle;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>' . $MyRow['email'] . '</a>') . '
+						' . (empty($MyRow['url']) ? '' : '<a href="'.$MyRow['url'].'" target="_blank" style="color: var(--primary);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: middle;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>' . __('Website') . '</a>') . '
+					</div>
+				</td>
 			</tr>';
 		$RowIndex = $RowIndex + 1;
-		//end of page full new headings if
 	}
-	//end of while loop
-	echo '</tbody></table>';
-}
-//end if results to show
-if (isset($ListPageMax) and $ListPageMax > 1) {
-	echo '<p>&nbsp;&nbsp;' . $_POST['PageOffset'] . ' ' . __('of') . ' ' . $ListPageMax . ' ' . __('pages') . '. ' . __('Go to Page') . ': </p>';
-	echo '<select name="PageOffset">';
-	$ListPage = 1;
-	while ($ListPage <= $ListPageMax) {
-		if ($ListPage == $_POST['PageOffset']) {
-			echo '<option value="' . $ListPage . '" selected="selected">' . $ListPage . '</option>';
-		} else {
-			echo '<option value="' . $ListPage . '">' . $ListPage . '</option>';
-		}
-		$ListPage++;
+	echo '</tbody></table></div></div>';
 	}
-	echo '</select>
-		<input type="submit" name="Go" value="' . __('Go') . '" />
-		<input type="submit" name="Previous" value="' . __('Previous') . '" />
-		<input type="submit" name="Next" value="' . __('Next') . '" />';
-	echo '<br />';
-}
-echo '</div>
-      </form>';
+	echo '      </form>';
 // Only display the geocode map if the integration is turned on, and there is a latitude/longitude to display
 if (isset($_SESSION['SupplierID']) and $_SESSION['SupplierID'] != '') {
 	if ($_SESSION['geocode_integration'] == 1) {
 		if ($lat == 0) {
-			echo '<br />';
-			echo '<div class="centre">' . __('Mapping is enabled, but no Mapping data to display for this Supplier.') . '</div>';
+			echo '<div class="db-alert db-alert-info" style="margin-top: var(--space-6);">' . __('Mapping is enabled, but no Mapping data to display for this Supplier.') . '</div>';
 		} else {
 
-			echo '<br />
-				<table class="selection">
-				<thead>
-					<tr>
-						<th>', __('Supplier Mapping'), '</th>
-					</tr>
-				</thead><tbody>
-					<tr>
-						<td class="centre">', __('Mapping is enabled, Map will display below.'), '</td>
-					</tr><tr>
-						<td class="centre">', // Mapping:
-							'<div class="centre" id="map" style="width: ', $map_width, 'px; height: ', $map_height, 'px"></div>
-						</td>
-					</tr>
-				<tbody></table>';
+			echo '<div class="db-card" style="margin-top: var(--space-6);">
+					<div class="db-card-header">
+						<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ' . __('Supplier Location Mapping') . '</h3>
+					</div>
+					<div class="db-card-body">
+						<div class="centre" id="map" style="width: 100%; height: ' . $map_height . 'px; border-radius: 0 0 var(--radius-lg) var(--radius-lg);"></div>
+					</div>
+				</div>';
 			
 			// OpenStreetMap with Leaflet
 			echo '<script>
@@ -395,34 +380,33 @@ if (isset($_SESSION['SupplierID']) and $_SESSION['SupplierID'] != '') {
 			$SQL = "SELECT SUM(ovamount) AS total FROM supptrans WHERE supplierno = '" . $_SESSION['SupplierID'] . "' AND (type = '20' OR type='21')";
 			$Total1Result = DB_query($SQL);
 			$Row = DB_fetch_array($Total1Result);
-			echo '<br />';
-			echo '<table width="45%" cellpadding="4">';
-			echo '<tr><th style="width:33%" colspan="2">' . __('Supplier Data') . '</th></tr>';
-			echo '<tr><td valign="top" class="select">'; /* Supplier Data */
-			//echo "Distance to this Supplier: <b>TBA</b><br />";
-			if ($MyRow['lastpaiddate'] == 0) {
-				echo __('No payments yet to this supplier.') . '</td>
-					<td valign="top" class="select"></td>
-					</tr>';
-			} else {
-				echo __('Last Paid:') . '</td>
-					<td valign="top" class="select"> <b>' . ConvertSQLDate($MyRow['lastpaiddate']) . '</b></td>
-					</tr>';
-			}
-			echo '<tr>
-					<td valign="top" class="select">' . __('Last Paid Amount:') . '</td>
-					<td valign="top" class="select">  <b>' . locale_number_format($MyRow['lastpaid'], $MyRow['currdecimalplaces']) . '</b></td></tr>';
-			echo '<tr>
-					<td valign="top" class="select">' . __('Supplier since:') . '</td>
-					<td valign="top" class="select"> <b>' . ConvertSQLDate($MyRow['suppliersince']) . '</b></td>
-					</tr>';
-			echo '<tr>
-					<td valign="top" class="select">' . __('Total Spend with this Supplier:') . '</td>
-					<td valign="top" class="select"> <b>' . locale_number_format($Row['total'], $MyRow['currdecimalplaces']) . '</b></td>
-					</tr>';
-			echo '</table>';
+
+			echo '<div class="db-card" style="margin-top: var(--space-6);">
+					<div class="db-card-header">
+						<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> ' . __('Supplier Extended Insights') . '</h3>
+					</div>
+					<div class="db-table-wrapper">
+						<table class="db-table">
+							<tbody>
+								<tr>
+									<td class="val-bold" style="width: 250px;">' . __('Supplier Since') . '</td>
+									<td>' . ConvertSQLDate($MyRow['suppliersince']) . '</td>
+								</tr>
+								<tr>
+									<td class="val-bold">' . __('Last Payment Activity') . '</td>
+									<td>' . ($MyRow['lastpaiddate'] == 0 ? __('No payments recorded') : '<strong>' . locale_number_format($MyRow['lastpaid'], $MyRow['currdecimalplaces']) . '</strong> ' . __('on') . ' ' . ConvertSQLDate($MyRow['lastpaiddate'])) . '</td>
+								</tr>
+								<tr>
+									<td class="val-bold">' . __('Total Cumulative Spend') . '</td>
+									<td style="color: var(--primary); font-weight: 800; font-size: 1.1rem;">' . locale_number_format($Row['total'], $MyRow['currdecimalplaces']) . '</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>';
 		}
 	}
 }
+echo '</div>'; // End db-page
 
 include(__DIR__ . '/includes/footer.php');

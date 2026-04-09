@@ -7,8 +7,13 @@ $ViewTopic = 'Shipments';
 $BookMark = '';
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/magnifier.png" title="' . __('Search') .
-	'" alt="" />' . ' ' . $Title . '</p>';
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div>
+				<h1 class="db-page-title">' . $Title . '</h1>
+				<p class="db-page-subtitle">' . __('Track and manage incoming shipments and their costings') . '</p>
+			</div>
+		</div>';
 
 if (isset($_GET['SelectedStockItem'])){
 	$SelectedStockItem=$_GET['SelectedStockItem'];
@@ -38,19 +43,18 @@ if (isset($_POST['ResetPart'])) {
 
 if (isset($ShiptRef) AND $ShiptRef!='') {
 	if (!is_numeric($ShiptRef)){
-		  echo '<br />';
-		  prnMsg( __('The Shipment Number entered MUST be numeric') );
+		  prnMsg( __('The Shipment Number entered MUST be numeric'), 'error' );
 		  unset ($ShiptRef);
 	} else {
-		echo __('Shipment Number'). ' - '. $ShiptRef;
+		echo '<div class="db-alert db-alert-info" style="margin-bottom: var(--space-4);">' . __('Shipment Number'). ' - '. $ShiptRef . '</div>';
 	}
 } else {
 	if (isset($SelectedSupplier)) {
-		echo '<h3>' .__('For supplier'). ': '. $SelectedSupplier . ' ' . __('and'). '</h3>';
+		echo '<div class="db-alert db-alert-info" style="margin-bottom: var(--space-4);">' .__('For supplier'). ': '. $SelectedSupplier . '</div>';
 		echo '<input type="hidden" name="SelectedSupplier" value="'. $SelectedSupplier. '" />';
 	}
 	if (isset($SelectedStockItem)) {
-		echo '<h3>', __('for the part'). ': ' . $SelectedStockItem . '</h3>';
+		echo '<div class="db-alert db-alert-info" style="margin-bottom: var(--space-4);">' . __('for the part'). ': ' . $SelectedStockItem . '</div>';
 		echo '<input type="hidden" name="SelectedStockItem" value="'. $SelectedStockItem. '" />';
 	}
 }
@@ -105,15 +109,17 @@ if (isset($_POST['SearchParts'])) {
 }
 
 if (!isset($ShiptRef) or $ShiptRef==""){
-	echo '<fieldset>
-			<legend class="search">', __('Search Criteria'), '</legend>
-			<field>
-				<label for="ShiptRef">', __('Shipment Number'). ':</label>
-				<input type="text" name="ShiptRef" maxlength="10" size="10" />
-			</field>
-			<field>
-				<label for="StockLocation">', __('Into Stock Location').':</label>
-				<select name="StockLocation"> ';
+	echo '<div class="db-card">
+			<div class="db-card-title">' . __('Search Criteria') . '</div>
+			<div class="db-card-body">
+				<div class="db-grid db-grid-3">
+					<div class="db-form-group">
+						<label class="db-form-label">', __('Shipment Number'). ':</label>
+						<input type="text" name="ShiptRef" class="db-form-input" maxlength="10" />
+					</div>
+					<div class="db-form-group">
+						<label class="db-form-label">', __('Into Stock Location').':</label>
+						<select name="StockLocation" class="db-form-select"> ';
 	$SQL = "SELECT loccode, locationname FROM locations";
 	$ResultStkLocs = DB_query($SQL);
 	while ($MyRow=DB_fetch_array($ResultStkLocs)){
@@ -131,11 +137,11 @@ if (!isset($ShiptRef) or $ShiptRef==""){
 		}
 	}
 
-	echo '</select>
-		</field>';
-	echo '<field>
-			<label for="OpenOrClosed">', __('Search For'), '</label>
-			<select name="OpenOrClosed">';
+	echo '				</select>
+					</div>
+					<div class="db-form-group">
+						<label class="db-form-label">', __('Search For'), '</label>
+						<select name="OpenOrClosed" class="db-form-select">';
 	if (isset($_POST['OpenOrClosed']) AND $_POST['OpenOrClosed']==1){
 		echo '<option selected="selected" value="1">' .  __('Closed Shipments Only')  . '</option>';
 		echo '<option value="0">' .  __('Open Shipments Only')  . '</option>';
@@ -144,12 +150,15 @@ if (!isset($ShiptRef) or $ShiptRef==""){
 		echo '<option value="1">' .  __('Closed Shipments Only')  . '</option>';
 		echo '<option selected="selected" value="0">' .  __('Open Shipments Only')  . '</option>';
 	}
-	echo '</select>
-		</field>
-	</fieldset>';
-
-	echo '<div class="centre">
-			<input type="submit" name="SearchShipments" value="'. __('Search Shipments'). '" />
+	echo '				</select>
+					</div>
+				</div> <!-- End Grid -->
+			</div> <!-- End Card Body -->
+			<div class="db-card-footer">
+				<div class="db-form-actions">
+					<button type="submit" name="SearchShipments" class="db-btn db-btn-primary">' . __('Search Shipments') . '</button>
+				</div>
+			</div>
 		</div>';
 }
 
@@ -160,11 +169,13 @@ $SQL="SELECT categoryid,
 	ORDER BY categorydescription";
 $Result1 = DB_query($SQL);
 
-echo '<fieldset>';
-echo '<legend class="search">' . __('To search for shipments for a specific part use the part selection facilities below') . '</legend>
-	<field>
-		<label for="StockCat">' . __('Select a stock category') . ':</label>
-		<select name="StockCat">';
+echo '<div class="db-card" style="margin-top: var(--space-6);">
+		<div class="db-card-title">' . __('Search by Part') . '</div>
+		<div class="db-card-body">
+			<div class="db-grid db-grid-3">
+				<div class="db-form-group">
+					<label class="db-form-label">' . __('Stock Category') . ':</label>
+					<select name="StockCat" class="db-form-select">';
 
 while ($MyRow1 = DB_fetch_array($Result1)) {
 	if (isset($_POST['StockCat']) and $MyRow1['categoryid']==$_POST['StockCat']){
@@ -173,50 +184,57 @@ while ($MyRow1 = DB_fetch_array($Result1)) {
 		echo '<option value="'. $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription']  . '</option>';
 	}
 }
-echo '</select>
-	</field>
-	<field>
-		<label for="Keywords">' . __('Enter text extracts in the') . '<b> ' . __('description') . '</b>:</label>
-		<input type="text" name="Keywords" size="20" maxlength="25" />
-	</field>
-	<field>
-		<label for="StockCode">' . '<b>' . __('OR') . ' </b>' . __('Enter extract of the') . ' <b> ' . __('Stock Code') . '</b>:</label>
-		<input type="text" name="StockCode" size="15" maxlength="18" />
-	</field>
-	</fieldset>';
-
-echo '<div class="centre">
-		<input type="submit" name="SearchParts" value="'.__('Search Parts Now').'" />
-		<input type="submit" name="ResetPart" value="'. __('Show All') .'" />
+echo '				</select>
+				</div>
+				<div class="db-form-group">
+					<label class="db-form-label">' . __('Description Keywords') . ':</label>
+					<input type="text" name="Keywords" class="db-form-input" placeholder="' . __('e.g. Widget') . '" maxlength="25" />
+				</div>
+				<div class="db-form-group">
+					<label class="db-form-label">' . __('Stock Code Extract') . ':</label>
+					<input type="text" name="StockCode" class="db-form-input" placeholder="' . __('e.g. W123') . '" maxlength="18" />
+				</div>
+			</div>
+		</div>
+		<div class="db-card-footer">
+			<div class="db-form-actions">
+				<button type="submit" name="SearchParts" class="db-btn db-btn-primary">' . __('Search Parts Now') . '</button>
+				<button type="submit" name="ResetPart" class="db-btn db-btn-secondary">' . __('Show All') . '</button>
+			</div>
+		</div>
 	</div>';
 
 if (isset($StockItemsResult)) {
 
-	echo '<table class="selection">
-			<tr>
-				<th>' .  __('Code') . '</th>
-				<th>' .  __('Description') . '</th>
-				<th>' .  __('On Hand') . '</th>
-				<th>' .  __('Orders') . '<br />' . __('Outstanding') . '</th>
-				<th>' .  __('Units') . '</th>
-				<th colspan="3"></th>
-			</tr>';
+	echo '<div class="db-card" style="margin-top: var(--space-6);">
+			<div class="db-card-body" style="padding: 0;">
+				<div class="db-table-wrapper">
+					<table class="db-table">
+						<thead>
+							<tr>
+								<th>', __('Select'), '</th>
+								<th>' .  __('Description') . '</th>
+								<th class="text-right">' .  __('On Hand') . '</th>
+								<th class="text-right">' .  __('Outstanding') . '</th>
+								<th>' .  __('Units') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
 	while ($MyRow=DB_fetch_array($StockItemsResult)) {
-/*
-Code	 Description	On Hand		 Orders Ostdg     Units		 Code	Description 	 On Hand     Orders Ostdg	Units	 */
-		echo '<tr class="striped_row">
-				<td><input type="submit" name="SelectedStockItem" value="', $MyRow['stockid'], '" /></td>
+		echo '<tr>
+				<td><button type="submit" name="SelectedStockItem" value="', $MyRow['stockid'], '" class="db-btn db-btn-outline db-btn-sm">', $MyRow['stockid'], '</button></td>
 				<td>', $MyRow['description'], '</td>
-				<td class="number">', locale_number_format($MyRow['qoh'],$MyRow['decimalplaces']), '</td>
-				<td class="number">', locale_number_format($MyRow['qord'],$MyRow['decimalplaces']), '</td>
-				<td>', $MyRow['units'], '</td>
+				<td class="text-right">', locale_number_format($MyRow['qoh'],$MyRow['decimalplaces']), '</td>
+				<td class="text-right">', locale_number_format($MyRow['qord'],$MyRow['decimalplaces']), '</td>
+				<td class="db-text-muted">', $MyRow['units'], '</td>
 			</tr>';
-
 	}
-//end of while loop
-
-	echo '</table>';
+	echo '				</tbody>
+					</table>
+				</div>
+			</div>
+		</div>';
 
 }
 //end if stock search results to show
@@ -275,15 +293,21 @@ Code	 Description	On Hand		 Orders Ostdg     Units		 Code	Description 	 On Hand 
 	if (DB_num_rows($ShipmentsResult)>0){
 		/*show a table of the shipments returned by the SQL */
 
-		echo '<table width="95%" class="selection">
-				<tr>
-					<th>' .  __('Shipment'). '</th>
-					<th>' .  __('Supplier'). '</th>
-					<th>' .  __('Vessel'). '</th>
-					<th>' .  __('Voyage'). '</th>
-					<th>' .  __('Expected Arrival'). '</th>
-					<th colspan="3"></th>
-				</tr>';
+		echo '<div class="db-card" style="margin-top: var(--space-6);">
+				<div class="db-card-body" style="padding: 0;">
+					<div class="db-table-wrapper">
+						<table class="db-table">
+							<thead>
+								<tr>
+									<th>' .  __('Shipment'). '</th>
+									<th>' .  __('Supplier'). '</th>
+									<th>' .  __('Vessel'). '</th>
+									<th>' .  __('Voyage'). '</th>
+									<th>' .  __('ETA'). '</th>
+									<th class="text-center">' . __('Actions') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
 
 		while ($MyRow=DB_fetch_array($ShipmentsResult)) {
 
@@ -294,38 +318,42 @@ Code	 Description	On Hand		 Orders Ostdg     Units		 Code	Description 	 On Hand 
 			/* ShiptRef   Supplier  Vessel  Voyage  ETA */
 
 			if ($MyRow['closed']==0){
-
 				$URL_Close_Shipment = $URL_View_Shipment . '&amp;Close=Yes';
-
-				echo '<tr class="striped_row">
-						<td>', $MyRow['shiptref'], '</td>
+				echo '<tr>
+						<td class="db-font-semibold">', $MyRow['shiptref'], '</td>
 						<td>', $MyRow['suppname'], '</td>
 						<td>', $MyRow['vessel'], '</td>
-						<td>', $MyRow['voyageref'], '</td>
-						<td>', $FormatedETA, '</td>
-						<td><a href="', $URL_View_Shipment, '">' . __('Costing') . '</a></td>
-						<td><a href="', $URL_Modify_Shipment, '">' . __('Modify') . '</a></td>
-						<td><a href="', $URL_Close_Shipment, '"><b>' . __('Close') . '</b></a></td>
+						<td class="db-text-muted">', $MyRow['voyageref'], '</td>
+						<td class="text-nowrap">', $FormatedETA, '</td>
+						<td class="text-center">
+							<div class="db-form-actions" style="justify-content: center; gap: var(--space-2);">
+								<a href="', $URL_View_Shipment, '" class="db-btn db-btn-outline db-btn-sm">' . __('Costing') . '</a>
+								<a href="', $URL_Modify_Shipment, '" class="db-btn db-btn-outline db-btn-sm">' . __('Modify') . '</a>
+								<a href="', $URL_Close_Shipment, '" class="db-btn db-btn-danger db-btn-sm">' . __('Close') . '</a>
+							</div>
+						</td>
 					</tr>';
-
 			} else {
-				echo '<tr class="striped_row">
-						<td>', $MyRow['shiptref'], '</td>
+				echo '<tr>
+						<td class="db-font-semibold">', $MyRow['shiptref'], '</td>
 						<td>', $MyRow['suppname'], '</td>
 						<td>', $MyRow['vessel'], '</td>
-						<td>', $MyRow['voyage'], '</td>
-						<td>', $FormatedETA, '</td>
-						<td><a href="', $URL_View_Shipment, '">' . __('Costing') . '</a></td>
-						</tr>';
+						<td class="db-text-muted">', (isset($MyRow['voyage']) ? $MyRow['voyage'] : $MyRow['voyageref']), '</td>
+						<td class="text-nowrap">', $FormatedETA, '</td>
+						<td class="text-center">
+							<a href="', $URL_View_Shipment, '" class="db-btn db-btn-outline db-btn-sm">' . __('Costing') . '</a>
+						</td>
+					</tr>';
 			}
-		//end of page full new headings if
 		}
-		//end of while loop
-
-		echo '</table>';
+		echo '					</tbody>
+						</table>
+					</div>
+				</div>
+			</div>';
 	} // end if shipments to show
 }
 
-echo '</div>
+echo '</div> <!-- End db-page -->';
       </form>';
 include(__DIR__ . '/includes/footer.php');

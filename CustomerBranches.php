@@ -11,6 +11,29 @@ include(__DIR__ . '/includes/header.php');
 
 include(__DIR__ . '/includes/CountriesArray.php');
 
+echo '<div class="db-page">
+		<header class="db-page-header">
+			<div>
+				<h2 class="db-page-title">' . $Title . '</h2>
+				<p class="db-page-subtitle">' . __('Manage customer delivery points and regional settings') . '</p>
+			</div>
+			<div class="db-header-actions">';
+
+if (isset($_GET['DebtorNo']) OR isset($_POST['DebtorNo'])) {
+	$DBNo = (isset($_GET['DebtorNo']) ? $_GET['DebtorNo'] : $_POST['DebtorNo']);
+	echo '<a href="' . $RootPath . '/Customers.php?DebtorNo=' . $DBNo . '" class="db-btn db-btn-secondary">
+			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+			' . __('Edit Customer') . '
+		  </a>';
+}
+
+echo '		<a href="' . $RootPath . '/SelectCustomer.php" class="db-btn db-btn-secondary">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+				' . __('Back to Search') . '
+			</a>
+			</div>
+		</header>';
+
 if (isset($_GET['DebtorNo'])) {
 	$DebtorNo = mb_strtoupper($_GET['DebtorNo']);
 } elseif (isset($_POST['DebtorNo'])){
@@ -395,63 +418,82 @@ if (!isset($SelectedBranch)){
 	$TotalEnable = 0;
 	$TotalDisable = 0;
 	if ($MyRow) {
-		echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme,
-			'/images/customer.png" title="',// Icon image.
-			__('Customer'), '" /> ',// Icon title.
-			__('Branches defined for'), ' ', $DebtorNo, ' - ', $MyRow[0], '</p>';// Page title.
-		echo '<table class="selection">
-			<thead>
-			<tr>
-				<th class="SortedColumn">' . __('Code') . '</th>
-				<th class="SortedColumn">' . __('Name') . '</th>
-				<th class="SortedColumn">' . __('Branch Contact') . '</th>
-				<th class="SortedColumn">' . __('Salesman') . '</th>
-				<th class="SortedColumn">' . __('Area') . '</th>
-				<th class="SortedColumn">' . __('Phone No') . '</th>
-				<th class="SortedColumn">' . __('Fax No') . '</th>
-				<th class="SortedColumn">' . __('Email') . '</th>
-				<th class="SortedColumn">' . __('Tax Group') . '</th>
-				<th class="SortedColumn">' . __('Enabled?') . '</th>
-				<th colspan="2"></th>
-				</tr>
-			</thead>
-			<tbody>';
+		echo '<div class="card-v2" style="margin-bottom: var(--space-6);">
+				<div class="card-header-v2">
+					<h3>
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+						' . __('Branches Defined for') . ' ' . $DebtorNo . ' - ' . $MyRow[0] . '
+					</h3>
+				</div>
+				<div class="db-card-body">
+					<div class="db-table-wrapper">
+						<table class="db-table divider">
+							<thead>
+								<tr>
+									<th>' . __('Code') . '</th>
+									<th>' . __('Name') . '</th>
+									<th>' . __('Contact') . '</th>
+									<th>' . __('Salesperson / Area') . '</th>
+									<th>' . __('Contact Info') . '</th>
+									<th>' . __('Tax Group') . '</th>
+									<th class="text-center">' . __('Status') . '</th>
+									<th class="text-center">' . __('Actions') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
 
 		do {
-
-			echo '<tr class="striped_row">
-					<td>', $MyRow[1], '</td>
-					<td>', $MyRow[2], '</td>
-					<td>', $MyRow[5], '</td>
-					<td>', $MyRow[3], '</td>
-					<td>', $MyRow[4], '</td>
-					<td>', $MyRow[6], '</td>
-					<td>', $MyRow[7], '</td>
-					<td><a href="Mailto:', $MyRow[8], '">', $MyRow[8], '</a></td>
-					<td>', $MyRow[9], '</td>
-					<td>', ($MyRow[10]?__('No'):__('Yes')), '</td>
-					<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'), '?DebtorNo=', $DebtorNo, '&amp;SelectedBranch=', urlencode($MyRow[1]), '">', __('Edit'), '</a></td>
-					<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'), '?DebtorNo=', $DebtorNo, '&amp;SelectedBranch=', urlencode($MyRow[1]), '&amp;delete=yes" onclick=\'return confirm("' . __('Are you sure you wish to delete this branch?') . '");\'>', __('Delete Branch'), '</a></td>
-				</tr>';
-
-			if ($MyRow[10]){
+			echo '<tr>
+					<td class="font-bold">' . $MyRow[1] . '</td>
+					<td>' . $MyRow[2] . '</td>
+					<td>' . $MyRow[5] . '</td>
+					<td>
+						<div class="text-sm font-bold">' . $MyRow[3] . '</div>
+						<div class="text-xs text-muted">' . $MyRow[4] . '</div>
+					</td>
+					<td>
+						<div class="text-sm">' . $MyRow[6] . '</div>
+						<div class="text-xs"><a href="mailto:' . $MyRow[8] . '">' . $MyRow[8] . '</a></div>
+					</td>
+					<td>' . $MyRow[9] . '</td>
+					<td class="text-center">';
+			
+			if ($MyRow[10]) {
+				echo '<span class="db-badge db-badge-danger">' . __('Disabled') . '</span>';
 				$TotalDisable++;
 			} else {
+				echo '<span class="db-badge db-badge-success">' . __('Enabled') . '</span>';
 				$TotalEnable++;
 			}
-		} while ($MyRow = DB_fetch_row($Result));
-		//END WHILE LIST LOOP
 
-		echo '</tbody>
-			</table>
-			<table class="selection">
-			<tr>
-				<td><div class="centre">';
-		echo '<b>' . $TotalEnable . '</b> ' . __('Branches are enabled.') . '<br />';
-		echo '<b>' . $TotalDisable . '</b> ' . __('Branches are disabled.') . '<br />';
-		echo '<b>' . ($TotalEnable+$TotalDisable). '</b> ' . __('Total Branches') . '</div></td>
-			</tr>
-			</table>';
+			echo '</td>
+					<td class="text-center">
+						<div class="db-action-group" style="justify-content:center;">
+							<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?DebtorNo=' . $DebtorNo . '&amp;SelectedBranch=' . urlencode($MyRow[1]) . '" class="db-btn db-btn-icon db-btn-ghost" title="' . __('Edit') . '">
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+							</a>
+							<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?DebtorNo=' . $DebtorNo . '&amp;SelectedBranch=' . urlencode($MyRow[1]) . '&amp;delete=yes" class="db-btn db-btn-icon db-btn-ghost text-danger" title="' . __('Delete') . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this branch?') . '\');">
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+							</a>
+						</div>
+					</td>
+				</tr>';
+		} while ($MyRow = DB_fetch_row($Result));
+
+		echo '			</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="db-card-actions" style="padding: 1rem; background: var(--surface-alt); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+					<div class="text-sm text-muted">
+						' . __('Total Branches') . ': <strong>' . ($TotalEnable+$TotalDisable) . '</strong>
+					</div>
+					<div class="db-action-group">
+						<span class="text-sm text-success" style="margin-right: 1rem;">' . $TotalEnable . ' ' . __('Enabled') . '</span>
+						<span class="text-sm text-danger">' . $TotalDisable . ' ' . __('Disabled') . '</span>
+					</div>
+				</div>
+			</div>';
 	} else {
 		$SQL = "SELECT debtorsmaster.name,
 						address1,
@@ -558,155 +600,126 @@ if (!isset($_GET['delete'])) {
 		echo '<input type="hidden" name="SelectedBranch" value="' . $SelectedBranch . '" />';
 		echo '<input type="hidden" name="BranchCode" value="' . $_POST['BranchCode'] . '" />';
 
-		echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/customer.png" title="' . __('Customer') . '" alt="" />
-				 ' . ' ' . __('Change Details for Branch'). ' '. $SelectedBranch . '</p>';
-		if (isset($SelectedBranch)) {
-			echo '<div class="centre"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?DebtorNo=' . $DebtorNo. '">' . __('Show all branches defined for'). ' '. $DebtorNo . '</a></div>';
-		}
-		echo '<fieldset>
-				<legend>', __('Edit Branch Details'), '</legend>
-				<field>
-					<label for="BranchCode">' . __('Branch Code').':</label>
-					<fieldtext>' . $_POST['BranchCode'] . '</fieldtext>
-				</field>';
+		echo '<div class="card-v2">
+				<div class="card-header-v2">
+					<h3>
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+						' . __('Change Branch Details') . ': ' . $SelectedBranch . '
+					</h3>
+				</div>
+				<div class="db-card-body">
+					<div class="db-grid db-grid-2">
+						<div class="db-field">
+							<label class="db-label">' . __('Branch Code') . '</label>
+							<input type="text" class="db-input" value="' . $_POST['BranchCode'] . '" disabled />
+						</div>';
 
 	} else {//end of if $SelectedBranch only do the else when a new record is being entered
 
-	/* SETUP ANY $_GET VALUES THAT ARE PASSED. This really is just used coming from the Customers.php when a new customer is created.
-			Maybe should only do this when that page is the referrer?
-	*/
 		if (isset($_GET['BranchCode'])){
-			$SQL="SELECT name,
-						address1,
-						address2,
-						address3,
-						address4,
-						address5,
-						address6
-					FROM
-					debtorsmaster
-					WHERE debtorno='".$_GET['BranchCode']."'";
+			$SQL="SELECT name, address1, address2, address3, address4, address5, address6
+					FROM debtorsmaster WHERE debtorno='".$_GET['BranchCode']."'";
 			$Result = DB_query($SQL);
 			$MyRow = DB_fetch_array($Result);
 			$_POST['BranchCode'] = $_GET['BranchCode'];
 			$_POST['BrName'] = $MyRow['name'];
-		 	$_POST['BrAddress1'] = $MyRow['addrsss1'];
-			$_POST['BrAddress2'] = $MyRow['addrsss2'];
-			$_POST['BrAddress3'] = $MyRow['addrsss3'];
-		 	$_POST['BrAddress4'] = $MyRow['addrsss4'];
-			$_POST['BrAddress5'] = $MyRow['addrsss5'];
-			$_POST['BrAddress6'] = $MyRow['addrsss6'];
+		 	$_POST['BrAddress1'] = $MyRow['address1'];
+			$_POST['BrAddress2'] = $MyRow['address2'];
+			$_POST['BrAddress3'] = $MyRow['address3'];
+		 	$_POST['BrAddress4'] = $MyRow['address4'];
+			$_POST['BrAddress5'] = $MyRow['address5'];
+			$_POST['BrAddress6'] = $MyRow['address6'];
 		}
 		if (!isset($_POST['BranchCode'])) {
 			$_POST['BranchCode']='';
 		}
-		echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/customer.png" title="' . __('Customer') . '" alt="" />' . ' ' . __('Add a Branch') . '</p>';
-		echo '<fieldset>
-				<legend>', __('Create New Branch Details'), '</legend>
-				<field>
-					<label for="BranchCode">' . __('Branch Code'). ':</label>
-					<input data-type="no-illegal-chars" ' . (in_array('BranchCode',$Errors) ? 'class="inputerror"' : '' ) . ' tabindex="1" type="text" name="BranchCode" required="required" title ="" placeholder="'.__('alpha-numeric').'" size="12" maxlength="10" value="' . $_POST['BranchCode'] . '" />
-					<fieldhelp>'.__('Up to 10 characters for the branch code. The following characters are prohibited:') . ' \' &quot; + . &amp; \\ &gt; &lt;</fieldhelp>
-				</field>';
+		echo '<div class="card-v2">
+				<div class="card-header-v2">
+					<h3>
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 5v14M5 12h14"></path></svg>
+						' . __('Create New Branch') . '
+					</h3>
+				</div>
+				<div class="db-card-body">
+					<div class="db-grid db-grid-2">
+						<div class="db-field">
+							<label class="db-label">' . __('Branch Code') . '</label>
+							<input tabindex="1" type="text" name="BranchCode" required="required" placeholder="'.__('alpha-numeric').'" class="db-input" maxlength="10" value="' . $_POST['BranchCode'] . '" />
+							<p class="db-field-help">'.__('Up to 10 characters. Avoid special characters.') . '</p>
+						</div>';
 		$_POST['DeliverBlind'] = $_SESSION['DefaultBlindPackNote'];
 	}
 
 	echo '<input type="hidden" name="DebtorNo" value="'. $DebtorNo . '" />';
 
-	echo '<field>
-			<label for="BrName">', __('Branch Name').':</label>';
-	if (!isset($_POST['BrName'])) {$_POST['BrName']='';}
-	echo '<input tabindex="2" type="text" autofocus="autofocus" required="required" name="BrName" title="" minlength="5" size="41" maxlength="40" value="'. $_POST['BrName'].'" />
-		<fieldhelp>' . __('The branch name should identify the particular delivery address of the customer and must be entered') . '</fieldhelp>
-	</field>';
+	echo '<div class="db-field">
+			<label class="db-label">', __('Branch Name'), '</label>
+			<input tabindex="2" type="text" autofocus="autofocus" required="required" name="BrName" class="db-input" maxlength="40" value="'. $_POST['BrName'].'" />
+		</div>
+		<div class="db-field">
+			<label class="db-label">' . __('Branch Contact Name') . '</label>
+			<input tabindex="3" type="text" name="ContactName" required="required" class="db-input" maxlength="40" value="'. $_POST['ContactName'].'" />
+		</div>
+	</div>'; // End top grid
 
-	echo '<field>
-			<label for="ContactName">' . __('Branch Contact').':</label>';
-	if (!isset($_POST['ContactName'])) {$_POST['ContactName']='';}
-	echo '<input tabindex="3" type="text" name="ContactName" required="required" size="41" maxlength="40" value="'. $_POST['ContactName'].'" />
-		</field>';
+	echo '<hr style="margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--border-color);" />';
 
-	echo '<field>
-			<label for="BrAddress1">' . __('Street Address 1 (Street)').':</label>';
-	if (!isset($_POST['BrAddress1'])) {
-		$_POST['BrAddress1']='';
-	}
-	echo '<input tabindex="4" type="text" name="BrAddress1" size="41" maxlength="40" value="'. $_POST['BrAddress1'].'" />
-		</field>';
+	echo '<div class="db-grid db-grid-2">
+			<div class="db-field">
+				<label class="db-label">' . __('Street Address') . '</label>
+				<input tabindex="4" type="text" name="BrAddress1" class="db-input" maxlength="40" placeholder="' . __('Line 1') . '" value="'. $_POST['BrAddress1'].'" />';
 
-	echo '<field>
-			<label for="BrAddress2">' . __('Street Address 2 (Street)').':</label>';
-	if (!isset($_POST['BrAddress2'])) {
-		$_POST['BrAddress2']='';
-	}
-	echo '<input tabindex="5" type="text" name="BrAddress2" size="41" maxlength="40" value="'. $_POST['BrAddress2'].'" />
-		</field>';
+				<input tabindex="5" type="text" name="BrAddress2" class="db-input" maxlength="40" placeholder="' . __('Line 2') . '" value="'. $_POST['BrAddress2'].'" style="margin-top: 8px;" />
+			</div>
 
-	echo '<field>
-			<label for="BrAddress3">' . __('Street Address 3 (Suburb/City)').':</label>';
-	if (!isset($_POST['BrAddress3'])) {
-		$_POST['BrAddress3']='';
-	}
-	echo '<input tabindex="6" type="text" name="BrAddress3" size="41" maxlength="40" value="'. $_POST['BrAddress3'].'" />
-		</field>';
+			<div class="db-grid db-grid-2">
+				<div class="db-field">
+					<label class="db-label">' . __('City / Suburb') . '</label>
+					<input tabindex="6" type="text" name="BrAddress3" class="db-input" maxlength="40" value="'. $_POST['BrAddress3'].'" />
+				</div>
 
-	echo '<field>
-			<label for="BrAddress4">' . __('Street Address 4 (State/Province)').':</label>';
-	if (!isset($_POST['BrAddress4'])) {
-		$_POST['BrAddress4']='';
-	}
-	echo '<input tabindex="7" type="text" name="BrAddress4" size="51" maxlength="50" value="'. $_POST['BrAddress4'].'" />
-		</field>';
+				<div class="db-field">
+					<label class="db-label">' . __('Province / State') . '</label>
+					<input tabindex="7" type="text" name="BrAddress4" class="db-input" maxlength="50" value="'. $_POST['BrAddress4'].'" />
+				</div>
+			</div>
 
-	echo '<field>
-			<label for="BrAddress5">' . __('Street Address 5 (Postal Code)').':</label>';
-	if (!isset($_POST['BrAddress5'])) {
-		$_POST['BrAddress5']='';
-	}
-	echo '<input tabindex="8" type="text" name="BrAddress5" size="21" maxlength="20" value="'. $_POST['BrAddress5'].'" />
-		</field>';
+			<div class="db-grid db-grid-2">
+				<div class="db-field">
+					<label class="db-label">' . __('Postal Code') . '</label>
+					<input tabindex="8" type="text" name="BrAddress5" class="db-input" maxlength="20" value="'. $_POST['BrAddress5'].'" />
+				</div>
 
-	echo '<field>
-			<label for="BrAddress6">' . __('Country').':</label>';
-	if (!isset($_POST['BrAddress6'])) {
-		$_POST['BrAddress6']='';
-	}
-	echo '<select name="BrAddress6">';
+				<div class="db-field">
+					<label class="db-label">' . __('Country') . '</label>
+					<select name="BrAddress6" class="db-input">';
 	foreach ($CountriesArray as $CountryEntry => $CountryName){
-		if (isset($_POST['BrAddress6']) AND ($_POST['BrAddress6'] == $CountryName)) {
-			echo '<option selected="selected" value="' . $CountryName . '">' . $CountryName . '</option>';
-		} elseif (!isset($_POST['BrAddress6']) AND $CountryName == "") {
-			echo '<option selected="selected" value="' . $CountryName . '">' . $CountryName . '</option>';
-		} else {
-			echo '<option value="' . $CountryName . '">' . $CountryName . '</option>';
-		}
+		$sel = (isset($_POST['BrAddress6']) AND ($_POST['BrAddress6'] == $CountryName)) ? 'selected="selected"' : '';
+		echo '<option ' . $sel . ' value="' . $CountryName . '">' . $CountryName . '</option>';
 	}
-	echo '</select>
-		</field>';
+	echo '			</select>
+				</div>
+			</div>';
 
-	echo '<field>
-			<label for="SpecialInstructions">' . __('Special Instructions').':</label>';
-	if (!isset($_POST['SpecialInstructions'])) {
-		$_POST['SpecialInstructions']='';
-	}
-	echo '<input tabindex="10" type="text" name="SpecialInstructions" size="56" value="'. $_POST['SpecialInstructions'].'" />
-		</field>';
+	echo '<hr style="margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--border-color);" />';
 
-	echo '<field>
-			<label for=EstDeliveryDays">' . __('Default days to deliver').':</label>';
-	if (!isset($_POST['EstDeliveryDays'])) {
-		$_POST['EstDeliveryDays']=0;
-	}
-	echo '<input ' .(in_array('EstDeliveryDays',$Errors) ? 'class="inputerror"' : '' ) .' tabindex="11" type="text" class="integer" name="EstDeliveryDays" size="4" maxlength="2" value="'. $_POST['EstDeliveryDays'].'" />
-		</field>';
+	echo '<div class="db-grid db-grid-3">
+			<div class="db-field">
+				<label class="db-label">' . __('Special Instructions') . '</label>
+				<input tabindex="10" type="text" name="SpecialInstructions" class="db-input" value="'. $_POST['SpecialInstructions'].'" />
+			</div>';
 
-	echo '<field>
-			<label for="FwdDate">' . __('Forward Date After (day in month)').':</label>';
-	if (!isset($_POST['FwdDate'])) {
-		$_POST['FwdDate']=0;
-	}
-	echo '<input ' .(in_array('FwdDate',$Errors) ? 'class="inputerror"' : '' ) .' tabindex="12" class="integer" name="FwdDate" size="4" maxlength="2" value="'. $_POST['FwdDate'].'" />
-		</field>';
+			<div class="db-field">
+				<label class="db-label">' . __('Days to Deliver') . '</label>
+				<input tabindex="11" type="text" name="EstDeliveryDays" class="db-input db-number" maxlength="2" value="'. $_POST['EstDeliveryDays'].'" />
+			</div>';
+
+			<div class="db-field">
+				<label class="db-label">' . __('Forward Date Day') . '</label>
+				<input tabindex="12" type="text" name="FwdDate" class="db-input db-number" maxlength="2" value="'. $_POST['FwdDate'].'" />
+				<p class="db-field-help">' . __('Day of month') . '</p>
+			</div>
+		</div>';
 
 	if ($_SESSION['SalesmanLogin'] !=  '') {
 		echo '<field>
@@ -732,242 +745,141 @@ if (!isset($_GET['delete'])) {
 			exit();
 		}
 
-		echo '<field>
-				<label for="Salesman">' . __('Salesperson').':</label>
-				<select tabindex="13" name="Salesman">';
-		while ($MyRow = DB_fetch_array($Result)) {
-			if (isset($_POST['Salesman']) AND $MyRow['salesmancode']==$_POST['Salesman']) {
-				echo '<option selected="selected" value="';
-			} else {
-				echo '<option value="';
-			}
-			echo $MyRow['salesmancode'] . '">' . $MyRow['salesmanname'] . '</option>';
+	echo '<hr style="margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--border-color);" />';
 
-		}//end while loop
-		echo '</select>
-			</field>';
+	echo '<div class="db-grid db-grid-3">';
 
-	//	DB_data_seek($Result,0);//by thumb
-	}
-	$SQL = "SELECT areacode, areadescription FROM areas ORDER BY areadescription";
-	$Result = DB_query($SQL);
-	if (DB_num_rows($Result)==0){
-		echo '</fieldset>';
-		prnMsg(__('There are no areas defined as yet') . ' - ' . __('customer branches must be allocated to an area') . '. ' . __('Please use the link below to define at least one sales area'),'error');
-		echo '<br /><a href="' . $RootPath. '/Areas.php">' . __('Define Sales Areas') . '</a>';
-		include(__DIR__ . '/includes/footer.php');
-		exit();
-	}
-
-	echo '<field>
-			<label for="Area">' . __('Sales Area').':</label>
-			<select tabindex="14" name="Area">';
-	while ($MyRow = DB_fetch_array($Result)) {
-		if (isset($_POST['Area']) AND $MyRow['areacode']==$_POST['Area']) {
-			echo '<option selected="selected" value="';
-		} else {
-			echo '<option value="';
+	if ($_SESSION['SalesmanLogin'] !=  '') {
+		echo '<div class="db-field">
+				<label class="db-label">' . __('Salesperson') . '</label>
+				<input type="text" class="db-input" value="' . $_SESSION['UsersRealName'] . '" disabled />
+			</div>';
+	} else {
+		echo '<div class="db-field">
+				<label class="db-label">' . __('Salesperson') . '</label>
+				<select tabindex="13" name="Salesman" class="db-input">';
+		$Result = DB_query("SELECT salesmanname, salesmancode FROM salesman");
+		while ($myr = DB_fetch_array($Result)) {
+			$sel = ($_POST['Salesman'] == $myr['salesmancode']) ? 'selected="selected"' : '';
+			echo '<option ' . $sel . ' value="' . $myr['salesmancode'] . '">' . $myr['salesmanname'] . '</option>';
 		}
-		echo $MyRow['areacode'] . '">' . $MyRow['areadescription'] . '</option>';
-
-	}//end while loop
-	echo '</select>
-		</field>';
-	DB_data_seek($Result,0);
-
-	$SQL = "SELECT locations.loccode,
-					locationname
-			FROM locations
-			INNER JOIN locationusers
-			ON locationusers.loccode=locations.loccode
-				AND locationusers.userid='" . $_SESSION['UserID'] . "'
-				AND locationusers.canupd=1
-			WHERE locations.allowinvoicing='1'
-			ORDER BY locationname";
-	$Result = DB_query($SQL);
-
-	if (DB_num_rows($Result)==0){
-		echo '</table>';
-		prnMsg(__('There are no stock locations defined for which this user has access to as yet') . ' - ' . __('customer branches must refer to a default location where stock is normally drawn from') . '. ' . __('Please use the link below to define at least one stock location'),'error');
-		echo '<br /><a href="', $RootPath, '/Locations.php">', __('Define Stock Locations'), '</a>';
-		include(__DIR__ . '/includes/footer.php');
-		exit();
+		echo '</select></div>';
 	}
 
-	echo '<field>
-			<label for="DefaultLocation">', __('Draw Stock From'), ':</label>
-			<select name="DefaultLocation" tabindex="15">';
-	while ($MyRow = DB_fetch_array($Result)) {
-		if (isset($_POST['DefaultLocation']) AND $MyRow['loccode']==$_POST['DefaultLocation']) {
-			echo '<option selected="selected" value="';
-		} else {
-			echo '<option value="';
-		}
-		echo $MyRow['loccode'], '">', $MyRow['locationname'], '</option>';
-
-	}// End while loop.
-	echo '</select>
-		</field>';
-
-	echo '<field>
-			<label for="PhoneNo">' . __('Phone Number').':</label>';
-	if (!isset($_POST['PhoneNo'])) {
-		$_POST['PhoneNo']='';
+	echo '<div class="db-field">
+			<label class="db-label">' . __('Sales Area') . '</label>
+			<select tabindex="14" name="Area" class="db-input">';
+	$Result = DB_query("SELECT areadescription, areacode FROM areas");
+	while ($myr = DB_fetch_array($Result)) {
+		$sel = ($_POST['Area'] == $myr['areacode']) ? 'selected="selected"' : '';
+		echo '<option ' . $sel . ' value="' . $myr['areacode'] . '">' . $myr['areadescription'] . '</option>';
 	}
-	echo '<input tabindex="16" type="tel" name="PhoneNo" pattern="[0-9+()\s-]*" size="22" maxlength="20" value="'. $_POST['PhoneNo'].'" />
-		</field>';
+	echo '</select></div>';
 
-	echo '<field>
-			<label for="FaxNo">' . __('Fax Number').':</label>';
-	if (!isset($_POST['FaxNo'])) {
-		$_POST['FaxNo']='';
+	echo '<div class="db-field">
+			<label class="db-label">' . __('Stock Location') . '</label>
+			<select tabindex="15" name="DefaultLocation" class="db-input">';
+	$Result = DB_query("SELECT locationname, loccode FROM locations");
+	while ($myr = DB_fetch_array($Result)) {
+		$sel = ($_POST['DefaultLocation'] == $myr['loccode']) ? 'selected="selected"' : '';
+		echo '<option ' . $sel . ' value="' . $myr['loccode'] . '">' . $myr['locationname'] . '</option>';
 	}
-	echo '<input tabindex="17" type="tel" name="FaxNo" pattern="[0-9+()\s-]*" size="22" maxlength="20" value="'. $_POST['FaxNo'].'" />
-		</field>';
+	echo '</select></div></div>';
 
-	if (!isset($_POST['Email'])) {
-		$_POST['Email']='';
-	}
-	echo '<field>
-			<label for="Email">' . (($_POST['Email']) ? '<a href="Mailto:'.$_POST['Email'].'">' . __('Email').':</a>' : __('Email').':') . '</label>';
-	//only display email link if there is an email address
-	echo '<input tabindex="18" type="email" name="Email" placeholder="e.g. example@domain.com" size="56" maxlength="55" value="'. $_POST['Email'].'" />
-		</field>';
+	echo '<hr style="margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--border-color);" />';
+
+	echo '<div class="db-grid db-grid-3">
+			<div class="db-field">
+				<label class="db-label">' . __('Phone Number') . '</label>
+				<input tabindex="16" type="tel" name="PhoneNo" class="db-input" maxlength="25" value="'. $_POST['PhoneNo'].'" />
+			</div>
+			<div class="db-field">
+				<label class="db-label">' . __('Fax Number') . '</label>
+				<input tabindex="17" type="tel" name="FaxNo" class="db-input" maxlength="25" value="'. $_POST['FaxNo'].'" />
+			</div>
+			<div class="db-field">
+				<label class="db-label">' . __('Email Address') . '</label>
+				<input tabindex="18" type="email" name="Email" class="db-input" maxlength="55" value="'. $_POST['Email'].'" />
+			</div>
+		</div>';
 
 	DB_data_seek($Result,0);
 
-	$SQL = "SELECT taxgroupid, taxgroupdescription FROM taxgroups";
-	$TaxGroupResults = DB_query($SQL);
-	if (DB_num_rows($TaxGroupResults)==0){
-		echo '</fieldset>';
-		prnMsg(__('There are no tax groups defined - these must be set up first before any branches can be set up') . '
-				<br /><a href="' . $RootPath . '/TaxGroups.php">' . __('Define Tax Groups') . '</a>','error');
-		include(__DIR__ . '/includes/footer.php');
-		exit();
+	echo '<hr style="margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--border-color);" />';
+
+	echo '<div class="db-grid db-grid-2">
+			<div class="db-field">
+				<label class="db-label">' . __('Tax Group') . '</label>
+				<select tabindex="19" name="TaxGroup" class="db-input">';
+	$Result = DB_query("SELECT taxgroupid, taxgroupdescription FROM taxgroups");
+	while ($myr = DB_fetch_array($Result)) {
+		$sel = ($_POST['TaxGroup'] == $myr['taxgroupid']) ? 'selected="selected"' : '';
+		echo '<option ' . $sel . ' value="' . $myr['taxgroupid'] . '">' . $myr['taxgroupdescription'] . '</option>';
 	}
-	echo '<field>
-			<label for="TaxGroup">' . __('Tax Group').':</label>
-			<select tabindex="19" name="TaxGroup">';
-
-	while ($MyRow = DB_fetch_array($TaxGroupResults)) {
-		if (isset($_POST['TaxGroup']) AND $MyRow['taxgroupid']==$_POST['TaxGroup']) {
-			echo '<option selected="selected" value="';
-		} else {
-			echo '<option value="';
-		}
-		echo $MyRow['taxgroupid'] . '">' . $MyRow['taxgroupdescription'] . '</option>';
-
-	}//end while loop
-
-	echo '</select>
-		</field>';
-
-	echo '<field>
-			<label for="DisableTrans">' . __('Transactions on this branch') . ':</label>
-			<select tabindex="20" name="DisableTrans">';
-	if (!isset($_POST['DisableTrans']) OR $_POST['DisableTrans']==0){
-		echo '<option selected="selected" value="0">' . __('Enabled') . '</option>
-				<option value="1">' . __('Disabled') . '</option>';
-	} else {
-		echo '<option selected="selected" value="1">' . __('Disabled') . '</option>
-				<option value="0">' . __('Enabled') . '</option>';
-	}
-	echo '</select>
-		</field>';
-
-	$SQL = "SELECT shipper_id, shippername FROM shippers ORDER BY shippername";
-	$ShipperResults = DB_query($SQL);
-	if (DB_num_rows($ShipperResults)==0){
-		echo '</fieldset>';
-		prnMsg(__('There are no shippers defined - these must be set up first before any branches can be set up') . '
-				<br /><a href="' . $RootPath . '/Shippers.php">' . __('Define Shippers') . '</a>','error');
-		include(__DIR__ . '/includes/footer.php');
-		exit();
-	}
-	echo '<field>
-			<label for="DefaultShipVia">' . __('Default freight/shipper method') . ':</label>
-			<select tabindex="21" name="DefaultShipVia">';
-	while ($MyRow=DB_fetch_array($ShipperResults)){
-		if ((isset($_POST['DefaultShipVia'])and $MyRow['shipper_id']==$_POST['DefaultShipVia']) OR ($_SESSION['Default_Shipper'] == $MyRow['shipper_id'])) {
-			echo '<option selected="selected" value="' . $MyRow['shipper_id'] . '">' . $MyRow['shippername'] . '</option>';
-		} else {
-			echo '<option value="' . $MyRow['shipper_id'] . '">' . $MyRow['shippername'] . '</option>';
-		}
-	}
-	echo '</select>
-		</field>';
-
-	/* This field is a default value that will be used to set the value
-	on the sales order which will control whether or not to display the
-	company logo and address on the packlist */
-	echo '<field>
-			<label for="DeliverBlind">' . __('Default Packlist') . ':</label>
-			<select tabindex="22" name="DeliverBlind">';
-	if ($_POST['DeliverBlind']==2){
-		echo '<option value="1">' . __('Show company details and logo') . '</option>
-				<option selected="selected" value="2">' . __('Hide company details and logo') . '</option>';
-	} else {
-		echo '<option selected="selected" value="1">' . __('Show company details and logo') . '</option>
-				<option value="2">' . __('Hide company details and logo') . '</option>';
-	}
-	echo '</select>
-		</field>';
-
-	if (!isset($_POST['BrPostAddr1'])) {// Postal address, line 1. Database: custbranch.brpostaddr1, varchar(40)
-		$_POST['BrPostAddr1']='';
-	}
-	echo '<field>
-			<label for="BrPostAddr1">' . __('Postal Address 1 (Street)') . ':</label>
-			<input maxlength="40" name="BrPostAddr1" size="41" tabindex="23" type="text" value="', $_POST['BrPostAddr1'].'" />
-		</field>';
-
-	if (!isset($_POST['BrPostAddr2'])){// Postal address, line 2. Database: custbranch.brpostaddr2, varchar(40)
-		$_POST['BrPostAddr2']='';
-	}
-	echo '<field>
-			<label for="BrPostAddr2">' , __('Postal Address 2 (Suburb/City)'), ':</label>
-			<input maxlength="40" name="BrPostAddr2" size="41" tabindex="24" type="text" value="', $_POST['BrPostAddr2'].'" />
-		</field>';
-
-	if (!isset($_POST['BrPostAddr3'])) {// Postal address, line 3. Database: custbranch.brpostaddr3, varchar(40)
-		$_POST['BrPostAddr3']='';
-	}
-	echo '<field>
-			<label for="BrPostAddr3">', __('Postal Address 3 (State)'), ':</label>
-			<input maxlength="40" name="BrPostAddr3" size="41" tabindex="25" type="text" value="', $_POST['BrPostAddr3'].'" />
-		</field>';
-
-	if (!isset($_POST['BrPostAddr4'])) {// Postal address, line 4. Database: custbranch.brpostaddr4, varchar(40)
-		$_POST['BrPostAddr4']='';
-	}
-	echo '<field>
-			<label for="BrPostAddr4">', __('Postal Address 4 (Postal Code)'), ':</label>
-			<input maxlength="40" name="BrPostAddr4" size="41" tabindex="26" type="text" value="', $_POST['BrPostAddr4'].'" />
-		</field>';
-
-	if (!isset($_POST['BrPostAddr5'])) {// Postal address, line 5. Database: custbranch.brpostaddr5, varchar(20)
-		$_POST['BrPostAddr5']='';
-	}
-	echo '<field>
-			<label for="BrPostAddr5">', __('Postal Address 5'), ':</label>
-			<input maxlength="20" name="BrPostAddr5" size="21" tabindex="27" type="text" value="', $_POST['BrPostAddr5'].'" />
-		</field>';
-
-	if (!isset($_POST['CustBranchCode'])) {
-		$_POST['CustBranchCode']='';
-	}
-	echo '<field>
-			<label for="CustBranchCode">', __('Customers Internal Branch Code (EDI)'), ':</label>
-			<input maxlength="30" name="CustBranchCode" size="31" tabindex="28" type="text" value="', $_POST['CustBranchCode'], '" />
-		</field>';
-
-	echo '</fieldset>';
-
-	echo '<div class="centre">
-			<input name="submit" tabindex="29" type="submit" value="', __('Enter Or Update Branch'), '" />
+	echo '			</select>
+			</div>
+			<div class="db-field">
+				<label class="db-label">' . __('Branch Status') . '</label>
+				<select tabindex="20" name="DisableTrans" class="db-input">
+					<option ' . ($_POST['DisableTrans']==0 ? 'selected="selected"' : '') . ' value="0">' . __('Enabled') . '</option>
+					<option ' . ($_POST['DisableTrans']==1 ? 'selected="selected"' : '') . ' value="1">' . __('Disabled') . '</option>
+				</select>
+			</div>
 		</div>
-		</form>';
+		<div class="db-grid db-grid-2">
+			<div class="db-field">
+				<label class="db-label">' . __('Freight Shipper') . '</label>
+				<select tabindex="21" name="DefaultShipVia" class="db-input">';
+	$Result = DB_query("SELECT shipper_id, shippername FROM shippers");
+	while ($myr = DB_fetch_array($Result)) {
+		$sel = ($_POST['DefaultShipVia'] == $myr['shipper_id']) ? 'selected="selected"' : '';
+		echo '<option ' . $sel . ' value="' . $myr['shipper_id'] . '">' . $myr['shippername'] . '</option>';
+	}
+	echo '			</select>
+			</div>
+			<div class="db-field">
+				<label class="db-label">' . __('Default Packlist Type') . '</label>
+				<select tabindex="22" name="DeliverBlind" class="db-input">
+					<option ' . ($_POST['DeliverBlind']==1 ? 'selected="selected"' : '') . ' value="1">' . __('Show Company Details') . '</option>
+					<option ' . ($_POST['DeliverBlind']==2 ? 'selected="selected"' : '') . ' value="2">' . __('Hide Company Details') . '</option>
+				</select>
+			</div>
+		</div>';
 
-}//end if record deleted no point displaying form to add record
+	echo '<hr style="margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--border-color);" />';
+
+	echo '<div class="db-grid db-grid-2">
+			<div class="db-field">
+				<label class="db-label">' . __('Postal Address') . '</label>
+				<input tabindex="23" type="text" name="BrPostAddr1" class="db-input" maxlength="40" placeholder="' . __('Line 1') . '" value="'. $_POST['BrPostAddr1'].'" />
+				<input tabindex="24" type="text" name="BrPostAddr2" class="db-input" maxlength="40" placeholder="' . __('Line 2') . '" value="'. $_POST['BrPostAddr2'].'" style="margin-top: 8px;" />
+				<input tabindex="25" type="text" name="BrPostAddr3" class="db-input" maxlength="40" placeholder="' . __('Province / State') . '" value="'. $_POST['BrPostAddr3'].'" style="margin-top: 8px;" />
+				<input tabindex="26" type="text" name="BrPostAddr4" class="db-input" maxlength="40" placeholder="' . __('Postal Code') . '" value="'. $_POST['BrPostAddr4'].'" style="margin-top: 8px;" />
+				<input tabindex="27" type="text" name="BrPostAddr5" class="db-input" maxlength="20" placeholder="' . __('Country (Optional)') . '" value="'. $_POST['BrPostAddr5'].'" style="margin-top: 8px;" />
+			</div>
+			<div class="db-field">
+				<label class="db-label">' . __('Internal Branch Code (EDI)') . '</label>
+				<input tabindex="28" type="text" name="CustBranchCode" class="db-input" maxlength="30" value="'. $_POST['CustBranchCode'].'" />
+				<p class="db-field-help">' . __('For electronic data interchange purposes') . '</p>
+			</div>
+		</div>
+	</div>'; // End db-card-body
+
+	echo '<div class="db-card-actions" style="justify-content: center; padding: 2rem; background: var(--surface-alt); border-top: 1px solid var(--border-color);">
+			<button type="submit" name="submit" class="db-btn db-btn-primary db-btn-large">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:10px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+				' . __('Save Branch Details') . '
+			</button>
+			<button type="reset" class="db-btn db-btn-secondary db-btn-large" style="margin-left: 1rem;">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:10px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+				' . __('Reset') . '
+			</button>
+		</div>
+	</div>'; // End card-v2
+
+	echo '</form>';
+}
+
+echo '</div>'; // End db-page
 
 include(__DIR__ . '/includes/footer.php');

@@ -253,38 +253,41 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 
 	if (isset($_POST['PrintPDF'])) {
 		$HTML .= '<html>
-					<head>';
-		$HTML .= '<link href="css/reports.css" rel="stylesheet" type="text/css" />';
+					<head>
+						<link href="css/reports.css" rel="stylesheet" type="text/css" />
+						<meta name="author" content="WebERP ' . $Version . '">
+						<meta name="Creator" content="webERP https://www.weberp.org">
+					</head>
+					<body>';
 	}
 
-	$HTML .= '<meta name="author" content="WebERP " . $Version">
-					<meta name="Creator" content="webERP https://www.weberp.org">
-				</head>
-				<body>
-				<div class="centre" id="ReportHeader">
-					' . $_SESSION['CompanyRecord']['coyname'] . '<br />
-					' . __('Aged Customer Balances For Customers from') . ' ' . $_POST['FromCriteria'] . ' ' .  __('to') . ' ' . $_POST['ToCriteria'] . '<br />
-					' . __('And Trading in') . ' ' . $_POST['Currency'] . '<br />';
-	if (trim($_POST['Salesman'])!= ''){
-		$SQL = "SELECT salesmanname FROM salesman WHERE salesmancode='".$_POST['Salesman']."'";
-		$rs = DB_query($SQL, '', '', false, false);
-		$Row = DB_fetch_array($rs);
-		$HTML .= __('And Has at Least 1 Branch Serviced By Sales Person #'). ' '. $_POST['Salesman'] . ' - ' . $Row['salesmanname'] . '<br />';
-	}
-	$HTML .=  __('Printed') . ': ' . date($_SESSION['DefaultDateFormat']) . '<br />
+	$HTML .= '<div class="db-page">
+				<div class="db-page-header">
+					<div>
+						<h2 class="db-page-title">' . __('Aged Customer Balances') . '</h2>
+						<p class="db-page-subtitle">' . __('Customers from') . ' ' . $_POST['FromCriteria'] . ' ' . __('to') . ' ' . $_POST['ToCriteria'] . ' &mdash; ' . $_POST['Currency'] . '</p>
+					</div>
+					<div class="db-header-actions">
+						<button onclick="window.print()" class="db-btn db-btn-secondary">
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+							' . __('Print Page') . '
+						</button>
+					</div>
 				</div>
-				<table>
-					<thead>
-						<tr>
-							<th>' . __('Customer') . '</th>
-							<th>' . __('Balance') . '</th>
-							<th>' . __('Current') . '</th>
-							<th>' . __('Due Now') . '</th>
-							<th>' . $_SESSION['PastDueDays1'] . ' ' . __('Days Over') . '</th>
-							<th>' . $_SESSION['PastDueDays2'] . ' ' . __('Days Over') . '</th>
-						</tr>
-					</thead>
-					<tbody>';
+				<div class="card-v2">
+					<div class="db-table-wrapper">
+						<table class="db-table">
+							<thead>
+								<tr>
+									<th>' . __('Customer') . '</th>
+									<th class="text-right">' . __('Balance') . '</th>
+									<th class="text-right">' . __('Current') . '</th>
+									<th class="text-right">' . __('Due Now') . '</th>
+									<th class="text-right">' . $_SESSION['PastDueDays1'] . ' ' . __('Days Over') . '</th>
+									<th class="text-right">' . $_SESSION['PastDueDays2'] . ' ' . __('Days Over') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
 
 	$TotBal=0;
 	$TotCurr=0;
@@ -309,13 +312,13 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 		$TotOD1 += ($AgedAnalysis['overdue1']-$AgedAnalysis['overdue2']);
 		$TotOD2 += $AgedAnalysis['overdue2'];
 
-		$HTML .= '<tr class="striped_row">
-					<td>' . $AgedAnalysis['debtorno'] . ' - ' . $AgedAnalysis['name'] . '</td>
-					<td class="number">' . $DisplayBalance . '</td>
-					<td class="number">' . $DisplayCurrent . '</td>
-					<td class="number">' . $DisplayDue . '</td>
-					<td class="number">' . $DisplayOverdue1 . '</td>
-					<td class="number">' . $DisplayOverdue2 . '</td>
+		$HTML .= '<tr>
+					<td class="cust-name">' . $AgedAnalysis['debtorno'] . ' - ' . $AgedAnalysis['name'] . '</td>
+					<td class="text-right val-bold">' . $DisplayBalance . '</td>
+					<td class="text-right">' . $DisplayCurrent . '</td>
+					<td class="text-right">' . $DisplayDue . '</td>
+					<td class="text-right">' . $DisplayOverdue1 . '</td>
+					<td class="text-right">' . $DisplayOverdue2 . '</td>
 				</tr>';
 
 		if ($_POST['DetailedReport']=='Yes') {
@@ -369,20 +372,27 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 			$ErrMsg = __('The details of outstanding transactions for customer') . ' - ' . $AgedAnalysis['debtorno'] . ' ' . __('could not be retrieved');
 			$DetailResult = DB_query($SQL, $ErrMsg);
 
-			$HTML .= '<tr>
+			$HTML .= '<tr class="sub-report-row">
 						<td colspan="6">
-							<table>';
+							<div class="sub-table-wrapper">
+								<table class="db-table-sub">
+									<thead>
+										<tr class="sub-header-row">
+											<th colspan="2">' . __('Transaction Detail') . '</th>
+											<th>' . __('Date') . '</th>
+											<th colspan="3"></th>
+										</tr>
+									</thead>
+									<tbody>';
 
 			while ($DetailTrans = DB_fetch_array($DetailResult)) {
 
 				$DisplayTranDate = ConvertSQLDate($DetailTrans['trandate']);
-				$HTML .= '<tr>
-							<th>' . $DetailTrans['typename'] . '</th>
-							<th>' . $DetailTrans['transno'] . '</th>
-							<th>' . $DisplayTranDate . '</th>
-							<th></th>
-							<th></th>
-							<th></th>
+				$HTML .= '<tr class="sub-data-row-header">
+							<td class="val-bold">' . $DetailTrans['typename'] . '</td>
+							<td class="val-bold">' . $DetailTrans['transno'] . '</td>
+							<td>' . $DisplayTranDate . '</td>
+							<td colspan="3"></td>
 						</tr>';
 
 				$DisplayDue = locale_number_format($DetailTrans['due']-$DetailTrans['overdue1'],$CurrDecimalPlaces);
@@ -391,18 +401,21 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 				$DisplayOverdue1 = locale_number_format($DetailTrans['overdue1']-$DetailTrans['overdue2'],$CurrDecimalPlaces);
 				$DisplayOverdue2 = locale_number_format($DetailTrans['overdue2'],$CurrDecimalPlaces);
 
-				$HTML .= '<tr class="striped_row">
-							<td class="number">' . $DisplayBalance . '</td>
-							<td class="number">' . $DisplayCurrent . '</td>
-							<td class="number">' . $DisplayDue . '</td>
-							<td class="number">' . $DisplayOverdue1 . '</td>
-							<td class="number">' . $DisplayOverdue2 . '</td>
+				$HTML .= '<tr class="sub-data-row">
+							<td class="text-right val-bold">' . $DisplayBalance . '</td>
+							<td class="text-right">' . $DisplayCurrent . '</td>
+							<td class="text-right">' . $DisplayDue . '</td>
+							<td class="text-right">' . $DisplayOverdue1 . '</td>
+							<td class="text-right">' . $DisplayOverdue2 . '</td>
+							<td></td>
 						</tr>';
 
 			} /*end while there are detail transactions to show */
-			$HTML .= '</table>
-					</td>
-				</tr>';
+			$HTML .= '		</tbody>
+								</table>
+							</div>
+						</td>
+					</tr>';
 
 			$FontSize=8;
 		} /*Its a detailed report */
@@ -414,32 +427,34 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 	$DisplayTotOverdue1 = locale_number_format($TotOD1,$CurrDecimalPlaces);
 	$DisplayTotOverdue2 = locale_number_format($TotOD2,$CurrDecimalPlaces);
 
-	$HTML .= '<tr class="total_row">
-				<td></td>
-				<td class="number">' . $DisplayTotBalance . '</td>
-				<td class="number">' . $DisplayTotCurrent . '</td>
-				<td class="number">' . $DisplayTotDue . '</td>
-				<td class="number">' . $DisplayTotOverdue1 . '</td>
-				<td class="number">' . $DisplayTotOverdue2 . '</td>
-			</tr>';
+	$HTML .= '</tbody>
+						<tfoot>
+							<tr class="total_row">
+								<td class="text-right val-bold">' . __('TOTALS') . '</td>
+								<td class="text-right val-bold">' . $DisplayTotBalance . '</td>
+								<td class="text-right val-bold">' . $DisplayTotCurrent . '</td>
+								<td class="text-right val-bold">' . $DisplayTotDue . '</td>
+								<td class="text-right val-bold">' . $DisplayTotOverdue1 . '</td>
+								<td class="text-right val-bold">' . $DisplayTotOverdue2 . '</td>
+							</tr>
+						</tfoot>';
 
 	if (isset($_POST['PrintPDF'])) {
-		$HTML .= '</tbody>
-				<div class="footer fixed-section">
-					<div class="right">
-						<span class="page-number">Page </span>
+		$HTML .= '</table>
 					</div>
 				</div>
-			</table>';
-	} else {
-		$HTML .= '</tbody>
-				</table>
-				<div class="centre">
-					<form><input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" /></form>
-				</div>';
-	}
-	$HTML .= '</body>
+			</div>
+		</body>
 		</html>';
+	} else {
+		$HTML .= '</table>
+					</div>
+				</div>
+				<div class="form-footer-actions centre">
+					<form><button type="submit" name="close" class="btn-secondary" onclick="window.close()">' . __('Close') . '</button></form>
+				</div>
+			</div>';
+	}
 
 	if (isset($_POST['PrintPDF'])) {
 		$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
@@ -458,7 +473,6 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 	} else {
 		$Title = __('Aged Debtor Analysis');
 		include(__DIR__ . '/includes/header.php');
-		echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/sales.png" title="' . __('Aged Debtor Analysis') . '" alt="" />' . ' ' . __('Aged Debtor Analysis') . '</p>';
 		echo $HTML;
 		include(__DIR__ . '/includes/footer.php');
 	}
@@ -472,90 +486,89 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 
 	include(__DIR__ . '/includes/header.php');
 
-	echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/magnifier.png" title="' . __('Search') . '" alt="" />' . ' ' . $Title . '</p>';
+		echo '<div class="db-page">
+				<div class="db-page-header">
+					<div>
+						<h2 class="db-page-title">' . $Title . '</h2>
+						<p class="db-page-subtitle">' . __('Analyze aged customer balances and credit status') . '</p>
+					</div>
+				</div>
 
-	if ((!isset($_POST['FromCriteria']) or !isset($_POST['ToCriteria']))) {
-
-	/*if $FromCriteria is not set then show a form to allow input	*/
-
-		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" target="_blank">';
-		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-		echo '<fieldset>
-				<legend>', __('Select Report Criteria'), '</legend>';
-
-		echo '<field>
-				<label for="FromCriteria">' . __('From Customer Code') . ':' . '</label>
-				<input tabindex="1" autofocus="autofocus" required="required" type="text" maxlength="6" size="7" name="FromCriteria" value="0" title="" />
-				<fieldhelp>' . __('Enter the first customer code alphabetically to include in the report') . '</fieldhelp>
-			</field>
-			<field>
-				<label for="ToCriteria">' . __('To Customer Code') . ':' . '</label>
-				<input tabindex="2" type="text" required="required"  maxlength="6" size="7" name="ToCriteria" value="zzzzzz" title="" />
-				<fieldhelp>' . __('Enter the last customer code alphabetically to include in the report') . '</fieldhelp>
-			</field>
-			<field>
-				<label for="All_Or_Overdues">' . __('All balances or overdues only') . ':' . '</label>
-				<select tabindex="3" name="All_Or_Overdues">
-					<option selected="selected" value="All">' . __('All customers with balances') . '</option>
-					<option value="OverduesOnly">' . __('Overdue accounts only') . '</option>
-					<option value="HeldOnly">' . __('Held accounts only') . '</option>
-				</select>
-				<fieldhelp>', __('Show all account balances, or just show accounts with overdue balances'), '</fieldhelp>
-			</field>
-			<field>
-				<label for="Salesman">' . __('Only Show Customers Of') . ':' . '</label>';
+				<div class="card-v2">
+					<div class="card-header-v2">
+						<h3>' . __('Report Criteria') . '</h3>
+					</div>
+					<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" target="_blank">
+						<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+						
+						<div class="db-grid db-grid-3">
+							<div class="db-field">
+								<label class="db-label" for="FromCriteria">' . __('From Customer Code') . '</label>
+								<input tabindex="1" autofocus="autofocus" required="required" type="text" maxlength="6" name="FromCriteria" value="0" />
+							</div>
+							<div class="db-field">
+								<label class="db-label" for="ToCriteria">' . __('To Customer Code') . '</label>
+								<input tabindex="2" type="text" required="required" maxlength="6" name="ToCriteria" value="zzzzzz" />
+							</div>
+							<div class="db-field">
+								<label class="db-label" for="All_Or_Overdues">' . __('Report Type') . '</label>
+								<select tabindex="3" name="All_Or_Overdues">
+									<option selected="selected" value="All">' . __('All customers with balances') . '</option>
+									<option value="OverduesOnly">' . __('Overdue accounts only') . '</option>
+									<option value="HeldOnly">' . __('Held accounts only') . '</option>
+								</select>
+							</div>
+							<div class="db-field">
+								<label class="db-label" for="Salesman">' . __('Salesperson') . '</label>';
 		if ($_SESSION['SalesmanLogin'] !=  '') {
-			echo '<fieldtext>', $_SESSION['UsersRealName'], '</fieldtext>';
+			echo '<input type="text" readonly value="' . $_SESSION['UsersRealName'] . '" />
+				  <input type="hidden" name="Salesman" value="' . $_SESSION['SalesmanLogin'] . '" />';
 		} else {
 			echo '<select tabindex="4" name="Salesman">';
-
 			$SQL = "SELECT salesmancode, salesmanname FROM salesman";
-
 			$Result = DB_query($SQL);
 			echo '<option value="">' . __('All Salespeople') . '</option>';
 			while ($MyRow=DB_fetch_array($Result)) {
-					echo '<option value="' . $MyRow['salesmancode'] . '">' . $MyRow['salesmanname'] . '</option>';
+				echo '<option value="' . $MyRow['salesmancode'] . '">' . $MyRow['salesmanname'] . '</option>';
 			}
-			echo '</select>
-				<fieldhelp>', __('Only show customers for a particular salesperson, or for all sales people'), '</fieldhelp>';
+			echo '</select>';
 		}
-		echo '</field>';
-
-		echo '<field>
-				<label for="Currency">' . __('Only show customers trading in') . ':' . '</label>
-				<select tabindex="5" name="Currency">';
-
+		echo '			</div>
+							<div class="db-field">
+								<label class="db-label" for="Currency">' . __('Currency') . '</label>
+								<select tabindex="5" name="Currency">';
 		$SQL = "SELECT currency, currabrev FROM currencies";
-
 		$Result = DB_query($SQL);
 		while ($MyRow=DB_fetch_array($Result)) {
-			  if ($MyRow['currabrev'] == $_SESSION['CompanyRecord']['currencydefault']) {
+			if ($MyRow['currabrev'] == $_SESSION['CompanyRecord']['currencydefault']) {
 				echo '<option selected="selected" value="' . $MyRow['currabrev'] . '">' . $MyRow['currency'] . '</option>';
-			  } else {
-				  echo '<option value="' . $MyRow['currabrev'] . '">' . $MyRow['currency'] . '</option>';
-			  }
+			} else {
+				echo '<option value="' . $MyRow['currabrev'] . '">' . $MyRow['currency'] . '</option>';
+			}
 		}
-		echo '</select>
-			<fieldhelp>', __('Select the customer currency, and just show customers trading in that currency'), '</fieldhelp>
-		</field>';
+		echo '					</select>
+							</div>
+							<div class="db-field">
+								<label class="db-label" for="DetailedReport">' . __('Detail Level') . '</label>
+								<select tabindex="6" name="DetailedReport">
+									<option selected="selected" value="No">' . __('Summary Report') . '</option>
+									<option value="Yes">' . __('Detailed Report') . '</option>
+								</select>
+							</div>
+						</div>
 
-		echo '<field>
-				<label for="DetailedReport">' . __('Summary or detailed report') . ':' . '</label>
-				<select tabindex="6" name="DetailedReport">
-					<option selected="selected" value="No">' . __('Summary Report') . '</option>
-					<option value="Yes">' . __('Detailed Report') . '</option>
-				</select>
-				<fieldhelp>', __('The report can be shown as a summary report, or a detailed report'), '</fieldhelp>
-			</field>';
-
-		echo '</fieldset>';
-
-		echo '<div class="centre">
-				<input type="submit" name="PrintPDF" title="PDF" value="' . __('Print PDF') . '" />
-				<input type="submit" name="View" title="View" value="' . __('View') . '" />
-			</div>
-		</form>';
-	}
+						<div class="form-footer-actions">
+							<button type="submit" name="PrintPDF" class="db-btn db-btn-secondary">
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+								' . __('Print PDF') . '
+							</button>
+							<button type="submit" name="View" class="db-btn db-btn-primary">
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+								' . __('View Online') . '
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>';
 	include(__DIR__ . '/includes/footer.php');
 } /*end of else not PrintPDF */

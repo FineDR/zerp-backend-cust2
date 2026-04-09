@@ -24,8 +24,14 @@ if (isset($_GET['New']) and isset($_SESSION['tender' . $identifier])) {
 if (isset($_GET['New']) and $_SESSION['CanCreateTender'] == 0) {
 	$Title = __('Authorisation Problem');
 	include(__DIR__ . '/includes/header.php');
-	echo '<p class="page_title_text noPrint" ><img src="' . $RootPath . '/css/' . $Theme . '/images/supplier.png" title="' . $Title . '" alt="" />  ' . $Title . '</p>';
+	echo '<div class="db-page">
+			<div class="db-page-header">
+				<div>
+					<h1 class="db-page-title">' . $Title . '</h1>
+				</div>
+			</div>';
 	prnMsg(__('You do not have authority to create supplier tenders for this company.') . '<br />' . __('Please see your system administrator'), 'warn');
+	echo '</div>';
 	include(__DIR__ . '/includes/footer.php');
 	exit();
 }
@@ -113,7 +119,13 @@ if (isset($_GET['Edit'])) {
 	$ViewTopic = 'SupplierTenders';
 	$BookMark = 'EditTender';
 	include(__DIR__ . '/includes/header.php');
-	echo '<p class="page_title_text noPrint" ><img src="' . $RootPath . '/css/' . $Theme . '/images/supplier.png" title="' . __('Purchase Order Tendering') . '" alt="" />  ' . $Title . '</p>';
+	echo '<div class="db-page">
+			<div class="db-page-header">
+				<div>
+					<h1 class="db-page-title">' . $Title . '</h1>
+					<p class="db-page-subtitle">' . __('Manage and update existing supplier tender requests') . '</p>
+				</div>
+			</div>';
 	$SQL = "SELECT tenderid,
 					location,
 					address1,
@@ -127,18 +139,25 @@ if (isset($_GET['Edit'])) {
 				INNER JOIN locationusers ON locationusers.loccode=tenders.location AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canupd=1
 				WHERE closed=0";
 	$Result = DB_query($SQL);
-	echo '<table class="selection">';
-	echo '<tr>
-			<th>' . __('Tender ID') . '</th>
-			<th>' . __('Location') . '</th>
-			<th>' . __('Address 1') . '</th>
-			<th>' . __('Address 2') . '</th>
-			<th>' . __('Address 3') . '</th>
-			<th>' . __('Address 4') . '</th>
-			<th>' . __('Address 5') . '</th>
-			<th>' . __('Address 6') . '</th>
-			<th>' . __('Telephone') . '</th>
-		</tr>';
+	echo '<div class="db-card">
+			<div class="db-card-body">
+				<div class="db-table-wrapper">
+					<table class="db-table">
+						<thead>
+							<tr>
+								<th>' . __('Tender ID') . '</th>
+								<th>' . __('Location') . '</th>
+								<th>' . __('Address 1') . '</th>
+								<th>' . __('Address 2') . '</th>
+								<th>' . __('Address 3') . '</th>
+								<th>' . __('Address 4') . '</th>
+								<th>' . __('Address 5') . '</th>
+								<th>' . __('Address 6') . '</th>
+								<th>' . __('Telephone') . '</th>
+								<th class="text-center">' . __('Actions') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 	while ($MyRow = DB_fetch_array($Result)) {
 		echo '<tr>
 				<td>' . $MyRow['tenderid'] . '</td>
@@ -150,10 +169,17 @@ if (isset($_GET['Edit'])) {
 				<td>' . $MyRow['address5'] . '</td>
 				<td>' . $MyRow['address6'] . '</td>
 				<td>' . $MyRow['telephone'] . '</td>
-				<td><a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . $identifier . '&amp;ID=' . $MyRow['tenderid'] . '">' . __('Edit') . '</a></td>
+				<td class="text-center">
+					<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . $identifier . '&amp;ID=' . $MyRow['tenderid'] . '" class="db-btn db-btn-outline db-btn-sm">' . __('Edit') . '</a>
+				</td>
 			</tr>';
 	}
-	echo '</table>';
+	echo '      </tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div> <!-- End db-page -->';
 	include(__DIR__ . '/includes/footer.php');
 	exit();
 } elseif (isset($_GET['ID']) or (isset($_SESSION['tender' . $identifier]->TenderId))) {
@@ -235,12 +261,14 @@ if (!isset($_SESSION['tender' . $identifier]) or isset($_POST['LookupDeliveryAdd
 	}
 	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post" class="noPrint">';
 	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	echo '<fieldset>';
-	echo '<legend>' . __('Tender header details') . '</legend>
-		<field>
-			<label for="RequiredByDate">' . __('Delivery Must Be Made Before') . '</label>
-			<input type="date" required="required" name="RequiredByDate" autofocus="autofocus" size="11" value="' . $_SESSION['tender' . $identifier]->RequiredByDate . '" />
-		</field>';
+	echo '<div class="db-card">
+			<div class="db-card-title">' . __('Tender Header Details') . '</div>
+			<div class="db-card-body">
+				<div class="db-grid db-grid-2">
+					<div class="db-form-group">
+						<label class="db-form-label">' . __('Delivery Must Be Made Before') . ':</label>
+						<input type="date" required="required" name="RequiredByDate" class="db-form-input" autofocus="autofocus" value="' . $_SESSION['tender' . $identifier]->RequiredByDate . '" />
+					</div>';
 
 	if (!isset($_POST['StkLocation']) or $_POST['StkLocation'] == '') {
 		/* If this is the first time
@@ -324,9 +352,10 @@ if (!isset($_SESSION['tender' . $identifier]) or isset($_POST['LookupDeliveryAdd
 			$_SESSION['tender' . $identifier]->Contact = $_POST['Contact'];
 		}
 	}
-	echo '<field>
-			<label for="StkLocation">' . __('Warehouse') . ':</label>
-			<select name="StkLocation" onchange="ReloadForm(form1.LookupDeliveryAddress)">';
+	echo '	<div class="db-form-group">
+				<label class="db-form-label">' . __('Warehouse') . ':</label>
+				<div class="db-input-group">
+					<select name="StkLocation" class="db-form-select" onchange="ReloadForm(form1.LookupDeliveryAddress)">';
 
 	$SQL = "SELECT locations.loccode,
 					locationname
@@ -342,126 +371,123 @@ if (!isset($_SESSION['tender' . $identifier]) or isset($_POST['LookupDeliveryAdd
 		}
 	}
 
-	echo '</select>
-		<input type="submit" name="LookupDeliveryAddress" value="' . __('Select') . '" />
-	</field>';
+	echo '			</select>
+					<button type="submit" name="LookupDeliveryAddress" class="db-btn db-btn-secondary db-btn-sm">' . __('Select') . '</button>
+				</div>
+			</div>';
 
 	/* Display the details of the delivery location
 	*/
-	echo '<field>
-			<label for="Contact">' . __('Delivery Contact') . ':</label>
-			<input type="text" name="Contact" size="41"  value="' . $_SESSION['tender' . $identifier]->Contact . '" readonly />
-		</field>';
-	echo '<field>
-			<label for="DelAdd1">' . __('Address') . ' 1 :</label>
-			<input type="text" name="DelAdd1" pattern=".{1,40}" title="" size="41" maxlength="40" value="' . $_POST['DelAdd1'] . '" />
-			<fieldhelp>' . __('The address should not be over 40 characters') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="DelAdd2">' . __('Address') . ' 2 :</label>
-			<input type="text" name="DelAdd2" pattern=".{1,40}" title="" size="41" size="41" maxlength="40" value="' . $_POST['DelAdd2'] . '" />
-			<fieldhelp>' . __('The address should not be over 40 characters') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="DelAdd3">' . __('Address') . ' 3 :</label>
-			<input type="text" name="DelAdd3" pattern=".{1,40}" title="" size="41" size="41" maxlength="40" value="' . $_POST['DelAdd3'] . '" />
-			<fieldhelp>' . __('The address should not be over 40 characters') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="DelAdd4">' . __('Address') . ' 4 :</label>
-			<input type="text" name="DelAdd4" pattern=".{1,40}" title=""  size="41" maxlength="40" value="' . $_POST['DelAdd4'] . '" />
-			<fieldhelp>' . __('The characters should not be over 20 characters') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="DelAdd5">' . __('Address') . ' 5 :</label>
-			<input type="text" name="DelAdd5" pattern=".{1,20}" title="" size="21" maxlength="20" value="' . $_POST['DelAdd5'] . '" />
-			<fieldhelp>' . __('The characters should not be over 20 characters') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="DelAdd6">' . __('Address') . ' 6 :</label>
-			<input type="text" name="DelAdd6" pattern=".{1,15}" title=""  size="16" maxlength="15" value="' . $_POST['DelAdd6'] . '" />
-			<fieldhelp>' . __('The characters should not be over 15 characters') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="Tel">' . __('Phone') . ':</label>
-			<input type="tel" name="Tel" pattern="[\d+)(\s]{1,25}" size="31" title="" maxlength="25" value="' . $_SESSION['tender' . $identifier]->Telephone . '" />
-			<fieldhelp>' . __('The input should be telephone number and should not be over 25 charaters') . '</fieldhelp>
-		</field>';
-	echo '</fieldset>';
+	echo '	<div class="db-form-group">
+				<label class="db-form-label">' . __('Delivery Contact') . ':</label>
+				<input type="text" name="Contact" class="db-form-input db-form-input-readonly" value="' . $_SESSION['tender' . $identifier]->Contact . '" readonly />
+			</div>';
+	echo '	<div class="db-form-group">
+				<label class="db-form-label">' . __('Address 1') . ':</label>
+				<input type="text" name="DelAdd1" class="db-form-input" maxlength="40" value="' . (isset($_POST['DelAdd1']) ? $_POST['DelAdd1'] : '') . '" />
+			</div>';
+	echo '	<div class="db-form-group">
+				<label class="db-form-label">' . __('Address 2') . ':</label>
+				<input type="text" name="DelAdd2" class="db-form-input" maxlength="40" value="' . (isset($_POST['DelAdd2']) ? $_POST['DelAdd2'] : '') . '" />
+			</div>';
+	echo '	<div class="db-form-group">
+				<label class="db-form-label">' . __('Address 3') . ':</label>
+				<input type="text" name="DelAdd3" class="db-form-input" maxlength="40" value="' . (isset($_POST['DelAdd3']) ? $_POST['DelAdd3'] : '') . '" />
+			</div>';
+	echo '	<div class="db-form-group">
+				<label class="db-form-label">' . __('Address 4') . ':</label>
+				<input type="text" name="DelAdd4" class="db-form-input" maxlength="40" value="' . (isset($_POST['DelAdd4']) ? $_POST['DelAdd4'] : '') . '" />
+			</div>';
+	echo '	<div class="db-form-group">
+				<label class="db-form-label">' . __('Address 5') . ':</label>
+				<input type="text" name="DelAdd5" class="db-form-input" maxlength="20" value="' . (isset($_POST['DelAdd5']) ? $_POST['DelAdd5'] : '') . '" />
+			</div>';
+	echo '	<div class="db-form-group">
+				<label class="db-form-label">' . __('Address 6') . ':</label>
+				<input type="text" name="DelAdd6" class="db-form-input" maxlength="15" value="' . (isset($_POST['DelAdd6']) ? $_POST['DelAdd6'] : '') . '" />
+			</div>';
+	echo '	<div class="db-form-group">
+				<label class="db-form-label">' . __('Phone') . ':</label>
+				<input type="tel" name="Tel" class="db-form-input" maxlength="25" value="' . $_SESSION['tender' . $identifier]->Telephone . '" />
+			</div>
+		</div> <!-- End Grid -->
+	</div> <!-- End Card Body -->
+</div> <!-- End Card -->';
 
 	/* Display the supplier/item details
 	*/
-	echo '<table>';
-
-	/* Supplier Details
-	*/
-	echo '<tr>
-			<td valign="top">
-			<table class="selection">';
-	echo '<tr>
-			<th colspan="4"><h3>' . __('Suppliers To Send Tender') . '</h3></th>
-		</tr>';
-	echo '<tr>
-			<th>' . __('Supplier Code') . '</th>
-			<th>' . __('Supplier Name') . '</th>
-			<th>' . __('Email Address') . '</th>
-		</tr>';
+	echo '<div class="db-grid db-grid-2" style="margin-top: var(--space-4);">
+			<div class="db-card">
+				<div class="db-card-title">' . __('Suppliers To Send Tender') . '</div>
+				<div class="db-card-body" style="padding: 0;">
+					<div class="db-table-wrapper">
+						<table class="db-table">
+							<thead>
+								<tr>
+									<th>' . __('Code') . '</th>
+									<th>' . __('Name') . '</th>
+									<th>' . __('Email') . '</th>
+									<th class="text-center">' . __('Remove') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
 	foreach ($_SESSION['tender' . $identifier]->Suppliers as $Supplier) {
 		echo '<tr>
-				<td>' . $Supplier->SupplierCode . '</td>
+				<td class="db-font-semibold">' . $Supplier->SupplierCode . '</td>
 				<td>' . $Supplier->SupplierName . '</td>
-				<td>' . $Supplier->EmailAddress . '</td>
-				<td><a href="' . htmlspecialchars($_SERVER['PHP_SELF'] . '?identifier=' . $identifier, ENT_QUOTES, 'UTF-8') . '&amp;DeleteSupplier=' . $Supplier->SupplierCode . '">' . __('Delete') . '</a></td>
+				<td class="db-text-muted">' . $Supplier->EmailAddress . '</td>
+				<td class="text-center"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'] . '?identifier=' . $identifier, ENT_QUOTES, 'UTF-8') . '&amp;DeleteSupplier=' . $Supplier->SupplierCode . '" class="db-icon-btn text-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></a></td>
 			</tr>';
 	}
-	echo '</table></td>';
+	echo '					</tbody>
+						</table>
+					</div>
+				</div>
+			</div>';
 	/* Item Details
 	*/
-	echo '<td valign="top"><table class="selection">
-		<thead>
-			<tr>
-			<th colspan="6"><h3>' . __('Items in Tender') . '</h3></th>
-		</tr>
-		<tr>
-			<th class="SortedColumn">' . __('Stock ID') . '</th>
-			<th class="SortedColumn">' . __('Description') . '</th>
-			<th class="SortedColumn">' . __('Quantity') . '</th>
-			<th>' . __('UOM') . '</th>
-			</tr>
-		</thead>
-		<tbody>';
+	echo '	<div class="db-card">
+				<div class="db-card-title">' . __('Items in Tender') . '</div>
+				<div class="db-card-body" style="padding: 0;">
+					<div class="db-table-wrapper">
+						<table class="db-table">
+							<thead>
+								<tr>
+									<th>' . __('Code') . '</th>
+									<th>' . __('Description') . '</th>
+									<th class="text-right">' . __('Qty') . '</th>
+									<th>' . __('UOM') . '</th>
+									<th class="text-center">' . __('Remove') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
 
 	foreach ($_SESSION['tender' . $identifier]->LineItems as $LineItems) {
 		if ($LineItems->Deleted == false) {
-			echo '<tr class="striped_row">
-					<td>' . $LineItems->StockID . '</td>
+			echo '<tr>
+					<td class="db-font-semibold">' . $LineItems->StockID . '</td>
 					<td>' . $LineItems->ItemDescription . '</td>
-					<td class="number">' . locale_number_format($LineItems->Quantity, $LineItems->DecimalPlaces) . '</td>
+					<td class="text-right">' . locale_number_format($LineItems->Quantity, $LineItems->DecimalPlaces) . '</td>
 					<td>' . $LineItems->Units . '</td>
-					<td><a href="' . htmlspecialchars($_SERVER['PHP_SELF'] . '?identifier=' . $identifier, ENT_QUOTES, 'UTF-8') . '&amp;DeleteItem=' . $LineItems->LineNo . '">' . __('Delete') . '</a></td>
+					<td class="text-center"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'] . '?identifier=' . $identifier, ENT_QUOTES, 'UTF-8') . '&amp;DeleteItem=' . $LineItems->LineNo . '" class="db-icon-btn text-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></a></td>
 				</tr>';
 		}
 	}
-	echo '</tbody></table>
-		</td>
-		</tr>
-		</table>
-		<br />
-		<div class="centre">
-			<input type="submit" name="Suppliers" value="' . __('Select Suppliers') . '" />
-			<input type="submit" name="Items" value="' . __('Select Item Details') . '" />';
+	echo '					</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div> <!-- End Grid -->';
+	echo '<div class="db-form-actions" style="margin-top: var(--space-4); justify-content: center;">
+			<button type="submit" name="Suppliers" class="db-btn db-btn-secondary">' . __('Select Suppliers') . '</button>
+			<button type="submit" name="Items" class="db-btn db-btn-secondary">' . __('Select Item Details') . '</button>';
 
 	if ($_SESSION['tender' . $identifier]->LinesOnTender > 0 and $_SESSION['tender' . $identifier]->SuppliersOnTender > 0) {
-		echo '<input type="submit" name="Close" value="' . __('Close This Tender') . '" />';
+		echo '<button type="submit" name="Close" class="db-btn db-btn-danger">' . __('Close This Tender') . '</button>';
+		echo '<button type="submit" name="Save" class="db-btn db-btn-primary">' . __('Save Tender Request') . '</button>';
 	}
-	echo '</div>
-		<br />';
-	if ($_SESSION['tender' . $identifier]->LinesOnTender > 0 and $_SESSION['tender' . $identifier]->SuppliersOnTender > 0) {
-
-		echo '<div class="centre">
-				<input type="submit" name="Save" value="' . __('Save Tender') . '" />
-			</div>';
-	}
+	echo '</div>';
 	echo '</div>
 		</form>';
 	include(__DIR__ . '/includes/footer.php');

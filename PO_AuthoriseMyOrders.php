@@ -7,8 +7,13 @@ $ViewTopic = 'PurchaseOrdering';
 $BookMark = '';
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/transactions.png" title="' . $Title .
-	 '" alt="" />' . ' ' . $Title . '</p>';
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div>
+				<h1 class="db-page-title">' . $Title . '</h1>
+				<p class="db-page-subtitle">' . __('Review and authorize pending purchase orders') . '</p>
+			</div>
+		</div>';
 
 $EmailSQL = "SELECT email FROM www_users WHERE userid='".$_SESSION['UserID']."'";
 $EmailResult = DB_query($EmailSQL);
@@ -49,17 +54,20 @@ $Result = DB_query($SQL);
 
 echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
 echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-	<table class="selection">';
+	<div class="db-card">
+		<div class="db-card-body">
+			<div class="db-table-wrapper">
+				<table class="db-table">';
 
 /* Create the table for the purchase order header */
 echo '<thead>
 		<tr>
-		<th class="SortedColumn">' . __('Order Number') . '</th>
-		<th class="SortedColumn">' . __('Supplier') . '</th>
-		<th class="SortedColumn">' . __('Date Ordered') . '</th>
-		<th class="SortedColumn">' . __('Initiator') . '</th>
-		<th class="SortedColumn">' . __('Delivery Date') . '</th>
-		<th class="SortedColumn">' . __('Status') . '</th>
+			<th>' . __('Order Number') . '</th>
+			<th>' . __('Supplier') . '</th>
+			<th>' . __('Date Ordered') . '</th>
+			<th>' . __('Initiator') . '</th>
+			<th>' . __('Delivery Date') . '</th>
+			<th class="text-center">' . __('Action') . '</th>
 		</tr>
 	</thead>
 	<tbody>';
@@ -83,18 +91,20 @@ while ($MyRow=DB_fetch_array($Result)) {
 	$OrderValue=$MyOrderValueRow['ordervalue'];
 
 	if ($AuthLevel>=$OrderValue) {
-		echo '<tr>
-				<td>' . $MyRow['orderno'] . '</td>
+		echo '<tr class="db-font-semibold" style="background: var(--bg-workspace);">
+				<td><span class="db-badge db-badge-info">' . $MyRow['orderno'] . '</span></td>
 				<td>' . $MyRow['suppname'] . '</td>
-				<td class="date">' . ConvertSQLDate($MyRow['orddate']) . '</td>
-				<td><a href="mailto:'.$MyRow['email'].'">' . $MyRow['realname'] . '</td>
-				<td class="date">' . ConvertSQLDate($MyRow['deliverydate']) . '</td>
-				<td><select name="Status'.$MyRow['orderno'].'">
-					<option selected="selected" value="Pending">' . __('Pending') . '</option>
-					<option value="Authorised">' . __('Authorised') . '</option>
-					<option value="Rejected">' . __('Rejected') . '</option>
-					<option value="Cancelled">' . __('Cancelled') . '</option>
-					</select></td>
+				<td class="text-nowrap">' . ConvertSQLDate($MyRow['orddate']) . '</td>
+				<td><a href="mailto:'.$MyRow['email'].'" class="db-link">' . $MyRow['realname'] . '</a></td>
+				<td class="text-nowrap">' . ConvertSQLDate($MyRow['deliverydate']) . '</td>
+				<td class="text-center">
+					<select name="Status'.$MyRow['orderno'].'" class="db-form-select db-form-input-sm" style="max-width: 150px; margin: 0 auto;">
+						<option selected="selected" value="Pending">' . __('Pending') . '</option>
+						<option value="Authorised">' . __('Authorised') . '</option>
+						<option value="Rejected">' . __('Rejected') . '</option>
+						<option value="Cancelled">' . __('Cancelled') . '</option>
+					</select>
+				</td>
 			</tr>';
 		echo '<input type="hidden" name="comment" value="' . htmlspecialchars($MyRow['stat_comment'], ENT_QUOTES,'UTF-8') . '" />';
 		$LineSQL="SELECT purchorderdetails.*,
@@ -107,43 +117,45 @@ while ($MyRow=DB_fetch_array($Result)) {
 		$LineResult = DB_query($LineSQL);
 
 		echo '<tr>
-				<td></td>
-				<td colspan="5" align="left">
-					<table class="selection" align="left">
-					<thead>
-					<tr>
-						<th class="SortedColumn">' . __('Product') . '</th>
-						<th class="SortedColumn">' . __('Quantity Ordered') . '</th>
-						<th class="SortedColumn">' . __('Currency') . '</th>
-						<th class="SortedColumn">' . __('Price') . '</th>
-						<th class="SortedColumn">' . __('Line Total') . '</th>
-						</tr>
-					</thead>
-					<tbody>';
+				<td colspan="6" style="padding-left: 2rem;">
+					<div class="db-table-wrapper" style="border: 1px solid var(--border-color); border-radius: 8px; margin: 10px 0;">
+						<table class="db-table db-table-sm">
+							<thead>
+								<tr>
+									<th>' . __('Product') . '</th>
+									<th class="text-right">' . __('Quantity') . '</th>
+									<th>' . __('Currency') . '</th>
+									<th class="text-right">' . __('Price') . '</th>
+									<th class="text-right">' . __('Line Total') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
 
 		while ($LineRow=DB_fetch_array($LineResult)) {
-			if ($LineRow['decimalplaces']!=NULL){
-				$DecimalPlaces = $LineRow['decimalplaces'];
-			} else {
-				$DecimalPlaces = 2;
-			}
+			$DecimalPlaces = ($LineRow['decimalplaces']!=NULL) ? $LineRow['decimalplaces'] : 2;
 			echo '<tr>
 					<td>' . $LineRow['description'] . '</td>
-					<td class="number">' . locale_number_format($LineRow['quantityord'],$DecimalPlaces) . '</td>
+					<td class="text-right">' . locale_number_format($LineRow['quantityord'],$DecimalPlaces) . '</td>
 					<td>' . $MyRow['currcode'] . '</td>
-					<td class="number">' . locale_number_format($LineRow['unitprice'],$MyRow['currdecimalplaces']) . '</td>
-					<td class="number">' . locale_number_format($LineRow['unitprice']*$LineRow['quantityord'],$MyRow['currdecimalplaces']) . '</td>
+					<td class="text-right">' . locale_number_format($LineRow['unitprice'],$MyRow['currdecimalplaces']) . '</td>
+					<td class="text-right db-font-semibold">' . locale_number_format($LineRow['unitprice']*$LineRow['quantityord'],$MyRow['currdecimalplaces']) . '</td>
 				</tr>';
-		} // end while order line detail
+		} 
 		echo '</tbody></table>
-			</td>
+					</div>
+				</td>
 			</tr>';
 	}
-} //end while header loop
+}
 echo '</tbody>
 	</table>
-		<div class="centre">
-			<input type="submit" name="UpdateAll" value="' . __('Update'). '" />
+			</div>
 		</div>
-		</form>';
+		</div>
+		<div class="db-card-footer db-form-actions">
+			<button type="submit" name="UpdateAll" class="db-btn db-btn-primary">' . __('Update Authorization Status') . '</button>
+		</div>
+	</div>
+</form>
+</div> <!-- End db-page -->';
 include(__DIR__ . '/includes/footer.php');

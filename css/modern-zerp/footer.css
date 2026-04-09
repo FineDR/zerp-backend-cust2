@@ -1,10 +1,45 @@
 @import url('variables.css');
 
-#Footer {
-    margin-top: 40px;
-    padding: 20px;
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 14px;
-    border-top: 1px solid var(--border);
+footer, #Footer {
+    margin-top: 50px !important;
+    padding: 30px 20px !important;
+    text-align: center !important;
+    color: var(--text-muted) !important;
+    font-size: 0.75rem !important;
+    border-top: 1px solid var(--border-soft) !important;
+    width: 100% !important;
+    background: var(--surface-alt) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 10px !important;
+    position: relative !important;
+    clear: both !important;
+}
+
+.FooterLogo {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    text-decoration: none !important;
+    margin-bottom: 5px !important;
+}
+
+.FooterLogo .logo {
+    display: inline-block !important;
+    font-weight: 800 !important;
+    font-size: 1.2rem !important;
+    position: static !important;
+}
+
+.logo-left { color: var(--text-main) !important; }
+.logo-right { color: var(--primary) !important; }
+
+.FooterVersion, .FooterTime {
+    display: block !important;
+    width: 100% !important;
+    opacity: 0.8 !important;
+    line-height: 1.5 !important;
+    margin: 2px 0 !important;
 }

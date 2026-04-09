@@ -7,9 +7,13 @@ $ViewTopic = 'PurchaseOrdering';
 $BookMark = '';
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text">
-		<img src="' . $RootPath . '/css/' . $Theme . '/images/magnifier.png" title="' . __('Purchase Orders') . '" alt=""  />' . ' ' . __('Purchase Orders') .
-	'</p>';
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div>
+				<h1 class="db-page-title">' . $Title . '</h1>
+				<p class="db-page-subtitle">' . __('Track and manage all purchase orders in the system') . '</p>
+			</div>
+		</div>';
 
 if (isset($_GET['SelectedStockItem'])) {
 	$SelectedStockItem = $_GET['SelectedStockItem'];
@@ -33,14 +37,14 @@ if (isset($_POST['ResetPart'])) {
 }
 if (isset($OrderNumber) AND $OrderNumber != '') {
 	if (!is_numeric($OrderNumber)) {
-		prnMsg(__('The Order Number entered') . ' <U>' . __('MUST') . '</U> ' . __('be numeric'), 'error');
+		prnMsg(__('The Order Number entered MUST be numeric'), 'error');
 		unset($OrderNumber);
 	} else {
-		echo __('Order Number') . ' - ' . $OrderNumber;
+		echo '<div class="db-alert db-alert-info" style="margin-bottom: var(--space-4);">' . __('Order Number') . ' - ' . $OrderNumber . '</div>';
 	}
 } else {
 	if (isset($SelectedSupplier)) {
-		echo __('For supplier') . ': ' . $SelectedSupplier . ' ' . __('and') . ' ';
+		echo '<div class="db-alert db-alert-info" style="margin-bottom: var(--space-4);">' . __('For supplier') . ': ' . $SelectedSupplier . '</div>';
 		echo '<input type="hidden" name="SelectedSupplier" value="' . $SelectedSupplier . '" />';
 	}
 }
@@ -111,19 +115,23 @@ if (isset($_POST['SearchParts'])) {
 * $OrdersAfterDate = date("d/m/Y",mktime(0,0,0,date("m")-2,date("d"),date("Y")));
 */
 if (!isset($OrderNumber) or $OrderNumber == "") {
-	echo '<fieldset>
-			<legend>', __('Order Selection Options'), '</legend>';
+	echo '<div class="db-grid db-grid-2" style="margin-top: var(--space-4);">
+			<div class="db-card">
+				<div class="db-card-title">
+					<span><svg class="db-card-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> ' . __('Order Selection Options') . '</span>
+				</div>
+				<div class="db-card-body">';
 	if (isset($SelectedStockItem)) {
-		echo __('For the part') . ':<b>' . $SelectedStockItem . '</b> ' . __('and') . ' <input type="hidden" name="SelectedStockItem" value="' . $SelectedStockItem . '" />';
+		echo '<div class="db-alert db-alert-info" style="margin-bottom: var(--space-4);">' . __('For the part') . ': <strong>' . $SelectedStockItem . '</strong></div>
+			  <input type="hidden" name="SelectedStockItem" value="' . $SelectedStockItem . '" />';
 	}
-	echo '<field>
-			<label for="OrderNumber">', __('Order Number') . ':</label>
-			<input class="integer" name="OrderNumber" autofocus="autofocus" maxlength="8" size="9" />
-		</field>';
-
-	echo '<field>
-			<label for="StockLocation">' . __('Into Stock Location') . ':</label>
-			<select name="StockLocation"> ';
+	echo '		<div class="db-form-group">
+					<label class="db-form-label">' . __('Order Number') . ':</label>
+					<input type="text" name="OrderNumber" class="db-form-input" autofocus="autofocus" maxlength="8" placeholder="' . __('Enter order #...') . '" />
+				</div>
+				<div class="db-form-group">
+					<label class="db-form-label">' . __('Into Stock Location') . ':</label>
+					<select name="StockLocation" class="db-form-select">';
 
 	$SQL = "SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1";
 	$ResultStkLocs = DB_query($SQL);
@@ -140,108 +148,102 @@ if (!isset($OrderNumber) or $OrderNumber == "") {
 			echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 		}
 	}
-	echo '</select>
-		</field>';
+	echo '      </select>
+				</div>
+				<div class="db-form-group">
+					<label class="db-form-label">' . __('Order Status') . ':</label>
+					<select name="Status" class="db-form-select">';
+	
+	$Statuses = [
+		'Pending_Authorised_Completed' => __('Pending/Authorised/Completed'),
+		'Pending' => __('Pending'),
+		'Authorised' => __('Authorised'),
+		'Completed' => __('Completed'),
+		'Cancelled' => __('Cancelled'),
+		'Rejected' => __('Rejected')
+	];
 
-	echo '<field>
-			<label for="Status">' . __('Order Status:') .'</label>
-			<select name="Status">';
- 	if (!isset($_POST['Status']) OR $_POST['Status']=='Pending_Authorised_Completed'){
-		echo '<option selected="selected" value="Pending_Authorised_Completed">' . __('Pending/Authorised/Completed') . '</option>';
-	} else {
-		echo '<option value="Pending_Authorised_Completed">' . __('Pending/Authorised/Completed') . '</option>';
+	foreach ($Statuses as $val => $label) {
+		$selected = (isset($_POST['Status']) && $_POST['Status']==$val) ? 'selected="selected"' : '';
+		if (!isset($_POST['Status']) && $val == 'Pending_Authorised_Completed') $selected = 'selected="selected"';
+		echo '<option ' . $selected . ' value="' . $val . '">' . $label . '</option>';
 	}
-	if (isset($_POST['Status']) AND $_POST['Status']=='Pending'){
-		echo '<option selected="selected" value="Pending">' . __('Pending') . '</option>';
-	} else {
-		echo '<option value="Pending">' . __('Pending') . '</option>';
-	}
- 	if (isset($_POST['Status']) AND $_POST['Status']=='Authorised'){
-		echo '<option selected="selected" value="Authorised">' . __('Authorised') . '</option>';
-	} else {
-		echo '<option value="Authorised">' . __('Authorised') . '</option>';
-	}
-	if (isset($_POST['Status']) AND $_POST['Status']=='Completed'){
-		echo '<option selected="selected" value="Completed">' . __('Completed') . '</option>';
-	} else {
-		echo '<option value="Completed">' . __('Completed') . '</option>';
-	}
-	if (isset($_POST['Status']) AND $_POST['Status']=='Cancelled'){
-		echo '<option selected="selected" value="Cancelled">' . __('Cancelled') . '</option>';
-	} else {
-		echo '<option value="Cancelled">' . __('Cancelled') . '</option>';
-	}
-	if (isset($_POST['Status']) AND $_POST['Status']=='Rejected'){
-		echo '<option selected="selected" value="Rejected">' . __('Rejected') . '</option>';
-	} else {
-		echo '<option value="Rejected">' . __('Rejected') . '</option>';
-	}
- 	echo '</select>
-		</field>
-	</fieldset>';
 
-	echo '<div class="centre">
-			<input type="submit" name="SearchOrders" value="' . __('Search Purchase Orders') . '" />
+	echo '		</select>
+				</div>
+				<div class="db-form-actions">
+					<button type="submit" name="SearchOrders" class="db-btn db-btn-primary">' . __('Search Purchase Orders') . '</button>
+				</div>
+			</div>
 		</div>';
 }
-$SQL = "SELECT categoryid,
-			categorydescription
-		FROM stockcategory
-		ORDER BY categorydescription";
-$Result1 = DB_query($SQL);
-echo '<fieldset>
-		<legend>', __('To search for purchase orders for a specific part use the part selection facilities below') . '</legend>';
-echo '<field>
-		<label foe="StockCat">' . __('Select a stock category') . ':</label>
-		<select name="StockCat">';
-while ($MyRow1 = DB_fetch_array($Result1)) {
-	if (isset($_POST['StockCat']) and $MyRow1['categoryid'] == $_POST['StockCat']) {
-		echo '<option selected="selected" value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
-	} else {
-		echo '<option value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
-	}
-}
-echo '</select>
-	</field>';
 
-echo '<field>
-		<label for="Keywords">' . __('Enter text extracts in the') . ' <b>' . __('description') . '</b>:</label>
-		<input type="text" name="Keywords" size="20" maxlength="25" />
-	</field>
-	<field>
-		<label for="StockCode">' . '<b>'. __('OR'). ' </b>'. __('Enter extract of the') . '<b> ' . __('Stock Code') . '</b>:</label>
-		<input type="text" name="StockCode" size="15" maxlength="18" />
-	</field>
-	</fieldset>
-	<div class="centre">
-		<input type="submit" name="SearchParts" value="' . __('Search Parts Now') . '" />
-		<input type="submit" name="ResetPart" value="' . __('Show All') . '" />
-	</div>';
+$SQL = "SELECT categoryid, categorydescription FROM stockcategory ORDER BY categorydescription";
+$Result1 = DB_query($SQL);
+
+echo '	<div class="db-card">
+			<div class="db-card-title">
+				<span><svg class="db-card-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 21-4.3-4.3"/><circle cx="11" cy="11" r="8"/><path d="M11 8v6"/><path d="M8 11h6"/></svg> ' . __('Search By Stock Item') . '</span>
+			</div>
+			<div class="db-card-body">
+				<div class="db-form-group">
+					<label class="db-form-label">' . __('Select a stock category') . ':</label>
+					<select name="StockCat" class="db-form-select">';
+
+while ($MyRow1 = DB_fetch_array($Result1)) {
+	$selected = (isset($_POST['StockCat']) and $MyRow1['categoryid'] == $_POST['StockCat']) ? 'selected="selected"' : '';
+	echo '<option ' . $selected . ' value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
+}
+
+echo '		</select>
+			</div>
+			<div class="db-form-group">
+				<label class="db-form-label">' . __('Description Keywords') . ':</label>
+				<input type="text" name="Keywords" class="db-form-input" placeholder="' . __('Enter keywords...') . '" />
+			</div>
+			<div class="db-form-group">
+				<label class="db-form-label">' . __('OR Stock Code Extract') . ':</label>
+				<input type="text" name="StockCode" class="db-form-input" placeholder="' . __('Enter code...') . '" />
+			</div>
+			<div class="db-form-actions">
+				<button type="submit" name="SearchParts" class="db-btn db-btn-primary">' . __('Search Parts Now') . '</button>
+				<button type="submit" name="ResetPart" class="db-btn db-btn-secondary">' . __('Show All') . '</button>
+			</div>
+		</div>
+	</div>
+</div> <!-- End Grid -->';
 
 if (isset($StockItemsResult)) {
-	echo '<table class="selection">
-		<thead>
-			<tr>
-				<th class="SortedColumn">' . __('Code') . '</th>
-				<th class="SortedColumn">' . __('Description') . '</th>
-				<th class="SortedColumn">' . __('On Hand') . '</th>
-				<th class="SortedColumn">' . __('Orders') . '<br />' . __('Outstanding') . '</th>
-				<th class="SortedColumn">' . __('Units') . '</th>
-			</tr>
-		</thead>
-		<tbody>';
+	echo '<div class="db-card" style="margin-top: var(--space-4);">
+			<div class="db-card-title">' . __('Stock Item Results') . '</div>
+			<div class="db-card-body">
+				<div class="db-table-wrapper">
+					<table class="db-table">
+						<thead>
+							<tr>
+								<th>' . __('Code') . '</th>
+								<th>' . __('Description') . '</th>
+								<th class="text-right">' . __('On Hand') . '</th>
+								<th class="text-right">' . __('Outstanding') . '</th>
+								<th>' . __('Units') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
 	while ($MyRow = DB_fetch_array($StockItemsResult)) {
-		echo '<tr class="striped_row">
-			<td><input type="submit" name="SelectedStockItem" value="' . $MyRow['stockid'] . '"</td>
-			<td>' . $MyRow['description'] . '</td>
-			<td class="number">' . locale_number_format($MyRow['qoh'],$MyRow['decimalplaces']) . '</td>
-			<td class="number">' . locale_number_format($MyRow['qord'],$MyRow['decimalplaces']) . '</td>
-			<td>' . $MyRow['units'] . '</td>
+		echo '<tr>
+				<td><button type="submit" name="SelectedStockItem" value="' . $MyRow['stockid'] . '" class="db-btn db-btn-outline db-btn-sm">' . $MyRow['stockid'] . '</button></td>
+				<td>' . $MyRow['description'] . '</td>
+				<td class="text-right">' . locale_number_format($MyRow['qoh'],$MyRow['decimalplaces']) . '</td>
+				<td class="text-right">' . locale_number_format($MyRow['qord'],$MyRow['decimalplaces']) . '</td>
+				<td>' . $MyRow['units'] . '</td>
 			</tr>';
 	}
-	//end of while loop
-	echo '</tbody></table>';
+	echo '      </tbody>
+					</table>
+				</div>
+			</div>
+		</div>';
 }
 //end if stock search results to show
 else {
@@ -425,22 +427,25 @@ else {
 	$PurchOrdersResult = DB_query($SQL, $ErrMsg);
 
 	if (DB_num_rows($PurchOrdersResult) > 0) {
-		/*show a table of the orders returned by the SQL */
-		echo '<table cellpadding="2" width="90%" class="selection">
-			<thead>
-				<tr>
-					<th class="SortedColumn">' . __('View') . '</th>
-					<th class="SortedColumn">' . __('Supplier') . '</th>
-					<th class="SortedColumn">' . __('Currency') . '</th>
-					<th class="SortedColumn">' . __('Requisition') . '</th>
-					<th class="SortedColumn">' . __('Order Date') . '</th>
-					<th class="SortedColumn">' . __('Delivery Date') . '</th>
-					<th class="SortedColumn">' . __('Initiator') . '</th>
-					<th class="SortedColumn">' . __('Order Total') . '</th>
-					<th class="SortedColumn">' . __('Status') . '</th>
-				</tr>
-			</thead>
-			</tbody>';
+		echo '<div class="db-card" style="margin-top: var(--space-4);">
+				<div class="db-card-title">' . __('Purchase Order Results') . '</div>
+				<div class="db-card-body">
+					<div class="db-table-wrapper">
+						<table class="db-table">
+							<thead>
+								<tr>
+									<th>' . __('View') . '</th>
+									<th>' . __('Supplier') . '</th>
+									<th>' . __('Currency') . '</th>
+									<th>' . __('Requisition') . '</th>
+									<th>' . __('Order Date') . '</th>
+									<th>' . __('Delivery Date') . '</th>
+									<th>' . __('Initiator') . '</th>
+									<th class="text-right">' . __('Order Total') . '</th>
+									<th class="text-center">' . __('Status') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
 
 		while ($MyRow = DB_fetch_array($PurchOrdersResult)) {
 			$ViewPurchOrder = $RootPath . '/PO_OrderDetails.php?OrderNo=' . $MyRow['orderno'];
@@ -448,23 +453,32 @@ else {
 			$FormatedDeliveryDate = ConvertSQLDate($MyRow['deliverydate']);
 			$FormatedOrderValue = locale_number_format($MyRow['ordervalue'], $MyRow['currdecimalplaces']);
 
-			echo '<tr class="striped_row">
-					<td><a href="' . $ViewPurchOrder . '">' . $MyRow['orderno'] . '</a></td>
-					<td>' . $MyRow['suppname'] . '</td>
-					<td>' . $MyRow['currcode'] . '</td>
+			$StatusClass = 'db-badge-info';
+			if ($MyRow['status'] == 'Authorised') $StatusClass = 'db-badge-success';
+			if ($MyRow['status'] == 'Completed') $StatusClass = 'db-badge-info';
+			if ($MyRow['status'] == 'Cancelled') $StatusClass = 'db-badge-danger';
+			if ($MyRow['status'] == 'Rejected') $StatusClass = 'db-badge-warning';
+
+			echo '<tr>
+					<td><a href="' . $ViewPurchOrder . '" class="db-btn db-btn-outline db-btn-sm">' . $MyRow['orderno'] . '</a></td>
+					<td class="db-font-semibold">' . $MyRow['suppname'] . '</td>
+					<td><span class="db-badge db-badge-info">' . $MyRow['currcode'] . '</span></td>
 					<td>' . $MyRow['requisitionno'] . '</td>
-					<td class="date">' . $FormatedOrderDate . '</td>
-					<td class="date">' . $FormatedDeliveryDate . '</td>
-					<td>' . $MyRow['initiator'] . '</td>
-					<td class="number">' . $FormatedOrderValue . '</td>
-					<td>' . __($MyRow['status']) .  '</td>
-					</tr>';
+					<td class="text-nowrap">' . $FormatedOrderDate . '</td>
+					<td class="text-nowrap">' . $FormatedDeliveryDate . '</td>
+					<td class="db-text-muted">' . $MyRow['initiator'] . '</td>
+					<td class="text-right db-font-bold">' . $FormatedOrderValue . '</td>
+					<td class="text-center"><span class="db-badge ' . $StatusClass . '">' . __($MyRow['status']) .  '</span></td>
+				  </tr>';
 				//$MyRow['status'] is a string which has gettext translations from PO_Header.php script
 		}
 		//end of while loop
-		echo '</tbody></table>';
+		echo '						</tbody>
+								</table>
+							</div>
+						</div>
+					</div>';
 	} // end if purchase orders to show
 }
-echo '</div>
-      </form>';
+echo '</div> <!-- End db-page -->';
 include(__DIR__ . '/includes/footer.php');

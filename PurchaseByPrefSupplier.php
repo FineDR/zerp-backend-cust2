@@ -7,6 +7,14 @@ $ViewTopic = 'PurchaseOrdering';
 $BookMark = '';
 include(__DIR__ . '/includes/header.php');
 
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div>
+				<h1 class="db-page-title">' . $Title . '</h1>
+				<p class="db-page-subtitle">' . __('Review and create purchase orders for preferred supplier items') . '</p>
+			</div>
+		</div>';
+
 if (isset($_POST['CreatePO']) AND isset($_POST['Supplier'])){
 	include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 	$InputError =0; //Always hope for the best
@@ -299,14 +307,16 @@ if (isset($_POST['CreatePO']) AND isset($_POST['Supplier'])){
 }
 
 
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/inventory.png" title="' . __('Search') . '" alt="" />' . ' ' . $Title.'</p>
-	<form id="SupplierPurchasing" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">
-	<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-	<fieldset>
-	<legend>', __('Supplier Selection'), '</legend>
-	<field>
-		<label for="Supplier">' . __('For Supplier') . ':</label>
-		<select name="Supplier">';
+echo '<form id="SupplierPurchasing" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">
+	<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+
+echo '<div class="db-card">
+		<div class="db-card-title">' . __('Supplier Selection') . '</div>
+		<div class="db-card-body">
+			<div class="db-grid db-grid-2">
+				<div class="db-form-group">
+					<label class="db-form-label">' . __('For Supplier') . ':</label>
+					<select name="Supplier" class="db-form-select">';
 
 $SQL = "SELECT supplierid, suppname FROM suppliers WHERE supptype<>7 ORDER BY suppname";
 $SuppResult = DB_query($SQL);
@@ -320,43 +330,13 @@ while ($MyRow=DB_fetch_array($SuppResult)){
 		echo '<option value="' . $MyRow['supplierid'] . '">' . $MyRow['suppname']  . '</option>';
 	}
 }
-echo '</select>
-	</field>';
-
-/*
-echo '<tr>
-		<td>' . __('Months Buffer Stock to Hold') . ':</td>
-		<td><select name="NumberMonthsHolding">';
-
-if (!isset($_POST['NumberMonthsHolding'])){
-	$_POST['NumberMonthsHolding']=1;
-}
-if ($_POST['NumberMonthsHolding']==0.5){
-	echo '<option selected="selected" value="0.5">' . __('Two Weeks')  . '</option>';
-} else {
-	echo '<option value="0.5">' . __('Two Weeks')  . '</option>';
-}
-if ($_POST['NumberMonthsHolding']==1){
-	echo '<option selected="selected" value="1">' . __('One Month') . '</option>';
-} else {
-	echo '<option selected="selected" value="1">' . __('One Month') . '</option>';
-}
-if ($_POST['NumberMonthsHolding']==1.5){
-	echo '<option selected="selected" value="1.5">' . __('Six Weeks') . '</option>';
-} else {
-	echo '<option value="1.5">' . __('Six Weeks') . '</option>';
-}
-if ($_POST['NumberMonthsHolding']==2){
-	echo '<option selected="selected" value="2">' . __('Two Months') . '</option>';
-} else {
-	echo '<option value="2">' . __('Two Months') . '</option>';
-}
-echo '</select></td>
-	</tr>';
-*/
-echo '</fieldset>
-	<div class="centre">
-		<input type="submit" name="ShowItems" value="' . __('Show Items') . '" />
+echo '				</select>
+				</div>
+				<div class="db-form-group" style="display: flex; align-items: flex-end;">
+					<button type="submit" name="ShowItems" class="db-btn db-btn-primary" style="width: 100%;">' . __('Show Items to Purchase') . '</button>
+				</div>
+			</div>
+		</div>
 	</div>';
 
 if (isset($_POST['Supplier']) AND isset($_POST['ShowItems']) AND $_POST['Supplier']!=''){
@@ -395,24 +375,27 @@ if (isset($_POST['Supplier']) AND isset($_POST['ShowItems']) AND $_POST['Supplie
 	$ListCount = DB_num_rows($ItemsResult);
 
 	//head up a new table
-	echo '<table>
-		<thead>
-			<tr>
-				<th class="SortedColumn">' . __('Item Code') . '</th>
-				<th class="SortedColumn">' . __('Item Description') . '</th>
-				<th class="SortedColumn">' . __('Bin') . '</th>
-				<th class="SortedColumn">' . __('On Hand') . '</th>
-				<th class="SortedColumn">' . __('Demand') . '</th>
-				<th class="SortedColumn">' . __('Supp Ords') . '</th>
-				<th class="SortedColumn">' . __('Previous') . '<br />' .__('Month') . '</th>
-				<th class="SortedColumn">' . __('Last') . '<br />' .__('Month') . '</th>
-				<th class="SortedColumn">' . __('Week') . '<br />' .__('3') . '</th>
-				<th class="SortedColumn">' . __('Week') . '<br />' .__('2') . '</th>
-				<th class="SortedColumn">' . __('Last') . '<br />' .__('Week') . '</th>
-				<th>' . __('Order Qty') . '</th>
-			</tr>
-		</thead>
-		<tbody>';
+	echo '<div class="db-card" style="margin-top: var(--space-6);">
+			<div class="db-card-body" style="padding: 0;">
+				<div class="db-table-wrapper">
+					<table class="db-table">
+						<thead>
+							<tr>
+								<th>' . __('Item') . '</th>
+								<th>' . __('Description') . '</th>
+								<th>' . __('Bin') . '</th>
+								<th class="text-right">' . __('On Hand') . '</th>
+								<th class="text-right">' . __('Demand') . '</th>
+								<th class="text-right">' . __('Ostdg') . '</th>
+								<th class="text-right">' . __('Prev') . '<br />' .__('Month') . '</th>
+								<th class="text-right">' . __('Last') . '<br />' .__('Month') . '</th>
+								<th class="text-right">' . __('Week') . '<br />' .__('3') . '</th>
+								<th class="text-right">' . __('Week') . '<br />' .__('2') . '</th>
+								<th class="text-right">' . __('Last') . '<br />' .__('Week') . '</th>
+								<th style="width: 120px;">' . __('Order Qty') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
 	$i=0;
 
@@ -445,32 +428,38 @@ if (isset($_POST['Supplier']) AND isset($_POST['ShowItems']) AND $_POST['Supplie
 			$_POST['OrderQty' . $i] =0;
 		}
 		echo '<tr>
-				<td>' . $ItemRow['stockid']  . '</td>
+				<td class="db-font-semibold">' . $ItemRow['stockid']  . '</td>
 				<td>' . $ItemRow['description'] . '</td>
-				<td>' . $ItemRow['bin'] . '</td>
-				<td class="number">' . round($ItemRow['qoh'],$ItemRow['decimalplaces']) . '</td>
-				<td class="number">' . round($TotalDemand,$ItemRow['decimalplaces']) . '</td>
-				<td class="number">' . round($QOO,$ItemRow['decimalplaces']) . '</td>
-				<td class="number">' . round($SalesRow['previousmonth'],$ItemRow['decimalplaces']) . '</td>
-				<td class="number">' . round($SalesRow['lastmonth'],$ItemRow['decimalplaces']) . '</td>
-				<td class="number">' . round($SalesRow['wk3'],$ItemRow['decimalplaces']) . '</td>
-				<td class="number">' . round($SalesRow['wk2'],$ItemRow['decimalplaces']) . '</td>
-				<td class="number">' . round($SalesRow['wk1'],$ItemRow['decimalplaces']) . '</td>
-				<td><input type="hidden" name="StockID' . $i . '" value="' . $ItemRow['stockid'] . '" /><input type="text" class="number" name="OrderQty' . $i  . '" value="' . $_POST['OrderQty' . $i] . '" title="' . __('Enter the quantity to purchase of this item') . '" size="6" maxlength="6" /></td>
+				<td class="db-text-muted">' . $ItemRow['bin'] . '</td>
+				<td class="text-right">' . locale_number_format($ItemRow['qoh'],$ItemRow['decimalplaces']) . '</td>
+				<td class="text-right">' . locale_number_format($TotalDemand,$ItemRow['decimalplaces']) . '</td>
+				<td class="text-right">' . locale_number_format($QOO,$ItemRow['decimalplaces']) . '</td>
+				<td class="text-right">' . locale_number_format($SalesRow['previousmonth'],$ItemRow['decimalplaces']) . '</td>
+				<td class="text-right">' . locale_number_format($SalesRow['lastmonth'],$ItemRow['decimalplaces']) . '</td>
+				<td class="text-right">' . locale_number_format($SalesRow['wk3'],$ItemRow['decimalplaces']) . '</td>
+				<td class="text-right">' . locale_number_format($SalesRow['wk2'],$ItemRow['decimalplaces']) . '</td>
+				<td class="text-right">' . locale_number_format($SalesRow['wk1'],$ItemRow['decimalplaces']) . '</td>
+				<td>
+					<input type="hidden" name="StockID' . $i . '" value="' . $ItemRow['stockid'] . '" />
+					<input type="text" class="db-form-input text-right" name="OrderQty' . $i  . '" value="' . $_POST['OrderQty' . $i] . '" title="' . __('Enter the quantity to purchase of this item') . '" />
+				</td>
 			</tr>';
 		$i++;
 	} /*end preferred supplier items while loop */
 
-	echo '</tbody>
-		<tfoot>
-			<tr>
-			<td colspan="7"><input type="submit" name="CreatePO" value="' . __('Create Purchase Order') . '" onclick="return confirm(\'' . __('Clicking this button will create a purchase order for all the quantities in the grid above for immediate delivery. Are you sure?') . '\');"/></td>
-		</tr>
-		</tfoot>
-		</table>';
+	echo '					</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="db-card-footer">
+				<div class="db-form-actions">
+					<button type="submit" name="CreatePO" class="db-btn db-btn-primary" onclick="return confirm(\'' . __('Clicking this button will create a purchase order for all the quantities in the grid above for immediate delivery. Are you sure?') . '\');">' . __('Create Purchase Order') . '</button>
+				</div>
+			</div>
+		</div>';
 }
 
-echo '</div>
+echo '</div> <!-- End db-page -->
 	  </form>';
 
 include(__DIR__ . '/includes/footer.php');

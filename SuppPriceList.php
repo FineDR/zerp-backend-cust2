@@ -148,41 +148,61 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Email'])
 					<meta name="Creator" content="webERP https://www.weberp.org">
 				</head>
 				<body>
-				<div class="centre" id="ReportHeader">
-					' . $_SESSION['CompanyRecord']['coyname'] . '<br />
-					' . __('Supplier Price List for').' '.$CurrentOrAllPrices . '<br />
-					' . __('Printed') . ': ' . date($_SESSION['DefaultDateFormat']) . '<br />
-					' . __('Supplier') . ' - ' . $_POST['supplier'] . ' - ' . $SupplierName . '<br />
-					' . __('Category') . ' - ' . $Categoryname . '<br />
-					' . __('Currency') . ' - ' . $CurrCode . '<br />
-				</div>
-				<table>
-					<thead>
-						<tr>
-							<th class="SortedColumn">' . __('Code') . '</th>
-							<th class="SortedColumn">' . __('Description') . '</th>
-							<th class="SortedColumn">' . __('Conv Factor') . '</th>
-							<th class="SortedColumn">' . __('Price') . '</th>
-							<th class="SortedColumn">' . __('Date From') . '</th>
-							<th class="SortedColumn">' . __('Supp Code') . '</th>
-						</tr>
-					</thead>
-					<tbody>';
+				<div class="db-card">
+					<div class="db-card-body">
+						<div class="db-grid db-grid-4">
+							<div class="db-info-item">
+								<div class="db-info-label">' . __('Report Type') . '</div>
+								<div class="db-info-value">' . $CurrentOrAllPrices . '</div>
+							</div>
+							<div class="db-info-item">
+								<div class="db-info-label">' . __('Supplier') . '</div>
+								<div class="db-info-value">' . $_POST['supplier'] . ' - ' . $SupplierName . '</div>
+							</div>
+							<div class="db-info-item">
+								<div class="db-info-label">' . __('Category') . '</div>
+								<div class="db-info-value">' . $Categoryname . '</div>
+							</div>
+							<div class="db-info-item">
+								<div class="db-info-label">' . __('Currency') . '</div>
+								<div class="db-info-value">' . $CurrCode . '</div>
+							</div>
+						</div>
+					</div>
+				</div>';
+				<div class="db-card" style="margin-top: var(--space-4);">
+					<div class="db-card-body" style="padding: 0;">
+						<div class="db-table-wrapper">
+							<table class="db-table">
+								<thead>
+									<tr>
+										<th>' . __('Code') . '</th>
+										<th>' . __('Description') . '</th>
+										<th class="text-right">' . __('Conv Factor') . '</th>
+										<th class="text-right">' . __('Price') . '</th>
+										<th>' . __('Date From') . '</th>
+										<th>' . __('Supp Code') . '</th>
+									</tr>
+								</thead>
+								<tbody>';
 
 		while ($MyRow = DB_fetch_array($PricesResult)) {
-			$HTML .= '<tr class="striped_row">
-						<td>' . $MyRow['stockid'] . '</td>
+			$HTML .= '<tr>
+						<td class="db-font-semibold">' . $MyRow['stockid'] . '</td>
 						<td>' . $MyRow['description'] . '</td>
-						<td class="number">' . $MyRow['conversionfactor'] . '</td>
-						<td class="number">' . $MyRow['price'] . '</td>
-						<td class="date">' . ConvertSQLDate($MyRow['dateprice']) . '</td>
-						<td>' . $MyRow['suppliers_partno'] . '</td>
+						<td class="text-right">' . $MyRow['conversionfactor'] . '</td>
+						<td class="text-right db-font-bold">' . locale_number_format($MyRow['price'], $CurrDecimalPlaces) . '</td>
+						<td class="text-nowrap">' . ConvertSQLDate($MyRow['dateprice']) . '</td>
+						<td class="db-text-muted">' . $MyRow['suppliers_partno'] . '</td>
 					</tr>';
 
 		}
 
 		$HTML .= '</tbody>
-			</table>';
+							</table>
+						</div>
+					</div>
+				</div>';
 
 	if (isset($_POST['PrintPDF']) or isset($_POST['Email'])) {
 		$HTML .= '</tbody>
@@ -195,8 +215,8 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Email'])
 	} else {
 		$HTML .= '</tbody>
 				</table>
-				<div class="centre">
-					<form><input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" /></form>
+		$HTML .= '<div class="db-form-actions" style="margin-top: var(--space-4); justify-content: center;">
+					<button type="button" class="db-btn db-btn-secondary" onclick="window.close()">' . __('Close Window') . '</button>
 				</div>';
 	}
 
@@ -243,16 +263,32 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Email'])
 
 		$Title = __('Send Report By Email');
 		include(__DIR__ . '/includes/header.php');
-		echo '<div class="centre">
-				<form><input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" /></form>
+		echo '<div class="db-page">
+				<div class="db-page-header">
+					<h1 class="db-page-title">' . $Title . '</h1>
+				</div>
+				<div class="db-card">
+					<div class="db-card-body">
+						<p class="text-center">' . __('The report has been successfully sent via email.') . '</p>
+						<div class="db-form-actions" style="justify-content: center;">
+							<button type="button" class="db-btn db-btn-secondary" onclick="window.close()">' . __('Close Window') . '</button>
+						</div>
+					</div>
+				</div>
 			</div>';
 		include(__DIR__ . '/includes/footer.php');
 	} else {
-		$Title = __('View supplier price');
+		$Title = __('View Supplier Price List');
 		include(__DIR__ . '/includes/header.php');
-		echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/inventory.png" title="' . __('Purchase') . '" alt="" />
-		'. __('Supplier Price List').'</p>';
+		echo '<div class="db-page">
+				<div class="db-page-header">
+					<div>
+						<h1 class="db-page-title">' . $Title . '</h1>
+						<p class="db-page-subtitle">' . __('Viewing price list for') . ' ' . $SupplierName . '</p>
+					</div>
+				</div>';
 		echo $HTML;
+		echo '</div> <!-- End db-page -->';
 		include(__DIR__ . '/includes/footer.php');
 	}
 
@@ -262,21 +298,26 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Email'])
 	$ViewTopic = 'AccountsPayable';
 	$BookMark = '';
 	include(__DIR__ . '/includes/header.php');
-	echo '<p class="page_title_text">
-			<img src="'.$RootPath.'/css/'.$Theme.'/images/inventory.png" title="' . __('Purchase') . '" alt="" />' . ' ' . __('Supplier Price List') . '
-		</p>';
-	echo '<div class="page_help_text">' . __('View the Price List from supplier') . '</div>';
+	echo '<div class="db-page">
+			<div class="db-page-header">
+				<div>
+					<h1 class="db-page-title">' . $Title . '</h1>
+					<p class="db-page-subtitle">' . __('Generate and view price lists for selected suppliers and categories') . '</p>
+				</div>
+			</div>';
 
 	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post" target="_blank">';
 	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
 	$SQL = "SELECT supplierid,suppname FROM `suppliers`";
 	$Result = DB_query($SQL);
-	echo '<fieldset>
-			<legend>', __('Report Criteria'), '</legend>
-			<field>
-				<label for="supplier">' . __('Supplier') . ':</label>
-				<select name="supplier"> ';
+	echo '<div class="db-card">
+			<div class="db-card-title">' . __('Report Criteria') . '</div>
+			<div class="db-card-body">
+				<div class="db-grid db-grid-3">';
+					<div class="db-form-group">
+						<label class="db-form-label">' . __('Supplier') . ':</label>
+						<select name="supplier" class="db-form-select">';
 	while ($MyRow=DB_fetch_array($Result)){
 		if (isset($_POST['supplierid']) and ($MyRow['supplierid'] == $_POST['supplierid'])) {
 			 echo '<option selected="selected" value="' . $MyRow['supplierid'] . '">' . $MyRow['supplierid'].' - '.$MyRow['suppname'] . '</option>';
@@ -284,14 +325,14 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Email'])
 			 echo '<option value="' . $MyRow['supplierid'] . '">' . $MyRow['supplierid'].' - '.$MyRow['suppname'] . '</option>';
 		}
 	}
-	echo '</select>
-		</field>';
+	echo '				</select>
+					</div>';
 
 	$SQL="SELECT categoryid, categorydescription FROM stockcategory";
 	$Result = DB_query($SQL);
-	echo '<field>
-			<label for="category">' . __('Category') . ':</label>
-			<select name="category"> ';
+	echo '			<div class="db-form-group">
+						<label class="db-form-label">' . __('Category') . ':</label>
+						<select name="category" class="db-form-select">';
 		echo '<option value="all">' . __('ALL') . '</option>';
 	while ($MyRow=DB_fetch_array($Result)){
 		if (isset($_POST['categoryid']) and ($MyRow['categoryid'] == $_POST['categoryid'])) {
@@ -300,25 +341,29 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Email'])
 			 echo '<option value="' . $MyRow['categoryid'] . '">' .$MyRow['categoryid'].' - '. $MyRow['categorydescription'] . '</option>';
 		}
 	}
-	echo '</select>
-		</field>';
+	echo '				</select>
+					</div>';
 
-	echo '<field>
-			<label for="price">' . __('Price List') . ':</label>
-			<select name="price">
-				<option value="all">' .__('All Prices') . '</option>
-				<option value="current">' .__('Only Current Price') . '</option>
-			</select>
-		</field>';
-	echo '</fieldset>';
-
-	echo '<div class="centre">
-			<input type="submit" name="PrintPDF" title="Produce PDF Report" value="' . __('Print PDF') . '" />
-			<input type="submit" name="View" title="View Report" value="' . __('View') . '" />
-			<input type="submit" name="Email" title="Email Report" value="' . __('Email') . '" />
+	echo '			<div class="db-form-group">
+						<label class="db-form-label">' . __('Price List') . ':</label>
+						<select name="price" class="db-form-select">
+							<option value="all">' .__('All Prices') . '</option>
+							<option value="current">' .__('Only Current Price') . '</option>
+						</select>
+					</div>
+				</div> <!-- End Grid -->
+			</div> <!-- End Card Body -->
+			<div class="db-card-footer">
+				<div class="db-form-actions">
+					<button type="submit" name="PrintPDF" class="db-btn db-btn-secondary">' . __('Print PDF') . '</button>
+					<button type="submit" name="View" class="db-btn db-btn-primary">' . __('View Results') . '</button>
+					<button type="submit" name="Email" class="db-btn db-btn-outline">' . __('Email Report') . '</button>
+				</div>
+			</div>
 		</div>';
 
-	echo '</form>';
+	echo '</form>
+	</div> <!-- End db-page -->';
 	include(__DIR__ . '/includes/footer.php');
 
 } /*end of else not PrintPDF */

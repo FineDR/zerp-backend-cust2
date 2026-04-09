@@ -14,6 +14,8 @@ $ViewTopic = 'PurchaseOrdering';
 $BookMark = 'PurchaseOrdering';
 include(__DIR__ . '/includes/header.php');
 
+echo '<div class="db-page">';
+
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 
 if (isset($_POST['DeliveryDate'])){$_POST['DeliveryDate'] = ConvertSQLDate($_POST['DeliveryDate']);}
@@ -247,7 +249,18 @@ if (isset($_POST['EnterLines']) or isset($_POST['AllowRePrint'])) {
 } //isset($_POST['EnterLines']) OR isset($_POST['AllowRePrint'])
 /* end of if isset _POST'EnterLines' */
 
-echo '<span style="float:left"><a href="' . $RootPath . '/PO_SelectOSPurchOrder.php?identifier=' . $identifier . '">' . __('Back to Purchase Orders') . '</a></span>';
+echo '<div class="db-page-header">
+		<div>
+			<h1 class="db-page-title">' . $Title . '</h1>
+			<p class="db-page-subtitle">' . __('Manage purchase order header information and supplier details') . '</p>
+		</div>
+		<div class="db-page-actions">
+			<a href="' . $RootPath . '/PO_SelectOSPurchOrder.php?identifier=' . $identifier . '" class="db-btn db-btn-secondary">
+				<svg class="db-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+				' . __('Back to Purchase Orders') . '
+			</a>
+		</div>
+	</div>';
 
 /*The page can be called with ModifyOrderNumber=x where x is a purchase
  * order number. The page then looks up the details of order x and allows
@@ -528,76 +541,85 @@ else {
 } // NOT isset($_POST['Select']) - not called with supplier selection so update variables
 // part of step 1
 if ($_SESSION['RequireSupplierSelection'] == 1 or !isset($_SESSION['PO' . $identifier]->SupplierID) or $_SESSION['PO' . $identifier]->SupplierID == '') {
-	echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/supplier.png" title="' . __('Purchase Order') . '" alt="" />' . ' ' . __('Purchase Order: Select Supplier') . '</p>';
-	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post" id="choosesupplier">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-	if (isset($SuppliersReturned)) {
-		echo '<input type="hidden" name="SuppliersReturned" value="' . $SuppliersReturned . '" />';
-	}
-
-	echo '<fieldset>
-			<legend>', __('Supplier Selection'), '</legend>
-	<field>
-		<label for="Keywords">' . __('Enter text in the supplier name') . ':</label>
-		<input type="text" name="Keywords" autofocus="autofocus" size="20" maxlength="25" />
-	</field>
-	<field>
-		<label for="SuppCode">' . '<b>' . __('OR') . ' </b>' . __('Enter text extract in the supplier code') . ':</label>
-		<input type="text" name="SuppCode" size="15" maxlength="18" />
-	</field>
-	</fieldset>
-	<div class="centre">
-		<input type="submit" name="SearchSuppliers" value="' . __('Search Now') . '" />
-		<input type="submit" value="' . __('Reset') . '" />
-	</div>';
+	echo '<div class="db-card">
+			<div class="db-card-title">
+				<span><svg class="db-card-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ' . __('Purchase Order: Select Supplier') . '</span>
+			</div>
+			<div class="db-card-body">
+				<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post" id="choosesupplier">
+					<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+					if (isset($SuppliersReturned)) {
+						echo '<input type="hidden" name="SuppliersReturned" value="' . $SuppliersReturned . '" />';
+					}
+					echo '<div class="db-grid db-grid-2">
+						<div class="db-form-group">
+							<label class="db-form-label">' . __('Search by Name') . ':</label>
+							<input type="text" name="Keywords" class="db-form-input" placeholder="' . __('Enter keywords...') . '" autofocus="autofocus" size="20" maxlength="25" />
+						</div>
+						<div class="db-form-group">
+							<label class="db-form-label">' . __('Search by Code') . ':</label>
+							<input type="text" name="SuppCode" class="db-form-input" placeholder="' . __('Enter supplier code...') . '" size="15" maxlength="18" />
+						</div>
+					</div>
+					<div class="db-form-actions" style="margin-top: var(--space-4);">
+						<button type="submit" name="SearchSuppliers" class="db-btn db-btn-primary">' . __('Search Now') . '</button>
+						<button type="submit" class="db-btn db-btn-secondary">' . __('Reset') . '</button>
+					</div>
+				</form>
+			</div>
+		</div>';
 
 	if (isset($Result_SuppSelect)) {
-		echo '<table cellpadding="3" class="selection">
-			<thead>
-				<tr>
-				<th class="SortedColumn">' . __('Code') . '</th>
-				<th class="SortedColumn">' . __('Supplier Name') . '</th>
-				<th class="SortedColumn">' . __('Address') . '</th>
-				<th class="SortedColumn">' . __('Currency') . '</th>
-				</tr>
-			</thead>
-			<tbody>';
+		echo '<div class="db-card" style="margin-top: var(--space-4);">
+				<div class="db-card-title">' . __('Search Results') . '</div>
+				<div class="db-table-wrapper">
+					<table class="db-table">
+						<thead>
+							<tr>
+								<th>' . __('Code') . '</th>
+								<th>' . __('Supplier Name') . '</th>
+								<th>' . __('Address') . '</th>
+								<th>' . __('Currency') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
 		while ($MyRow = DB_fetch_array($Result_SuppSelect)) {
-
-			echo '<tr class="striped_row">
-				<td><input type="submit" style="width:100%" name="Select" value="' . $MyRow['supplierid'] . '" /></td>
-				<td>' . $MyRow['suppname'] . '</td><td>';
-
-			for ($i = 1;$i <= 6;$i++) {
+			echo '<tr>
+					<td>
+						<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post">
+							<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+							<input type="submit" name="Select" class="db-btn db-btn-secondary db-btn-sm" value="' . $MyRow['supplierid'] . '" />
+						</form>
+					</td>
+					<td class="db-font-bold">' . $MyRow['suppname'] . '</td>
+					<td>';
+			for ($i = 1; $i <= 6; $i++) {
 				if ($MyRow['address' . $i] != '') {
 					echo $MyRow['address' . $i] . '<br />';
 				}
 			}
 			echo '</td>
-					<td>' . $MyRow['currcode'] . '</td>
+					<td><span class="db-badge db-badge-info">' . $MyRow['currcode'] . '</span></td>
 				</tr>';
-
-			//end of page full new headings if
-
-		} //end of while loop
-		echo '</tbody></table>';
-
+		}
+		echo '</tbody>
+					</table>
+				</div>
+			</div>';
 	}
-	//end if results to show
-	//end if RequireSupplierSelection
-
 } else {
 	/* everything below here only do if a supplier is selected */
 
 	echo '<form id="form1" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post">';
 	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-	echo '<p class="page_title_text">
-			<img src="' . $RootPath . '/css/' . $Theme . '/images/supplier.png" title="' . __('Purchase Order') . '" alt="" />
-			' . $_SESSION['PO' . $identifier]->SupplierName . ' - ' . __('All amounts stated in') . '
-			' . $_SESSION['PO' . $identifier]->CurrCode . '</p>';
+	echo '<div class="db-card">
+			<div class="db-card-title">
+				<span><svg class="db-card-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> ' . $_SESSION['PO' . $identifier]->SupplierName . '</span>
+				<span class="db-badge db-badge-info">' . __('All amounts in') . ' ' . $_SESSION['PO' . $identifier]->CurrCode . '</span>
+			</div>
+			<div class="db-card-body">';
 
 	if (isset($Purch_Item)) {
 		/*This is set if the user hits the link from the supplier purchasing info shown on SelectProduct.php */
@@ -705,31 +727,23 @@ if ($_SESSION['RequireSupplierSelection'] == 1 or !isset($_SESSION['PO' . $ident
 		$_POST['InitiatorName'] = $MyRow['realname'];
 	}
 
-	// Start the main order header details (main fieldset)
-	if ($_SESSION['ExistingOrder']) {
-		$LegendText = __(' Modify Purchase Order Number') . ' ' . $_SESSION['PO' . $identifier]->OrderNo;
-	} else {
-		$LegendText = __('New Purchase Order Header');
-	}
-	echo '<fieldset class="TwoByThreeColumn">
-			<legend>', $LegendText , '</legend>';
-
-	//Order Initiation fieldset
-	echo '<fieldset class="Column1x1">
-			<legend>' . __('Order Initiation Details') . '</legend>';
+	// Order Header Details Grid
+	echo '<div class="db-grid db-grid-3">
+			<div class="db-card db-card-sub">
+				<div class="db-card-title">' . __('Order Initiation') . '</div>
+				<div class="db-card-body">';
 
 	//Purchase Order Date
-	echo '<field>
-			<label>' . __('PO Date') . ':</label>
-			<fieldtext>';
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('PO Date') . ':</label>
+			<div class="db-form-text">';
 	if ($_SESSION['ExistingOrder'] != 0) {
 		echo ConvertSQLDate($_SESSION['PO' . $identifier]->Orig_OrderDate);
 	} else {
-		/* DefaultDateFormat defined in config.php */
 		echo date($_SESSION['DefaultDateFormat']);
 	}
-	echo '</fieldtext>
-		</field>';
+	echo '</div>
+		</div>';
 
 	//Version number for this PO
 	if (isset($_GET['ModifyOrderNumber']) and $_GET['ModifyOrderNumber'] != '') {
@@ -740,27 +754,27 @@ if ($_SESSION['RequireSupplierSelection'] == 1 or !isset($_SESSION['PO' . $ident
 	} else {
 		$_POST['Version'] = '1';
 	}
-	echo '<field>
-			<label for="Version">' . __('Version') . ' #' . ':</label>
-			<input type="hidden" name="Version" size="16" maxlength="15" value="' . $_POST['Version'] . '" />
-			<fieldtext>' . $_POST['Version'] . '</fieldtext>
-		</field>';
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('Version') . ' #:</label>
+			<input type="hidden" name="Version" value="' . $_POST['Version'] . '" />
+			<div class="db-form-text">' . $_POST['Version'] . '</div>
+		</div>';
 
 	//Revision date for this PO
-	echo '<field>
-			<label for="Revised">' . __('Revised') . ':</label>
-			<input type="hidden" name="Revised" size="11" maxlength="15" value="' . date($_SESSION['DefaultDateFormat']) . '" />
-			<fieldtext>' . date($_SESSION['DefaultDateFormat']) . '</fieldtext>
-		</field>';
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('Revised') . ':</label>
+			<input type="hidden" name="Revised" value="' . date($_SESSION['DefaultDateFormat']) . '" />
+			<div class="db-form-text">' . date($_SESSION['DefaultDateFormat']) . '</div>
+		</div>';
 
 	//Delivery Date for this PO
 	if (!isset($_POST['DeliveryDate'])) {
 		$_POST['DeliveryDate'] = date($_SESSION['DefaultDateFormat']);
 	}
-	echo '<field>
-			<label for="DeliveryDate">' . __('Delivery Date') . ':</label>
-			<input required="required" autofocus="autofocus" type="date" name="DeliveryDate" size="11" value="' . FormatDateForSQL($_POST['DeliveryDate']) . '" />
-		</field>';
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('Delivery Date') . ':</label>
+			<input required="required" autofocus="autofocus" type="date" name="DeliveryDate" class="db-form-input" value="' . FormatDateForSQL($_POST['DeliveryDate']) . '" />
+		</div>';
 
 	// Initiator name
 	if (!isset($_POST['Initiator'])) {
@@ -771,424 +785,288 @@ if ($_SESSION['RequireSupplierSelection'] == 1 or !isset($_SESSION['PO' . $ident
 	if (!isset($_POST['InitiatorName'])) {
 		$_POST['InitiatorName'] = $_SESSION['UsersRealName'];
 	}
-	echo '<field>
-			<label for="Initiator">' . __('Initiated By') . ':</label>
-			<input type="hidden" name="Initiator" size="11" maxlength="10" value="' . $_POST['Initiator'] . '" />
-			<fieldtext>' . $_POST['InitiatorName'] . '</fieldtext>
-		</field>';
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('Initiated By') . ':</label>
+			<input type="hidden" name="Initiator" value="' . $_POST['Initiator'] . '" />
+			<div class="db-form-text">' . $_POST['InitiatorName'] . '</div>
+		</div>';
 
 	//Requisition Reference
-	echo '<field>
-			<label for="Requisition">' . __('Requisition Ref') . ':</label>
-			<input type="text" name="Requisition" size="16" maxlength="15" title="" value="' . $_POST['Requisition'] . '" />
-			<fieldhelp>' . __('Enter our purchase requisition reference if needed') . '</fieldhelp>
-		</field>';
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('Requisition Ref') . ':</label>
+			<input type="text" name="Requisition" class="db-form-input" maxlength="15" value="' . $_POST['Requisition'] . '" />
+		</div>';
 
 	//Order Printed Date
-	echo '<field>
-			<label>' . __('Date Printed') . ':</label>';
-
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('Date Printed') . ':</label>';
 	if (isset($_SESSION['PO' . $identifier]->DatePurchaseOrderPrinted) and mb_strlen($_SESSION['PO' . $identifier]->DatePurchaseOrderPrinted) > 6) {
-		echo ConvertSQLDate($_SESSION['PO' . $identifier]->DatePurchaseOrderPrinted);
+		echo '<div class="db-form-text">' . ConvertSQLDate($_SESSION['PO' . $identifier]->DatePurchaseOrderPrinted) . '</div>';
 		$Printed = true;
 	} else {
 		$Printed = false;
-		echo '<fieldtext>', __('Not yet printed') . '</fieldtext>
-			</field>';
+		echo '<div class="db-form-text text-muted">' . __('Not yet printed') . '</div>';
 	}
+	echo '</div>
+		</div> <!-- End Initiation Card Body -->
+	</div> <!-- End Initiation Card -->';
 
+	//Allow order reprint
 	//Allow order reprint
 	if (isset($_POST['AllowRePrint'])) {
 		$SQL = "UPDATE purchorders SET allowprint=1 WHERE orderno='" . $_SESSION['PO' . $identifier]->OrderNo . "'";
 		$Result = DB_query($SQL);
 	}
 	if ($_SESSION['PO' . $identifier]->AllowPrintPO == 0 and empty($_POST['RePrint'])) {
-		echo '<field>
-				<label for="RePrint">' . __('Allow Reprint') . ':</label>
-				<select name="RePrint" onchange="ReloadForm(form1.AllowRePrint)">
-					<option selected="selected" value="0">' . __('No') . '</option>
-					<option value="1">' . __('Yes') . '</option>
-				</select>';
-		echo '<input type="submit" name="AllowRePrint" value="Update" />
-			</field>';
+		echo '<div class="db-form-group">
+				<label class="db-form-label">' . __('Allow Reprint') . ':</label>
+				<div class="db-input-group">
+					<select name="RePrint" class="db-form-select">
+						<option selected="selected" value="0">' . __('No') . '</option>
+						<option value="1">' . __('Yes') . '</option>
+					</select>
+					<button type="submit" name="AllowRePrint" class="db-btn db-btn-secondary db-btn-sm">' . __('Update') . '</button>
+				</div>
+			</div>';
 	} elseif ($Printed) {
-		echo '<field>
-				<label for="RePrint">' . __('Allow Reprint') . ':</label>
-				<fieldtext><a target="_blank"  href="' . $RootPath . '/PO_PDFPurchOrder.php?OrderNo=' . $_SESSION['ExistingOrder'] . '&amp;identifier=' . $identifier . '">' . __('Reprint Now') . '</a></fieldtext>
-			</field>';
+		echo '<div class="db-form-group">
+				<label class="db-form-label">' . __('Allow Reprint') . ':</label>
+				<div class="db-form-text">
+					<a target="_blank" href="' . $RootPath . '/PO_PDFPurchOrder.php?OrderNo=' . $_SESSION['ExistingOrder'] . '&amp;identifier=' . $identifier . '" class="db-link-primary" style="font-weight: 600;">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px; vertical-align: middle;"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+						' . __('Reprint Now') . '
+					</a>
+				</div>
+			</div>';
 	} //$Printed
 
-	//End Order Initiation fieldset
-	echo '</fieldset>';
-
-	//Order status fieldset
-	echo '<fieldset class="Column2x1">
-			<legend>' . __('Order Status') . '</legend>';
+	// Order Status Card
+	echo '<div class="db-card db-card-sub">
+			<div class="db-card-title">' . __('Order Status') . '</div>
+			<div class="db-card-body">';
 
 	if ($_SESSION['ExistingOrder'] != 0 and $_SESSION['PO' . $identifier]->Status == 'Printed') {
-		echo '<field>
-				<td><a href="' . $RootPath . '/GoodsReceived.php?PONumber=' . $_SESSION['PO' . $identifier]->OrderNo . '&amp;identifier=' . $identifier . '">' . __('Receive this order') . '</a></td>
-			</field>';
+		echo '<div class="db-form-group">
+				<a href="' . $RootPath . '/GoodsReceived.php?PONumber=' . $_SESSION['PO' . $identifier]->OrderNo . '&amp;identifier=' . $identifier . '" class="db-btn db-btn-info db-btn-sm">' . __('Receive this order') . '</a>
+			</div>';
 	}
 
-	if ($_SESSION['PO' . $identifier]->Status == '') { //then its a new order
-		echo '<field>
-				<label for="Status">', __('Order Status'), '</label>
+	if ($_SESSION['PO' . $identifier]->Status == '') {
+		echo '<div class="db-form-group">
+				<label class="db-form-label">' . __('Order Status') . ':</label>
 				<input type="hidden" name="Status" value="NewOrder" />
-				<fieldtext>' . __('New Purchase Order') . '</fieldtext>
-			</field>';
+				<div class="db-form-text"><span class="db-badge db-badge-info">' . __('New Purchase Order') . '</span></div>
+			</div>';
 	} else {
-		echo '<field>
-				<label for="Status">' . __('Status') . ' :  </label>
-				<select name="Status" onchange="ReloadForm(form1.UpdateStatus)">';
+		echo '<div class="db-form-group">
+				<label class="db-form-label">' . __('Status') . ':</label>
+				<select name="Status" class="db-form-select" onchange="ReloadForm(form1.UpdateStatus)">';
+				switch ($_SESSION['PO' . $identifier]->Status) {
+					case 'Pending':
+						echo '<option selected="selected" value="Pending">' . __('Pending') . '</option>
+								<option value="Authorised">' . __('Authorised') . '</option>
+								<option value="Rejected">' . __('Rejected') . '</option>';
+					break;
+					case 'Authorised':
+						echo '<option value="Pending">' . __('Pending') . '</option>
+								<option selected="selected" value="Authorised">' . __('Authorised') . '</option>
+								<option value="Cancelled">' . __('Cancelled') . '</option>';
+					break;
+					case 'Printed':
+						echo '<option value="Pending">' . __('Pending') . '</option>
+								<option selected="selected" value="Printed">' . __('Printed') . '</option>
+								<option value="Cancelled">' . __('Cancelled') . '</option>
+								<option value="Completed">' . __('Completed') . '</option>';
+					break;
+					case 'Completed':
+						echo '<option selected="selected" value="Completed">' . __('Completed') . '</option>';
+					break;
+					case 'Rejected':
+						echo '<option selected="selected" value="Rejected">' . __('Rejected') . '</option>
+								<option value="Pending">' . __('Pending') . '</option>
+								<option value="Authorised">' . __('Authorised') . '</option>';
+					break;
+					case 'Cancelled':
+						echo '<option selected="selected" value="Cancelled">' . __('Cancelled') . '</option>
+								<option value="Authorised">' . __('Authorised') . '</option>
+								<option value="Pending">' . __('Pending') . '</option>';
+					break;
+				}
+		echo '  </select>
+			</div>';
 
-		switch ($_SESSION['PO' . $identifier]->Status) {
-			case 'Pending':
-				echo '<option selected="selected" value="Pending">' . __('Pending') . '</option>
-						<option value="Authorised">' . __('Authorised') . '</option>
-						<option value="Rejected">' . __('Rejected') . '</option>';
-			break;
-			case 'Authorised':
-				echo '<option value="Pending">' . __('Pending') . '</option>
-						<option selected="selected" value="Authorised">' . __('Authorised') . '</option>
-						<option value="Cancelled">' . __('Cancelled') . '</option>';
-			break;
-			case 'Printed':
-				echo '<option value="Pending">' . __('Pending') . '</option>
-						<option selected="selected" value="Printed">' . __('Printed') . '</option>
-						<option value="Cancelled">' . __('Cancelled') . '</option>
-						<option value="Completed">' . __('Completed') . '</option>';
-			break;
-			case 'Completed':
-				echo '<option selected="selected" value="Completed">' . __('Completed') . '</option>';
-			break;
-			case 'Rejected':
-				echo '<option selected="selected" value="Rejected">' . __('Rejected') . '</option>
-						<option value="Pending">' . __('Pending') . '</option>
-						<option value="Authorised">' . __('Authorised') . '</option>';
-			break;
-			case 'Cancelled':
-				echo '<option selected="selected" value="Cancelled">' . __('Cancelled') . '</option>
-						<option value="Authorised">' . __('Authorised') . '</option>
-						<option value="Pending">' . __('Pending') . '</option>';
-			break;
-		}
-		echo '</select>
-			</field>';
-
-		echo '<field>
-				<label for="StatusComments">' . __('Status Comment') . ':</label>
-				<input type="text" name="StatusComments" size="50" />
-			</field>
-			<field>
-				<label>', __('Status History'), '</label>
-				<fieldtext>',  html_entity_decode($_SESSION['PO' . $identifier]->StatusComments, ENT_QUOTES, 'UTF-8') . '</fieldtext>
-			</field>
+		echo '<div class="db-form-group">
+				<label class="db-form-label">' . __('Status Comment') . ':</label>
+				<input type="text" name="StatusComments" class="db-form-input" placeholder="' . __('Add a comment...') . '" />
+			</div>
+			<div class="db-form-group">
+				<label class="db-form-label">' . __('Status History') . ':</label>
+				<div class="db-form-text db-history-text" style="max-height: 100px; overflow-y: auto; font-size: 0.85rem; padding: 8px; background: var(--bg-workspace); border-radius: 4px;">' . html_entity_decode($_SESSION['PO' . $identifier]->StatusComments, ENT_QUOTES, 'UTF-8') . '</div>
+			</div>
 			<input type="hidden" name="StatusCommentsComplete" value="' . htmlspecialchars($_SESSION['PO' . $identifier]->StatusComments, ENT_QUOTES, 'UTF-8') . '" />
-			<field>
-				<input type="submit" name="UpdateStatus" value="' . __('Status Update') . '" />
-			</field>';
-	} //end its not a new order
-	//End Order status fieldset
-	echo '</fieldset>';
-
-	//Warehouse info fieldset
-	echo '<fieldset class="Column1x2">
-			<legend>' . __('Warehouse Info') . '</legend>';
-
-	//Warehouse name
-	echo '<field>
-			<label for="StkLocation">' . __('Warehouse') . ':</label>
-			<select required="required" name="StkLocation" onchange="ReloadForm(form1.LookupDeliveryAddress)">';
-	$SQL = "SELECT locations.loccode,
-					locationname
-			FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canupd=1";
-	$LocnResult = DB_query($SQL);
-	while ($LocnRow = DB_fetch_array($LocnResult)) {
-		if (isset($_POST['StkLocation']) and ($_POST['StkLocation'] == $LocnRow['loccode']) or (empty($_POST['StkLocation']) and $LocnRow['loccode'] == $_SESSION['UserStockLocation'])) {
-			echo '<option selected="selected" value="' . $LocnRow['loccode'] . '">' . $LocnRow['locationname'] . '</option>';
-		} else {
-			echo '<option value="' . $LocnRow['loccode'] . '">' . $LocnRow['locationname'] . '</option>';
-		}
+			<div class="db-form-group" style="margin-top: 10px;">
+				<button type="submit" name="UpdateStatus" class="db-btn db-btn-secondary db-btn-sm">' . __('Status Update') . '</button>
+			</div>';
 	}
-	echo '</select>
-		<input type="submit" name="LookupDeliveryAddress" value="' . __('Select') . '" />
-	</field>';
+	echo '  </div> <!-- End Status Card Body -->
+		</div> <!-- End Status Card -->';
 
-	//Warehouse details
-	/* If this is the first time
-	 * the form loaded set up defaults */
-	if (!isset($_POST['StkLocation']) or $_POST['StkLocation'] == '') {
-		$_POST['StkLocation'] = $_SESSION['UserStockLocation'];
+	// Warehouse info fieldset refactored
+	echo '</div> <!-- End Column 1 Grid Row (Initiation + Status) -->';
+	
+	echo '<div class="db-grid db-grid-3"> <!-- Next Grid Row -->
+			<div class="db-card db-card-sub">
+				<div class="db-card-title">' . __('Warehouse Info') . '</div>
+				<div class="db-card-body">
+					<div class="db-form-group">
+						<label class="db-form-label">' . __('Warehouse') . ':</label>
+						<div class="db-input-group">
+							<select required="required" name="StkLocation" class="db-form-select" onchange="ReloadForm(form1.LookupDeliveryAddress)">';
+							$SQL = "SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canupd=1";
+							$LocnResult = DB_query($SQL);
+							while ($LocnRow = DB_fetch_array($LocnResult)) {
+								if (isset($_POST['StkLocation']) and ($_POST['StkLocation'] == $LocnRow['loccode']) or (empty($_POST['StkLocation']) and $LocnRow['loccode'] == $_SESSION['UserStockLocation'])) {
+									echo '<option selected="selected" value="' . $LocnRow['loccode'] . '">' . $LocnRow['locationname'] . '</option>';
+								} else {
+									echo '<option value="' . $LocnRow['loccode'] . '">' . $LocnRow['locationname'] . '</option>';
+								}
+							}
+							echo '</select>
+							<button type="submit" name="LookupDeliveryAddress" class="db-btn db-btn-secondary db-btn-sm">' . __('Select') . '</button>
+						</div>
+					</div>';
 
-		$SQL = "SELECT deladd1,
-			 			deladd2,
-						deladd3,
-						deladd4,
-						deladd5,
-						deladd6,
-						tel,
-						contact
-					FROM locations
-					WHERE loccode='" . $_POST['StkLocation'] . "'";
-
-		$LocnAddrResult = DB_query($SQL);
-		if (DB_num_rows($LocnAddrResult) == 1) {
-			$LocnRow = DB_fetch_array($LocnAddrResult);
-			$_POST['DelAdd1'] = $LocnRow['deladd1'];
-			$_POST['DelAdd2'] = $LocnRow['deladd2'];
-			$_POST['DelAdd3'] = $LocnRow['deladd3'];
-			$_POST['DelAdd4'] = $LocnRow['deladd4'];
-			$_POST['DelAdd5'] = $LocnRow['deladd5'];
-			$_POST['DelAdd6'] = $LocnRow['deladd6'];
-			$_POST['Tel'] = $LocnRow['tel'];
-			$_POST['Contact'] = $LocnRow['contact'];
-
-			$_SESSION['PO' . $identifier]->Location = $_POST['StkLocation'];
-			$_SESSION['PO' . $identifier]->DelAdd1 = $_POST['DelAdd1'];
-			$_SESSION['PO' . $identifier]->DelAdd2 = $_POST['DelAdd2'];
-			$_SESSION['PO' . $identifier]->DelAdd3 = $_POST['DelAdd3'];
-			$_SESSION['PO' . $identifier]->DelAdd4 = $_POST['DelAdd4'];
-			$_SESSION['PO' . $identifier]->DelAdd5 = $_POST['DelAdd5'];
-			$_SESSION['PO' . $identifier]->DelAdd6 = $_POST['DelAdd6'];
-			$_SESSION['PO' . $identifier]->Tel = $_POST['Tel'];
-			$_SESSION['PO' . $identifier]->Contact = $_POST['Contact'];
-
-		} //end a location record was returned
-		else {
-			/*The default location of the user is crook */
-			prnMsg(__('The default stock location set up for this user is not a currently defined stock location') . '. ' . __('Your system administrator needs to amend your user record'), 'error');
-		}
-
-	} //end StkLocation was not set
-	elseif (isset($_POST['LookupDeliveryAddress'])) {
-		$SQL = "SELECT deladd1,
-						deladd2,
-						deladd3,
-						deladd4,
-						deladd5,
-						deladd6,
-						tel,
-						contact
-					FROM locations
-					WHERE loccode='" . $_POST['StkLocation'] . "'";
-
-		$LocnAddrResult = DB_query($SQL);
-		if (DB_num_rows($LocnAddrResult) == 1) {
-			$LocnRow = DB_fetch_array($LocnAddrResult);
-			$_POST['DelAdd1'] = $LocnRow['deladd1'];
-			$_POST['DelAdd2'] = $LocnRow['deladd2'];
-			$_POST['DelAdd3'] = $LocnRow['deladd3'];
-			$_POST['DelAdd4'] = $LocnRow['deladd4'];
-			$_POST['DelAdd5'] = $LocnRow['deladd5'];
-			$_POST['DelAdd6'] = $LocnRow['deladd6'];
-			$_POST['Tel'] = $LocnRow['tel'];
-			$_POST['Contact'] = $LocnRow['contact'];
-
-			$_SESSION['PO' . $identifier]->Location = $_POST['StkLocation'];
-			$_SESSION['PO' . $identifier]->DelAdd1 = $_POST['DelAdd1'];
-			$_SESSION['PO' . $identifier]->DelAdd2 = $_POST['DelAdd2'];
-			$_SESSION['PO' . $identifier]->DelAdd3 = $_POST['DelAdd3'];
-			$_SESSION['PO' . $identifier]->DelAdd4 = $_POST['DelAdd4'];
-			$_SESSION['PO' . $identifier]->DelAdd5 = $_POST['DelAdd5'];
-			$_SESSION['PO' . $identifier]->DelAdd6 = $_POST['DelAdd6'];
-			$_SESSION['PO' . $identifier]->Tel = $_POST['Tel'];
-			$_SESSION['PO' . $identifier]->Contact = $_POST['Contact'];
-		} //There was a location record returned
-
-	} //user clicked  Lookup Delivery Address
-
-	//Delivery Contact
-	echo '<field>
-			<label for="Contact">' . __('Delivery Contact') . ':</label>
-			<input type="text" name="Contact" size="41"  title="" value="' . $_SESSION['PO' . $identifier]->Contact . '" />
-			<fieldhelp>' . __('Enter the name of the contact at the delivery address - normally our warehouse person at that warehouse') . '</fieldhelp>
-		</field>';
-
-	//Warehouse Address
-	echo '<field>
-			<label for="DelAdd1">' . __('Address') . ' 1 :</label>
-			<input type="text" name="DelAdd1" size="41" maxlength="40" value="' . $_POST['DelAdd1'] . '" />
-		</field>
-		<field>
-			<label for="DelAdd2">' . __('Address') . ' 2 :</label>
-			<input type="text" name="DelAdd2" size="41" maxlength="40" value="' . $_POST['DelAdd2'] . '" />
-		</field>
-		<field>
-			<label for="DelAdd3">' . __('Address') . ' 3 :</label>
-			<input type="text" name="DelAdd3" size="41" maxlength="40" value="' . $_POST['DelAdd3'] . '" />
-		</field>
-		<field>
-			<label for="DelAdd4">' . __('Address') . ' 4 :</label>
-			<input type="text" name="DelAdd4" size="41" maxlength="40" value="' . $_POST['DelAdd4'] . '" />
-		</field>
-		<field>
-			<label for="DelAdd5">' . __('Address') . ' 5 :</label>
-			<input type="text" name="DelAdd5" size="21" maxlength="20" value="' . $_POST['DelAdd5'] . '" />
-		</field>
-		<field>
-			<label for="DelAdd6">' . __('Address') . ' 6 :</label>
-			<input type="text" name="DelAdd6" size="16" maxlength="15" value="' . $_POST['DelAdd6'] . '" />
-		</field>';
-
-	//Warehouse Phone Number
-	echo '<field>
-			<label for="Tel">' . __('Phone') . ':</label>
-			<input type="tel" name="Tel" pattern="[0-9+\-\s()]*" size="31" maxlength="30" value="' . $_SESSION['PO' . $identifier]->Tel . '" />
-		</field>';
-
-	//Shipper
-	echo '<field>
-			<label for="DeliveryBy">' . __('Delivery By') . ':</label>
-			<select name="DeliveryBy">';
-	$ShipperResult = DB_query("SELECT shipper_id, shippername FROM shippers ORDER BY shippername");
-	while ($ShipperRow = DB_fetch_array($ShipperResult)) {
-		if (isset($_POST['DeliveryBy']) and ($_POST['DeliveryBy'] == $ShipperRow['shipper_id'])) {
-			echo '<option selected="selected" value="' . $ShipperRow['shipper_id'] . '">' . $ShipperRow['shippername'] . '</option>';
-		} else {
-			echo '<option value="' . $ShipperRow['shipper_id'] . '">' . $ShipperRow['shippername'] . '</option>';
-		}
-	}
-	echo '</select>
-		</field>';
-
-	//End Warehouse Info fieldset
-	echo '</fieldset>';
-
-	//Supplier info fieldset
-	echo '<fieldset class="Column2x2">
-			<legend>' . __('Supplier Info') . '</legend>';
-
-	// Supplier selection
-	echo '<field>
-			<label for="Keywords">' . __('Supplier Selection') . ':</label>
-			<select name="Keywords" onchange="ReloadForm(form1.SearchSuppliers)">';
-	$SuppCoResult = DB_query("SELECT supplierid, suppname FROM suppliers ORDER BY suppname");
-	while ($SuppCoRow = DB_fetch_array($SuppCoResult)) {
-		if ($SuppCoRow['suppname'] == $_SESSION['PO' . $identifier]->SupplierName) {
-			echo '<option selected="selected" value="' . $SuppCoRow['suppname'] . '">' . $SuppCoRow['suppname'] . '</option>';
-		} else {
-			echo '<option value="' . $SuppCoRow['suppname'] . '">' . $SuppCoRow['suppname'] . '</option>';
-		}
-	}
-	echo '</select> ';
-	echo '<input type="submit" name="SearchSuppliers" value="' . __('Select Now') . '" /></td>
-		</field>';
-
-	//Supplier Contact
-	echo '<field>
-			<label for="SupplierContact">' . __('Supplier Contact') . ':</label>
-			<select name="SupplierContact">';
-	$SQL = "SELECT contact FROM suppliercontacts WHERE supplierid='" . $_POST['Select'] . "'";
-	$SuppCoResult = DB_query($SQL);
-	while ($SuppCoRow = DB_fetch_array($SuppCoResult)) {
-		if ($_POST['SupplierContact'] == $SuppCoRow['contact'] or ($_POST['SupplierContact'] == '' and $SuppCoRow['contact'] == $_SESSION['PO' . $identifier]->SupplierContact)) {
-			echo '<option selected="selected" value="' . $SuppCoRow['contact'] . '">' . $SuppCoRow['contact'] . '</option>';
-		} else {
-			echo '<option value="' . $SuppCoRow['contact'] . '">' . $SuppCoRow['contact'] . '</option>';
-		}
-	}
-	echo '</select>
-		</field>';
-
-	// Supplier Address
-	echo '<field>
-			<label for="SuppDelAdd1">' . __('Address') . ' 1 :</label>
-			<input type="text" name="SuppDelAdd1" size="41" maxlength="40" value="' . $_POST['SuppDelAdd1'] . '" />
-		</field>
-		<field>
-			<label for="SuppDelAdd2">' . __('Address') . ' 2 :</label>
-			<td><input type="text" name="SuppDelAdd2" size="41" maxlength="40" value="' . $_POST['SuppDelAdd2'] . '" /></td>
-		</field>
-		<field>
-			<label for="SuppDelAdd3">' . __('Address') . ' 3 :</label>
-			<td><input type="text" name="SuppDelAdd3" size="41" maxlength="40" value="' . $_POST['SuppDelAdd3'] . '" /></td>
-		</field>
-		<field>
-			<label for="SuppDelAdd4">' . __('Address') . ' 4 :</label>
-			<td><input type="text" name="SuppDelAdd4" size="41" maxlength="40" value="' . $_POST['SuppDelAdd4'] . '" /></td>
-		</field>
-		<field>
-			<label for="SuppDelAdd5">' . __('Address') . ' 5 :</label>
-			<td><input type="text" name="SuppDelAdd5" size="41" maxlength="20" value="' . $_POST['SuppDelAdd5'] . '" /></td>
-		</field>
-		<field>
-			<label for="SuppDelAdd6">' . __('Address') . ' 6 :</label>
-			<td><input type="text" name="SuppDelAdd6" size="16" maxlength="15" value="' . $_POST['SuppDelAdd6'] . '" /></td>
-		</field>';
-
-	//Supplier phone contact number
-	echo '<field>
-			<label for="SuppTel">' . __('Phone') . ':</label>
-			<input type="tel" name="SuppTel" pattern="[0-9+\-\s()]*" size="31" maxlength="30" value="' . $_SESSION['PO' . $identifier]->SuppTel . '" />
-		</field>';
-
-	//Payment Terms
-	$Result = DB_query("SELECT terms, termsindicator FROM paymentterms");
-	echo '<field>
-			<label for="PaymentTerms">' . __('Payment Terms') . ':</label>
-			<select name="PaymentTerms">';
-	while ($MyRow = DB_fetch_array($Result)) {
-		if ($MyRow['termsindicator'] == $_SESSION['PO' . $identifier]->PaymentTerms) {
-			echo '<option selected="selected" value="' . $MyRow['termsindicator'] . '">' . $MyRow['terms'] . '</option>';
-		} else {
-			echo '<option value="' . $MyRow['termsindicator'] . '">' . $MyRow['terms'] . '</option>';
-		} //end while loop
-	}
-	echo '</select>
-		</field>';
-
-	// Deliver to
-	$Result = DB_query("SELECT loccode,
-							locationname
-						FROM locations WHERE loccode='" . $_SESSION['PO' . $identifier]->Port . "'");
-	if (DB_num_rows($Result) > 0) {
-		$MyRow = DB_fetch_array($Result);
-		$_POST['Port'] = $MyRow['locationname'];
-	} else {
-		$_POST['Port'] = '';
-	}
-	echo '<field>
-			<label for="Port">' . __('Delivery To') . ':</label>
-			<input type="text" name="Port" size="31" value="' . $_POST['Port'] . '" />
-		</field>';
-
-	//Exchange Rate
-	if ($_SESSION['PO' . $identifier]->CurrCode != $_SESSION['CompanyRecord']['currencydefault']) {
-		echo '<field>
-				<label for="ExRate">' . __('Exchange Rate') . ':' . '</label>
-				<input type="text" name="ExRate" value="' . locale_number_format($_POST['ExRate'], 5) . '" class="number" size="11" />
-			</field>';
-	} else {
-		echo '<field>
-				<label for="ExRate">' . __('Exchange Rate') . ':' . '</label>
-				<input type="hidden" name="ExRate" value="1" />
-				<fieldtext>1.0</fieldtext>
-			</field>';
-	}
-
-	//End Supplier Info fieldset
-	echo '</fieldset>';
-
-	echo '<fieldset class="Column1x3">
-			<legend>', __('Comments'), '</legend>
-			<field>
-				<label for="Comments">' . __('Comments'), '</label>';
-	$Default_Comments = '';
-	if (!isset($_POST['Comments'])) {
-		$_POST['Comments'] = $Default_Comments;
-	}
-	echo '<textarea name="Comments" cols="150" rows="8">' . stripcslashes($_POST['Comments']) . '</textarea>
-		</field>';
-	echo '</fieldset>';
-
-	echo '</fieldset>';
-	// End the main order header details
-	echo '<div class="centre">
-			<input type="submit" name="EnterLines" value="' . __('Enter Line Items') . '" />
+	// Warehouse Address Details
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('Delivery Contact') . ':</label>
+			<input type="text" name="Contact" class="db-form-input" value="' . $_SESSION['PO' . $identifier]->Contact . '" />
 		</div>';
 
+	for ($i = 1; $i <= 6; $i++) {
+		echo '<div class="db-form-group">
+				<label class="db-form-label">' . __('Address') . ' ' . $i . ':</label>
+				<input type="text" name="DelAdd' . $i . '" class="db-form-input" value="' . $_POST['DelAdd' . $i] . '" />
+			</div>';
+	}
+
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('Phone') . ':</label>
+			<input type="tel" name="Tel" class="db-form-input" value="' . $_SESSION['PO' . $identifier]->Tel . '" />
+		</div>
+		<div class="db-form-group">
+			<label class="db-form-label">' . __('Delivery By') . ':</label>
+			<select name="DeliveryBy" class="db-form-select">';
+			$ShipperResult = DB_query("SELECT shipper_id, shippername FROM shippers ORDER BY shippername");
+			while ($ShipperRow = DB_fetch_array($ShipperResult)) {
+				if (isset($_POST['DeliveryBy']) and ($_POST['DeliveryBy'] == $ShipperRow['shipper_id'])) {
+					echo '<option selected="selected" value="' . $ShipperRow['shipper_id'] . '">' . $ShipperRow['shippername'] . '</option>';
+				} else {
+					echo '<option value="' . $ShipperRow['shipper_id'] . '">' . $ShipperRow['shippername'] . '</option>';
+				}
+			}
+	echo '  </select>
+		</div>
+				</div> <!-- End Warehouse Card Body -->
+			</div> <!-- End Warehouse Card -->';
+
+	// Supplier info card
+	echo '	<div class="db-card db-card-sub">
+				<div class="db-card-title">' . __('Supplier Info') . '</div>
+				<div class="db-card-body">
+					<div class="db-form-group">
+						<label class="db-form-label">' . __('Supplier') . ':</label>
+						<div class="db-input-group">
+							<select name="Keywords" class="db-form-select" onchange="ReloadForm(form1.SearchSuppliers)">';
+							$SuppCoResult = DB_query("SELECT supplierid, suppname FROM suppliers ORDER BY suppname");
+							while ($SuppCoRow = DB_fetch_array($SuppCoResult)) {
+								if ($SuppCoRow['suppname'] == $_SESSION['PO' . $identifier]->SupplierName) {
+									echo '<option selected="selected" value="' . $SuppCoRow['suppname'] . '">' . $SuppCoRow['suppname'] . '</option>';
+								} else {
+									echo '<option value="' . $SuppCoRow['suppname'] . '">' . $SuppCoRow['suppname'] . '</option>';
+								}
+							}
+							echo '  </select>
+							<button type="submit" name="SearchSuppliers" class="db-btn db-btn-secondary db-btn-sm">' . __('Select') . '</button>
+						</div>
+					</div>';
+
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('Supplier Contact') . ':</label>
+			<select name="SupplierContact" class="db-form-select">';
+			$SQL = "SELECT contact FROM suppliercontacts WHERE supplierid='" . $_POST['Select'] . "'";
+			$SuppCoResult = DB_query($SQL);
+			while ($SuppCoRow = DB_fetch_array($SuppCoResult)) {
+				if ($_POST['SupplierContact'] == $SuppCoRow['contact'] or ($_POST['SupplierContact'] == '' and $SuppCoRow['contact'] == $_SESSION['PO' . $identifier]->SupplierContact)) {
+					echo '<option selected="selected" value="' . $SuppCoRow['contact'] . '">' . $SuppCoRow['contact'] . '</option>';
+				} else {
+					echo '<option value="' . $SuppCoRow['contact'] . '">' . $SuppCoRow['contact'] . '</option>';
+				}
+			}
+	echo '  </select>
+		</div>';
+
+	for ($i = 1; $i <= 6; $i++) {
+		echo '<div class="db-form-group">
+				<label class="db-form-label">' . __('Address') . ' ' . $i . ':</label>
+				<input type="text" name="SuppDelAdd' . $i . '" class="db-form-input" value="' . $_POST['SuppDelAdd' . $i] . '" />
+			</div>';
+	}
+
+	echo '<div class="db-form-group">
+			<label class="db-form-label">' . __('Phone') . ':</label>
+			<input type="tel" name="SuppTel" class="db-form-input" value="' . $_SESSION['PO' . $identifier]->SuppTel . '" />
+		</div>
+		<div class="db-form-group">
+			<label class="db-form-label">' . __('Payment Terms') . ':</label>
+			<select name="PaymentTerms" class="db-form-select">';
+			$Result = DB_query("SELECT terms, termsindicator FROM paymentterms");
+			while ($MyRow = DB_fetch_array($Result)) {
+				if ($MyRow['termsindicator'] == $_SESSION['PO' . $identifier]->PaymentTerms) {
+					echo '<option selected="selected" value="' . $MyRow['termsindicator'] . '">' . $MyRow['terms'] . '</option>';
+				} else {
+					echo '<option value="' . $MyRow['termsindicator'] . '">' . $MyRow['terms'] . '</option>';
+				}
+			}
+	echo '  </select>
+		</div>
+		<div class="db-form-group">
+			<label class="db-form-label">' . __('Delivery To (Port)') . ':</label>
+			<input type="text" name="Port" class="db-form-input" value="' . $_POST['Port'] . '" />
+		</div>';
+
+	if ($_SESSION['PO' . $identifier]->CurrCode != $_SESSION['CompanyRecord']['currencydefault']) {
+		echo '<div class="db-form-group">
+				<label class="db-form-label">' . __('Exchange Rate') . ':</label>
+				<input type="text" name="ExRate" class="db-form-input text-right" value="' . locale_number_format($_POST['ExRate'], 5) . '" />
+			</div>';
+	} else {
+		echo '<input type="hidden" name="ExRate" value="1" />';
+	}
+	
+	echo '    </div> <!-- End Supplier Card Body -->
+			</div> <!-- End Supplier Card -->';
+
+	// Comments card
+	echo '	<div class="db-card db-card-sub">
+				<div class="db-card-title">' . __('Order Comments') . '</div>
+				<div class="db-card-body">
+					<div class="db-form-group">
+						<textarea name="Comments" class="db-form-input" style="min-height: 120px;" placeholder="' . __('Enter order comments here...') . '">' . stripcslashes($_POST['Comments']) . '</textarea>
+					</div>
+				</div>
+			</div>
+		</div> <!-- End Bottom Grid Row -->';
+	
+	echo '</div> <!-- End Main Form Body (db-card-body) -->
+		  <div class="db-card-footer db-form-actions">
+			<button type="submit" name="EnterLines" class="db-btn db-btn-primary">' . __('Enter Line Items') . '</button>
+		  </div>
+		</div> <!-- End Main Order Card (db-card) -->';
+
 }
+/*end of if supplier selected */
+
+echo '</div> <!-- End db-page -->';
 /*end of if supplier selected */
 
 echo '</form>';

@@ -129,6 +129,15 @@
     .db-row-2col { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 576px) {
+    .db-kpi-row { grid-template-columns: 1fr; }
+    .db-page-header { align-items: flex-start; gap: var(--space-3); }
+    .db-header-actions { width: 100%; flex-direction: column; gap: var(--space-2); }
+    .db-header-actions .db-btn { width: 100%; justify-content: center; }
+    .legacy-menu-tile-grid { grid-template-columns: 1fr; }
+    .legacy-menu-sections { padding: var(--space-4); gap: var(--space-4); }
+}
+
 .db-card {
     background: var(--surface);
     border: 1px solid var(--border);

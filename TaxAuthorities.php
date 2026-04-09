@@ -7,10 +7,19 @@ $ViewTopic = 'Tax';
 $BookMark = 'TaxAuthorities';
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text"><img alt="" src="' . $RootPath . '/css/' . $Theme .
-		'/images/maintenance.png" title="' .
-		__('Tax Authorities Maintenance') . '" />' . ' ' .
-		__('Tax Authorities Maintenance') . '</p>';
+echo '<div class="db-page">
+		<header class="db-page-header">
+			<div>
+				<h2 class="db-page-title">' . $Title . '</h2>
+				<p class="db-page-subtitle">' . __('Configure tax jurisdictions and regulatory bodies') . '</p>
+			</div>
+			<div class="db-header-actions">
+				<a href="' . $RootPath . '/SelectOrderItems.php" class="db-btn db-btn-secondary">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+					' . __('Back to Orders') . '
+				</a>
+			</div>
+		</header>';
 
 if (isset($_POST['SelectedTaxAuthID'])) {
 	$SelectedTaxAuthID =$_POST['SelectedTaxAuthID'];
@@ -127,191 +136,186 @@ if (!isset($SelectedTaxAuthID)) {
 
 /* It could still be the second time the page has been run and a record has been selected for modification - SelectedTaxAuthID will exist because it was sent with the new call. If its the first time the page has been displayed with no parameters then none of the above are true and the list of tax authorities will be displayed with links to delete or edit each. These will call the same page again and allow update/input or deletion of the records*/
 
-	$SQL = "SELECT taxid,
-				description,
-				taxglcode,
-				purchtaxglaccount,
-				bank,
-				bankacc,
-				bankacctype,
-				bankswift
-			FROM taxauthorities";
+	$SQL = "SELECT taxid, description, taxglcode, purchtaxglaccount, bank, bankacc, bankacctype, bankswift FROM taxauthorities";
+	$Result = DB_query($SQL);
 
-	$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The defined tax authorities could not be retrieved because');
-	$Result = DB_query($SQL, $ErrMsg);
+	echo '<div class="card-v2" style="margin-bottom: var(--space-6);">
+			<div class="card-header-v2">
+				<h3>
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+					' . __('Defined Tax Authorities') . '
+				</h3>
+			</div>
+			<div class="db-card-body">
+				<div class="db-table-wrapper">
+					<table class="db-table divider">
+						<thead>
+							<tr>
+								<th>' . __('ID') . '</th>
+								<th>' . __('Authority Description') . '</th>
+								<th>' . __('Input Tax Account') . '</th>
+								<th>' . __('Output Tax Account') . '</th>
+								<th>' . __('Bank Details') . '</th>
+								<th class="text-center">' . __('Actions') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
-	echo '<table class="selection">
-		<thead>
-			<tr>
-				<th class="SortedColumn" >' . __('ID') . '</th>
-				<th class="SortedColumn" >' . __('Tax Authority') . '</th>
-				<th class="SortedColumn" >' . __('Input Tax') . '<br />' . __('GL Account') . '</th>
-				<th class="SortedColumn" >' . __('Output Tax') . '<br />' . __('GL Account') . '</th>
-				<th class="SortedColumn" >' . __('Bank') . '</th>
-				<th class="SortedColumn" >' . __('Bank Account') . '</th>
-				<th class="SortedColumn" >' . __('Bank Act Type') . '</th>
-				<th class="SortedColumn" >' . __('Bank Swift') . '</th>
-				<th colspan="4">&nbsp;</th>
-			</tr>
-		</thead>
-		<tbody>';
-
-	while($MyRow = DB_fetch_row($Result)) {
-		echo  '<tr class="striped_row">
-				<td class="number">', $MyRow[0], '</td>
-				<td>', $MyRow[1], '</td>
-				<td class="number">', $MyRow[3], '</td>
-				<td class="number">', $MyRow[2], '</td>
-				<td>', $MyRow[4], '</td>
-				<td>', $MyRow[5], '</td>
-				<td>', $MyRow[6], '</td>
-				<td>', $MyRow[7], '</td>
-				<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedTaxAuthID=', $MyRow[0], '">' . __('Edit') . '</a></td>
-				<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedTaxAuthID=', $MyRow[0], '&amp;delete=yes" onclick="return confirm(\'' . __('Are you sure you wish to delete this tax authority?') . '\');">' . __('Delete') . '</a></td>
-				<td><a href="', $RootPath . '/TaxAuthorityRates.php?TaxAuthority=', $MyRow[0], '">' . __('Edit Rates') . '</a></td>
+	while ($MyRow = DB_fetch_row($Result)) {
+		echo '<tr>
+				<td class="font-bold">' . $MyRow[0] . '</td>
+				<td>' . $MyRow[1] . '</td>
+				<td class="font-mono">' . $MyRow[3] . '</td>
+				<td class="font-mono">' . $MyRow[2] . '</td>
+				<td>
+					<div class="text-sm font-bold">' . $MyRow[4] . '</div>
+					<div class="text-xs text-muted">' . $MyRow[5] . ' (' . $MyRow[6] . ')</div>
+					<div class="text-xs text-muted">SWIFT: ' . $MyRow[7] . '</div>
+				</td>
+				<td class="text-center">
+					<div class="db-action-group" style="justify-content:center;">
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedTaxAuthID=' . $MyRow[0] . '" class="db-btn db-btn-icon db-btn-ghost" title="' . __('Edit') . '">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+						</a>
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedTaxAuthID=' . $MyRow[0] . '&amp;delete=yes" class="db-btn db-btn-icon db-btn-ghost text-danger" title="' . __('Delete') . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this tax authority?') . '\');">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2-2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+						</a>
+						<a href="' . $RootPath . '/TaxAuthorityRates.php?TaxAuthority=' . $MyRow[0] . '" class="db-btn db-btn-icon db-btn-ghost" title="' . __('Edit Rates') . '">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"></path></svg>
+						</a>
+					</div>
+				</td>
 			</tr>';
-
 	}
-	//END WHILE LIST LOOP
-
-	//end of ifs and buts!
-
-	echo '</tbody></table>';
-}
-
-if (isset($SelectedTaxAuthID)) {
-	echo '<div class="centre">
-			<a href="' .  htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') .'">' . __('Review all defined tax authority records') . '</a>
+	echo '				</tbody>
+					</table>
+				</div>
+			</div>
 		</div>';
 }
 
-
-echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-if (isset($SelectedTaxAuthID)) {
-	//editing an existing tax authority
-
-	$SQL = "SELECT taxglcode,
-				purchtaxglaccount,
-				description,
-				bank,
-				bankacc,
-				bankacctype,
-				bankswift
-			FROM taxauthorities
-			WHERE taxid='" . $SelectedTaxAuthID . "'";
-
-	$Result = DB_query($SQL);
-	$MyRow = DB_fetch_array($Result);
-
-	$_POST['TaxGLCode']	= $MyRow['taxglcode'];
-	$_POST['PurchTaxGLCode']= $MyRow['purchtaxglaccount'];
-	$_POST['Description']	= $MyRow['description'];
-	$_POST['Bank']		= $MyRow['bank'];
-	$_POST['BankAccType']	= $MyRow['bankacctype'];
-	$_POST['BankAcc'] 	= $MyRow['bankacc'];
-	$_POST['BankSwift']	= $MyRow['bankswift'];
-
-
-	echo '<input type="hidden" name="SelectedTaxAuthID" value="' . $SelectedTaxAuthID . '" />';
-
-	echo '<fieldset>
-			<legend>', __('Edit Tax Authority Details'), '</legend>';
-
-}  //end of if $SelectedTaxAuthID only do the else when a new record is being entered
-else {
-
-	if (!isset($_POST['Description'])) {
-		$_POST['Description']='';
+	if (isset($SelectedTaxAuthID)) {
+		echo '<div class="centre" style="margin-bottom: var(--space-6);">
+				<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" class="db-btn db-btn-secondary">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M4 19h16M4 14h16M4 9h16M4 4h16"></path></svg>
+					' . __('Review all defined tax authority records') . '
+				</a>
+			</div>';
 	}
-	echo '<fieldset>
-		<legend>', __('Create New Tax Authority Details'), '</legend>';
-}
 
-$SQL = "SELECT accountcode,
-				accountname
-		FROM chartmaster INNER JOIN accountgroups
-		ON chartmaster.group_=accountgroups.groupname
-		WHERE accountgroups.pandl=0
-		ORDER BY accountcode";
-$Result = DB_query($SQL);
+	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
+	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-echo '<field>
-		<label for="Description">' . __('Tax Type Description') . ':</label>
-		<input type="text" pattern="(?!^ +$)[^><+-]+" title="" placeholder="'.__('Within 20 characters').'" required="required" name="Description" size="21" maxlength="20" value="' . $_POST['Description'] . '" />
-		<fieldhelp>'.__('No illegal characters allowed and should not be blank').'</fieldhelp>
-	</field>';
+	if (isset($SelectedTaxAuthID)) {
+		// Editing an existing tax authority
+		$SQL = "SELECT taxglcode, purchtaxglaccount, description, bank, bankacc, bankacctype, bankswift FROM taxauthorities WHERE taxid='" . $SelectedTaxAuthID . "'";
+		$Result = DB_query($SQL);
+		$MyRow = DB_fetch_array($Result);
 
-echo '<field>
-		<label for="PurchTaxGLCode">' . __('Input tax GL Account') . ':</label>
-		<select name="PurchTaxGLCode">';
-while($MyRow = DB_fetch_array($Result)) {
-	if (isset($_POST['PurchTaxGLCode']) and $MyRow['accountcode']==$_POST['PurchTaxGLCode']) {
-		echo '<option selected="selected" value="';
+		$_POST['TaxGLCode'] = $MyRow['taxglcode'];
+		$_POST['PurchTaxGLCode'] = $MyRow['purchtaxglaccount'];
+		$_POST['Description'] = $MyRow['description'];
+		$_POST['Bank'] = $MyRow['bank'];
+		$_POST['BankAccType'] = $MyRow['bankacctype'];
+		$_POST['BankAcc'] = $MyRow['bankacc'];
+		$_POST['BankSwift'] = $MyRow['bankswift'];
+
+		echo '<input type="hidden" name="SelectedTaxAuthID" value="' . $SelectedTaxAuthID . '" />';
+		echo '<div class="card-v2">
+				<div class="card-header-v2">
+					<h3>
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+						' . __('Edit Tax Authority Details') . ': ' . $SelectedTaxAuthID . '
+					</h3>
+				</div>';
 	} else {
-		echo '<option value="';
+		if (!isset($_POST['Description'])) $_POST['Description'] = '';
+		echo '<div class="card-v2">
+				<div class="card-header-v2">
+					<h3>
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 5v14M5 12h14"></path></svg>
+						' . __('Create New Tax Authority') . '
+					</h3>
+				</div>';
 	}
-	echo $MyRow['accountcode'] . '">' . htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false) . ' ('.$MyRow['accountcode'].')' . '</option>';
-} //end while loop
-echo '</select>
-	</field>';
 
-DB_data_seek($Result,0);
+	$GLAccountsSQL = "SELECT accountcode, accountname FROM chartmaster INNER JOIN accountgroups ON chartmaster.group_=accountgroups.groupname WHERE accountgroups.pandl=0 ORDER BY accountcode";
+	$GLAccountsResult = DB_query($GLAccountsSQL);
 
-echo '<field>
-		<label for="TaxGLCode">' . __('Output tax GL Account') . ':</label>
-		<select name="TaxGLCode">';
-while($MyRow = DB_fetch_array($Result)) {
-	if (isset($_POST['TaxGLCode']) and $MyRow['accountcode']==$_POST['TaxGLCode']) {
-		echo '<option selected="selected" value="';
-	} else {
-		echo '<option value="';
+	echo '<div class="db-card-body">
+			<div class="db-grid db-grid-2">
+				<div class="db-field" style="grid-column: span 2;">
+					<label class="db-label">' . __('Tax Type Description') . '</label>
+					<input type="text" name="Description" class="db-input" required maxlength="20" value="' . $_POST['Description'] . '" placeholder="' . __('Enter authority name') . '" />
+				</div>
+
+				<div class="db-field">
+					<label class="db-label">' . __('Input Tax GL Account (Purchases)') . '</label>
+					<select name="PurchTaxGLCode" class="db-input">';
+	while ($MyRow = DB_fetch_array($GLAccountsResult)) {
+		echo '<option value="' . $MyRow['accountcode'] . '" ' . ((isset($_POST['PurchTaxGLCode']) && $MyRow['accountcode'] == $_POST['PurchTaxGLCode']) ? 'selected' : '') . '>' . htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8') . ' (' . $MyRow['accountcode'] . ')</option>';
 	}
-	echo $MyRow['accountcode'] . '">' . htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false) . ' ('.$MyRow['accountcode'].')' . '</option>';
-} //end while loop
-if (!isset($_POST['Bank'])) {
-	$_POST['Bank']='';
-}
-if (!isset($_POST['BankAccType'])) {
-	$_POST['BankAccType']='';
-}
-if (!isset($_POST['BankAcc'])) {
-	$_POST['BankAcc']='';
-}
-if (!isset($_POST['BankSwift'])) {
-	$_POST['BankSwift']='';
-}
-echo '</select>
-	</field>';
+	echo '			</select>
+				</div>';
 
-echo '<field>
-		<label for="Bank">' . __('Bank Name') . ':</label>
-		<input type="text" name="Bank" size="41" maxlength="40" value="' . $_POST['Bank'] . '" placeholder="'.__('Not more than 40 chacraters').'" />
-	</field>
-	<field>
-		<label for="BankAccType">' . __('Bank Account Type') . ':</label>
-		<input type="text" name="BankAccType" size="15" maxlength="20" value="' . $_POST['BankAccType'] . '" placeholder="'.__('No more than 20 characters').'" />
-	</field>
-	<field>
-		<label for="BankAcc">' . __('Bank Account') . ':</label>
-		<input type="text" name="BankAcc" size="21" maxlength="20" value="' . $_POST['BankAcc'] . '" placeholder="'.__('No more than 20 characters').'" />
-	</field>
-	<field>
-		<label for="BankSwift">' . __('Bank Swift No') . ':</label>
-		<input type="text" name="BankSwift" size="15" maxlength="14" value="' . $_POST['BankSwift'] . '" placeholder="'.__('No more than 15 characters').'" />
-	</field>
-	</fieldset>';
+	DB_data_seek($GLAccountsResult, 0);
 
-echo '<div class="centre">
-		<input type="submit" name="submit" value="' . __('Enter Information') . '" />
-	</div>
-</form>';
+	echo '		<div class="db-field">
+					<label class="db-label">' . __('Output Tax GL Account (Sales)') . '</label>
+					<select name="TaxGLCode" class="db-input">';
+	while ($MyRow = DB_fetch_array($GLAccountsResult)) {
+		echo '<option value="' . $MyRow['accountcode'] . '" ' . ((isset($_POST['TaxGLCode']) && $MyRow['accountcode'] == $_POST['TaxGLCode']) ? 'selected' : '') . '>' . htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8') . ' (' . $MyRow['accountcode'] . ')</option>';
+	}
+	echo '			</select>
+				</div>';
 
-echo '<div class="centre">
-		<a href="' . $RootPath . '/TaxGroups.php">' . __('Tax Group Maintenance') .  '</a><br />
-		<a href="' . $RootPath . '/TaxProvinces.php">' . __('Dispatch Tax Province Maintenance') .  '</a><br />
-		<a href="' . $RootPath . '/TaxCategories.php">' . __('Tax Category Maintenance') .  '</a>
-	</div>';
+	if (!isset($_POST['Bank'])) $_POST['Bank'] = '';
+	if (!isset($_POST['BankAccType'])) $_POST['BankAccType'] = '';
+	if (!isset($_POST['BankAcc'])) $_POST['BankAcc'] = '';
+	if (!isset($_POST['BankSwift'])) $_POST['BankSwift'] = '';
+
+	echo '		<div class="db-field">
+					<label class="db-label">' . __('Bank Name') . '</label>
+					<input type="text" name="Bank" class="db-input" maxlength="40" value="' . $_POST['Bank'] . '" />
+				</div>
+				<div class="db-field">
+					<label class="db-label">' . __('Bank Account Type') . '</label>
+					<input type="text" name="BankAccType" class="db-input" maxlength="20" value="' . $_POST['BankAccType'] . '" />
+				</div>
+				<div class="db-field">
+					<label class="db-label">' . __('Bank Account Number') . '</label>
+					<input type="text" name="BankAcc" class="db-input" maxlength="20" value="' . $_POST['BankAcc'] . '" />
+				</div>
+				<div class="db-field">
+					<label class="db-label">' . __('Bank SWIFT Code') . '</label>
+					<input type="text" name="BankSwift" class="db-input" maxlength="15" value="' . $_POST['BankSwift'] . '" />
+				</div>
+			</div>
+		</div>'; // End db-grid & db-card-body
+
+	echo '<div class="db-card-actions" style="justify-content: center; padding: 2rem; background: var(--surface-alt); border-top: 1px solid var(--border-color);">
+			<button type="submit" name="submit" class="db-btn db-btn-primary db-btn-large">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:10px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+				' . __('Save Tax Authority Information') . '
+			</button>
+		</div>
+	</div></form>'; // End card-v2 & form
+
+	echo '<div class="db-action-grid" style="margin-top:2rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+			<a href="' . $RootPath . '/TaxGroups.php" class="db-btn db-btn-ghost">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+				' . __('Tax Group Maintenance') . '
+			</a>
+			<a href="' . $RootPath . '/TaxProvinces.php" class="db-btn db-btn-ghost">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+				' . __('Tax Province Maintenance') . '
+			</a>
+			<a href="' . $RootPath . '/TaxCategories.php" class="db-btn db-btn-ghost">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+				' . __('Tax Category Maintenance') . '
+			</a>
+		</div>';
+
+	echo '</div>'; // End db-page
 
 include(__DIR__ . '/includes/footer.php');

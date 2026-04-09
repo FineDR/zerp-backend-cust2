@@ -12,6 +12,20 @@ $BookMark = 'Currencies';
 $Title = __('Currencies Maintenance');
 include(__DIR__ . '/includes/header.php');
 
+echo '<div class="db-page">
+		<header class="db-page-header">
+			<div>
+				<h2 class="db-page-title">' . $Title . '</h2>
+				<p class="db-page-subtitle">' . __('Manage international currencies and daily exchange rates') . '</p>
+			</div>
+			<div class="db-header-actions">
+				<a href="' . $RootPath . '/SelectOrderItems.php" class="db-btn db-btn-secondary">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+					' . __('Back to Orders') . '
+				</a>
+			</div>
+		</header>';
+
 include_once(__DIR__ . '/includes/CountriesArray.php');// To get the country name from the country code.
 include_once(__DIR__ . '/includes/CurrenciesArray.php');// To get the currency name from the currency code.
 include_once(__DIR__ . '/includes/SQL_CommonFunctions.php');
@@ -30,10 +44,7 @@ $FunctionalCurrency = $_SESSION['CompanyRecord']['currencydefault'];
 
 $Errors = array();
 
-echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme,
-	'/images/currency.png" title="', // Icon image.
-	$Title, '" /> ', // Icon title.
-	$Title, '</p>';// Page title.
+
 
 if (isset($_POST['submit'])) {
 
@@ -229,23 +240,31 @@ or deletion of the records*/
 				FROM currencies";
 	$Result = DB_query($SQL);
 
-	echo '<table class="selection">';
-	echo '<tr>
-			<th>&nbsp;</th>
-			<th>' . __('Country') . '</th>
-			<th>' . __('ISO4217 Code') . '</th>
-			<th>' . __('Currency Name') . '</th>
-			<th>' . __('Hundredths Name') . '</th>
-			<th>' . __('Decimal Places') . '</th>
-			<th>' . __('Show in webSHOP')  . '</th>
-			<th>' . __('Exchange Rate') . '</th>
-			<th>' . __('1 / Ex Rate') . '</th>
-			<th>' . __('Ex Rate - Live')  . '</th>
-			<th colspan="3">' . __('Maintenance')  . '</th>
-		</tr>';
+	echo '<div class="card-v2" style="margin-bottom: var(--space-6);">
+			<div class="card-header-v2">
+				<h3>
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+					' . __('Defined Currencies') . '
+				</h3>
+			</div>
+			<div class="db-card-body">
+				<div class="db-table-wrapper">
+					<table class="db-table divider">
+						<thead>
+							<tr>
+								<th style="width:40px;"></th>
+								<th>' . __('Code / Country') . '</th>
+								<th>' . __('Currency Name') . '</th>
+								<th class="text-right">' . __('Exchange Rate') . '</th>
+								<th class="text-right">' . __('Live Rate') . '</th>
+								<th class="text-center">' . __('WebSHOP') . '</th>
+								<th class="text-center">' . __('Actions') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
 	/*Get published currency rates from Eurpoean Central Bank */
-	if ($_SESSION['UpdateCurrencyRatesDaily'] !=  '0') {
+	if ($_SESSION['UpdateCurrencyRatesDaily'] != '0') {
 		if ($_SESSION['ExchangeRateFeed'] == 'ECB') {
 			$CurrencyRatesArray = GetECBCurrencyRates();
 		} elseif ($_SESSION['ExchangeRateFeed'] == 'DXR') {
@@ -258,196 +277,185 @@ or deletion of the records*/
 	}
 
 	while ($MyRow = DB_fetch_array($Result)) {
-		if ($MyRow['currabrev']==$FunctionalCurrency) {
-			echo '<tr style="background-color:#FFbbbb">';
-		} else {
-			echo  '<tr class="striped_row">';
-		}
-		// Lets show the country flag
+		$isFunctional = ($MyRow['currabrev'] == $FunctionalCurrency);
+		$rowClass = $isFunctional ? 'style="background: var(--primary-lightest);"' : '';
+		
 		$ImageFile = mb_strtoupper($MyRow['currabrev']) . '.gif';
-
 		if (!file_exists('images/flags/' . $ImageFile)) {
-			$ImageFile =  'blank.gif';
-		}
-		if ($MyRow['webcart'] == 1) {
-			$ShowInWebText = __('Yes');
-		} else {
-			$ShowInWebText = __('No');
+			$ImageFile = 'blank.gif';
 		}
 
-		if ($MyRow['rate'] == 0) {
-			$MyRow['rate'] = 1;
-		}
-		if (!array_key_exists($MyRow['currabrev'], $CurrencyRatesArray)) {
-			$CurrencyRatesArray[$MyRow['currabrev']] = 0;
-		}
+		$Rate = GetCurrencyRate($MyRow['currabrev'], $CurrencyRatesArray);
+		if ($Rate == 0) $Rate = 1;
 
-		$Rate = GetCurrencyRate($MyRow['currabrev'],$CurrencyRatesArray);
-		if ($Rate == 0) {
-			$Rate = 1;
-		}
+		$webBadge = ($MyRow['webcart'] == 1) 
+			? '<span class="db-badge db-badge-success">' . __('Yes') . '</span>'
+			: '<span class="db-badge db-badge-ghost">' . __('No') . '</span>';
 
-		if ($MyRow['currabrev']!= $FunctionalCurrency) {
-			echo '	<td><img alt="" src="', $RootPath , '/images/flags/', $ImageFile, '" /></td>
-					<td>', $CountriesArray[substr($MyRow['currabrev'], 0, 2)], '</td>
-					<td>', $MyRow['currabrev'], '</td>
-					<td>', $CurrencyName[$MyRow['currabrev']], '</td>
-					<td>', $MyRow['hundredsname'], '</td>
-					<td class="number">', locale_number_format($MyRow['decimalplaces'], 0), '</td>
-					<td class="centre">', $ShowInWebText, '</td>
-					<td class="number">', locale_number_format($MyRow['rate'], 'Variable'), '</td>
-					<td class="number">', locale_number_format(1/$MyRow['rate'], 8), '</td>
-					<td class="number">', locale_number_format($Rate, 8), '</td>
-					<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?&amp;SelectedCurrency=', $MyRow['currabrev'], '">', __('Edit'), '</a></td>
-					<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?&amp;SelectedCurrency=', $MyRow['currabrev'], '&amp;delete=1" onclick="return confirm(\'' . __('Are you sure you wish to delete this currency?') . '\');">', __('Delete'), '</a></td>
-					<td><a href="', $RootPath, '/ExchangeRateTrend.php?&amp;CurrencyToShow=' . $MyRow['currabrev'], '">' . __('Graph') . '</a></td>
-				</tr>';
-		} else {
-			echo '	<td><img alt="" src="', $RootPath , '/images/flags/', $ImageFile, '" /></td>
-					<td>', $CountriesArray[substr($MyRow['currabrev'], 0, 2)], '</td>
-					<td>', $MyRow['currabrev'], '</td>
-					<td>', $CurrencyName[$MyRow['currabrev']], '</td>
-					<td>', $MyRow['hundredsname'], '</td>
-					<td class="number">', locale_number_format($MyRow['decimalplaces'], 0), '</td>
-					<td class="centre">', $ShowInWebText, '</td>
-					<td class="number">', locale_number_format(1, 8), '</td>
-					<td class="number">', locale_number_format(1, 2), '</td>
-					<td class="number">', locale_number_format(1, 8), '</td>
-					<td><a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?&amp;SelectedCurrency=' . urlencode($MyRow['currabrev']) . '">' . __('Edit') . '</a></td>
-					<td colspan="2"><a href="' . $RootPath . '/CompanyPreferences.php#CurrencyDefault">' . __('Functional Currency') . '</a></td>
-				</tr>';
+		echo '<tr ' . $rowClass . '>
+				<td><img alt="" src="' . $RootPath . '/images/flags/' . $ImageFile . '" style="border-radius:2px; box-shadow:0 1px 3px rgba(0,0,0,0.1);" /></td>
+				<td>
+					<div class="font-bold">' . $MyRow['currabrev'] . '</div>
+					<div class="text-xs text-muted">' . $CountriesArray[substr($MyRow['currabrev'], 0, 2)] . '</div>
+				</td>
+				<td>
+					<div>' . $CurrencyName[$MyRow['currabrev']] . '</div>
+					<div class="text-xs text-muted">' . $MyRow['hundredsname'] . ' (' . $MyRow['decimalplaces'] . ' d.p.)</div>
+				</td>
+				<td class="text-right">
+					<div class="font-mono">' . locale_number_format($MyRow['rate'], 'Variable') . '</div>
+					<div class="text-xs text-muted">1 / ' . locale_number_format(1 / $MyRow['rate'], 4) . '</div>
+				</td>
+				<td class="text-right">
+					<span class="db-badge ' . (($Rate != $MyRow['rate'] && !$isFunctional) ? 'db-badge-warning' : 'db-badge-ghost') . ' font-mono">' . locale_number_format($Rate, 4) . '</span>
+				</td>
+				<td class="text-center">' . $webBadge . '</td>
+				<td class="text-center">
+					<div class="db-action-group" style="justify-content:center;">
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedCurrency=' . $MyRow['currabrev'] . '" class="db-btn db-btn-icon db-btn-ghost" title="' . __('Edit') . '">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+						</a>';
+		
+		if (!$isFunctional) {
+			echo '		<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedCurrency=' . $MyRow['currabrev'] . '&amp;delete=1" class="db-btn db-btn-icon db-btn-ghost text-danger" title="' . __('Delete') . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this currency?') . '\');">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+						</a>';
 		}
-	} //END WHILE LIST LOOP
-	echo '</table>
-			<br />';
+		
+		echo '			<a href="' . $RootPath . '/ExchangeRateTrend.php?CurrencyToShow=' . $MyRow['currabrev'] . '" class="db-btn db-btn-icon db-btn-ghost" title="' . __('Graph') . '">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+						</a>
+					</div>
+				</td>
+			</tr>';
+	}
+	echo '				</tbody>
+					</table>
+				</div>
+			</div>
+		</div>';
 } //end of ifs and buts!
 
 
-if (isset($SelectedCurrency)) {
-	echo '<div class="centre"><a href="' .htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8')  . '">' . __('Show all currency definitions') . '</a></div>';
-}
+	if (isset($SelectedCurrency)) {
+		echo '<div class="centre" style="margin-bottom: var(--space-6);">
+				<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" class="db-btn db-btn-secondary">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M4 19h16M4 14h16M4 9h16M4 4h16"></path></svg>
+					' . __('Show all currency definitions') . '
+				</a>
+			</div>';
+	}
 
-if (!isset($_GET['delete'])) {
+	if (!isset($_GET['delete'])) {
+		echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
+		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+		if (isset($SelectedCurrency) AND $SelectedCurrency != '') {
+			// Editing an existing currency
+			$SQL = "SELECT currabrev, country, hundredsname, decimalplaces, rate, webcart FROM currencies WHERE currabrev='" . $SelectedCurrency . "'";
+			$Result = DB_query($SQL);
+			$MyRow = DB_fetch_array($Result);
 
-	if (isset($SelectedCurrency) AND $SelectedCurrency!= '') {
-		//editing an existing currency
+			$_POST['Abbreviation'] = $MyRow['currabrev'];
+			$_POST['Country'] = $MyRow['country'];
+			$_POST['HundredsName'] = $MyRow['hundredsname'];
+			$_POST['ExchangeRate'] = locale_number_format($MyRow['rate'], 'Variable');
+			$_POST['DecimalPlaces'] = locale_number_format($MyRow['decimalplaces'], 0);
+			$_POST['webcart'] = $MyRow['webcart'];
 
-		$SQL = "SELECT
-					currabrev,
-					country,
-					hundredsname,
-					decimalplaces,
-					rate,
-					webcart
-				FROM currencies
-				WHERE currabrev='" . $SelectedCurrency . "'";
+			echo '<input type="hidden" name="SelectedCurrency" value="' . $SelectedCurrency . '" />';
+			echo '<input type="hidden" name="Abbreviation" value="' . $_POST['Abbreviation'] . '" />';
 
-		$ErrMsg = __('An error occurred in retrieving the currency information');
-		$Result = DB_query($SQL, $ErrMsg);
-		$MyRow = DB_fetch_array($Result);
+			echo '<div class="card-v2">
+					<div class="card-header-v2">
+						<h3>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+							' . __('Edit Currency Details') . ': ' . $_POST['Abbreviation'] . '
+						</h3>
+					</div>
+					<div class="db-card-body">
+						<div class="db-grid db-grid-2">
+							<div class="db-field">
+								<label class="db-label">' . __('ISO 4217 Currency Code') . '</label>
+								<input type="text" class="db-input" value="' . $_POST['Abbreviation'] . '" disabled />
+							</div>';
 
-		$_POST['Abbreviation'] = $MyRow['currabrev'];
-		$_POST['Country']  = $MyRow['country'];
-		$_POST['HundredsName']  = $MyRow['hundredsname'];
-		$_POST['ExchangeRate']  = locale_number_format($MyRow['rate'], 'Variable');
-		$_POST['DecimalPlaces']  = locale_number_format($MyRow['decimalplaces'], 0);
-		$_POST['webcart']  = $MyRow['webcart'];
-
-		echo '<input type="hidden" name="SelectedCurrency" value="' . $SelectedCurrency . '" />';
-		echo '<input type="hidden" name="Abbreviation" value="' . $_POST['Abbreviation'] . '" />';
-		echo '<fieldset>
-				<legend>', __('Edit Currency Details'), '</legend>
-				<field>
-					<label for="Abbreviation">' . __('ISO 4217 Currency Code').':</label>
-					<fieldtext>' . $_POST['Abbreviation'] . '</fieldtext>
-				</field>';
-
-	} else { //end of if $SelectedCurrency only do the else when a new record is being entered
-		if (!isset($_POST['Abbreviation'])) {$_POST['Abbreviation']='';}
-		echo '<fieldset>
-				<legend>', __('New currency Details'), '</legend>
-				<field>
-					<label for="Abbreviation">' .__('Currency') . ':</label>
-					<select name="Abbreviation">';
-		foreach ($CurrencyName as $CurrencyCode => $CurrencyNameTxt) {
-			echo '<option value="' . $CurrencyCode . '">' . $CurrencyCode . ' - ' . $CurrencyNameTxt . '</option>';
+		} else {
+			if (!isset($_POST['Abbreviation'])) $_POST['Abbreviation'] = '';
+			echo '<div class="card-v2">
+					<div class="card-header-v2">
+						<h3>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 5v14M5 12h14"></path></svg>
+							' . __('New Currency Details') . '
+						</h3>
+					</div>
+					<div class="db-card-body">
+						<div class="db-grid db-grid-2">
+							<div class="db-field">
+								<label class="db-label">' . __('Select Currency') . '</label>
+								<select name="Abbreviation" class="db-input" autofocus>';
+			foreach ($CurrencyName as $CurrencyCode => $CurrencyNameTxt) {
+				echo '<option value="' . $CurrencyCode . '">' . $CurrencyCode . ' - ' . $CurrencyNameTxt . '</option>';
+			}
+			echo '				</select>
+							</div>';
 		}
 
-		echo '</select>
-			</field>';
+		if (!isset($_POST['Country'])) $_POST['Country'] = '';
+		if (!isset($_POST['HundredsName'])) $_POST['HundredsName'] = '';
+		if (!isset($_POST['DecimalPlaces'])) $_POST['DecimalPlaces'] = 2;
+		if (!isset($_POST['ExchangeRate'])) $_POST['ExchangeRate'] = 1;
+		if (!isset($_POST['webcart'])) $_POST['webcart'] = 1;
+
+		echo '<div class="db-field">
+				<label class="db-label">' . __('Country Name') . '</label>';
+		if ($_POST['Abbreviation'] != $FunctionalCurrency) {
+			echo '<input type="text" name="Country" class="db-input" required maxlength="50" value="' . $_POST['Country'] . '" />';
+		} else {
+			echo '<input type="text" class="db-input" value="' . $_POST['Country'] . '" disabled />';
+			echo '<input type="hidden" name="Country" value="' . $_POST['Country'] . '" />';
+		}
+		echo '</div>';
+
+		echo '<div class="db-field">
+				<label class="db-label">' . __('Hundredths Name') . '</label>
+				<input type="text" name="HundredsName" class="db-input" required maxlength="15" value="' . $_POST['HundredsName'] . '" />
+			</div>';
+
+		echo '<div class="db-field">
+				<label class="db-label">' . __('Decimal Places') . '</label>
+				<input type="number" name="DecimalPlaces" class="db-input" required min="0" max="4" value="' . $_POST['DecimalPlaces'] . '" />
+			</div>';
+
+		echo '<div class="db-field">
+				<label class="db-label">' . __('Exchange Rate') . '</label>';
+		if ($_POST['Abbreviation'] != $FunctionalCurrency) {
+			echo '<input type="text" name="ExchangeRate" class="db-input number" required value="' . $_POST['ExchangeRate'] . '" />';
+		} else {
+			echo '<input type="text" class="db-input" value="' . $_POST['ExchangeRate'] . '" disabled />';
+			echo '<input type="hidden" name="ExchangeRate" value="' . $_POST['ExchangeRate'] . '" />';
+		}
+		echo '</div>';
+
+		echo '<div class="db-field">
+				<label class="db-label">' . __('Show in webSHOP') . '</label>
+				<select name="webcart" class="db-input">
+					<option value="1" ' . (($_POST['webcart'] == 1) ? 'selected' : '') . '>' . __('Yes') . '</option>
+					<option value="0" ' . (($_POST['webcart'] == 0) ? 'selected' : '') . '>' . __('No') . '</option>
+				</select>
+			</div>
+		</div></div>'; // End db-grid & db-card-body
+
+		echo '<div class="db-card-actions" style="justify-content: center; padding: 2rem; background: var(--surface-alt); border-top: 1px solid var(--border-color);">
+				<button type="submit" name="submit" class="db-btn db-btn-primary db-btn-large">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:10px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+					' . __('Save Currency Information') . '
+				</button>
+			</div>
+		</div></form>'; // End card-v2 & form
 	}
 
-	echo '<field>
-			<label for="Country">' . __('Country') . ':</label>';
-	if (!isset($_POST['Country'])) {
-		$_POST['Country'] = '';
-	}
-	if ($_POST['Abbreviation'] !=  $FunctionalCurrency) {
-		echo '<input type="text" name="Country" size="30" required="required" minlength="1" maxlength="50" value="' . $_POST['Country'] . '" />';
-	} else {
-		echo '<fieldtext>' . $_POST['Country'] . '</fieldtext>';
-		echo '<input type="hidden" name="Country" value="' . $_POST['Country'] . '" />';
-	}
-	echo '</field>';
-
-	echo '<field>
-			<label for="HundredsName">' . __('Hundredths Name') . ':</label>';
-	if (!isset($_POST['HundredsName'])) {
-		$_POST['HundredsName'] = '';
-	}
-	echo '<input type="text" name="HundredsName" size="10" required="required" minlength="1" maxlength="15" value="' . $_POST['HundredsName'] . '" />
-		</field>';
-
-	echo '<field>
-			<label for="DecimalPlaces">' . __('Decimal Places to Display') . ':</label>';
-	if (!isset($_POST['DecimalPlaces'])) {
-		$_POST['DecimalPlaces'] = 2;
-	}
-	echo '<input class="integer" type="text" name="DecimalPlaces" size="2" required="required" minlength="1" maxlength="2" value="' . $_POST['DecimalPlaces'] . '" />
-		</field>';
-
-	echo '<field>
-			<label for="ExchangeRate">' . __('Exchange Rate') . ':</label>';
-	if (!isset($_POST['ExchangeRate'])) {
-		$_POST['ExchangeRate'] = 1;
-	}
-	if ($_POST['Abbreviation'] !=  $FunctionalCurrency) {
-		echo '<input class="number" maxlength="16" minlength="1" name="ExchangeRate" required="required" size="16" type="text" value="', $_POST['ExchangeRate'], '" />';
-	} else {
-		echo '<fieldtext>', $_POST['ExchangeRate'], '</fieldtext>',
-			 '<input class="number" name="ExchangeRate" type="hidden" value="', $_POST['ExchangeRate'], '" />';
-	}
-	echo '</field>';
-	if (!isset($_POST['webcart'])) {
-		$_POST['webcart'] = 1;
-	}
-
-	echo '<field>
-			<label for="webcart">' . __('Show in webSHOP') . ':</label>
-			<select name="webcart">';
-
-	if ($_POST['webcart']==1) {
-		echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-	} else {
-		echo '<option value="1">' . __('Yes') . '</option>';
-	}
-	if ($_POST['webcart']==0) {
-		echo '<option selected="selected" value="0">' . __('No') . '</option>';
-	} else {
-		echo '<option value="0">' . __('No') . '</option>';
-	}
-
-	echo '</select>
-		</field>
-		</fieldset>';
-
-	echo '<div class="centre">
-			<input type="submit" name="submit" value="' . __('Enter Information') . '" />
-		</div>
-		</form>';
+	echo '</div>'; // End db-page
 
 } //end if record deleted no point displaying form to add record
 

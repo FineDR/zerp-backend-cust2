@@ -9,6 +9,14 @@ include(__DIR__ . '/includes/header.php');
 
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div>
+				<h1 class="db-page-title">' . $Title . '</h1>
+				<p class="db-page-subtitle">' . __('Review and process supplier offers from tenders') . '</p>
+			</div>
+		</div>';
+
 if (isset($_POST['supplierid'])) {
 	$SQL = "SELECT suppname,
 				email,
@@ -40,22 +48,23 @@ if (!isset($_POST['supplierid'])) {
 	if (DB_num_rows($Result) == 0) {
 		prnMsg(__('There are no offers outstanding that you are authorised to deal with'), 'information');
 	} else {
-		echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/supplier.png" title="' . __('Select Supplier') . '" alt="" />' . ' ' . __('Select Supplier') . '</p>';
 		echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
 		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-		echo '<fieldset>
-				<legend>', __('Supplier Selection'), '</legend>
-				<field>
-					<label for="supplierid">' . __('Select Supplier') . '</label>
-					<select name=supplierid>';
+		echo '<div class="db-card">
+				<div class="db-card-title">' . __('Supplier Selection') . '</div>
+				<div class="db-card-body">
+					<div class="db-form-group">
+						<label class="db-form-label">' . __('Select Supplier') . ':</label>
+						<select name="supplierid" class="db-form-select">';
 		while ($MyRow = DB_fetch_array($Result)) {
 			echo '<option value="' . $MyRow['supplierid'] . '">' . $MyRow['suppname'] . '</option>';
 		}
-		echo '</select>
-			</field>
-			</fieldset>
-			<div class="centre">
-				<input type="submit" name="select" value="' . __('Enter Information') . '" />
+		echo '			</select>
+					</div>
+				</div>
+				<div class="db-card-footer db-form-actions">
+					<button type="submit" name="select" class="db-btn db-btn-primary">' . __('Enter Information') . '</button>
+				</div>
 			</div>
 			</form>';
 	}
@@ -90,56 +99,53 @@ if (!isset($_POST['submit']) and isset($_POST['supplierid'])) {
 	$Result = DB_query($SQL);
 
 	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
-	echo '<div>';
 	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-	echo '<p class="page_title_text">
-			<img src="' . $RootPath . '/css/' . $Theme . '/images/supplier.png" title="' . __('Supplier Offers') . '" alt="" />' . ' ' . __('Supplier Offers') . '
-		</p>';
-
-	echo '<table class="selection">
-			<tr>
-				<th>' . __('Offer ID') . '</th>
-				<th>' . __('Supplier') . '</th>
-				<th>' . __('Stock Item') . '</th>
-				<th>' . __('Quantity') . '</th>
-				<th>' . __('Units') . '</th>
-				<th>' . __('Price') . '</th>
-				<th>' . __('Total') . '</th>
-				<th>' . __('Currency') . '</th>
-				<th>' . __('Offer Expires') . '</th>
-				<th>' . __('Accept') . '</th>
-				<th>' . __('Reject') . '</th>
-				<th>' . __('Defer') . '</th>
-			</tr>';
-
-	echo 'The result has rows ' . DB_num_rows($Result) . '<br/>';
+	echo '<div class="db-card">
+			<div class="db-card-title">' . __('Offers from') . ' ' . $SupplierName . '</div>
+			<div class="db-card-body">
+				<div class="db-table-wrapper">
+					<table class="db-table">
+						<thead>
+							<tr>
+								<th>' . __('ID') . '</th>
+								<th>' . __('Stock Item') . '</th>
+								<th class="text-right">' . __('Qty') . '</th>
+								<th>' . __('UOM') . '</th>
+								<th class="text-right">' . __('Price') . '</th>
+								<th class="text-right">' . __('Total') . '</th>
+								<th>' . __('Curr') . '</th>
+								<th>' . __('Expires') . '</th>
+								<th class="text-center">' . __('Accept') . '</th>
+								<th class="text-center">' . __('Reject') . '</th>
+								<th class="text-center">' . __('Defer') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
 	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<tr class="striped_row">
-			<td>' . $MyRow['offerid'] . '</td>
-			<td>' . $MyRow['suppname'] . '</td>
-			<td>' . $MyRow['description'] . '</td>
-			<td class="number">' . locale_number_format($MyRow['quantity'], $MyRow['decimalplaces']) . '</td>
+		echo '<tr>
+			<td class="db-text-muted">' . $MyRow['offerid'] . '</td>
+			<td class="db-font-semibold">' . $MyRow['description'] . '</td>
+			<td class="text-right">' . locale_number_format($MyRow['quantity'], $MyRow['decimalplaces']) . '</td>
 			<td>' . $MyRow['uom'] . '</td>
-			<td class="number">' . locale_number_format($MyRow['price'], $MyRow['currdecimalplaces']) . '</td>
-			<td class="number">' . locale_number_format($MyRow['price'] * $MyRow['quantity'], $MyRow['currdecimalplaces']) . '</td>
-			<td>' . $MyRow['currcode'] . '</td>
-			<td>' . $MyRow['expirydate'] . '</td>
-			<td><input type="radio" name="action' . $MyRow['offerid'] . '" value="1" /></td>
-			<td><input type="radio" name="action' . $MyRow['offerid'] . '" value="2" /></td>
-			<td><input type="radio" checked name="action' . $MyRow['offerid'] . '" value="3" /></td>
-			<td><input type="hidden" name="supplierid" value="' . $MyRow['supplierid'] . '" /></td>
+			<td class="text-right">' . locale_number_format($MyRow['price'], $MyRow['currdecimalplaces']) . '</td>
+			<td class="text-right db-font-bold">' . locale_number_format($MyRow['price'] * $MyRow['quantity'], $MyRow['currdecimalplaces']) . '</td>
+			<td><span class="db-badge db-badge-info">' . $MyRow['currcode'] . '</span></td>
+			<td class="text-nowrap">' . ConvertSQLDate($MyRow['expirydate']) . '</td>
+			<td class="text-center"><label class="db-radio-container"><input type="radio" name="action' . $MyRow['offerid'] . '" value="1" /><span class="db-radio-checkmark"></span></label></td>
+			<td class="text-center"><label class="db-radio-container"><input type="radio" name="action' . $MyRow['offerid'] . '" value="2" /><span class="db-radio-checkmark"></span></label></td>
+			<td class="text-center"><label class="db-radio-container"><input type="radio" checked name="action' . $MyRow['offerid'] . '" value="3" /><span class="db-radio-checkmark"></span></label></td>
+			<input type="hidden" name="supplierid" value="' . $MyRow['supplierid'] . '" />
 		</tr>';
 	}
-	echo '<tr>
-			<td colspan="12">
-				<div class="centre">
-					<input type="submit" name="submit" value="' . __('Enter Information') . '" />
+	echo '				</tbody>
+					</table>
 				</div>
-			</td>
-		</tr>
-		</table>
+			</div>
+			<div class="db-card-footer db-form-actions">
+				<button type="submit" name="submit" class="db-btn db-btn-primary">' . __('Process Selections') . '</button>
+				<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" class="db-btn db-btn-secondary">' . __('Back to Selection') . '</a>
+			</div>
 		</div>
 		</form>';
 } elseif (isset($_POST['submit']) and isset($_POST['supplierid'])) {
@@ -292,4 +298,5 @@ if (!isset($_POST['submit']) and isset($_POST['supplierid'])) {
 	}
 	prnMsg(__('All offers have been processed, and emails sent where appropriate'), 'success');
 }
+echo '</div> <!-- End db-page -->';
 include(__DIR__ . '/includes/footer.php');

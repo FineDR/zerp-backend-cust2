@@ -61,17 +61,35 @@ if (isset($_POST['SummaryType']) and $_POST['SummaryType'] == 'suppname') {
 }
 
 if (isset($_POST['submit'])) {
-	echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/maintenance.png" title="' . __('Search') .
-		'" alt="" />' . ' ' . $Title . '</p>';
+	echo '<div class="db-page">
+			<div class="db-page-header">
+				<div>
+					<h1 class="db-page-title">' . $Title . '</h1>
+					<p class="db-page-subtitle">' . __('Purchase order inquiry results') . '</p>
+				</div>
+			</div>';
 	submit($PartNumber,$PartNumberOp,$SupplierId,$SupplierIdOp,$SupplierName,$SupplierNameOp,$SaveSummaryType);
+	echo '</div>';
 } elseif (isset($_POST['submitcsv'])) {
-	echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/maintenance.png" title="' . __('Search') .
-		'" alt="" />' . ' ' . $Title . '</p>';
+	echo '<div class="db-page">
+			<div class="db-page-header">
+				<div>
+					<h1 class="db-page-title">' . $Title . '</h1>
+					<p class="db-page-subtitle">' . __('Exporting purchase order report to CSV') . '</p>
+				</div>
+			</div>';
 	submitcsv($PartNumber,$PartNumberOp,$SupplierId,$SupplierIdOp,$SupplierName,$SupplierNameOp,$SaveSummaryType);
+	echo '</div>';
 } else {
-	echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/maintenance.png" title="' . __('Search') .
-		'" alt="" />' . $Title . '</p>';
+	echo '<div class="db-page">
+			<div class="db-page-header">
+				<div>
+					<h1 class="db-page-title">' . $Title . '</h1>
+					<p class="db-page-subtitle">' . __('Specify report criteria to filter purchase orders') . '</p>
+				</div>
+			</div>';
 	display();
+	echo '</div>';
 }
 
 
@@ -509,73 +527,79 @@ function submit($PartNumber,$PartNumberOp,$SupplierId,$SupplierIdOp,$SupplierNam
 		$Detail_Array['suppliers.suppname,suppliers.supplierid,purchorderdetails.orderno'] = __('Supplier Name');
 
 		// Display Header info
-		echo '<table class="selection">';
+		echo '<div class="db-card">
+				<div class="db-card-title">' . __('Report Specifications') . '</div>
+				<div class="db-card-body">
+					<div class="db-grid db-grid-4">';
 		if ($_POST['ReportType'] == 'Summary') {
 			$SortBy_Display = $Summary_Array[$SaveSummaryType];
 		} else {
 			$SortBy_Display = $Detail_Array[$_POST['SortBy']];
 		}
-		echo '<tr>
-				<th colspan="2">' . __('Header Details') . '</th>
-			</tr>';
-		echo '<tr class="striped_row">
-				<td>' . __('Purchase Order Report') . '</td>
-				<td>' . $_POST['ReportType'] . ' ' . __('By') . ' '.$SortBy_Display  . '</td>
-			</tr>';
-		echo '<tr class="striped_row">
-				<td>' . __('Date Type') . '</td>
-				<td>' . $_POST['DateType'] . '</td>
-			</tr>';
-		echo '<tr class="striped_row">
-				<td>' . __('Date Range') . '</td>
-				<td>' . $_POST['FromDate'] . ' ' . __('To') . ' ' .  $_POST['ToDate'] . '</td>
-			</tr>';
+		echo '			<div class="db-info-item">
+							<div class="db-info-label">' . __('Report Type') . '</div>
+							<div class="db-info-value">' . $_POST['ReportType'] . ' ' . __('By') . ' '.$SortBy_Display . '</div>
+						</div>';
+		echo '			<div class="db-info-item">
+							<div class="db-info-label">' . __('Date Type') . '</div>
+							<div class="db-info-value">' . $_POST['DateType'] . '</div>
+						</div>';
+		echo '			<div class="db-info-item">
+							<div class="db-info-label">' . __('Date Range') . '</div>
+							<div class="db-info-value">' . $_POST['FromDate'] . ' - ' . $_POST['ToDate'] . '</div>
+						</div>';
 		if (mb_strlen(trim($PartNumber)) > 0) {
-			echo '<tr class="striped_row">
-					<td>' . __('Part Number') . '</td>
-					<td>' . $_POST['PartNumberOp'] . ' ' . $_POST['PartNumber'] . '</td>
-				</tr>';
+			echo '		<div class="db-info-item">
+							<div class="db-info-label">' . __('Part Number') . '</div>
+							<div class="db-info-value">' . $_POST['PartNumberOp'] . ' ' . $_POST['PartNumber'] . '</div>
+						</div>';
 		}
 		if (mb_strlen(trim($_POST['SupplierId'])) > 0) {
-			echo '<tr class="striped_row">
-					<td>' . __('Supplier Number') . '</td>
-					<td>' . $_POST['SupplierIdOp'] . ' ' . $_POST['SupplierId'] . '</td>
-				</tr>';
+			echo '		<div class="db-info-item">
+							<div class="db-info-label">' . __('Supplier Number') . '</div>
+							<div class="db-info-value">' . $_POST['SupplierIdOp'] . ' ' . $_POST['SupplierId'] . '</div>
+						</div>';
 		}
 		if (mb_strlen(trim($_POST['SupplierName'])) > 0) {
-			echo '<tr class="striped_row">
-					<td>' . __('Supplier Name') . '</td>
-					<td>' . $_POST['SupplierNameOp'] . ' ' . $_POST['SupplierName'] . '</td>
-				</tr>';
+			echo '		<div class="db-info-item">
+							<div class="db-info-label">' . __('Supplier Name') . '</div>
+							<div class="db-info-value">' . $_POST['SupplierNameOp'] . ' ' . $_POST['SupplierName'] . '</div>
+						</div>';
 		}
-		echo '<tr class="striped_row">
-				<td>' . __('Line Item Status') . '</td>
-				<td>' . $_POST['LineStatus'] . '</td>
-			</tr>';
-		echo '<tr class="striped_row">
-				<td>' . __('Stock Category') . '</td>
-				<td>' . $_POST['Category'] . '</td>
-			</tr>
-		</table>';
+		echo '			<div class="db-info-item">
+							<div class="db-info-label">' . __('Status') . '</div>
+							<div class="db-info-value">' . $_POST['LineStatus'] . '</div>
+						</div>';
+		echo '			<div class="db-info-item">
+							<div class="db-info-label">' . __('Category') . '</div>
+							<div class="db-info-value">' . $_POST['Category'] . '</div>
+						</div>';
+		echo '		</div>
+				</div>
+			</div>';
 
 		if ($_POST['ReportType'] == 'Detail') {
-			echo '<table class="selection" width="98%">';
+			echo '<div class="db-card" style="margin-top: var(--space-4);">
+					<div class="db-card-body" style="padding: 0;">
+						<div class="db-table-wrapper">
+							<table class="db-table">
+								<thead>';
 			if ($_POST['DateType'] == 'Order') {
-				echo '<tr>
-						<th>' . __('Order No') . '</th>
-						<th>' . __('Part Number') . '</th>
-						<th>' . __('Order Date') . '</th>
-						<th>' . __('Supplier No') . '</th>
-						<th>' . __('Supplier Name') . '</th>
-						<th>' . __('Order Qty') . '</th>
-						<th>' . __('Qty Received') . '</th>
-						<th>' . __('Extended Cost') . '</th>
-						<th>' . __('Extended Price') . '</th>
-						<th>' . __('Invoiced Qty') . '</th>
-						<th>' . __('Line Status') . '</th>
-						<th>' . __('Item Due') . '</th>
-						<th>' . __('Part Description') . '</th>
-					</tr>';
+								<tr>
+									<th>' . __('Order') . '</th>
+									<th>' . __('Part Number') . '</th>
+									<th>' . __('Order Date') . '</th>
+									<th>' . __('Supplier') . '</th>
+									<th class="text-right">' . __('Ord Qty') . '</th>
+									<th class="text-right">' . __('Recd') . '</th>
+									<th class="text-right">' . __('Cost') . '</th>
+									<th class="text-right">' . __('Price') . '</th>
+									<th class="text-right">' . __('Inv') . '</th>
+									<th class="text-center">' . __('Status') . '</th>
+									<th>' . __('Due') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
 
 				$Linectr = 0;
 
@@ -583,20 +607,21 @@ function submit($PartNumber,$PartNumberOp,$SupplierId,$SupplierIdOp,$SupplierNam
 					$Linectr++;
 
 				   // Detail for both DateType of Order
-					echo '<tr class="striped_row">
-							<td><a href="'. $RootPath . '/PO_OrderDetails.php?OrderNo=', $MyRow['orderno'], '">', $MyRow['orderno'], '</a></td>
-							<td>', $MyRow['itemcode'], '</td>
-							<td>', ConvertSQLDate($MyRow['orddate']), '</td>
-							<td>', $MyRow['supplierno'], '</td>
-							<td>', $MyRow['suppname'], '</td>
-							<td class="number">', locale_number_format($MyRow['quantityord'],$MyRow['decimalplaces']), '</td>
-							<td class="number">', locale_number_format($MyRow['quantityrecd'],$MyRow['decimalplaces']), '</td>
-							<td class="number">', locale_number_format($MyRow['extcost'],2), '</td>
-							<td class="number">', locale_number_format($MyRow['extprice'],2), '</td>
-							<td class="number">', locale_number_format($MyRow['qtyinvoiced'],$MyRow['decimalplaces']), '</td>
-							<td>', $MyRow['linestatus'], '</td>
-							<td>', ConvertSQLDate($MyRow['deliverydate']), '</td>
-							<td>', $MyRow['description'], '</td>
+					echo '<tr>
+							<td><a href="'. $RootPath . '/PO_OrderDetails.php?OrderNo=', $MyRow['orderno'], '" class="db-btn db-btn-outline db-btn-sm">', $MyRow['orderno'], '</a></td>
+							<td class="db-font-semibold">', $MyRow['itemcode'], '</td>
+							<td class="text-nowrap">', ConvertSQLDate($MyRow['orddate']), '</td>
+							<td>
+								<div class="db-font-bold">', $MyRow['suppname'], '</div>
+								<div class="db-text-muted db-font-sm">', $MyRow['supplierno'], '</div>
+							</td>
+							<td class="text-right">', locale_number_format($MyRow['quantityord'],$MyRow['decimalplaces']), '</td>
+							<td class="text-right">', locale_number_format($MyRow['quantityrecd'],$MyRow['decimalplaces']), '</td>
+							<td class="text-right">', locale_number_format($MyRow['extcost'],2), '</td>
+							<td class="text-right">', locale_number_format($MyRow['extprice'],2), '</td>
+							<td class="text-right">', locale_number_format($MyRow['qtyinvoiced'],$MyRow['decimalplaces']), '</td>
+							<td class="text-center"><span class="db-badge ' . ($MyRow['linestatus'] == 'Completed' ? 'db-badge-info' : 'db-badge-success') . '">', __($MyRow['linestatus']), '</span></td>
+							<td class="text-nowrap">', ConvertSQLDate($MyRow['deliverydate']), '</td>
 						</tr>';
 							$LastDecimalPlaces = $MyRow['decimalplaces'];
 							$TotalQty += $MyRow['quantityord'];
@@ -606,20 +631,18 @@ function submit($PartNumber,$PartNumberOp,$SupplierId,$SupplierIdOp,$SupplierNam
 							$TotalInvQty += $MyRow['qtyinvoiced'];
 				} //END WHILE LIST LOOP
 				// Print totals
-					echo '<tr class="total_row">
-							<td>', __('Totals'), '</td>
-							<td>', __('Lines - ') . $Linectr, '</td>
-							<td>', ' ', '</td>
-							<td>', ' ', '</td>
-							<td>', ' ', '</td>
-							<td class="number">', locale_number_format($TotalQty,2), '</td>
-							<td class="number">', locale_number_format($TotalRecdQty,2), '</td>
-							<td class="number">', locale_number_format($TotalExtCost,2), '</td>
-							<td class="number">', locale_number_format($TotalExtPrice,2), '</td>
-							<td class="number">', locale_number_format($TotalInvQty,2), '</td>
-							<td>', ' ', '</td>
-							<td colspan="2"></td>
-							</tr>';
+					echo '</tbody>
+							<tfoot>
+								<tr>
+									<td colspan="4" class="text-right db-font-bold">', __('Totals'), ' (', $Linectr, ' ', __('Lines'), ')</td>
+									<td class="text-right db-font-bold">', locale_number_format($TotalQty,2), '</td>
+									<td class="text-right db-font-bold">', locale_number_format($TotalRecdQty,2), '</td>
+									<td class="text-right db-font-bold">', locale_number_format($TotalExtCost,2), '</td>
+									<td class="text-right db-font-bold">', locale_number_format($TotalExtPrice,2), '</td>
+									<td class="text-right db-font-bold">', locale_number_format($TotalInvQty,2), '</td>
+									<td colspan="2"></td>
+								</tr>
+							</tfoot>';
 			} else {
 			  // Header for Date Type of Delivery Date
 				echo '<tr>
@@ -685,7 +708,10 @@ function submit($PartNumber,$PartNumberOp,$SupplierId,$SupplierIdOp,$SupplierNam
 			echo '</table>';
 		} else {
 		  // Print summary stuff
-			echo '<br /><table class="selection" width="98%">';
+			echo '<div class="db-card" style="margin-top: var(--space-4);">
+					<div class="db-card-body" style="padding: 0;">
+						<div class="db-table-wrapper">
+							<table class="db-table">';
 			$SummaryType = $_POST['SummaryType'];
 			// For SummaryType 'suppname' had to add supplierid to it for the GROUP BY in the sql,
 			// but have to take it away for $MyRow[$SummaryType] to be valid
@@ -769,8 +795,10 @@ function submit($PartNumber,$PartNumberOp,$SupplierId,$SupplierIdOp,$SupplierNam
 						<td class="number">', locale_number_format($TotalInvQty,2), '</td>
 						<td></td>
 					</tr>';
-			echo '</table>';
-		} // End of if ($_POST['ReportType']
+			echo '</table>
+						</div>
+					</div>
+				</div>';
 		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">';
 		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 		echo '<input type="hidden" name="ReportType" value="'.$_POST['ReportType'].'" />';
@@ -788,8 +816,9 @@ function submit($PartNumber,$PartNumberOp,$SupplierId,$SupplierIdOp,$SupplierNam
 		echo '<input type="hidden" name="Category" value="'.$_POST['Category'].'" />';
 		echo '<input type="hidden" name="SortBy" value="'.$_POST['SortBy'].'" />';
 		echo '<input type="hidden" name="SummaryType" value="'.$_POST['SummaryType'].'" />';
-		echo '<br /><div class="centre"><input type="submit" name="submitcsv" value="' . __('Export as csv file') . '" /></div>';
-		echo '</div>
+		echo '<div class="db-form-actions" style="margin-top: var(--space-4); justify-content: center;">
+				<button type="submit" name="submitcsv" class="db-btn db-btn-secondary">' . __('Export as CSV File') . '</button>
+			  </div>
 			  </form>';
 	} // End of if inputerror != 1
 } // End of function submit()
@@ -1455,10 +1484,12 @@ function display()  //####DISPLAY_DISPLAY_DISPLAY_DISPLAY_DISPLAY_DISPLAY_#####
 // Display form fields. This function is called the first time
 // the page is called.
 
-	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-		<fieldset>
-		<legend>', __('Report Criteria'), '</legend>
+	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">
+			<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+			<div class="db-card">
+				<div class="db-card-title">' . __('Filter Purchase Orders') . '</div>
+				<div class="db-card-body">
+					<div class="db-grid db-grid-3">';
 		<field>
 			<label for="ReportType">' . __('Report Type') . ':</label>
 			<select required="required" autofocus="autofocus" name="ReportType">
@@ -1576,14 +1607,16 @@ function display()  //####DISPLAY_DISPLAY_DISPLAY_DISPLAY_DISPLAY_DISPLAY_#####
 				<option value="categoryid">' . __('Stock Category') . '</option>
 			</select>
 		</field>
-	</fieldset>
-	<div class="centre">
-		<input type="submit" name="submit" value="' . __('Run Inquiry') . '" />
-	</div>
-	<div class="centre">
-		<input type="submit" name="submitcsv" value="' . __('Export as csv file') . '" />
-	</div>
-	</form>';
+					</div> <!-- End Grid -->
+				</div> <!-- End Card Body -->
+				<div class="db-card-footer">
+					<div class="db-form-actions">
+						<button type="submit" name="submit" class="db-btn db-btn-primary">' . __('Run Inquiry') . '</button>
+						<button type="submit" name="submitcsv" class="db-btn db-btn-secondary">' . __('Export to CSV') . '</button>
+					</div>
+				</div>
+			</div>
+		</form>';
 
 } // End of function display()
 

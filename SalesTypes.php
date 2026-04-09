@@ -7,6 +7,20 @@ $ViewTopic = 'Sales';
 $BookMark = '';
 include(__DIR__ . '/includes/header.php');
 
+echo '<div class="db-page">
+		<header class="db-page-header">
+			<div>
+				<h2 class="db-page-title">' . $Title . '</h2>
+				<p class="db-page-subtitle">' . __('Define various sales types and pricing tiers') . '</p>
+			</div>
+			<div class="db-header-actions">
+				<a href="' . $RootPath . '/SelectOrderItems.php" class="db-btn db-btn-secondary">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+					' . __('Back to Orders') . '
+				</a>
+			</div>
+		</header>';
+
 if (isset($_POST['SelectedType'])){
 	$SelectedType = mb_strtoupper($_POST['SelectedType']);
 } elseif (isset($_GET['SelectedType'])){
@@ -15,7 +29,7 @@ if (isset($_POST['SelectedType'])){
 
 $Errors = array();
 
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/maintenance.png" title="' . __('Search') . '" alt="" />' . ' ' . $Title . '</p>';
+
 
 if (isset($_POST['submit'])) {
 
@@ -172,101 +186,124 @@ if (isset($_POST['Cancel'])){
 	unset($_POST['Sales_Type']);
 }
 
-if (!isset($SelectedType)){
-
-/* It could still be the second time the page has been run and a record has been selected for modification - SelectedType will exist because it was sent with the new call. If its the first time the page has been displayed with no parameters
-then none of the above are true and the list of sales types will be displayed with
-links to delete or edit each. These will call the same page again and allow update/input
-or deletion of the records*/
-
-	$SQL = "SELECT typeabbrev,sales_type FROM salestypes ORDER BY typeabbrev";
+	$SQL = "SELECT typeabbrev, sales_type FROM salestypes ORDER BY typeabbrev";
 	$Result = DB_query($SQL);
 
-	echo '<table class="selection">
-			<thead>
-			<tr>
-				<th class="SortedColumn">' . __('Type Code') . '</th>
-				<th class="SortedColumn">' . __('Type Name') . '</th>
-				<th colspan="2"></th>
-			</tr>
-		</thead>
-		<tbody>';
+	echo '<div class="card-v2" style="margin-bottom: var(--space-6);">
+			<div class="card-header-v2">
+				<h3>
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+					' . __('Defined Sales Types') . '
+				</h3>
+			</div>
+			<div class="db-card-body">
+				<div class="db-table-wrapper">
+					<table class="db-table divider">
+						<thead>
+							<tr>
+								<th>' . __('Code') . '</th>
+								<th>' . __('Type Name') . '</th>
+								<th class="text-center">' . __('Actions') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
-while ($MyRow = DB_fetch_row($Result)) {
-
-	echo '<tr class="striped_row">
-			<td>', $MyRow[0], '</td>
-			<td>', $MyRow[1], '</td>
-			<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedType=', $MyRow[0], '">' . __('Edit') . '</a></td>
-			<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedType=', $MyRow[0], '&amp;delete=yes" onclick="return confirm(\'' . __('Are you sure you wish to delete this price list and all the prices it may have set up?') . '\');">' . __('Delete') . '</a></td>
-		</tr>';
+	while ($MyRow = DB_fetch_row($Result)) {
+		echo '<tr>
+				<td class="font-bold">' . $MyRow[0] . '</td>
+				<td>' . $MyRow[1] . '</td>
+				<td class="text-center">
+					<div class="db-action-group" style="justify-content:center;">
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedType=' . $MyRow[0] . '" class="db-btn db-btn-icon db-btn-ghost" title="' . __('Edit') . '">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+						</a>
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedType=' . $MyRow[0] . '&amp;delete=yes" class="db-btn db-btn-icon db-btn-ghost text-danger" title="' . __('Delete') . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this price list and all the prices it may have set up?') . '\');">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+						</a>
+					</div>
+				</td>
+			</tr>';
 	}
-	//END WHILE LIST LOOP
-	echo '</tbody></table>';
-}
+	echo '				</tbody>
+					</table>
+				</div>
+			</div>
+		</div>';
 
 //end of ifs and buts!
-if (isset($SelectedType)) {
-
-	echo '<br />
-			<div class="centre">
-				<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') .'">' . __('Show All Sales Types Defined') . '</a>
+	if (isset($SelectedType)) {
+		echo '<div class="centre" style="margin-bottom: var(--space-6);">
+				<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" class="db-btn db-btn-secondary">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M4 19h16M4 14h16M4 9h16M4 4h16"></path></svg>
+					' . __('Show All Sales Types Defined') . '
+				</a>
 			</div>';
-}
-if (! isset($_GET['delete'])) {
-
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" >
-		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-
-	// The user wish to EDIT an existing type
-	if ( isset($SelectedType) AND $SelectedType!='' ) {
-
-		$SQL = "SELECT typeabbrev,
-			       sales_type
-		        FROM salestypes
-		        WHERE typeabbrev='" . $SelectedType . "'";
-
-		$Result = DB_query($SQL);
-		$MyRow = DB_fetch_array($Result);
-
-		$_POST['TypeAbbrev'] = $MyRow['typeabbrev'];
-		$_POST['Sales_Type']  = $MyRow['sales_type'];
-
-		echo '<input type="hidden" name="SelectedType" value="' . $SelectedType . '" />
-			<input type="hidden" name="TypeAbbrev" value="' . $_POST['TypeAbbrev'] . '" />
-			<fieldset>
-			<legend>' . __('Edit Sales Type/Price') . '</legend>
-			<field>
-				<label for="TypeAbbrev">' . __('Type Code') . ':</label>
-				<fieldtext>' . $_POST['TypeAbbrev'] . '</fieldtext>
-			</field>';
-
-	} else 	{
-
-		// This is a new type so the user may volunteer a type code
-
-		echo '<fieldset>
-				<legend>' . __('Create Sales Type/Price List') . '</legend>
-				<field>
-					<label for="TypeAbbrev">' . __('Type Code') . ':</label>
-					<input type="text" ' . (in_array('SalesType',$Errors) ? 'class="inputerror"' : '' ) .' size="3" maxlength="2" name="TypeAbbrev" />
-				</field>';
 	}
 
-	if (!isset($_POST['Sales_Type'])) {
-		$_POST['Sales_Type']='';
-	}
-	echo '<field>
-			<label for="Sales_Type">' . __('Sales Type Name') . ':</label>
-			<input type="text" name="Sales_Type" value="' . $_POST['Sales_Type'] . '" />
-		</field>
-		</fieldset>'; // close main table
+	if (!isset($_GET['delete'])) {
+		echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
+		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-	echo '<div class="centre">
-			<input type="submit" name="submit" value="' . __('Accept') . '" /><input type="reset" name="Cancel" value="' . __('Cancel') . '" />
-		</div>
-	</form>';
+		if (isset($SelectedType) AND $SelectedType != '') {
+			$Res = DB_query("SELECT typeabbrev, sales_type FROM salestypes WHERE typeabbrev='" . $SelectedType . "'");
+			$MyRow = DB_fetch_array($Res);
+			$_POST['TypeAbbrev'] = $MyRow['typeabbrev'];
+			$_POST['Sales_Type'] = $MyRow['sales_type'];
+
+			echo '<input type="hidden" name="SelectedType" value="' . $SelectedType . '" />
+				<input type="hidden" name="TypeAbbrev" value="' . $_POST['TypeAbbrev'] . '" />';
+
+			echo '<div class="card-v2">
+					<div class="card-header-v2">
+						<h3>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+							' . __('Edit Sales Type / Price List') . ': ' . $_POST['TypeAbbrev'] . '
+						</h3>
+					</div>
+					<div class="db-card-body">
+						<div class="db-grid db-grid-2">
+							<div class="db-field">
+								<label class="db-label">' . __('Type Code') . '</label>
+								<input type="text" class="db-input" value="' . $_POST['TypeAbbrev'] . '" disabled />
+							</div>';
+
+		} else {
+			echo '<div class="card-v2">
+					<div class="card-header-v2">
+						<h3>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 5v14M5 12h14"></path></svg>
+							' . __('Create Sales Type / Price List') . '
+						</h3>
+					</div>
+					<div class="db-card-body">
+						<div class="db-grid db-grid-2">
+							<div class="db-field">
+								<label class="db-label">' . __('Type Code') . '</label>
+								<input type="text" name="TypeAbbrev" class="db-input" required maxlength="2" autofocus />
+								<p class="db-field-help">' . __('Enter a unique 2-character code') . '</p>
+							</div>';
+		}
+
+		if (!isset($_POST['Sales_Type'])) {
+			$_POST['Sales_Type'] = '';
+		}
+
+		echo '<div class="db-field">
+				<label class="db-label">' . __('Sales Type Name') . '</label>
+				<input type="text" name="Sales_Type" class="db-input" required maxlength="40" value="' . $_POST['Sales_Type'] . '" />
+			</div>
+		</div></div>'; // End db-grid & db-card-body
+
+		echo '<div class="db-card-actions" style="justify-content: center; padding: 2rem; background: var(--surface-alt); border-top: 1px solid var(--border-color);">
+				<button type="submit" name="submit" class="db-btn db-btn-primary db-btn-large">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:10px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+					' . __('Save Sales Type Information') . '
+				</button>
+			</div>
+		</div></form>'; // End card-v2 & form
+	}
+
+	echo '</div>'; // End db-page
 
 } // end if user wish to delete
 
