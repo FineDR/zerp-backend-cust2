@@ -5,20 +5,6 @@ include(__DIR__ . '/includes/DefineCartClass.php');
 
 require(__DIR__ . '/includes/session.php');
 
-/* AJAX Endpoint for Search/Add to Cart */
-if (isset($_GET['Ajax'])) {
-	$identifier = $_GET['identifier'] ?? '';
-	
-	if ($_GET['Ajax'] == 'AddToCart') {
-		$NewItem = $_GET['StockID'];
-		$NewItemQty = filter_number_format($_GET['Qty']) ?? 1;
-		$NewItemDue = date($_SESSION['DefaultDateFormat']);
-		$NewPOLine = 0;
-		include(__DIR__ . '/includes/SelectOrderItems_IntoCart.php');
-		echo 'SUCCESS';
-		exit();
-	}
-}
 
 if (isset($_GET['ModifyOrderNumber'])) {
 	$Title = __('Modifying Order') . ' ' . $_GET['ModifyOrderNumber'];
@@ -90,9 +76,6 @@ include(__DIR__ . '/includes/header.php');
         });
     </script>';
 
-include(__DIR__ . '/includes/GetPrice.php');
-include(__DIR__ . '/includes/SQL_CommonFunctions.php');
-include(__DIR__ . '/includes/StockFunctions.php');
 
 if (isset($_POST['QuickEntry'])){
 	unset($_POST['PartSearch']);
@@ -139,13 +122,53 @@ if (isset($_GET['NewItem'])){
 	$NewItem = trim($_GET['NewItem']);
 }
 
-if (empty($_GET['identifier'])) {
-	/*unique session identifier to ensure that there is no conflict with other order entry sessions on the same machine  */
-	$identifier=date('U');
+if (isset($_GET['identifier'])) {
+	$identifier = $_GET['identifier'];
+} elseif (isset($_POST['identifier'])) {
+	$identifier = $_POST['identifier'];
 } else {
-	$identifier=$_GET['identifier'];
+	/*unique session identifier to ensure that there is no conflict with other order entry sessions on the same machine  */
+	$identifier = date('U');
 }
 
+include(__DIR__ . '/includes/GetPrice.php');
+include(__DIR__ . '/includes/SQL_CommonFunctions.php');
+include(__DIR__ . '/includes/StockFunctions.php');
+
+/* AJAX Endpoint for Search/Add to Cart */
+if (isset($_GET['Ajax'])) {
+	if ($_GET['Ajax'] == 'AddToCart') {
+		$NewItem = $_GET['StockID'];
+		$NewItemQty = filter_number_format($_GET['Qty']) ?? 1;
+		$NewItemDue = date($_SESSION['DefaultDateFormat']);
+		$NewPOLine = 0;
+		$debug_log = __DIR__ . '/SelectOrderItems_debug.log';
+		$log_msg = "[" . date('Y-m-d H:i:s') . "] AJAX AddToCart: StockID=$NewItem, Qty=$NewItemQty, identifier=$identifier\n";
+		
+		if (!isset($_SESSION['Items'.$identifier])) {
+			$log_msg .= "[ERROR] Session Items$identifier is NOT set\n";
+		} else {
+			$log_msg .= "[INFO] Session Items$identifier exists. DebtorNo=" . $_SESSION['Items'.$identifier]->DebtorNo . ", Location=" . $_SESSION['Items'.$identifier]->Location . ", ItemsOrdered=" . $_SESSION['Items'.$identifier]->ItemsOrdered . "\n";
+		}
+
+		ob_start();
+		include(__DIR__ . '/includes/SelectOrderItems_IntoCart.php');
+		$cartOutput = ob_get_clean();
+		
+		if (!empty($cartOutput)) {
+			$log_msg .= "[OUTPUT FROM IntoCart] " . strip_tags($cartOutput) . "\n";
+		}
+		
+		if (isset($_SESSION['Items'.$identifier])) {
+			$log_msg .= "[INFO] ItemsOrdered after processing: " . $_SESSION['Items'.$identifier]->ItemsOrdered . "\n";
+		}
+		$log_msg .= "--------------------------------------------------\n";
+		file_put_contents($debug_log, $log_msg, FILE_APPEND);
+
+		echo 'SUCCESS';
+		exit();
+	}
+}
 if (isset($_GET['NewOrder'])){
   /*New order entry - clear any existing order details from the Items object and initiate a newy*/
 	 if (isset($_SESSION['Items'.$identifier])){
@@ -886,6 +909,7 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 #Always do the stuff below if not looking for a customerid
 
 	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" id="SelectParts" method="post" enctype="multipart/form-data">';
+	echo '<input name="identifier" type="hidden" value="' . $identifier . '" />';
     echo '<div class="db-global-search-container">
 			<div class="db-search-input-group">
 				<input type="text" name="Keywords" id="GlobalSearch" class="db-input" placeholder="' . __('Search products or enter stock code...') . '" value="' . (isset($_POST['Keywords']) ? $_POST['Keywords'] : '') . '" autofocus />
@@ -1455,7 +1479,7 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 					<span class="db-badge">' . $_SESSION['Items'.$identifier]->ItemsOrdered . ' ' . __('Items') . '</span>
 				</div>
 				<div class="db-sidebar-cart-body">';
-
+		$_SESSION['Items'.$identifier]->total = 0;
 		foreach ($_SESSION['Items'.$identifier]->LineItems as $OrderLine) {
 			$LineTotal = $OrderLine->Quantity * $OrderLine->Price * (1 - $OrderLine->DiscountPercent);
 			$DisplayLineTotal = locale_number_format($LineTotal,$_SESSION['Items'.$identifier]->CurrDecimalPlaces);
@@ -1496,9 +1520,9 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 					<span>' . __('Total') . '</span>
 					<span>' . locale_number_format($_SESSION['Items'.$identifier]->total,$_SESSION['Items'.$identifier]->CurrDecimalPlaces) . ' ' . $_SESSION['Items'.$identifier]->DefaultCurrency . '</span>
 				</div>
-				<div class="db-actions" style="margin-top: var(--space-6); flex-direction: column;">
-					<input type="submit" name="Recalculate" class="db-btn db-btn-secondary" style="width: 100%;" value="' . __('Update Quantities') . '" />
-					<input type="submit" name="DeliveryDetails" class="db-btn db-btn-primary" style="width: 100%;" value="' . __('Checkout Now') . '" />
+				<div class="db-actions" style="margin-top: var(--space-6); display: flex; flex-direction: column; gap: 12px;">
+					<input type="submit" name="Recalculate" class="db-btn db-btn-secondary" style="width: 100%;" value="' . __('Refresh Cart Quantities') . '" />
+					<input type="submit" name="DeliveryDetails" class="db-btn db-btn-primary" style="width: 100%;" value="' . __('Proceed to Final Review') . '" />
 				</div>
 			  </div>
 			</div>'; // end db-sidebar-cart

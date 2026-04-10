@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const stockID = card.querySelector('input[name^="StockID"]').value;
                 const qty = card.querySelector('input[name^="OrderQty"]').value;
-                const identifier = new URLSearchParams(window.location.search).get('identifier');
+                const identifierInput = document.querySelector('input[name="identifier"]');
+                const identifier = identifierInput ? identifierInput.value : new URLSearchParams(window.location.search).get('identifier');
 
                 if (parseFloat(qty) <= 0) {
                     alert('Please enter a quantity greater than zero.');
@@ -26,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 fetch(`${window.location.pathname}?Ajax=AddToCart&StockID=${encodeURIComponent(stockID)}&Qty=${qty}&identifier=${identifier}`)
                     .then(response => response.text())
                     .then(data => {
-                        if (data === 'SUCCESS') {
+                        if (data.trim().includes('SUCCESS')) {
                             // Professional feedback: Just reload for now to ensure all PHP logic (discounts, etc.) is applied
                             // In a true headless SPA we would return JSON and update the DOM
                             window.location.reload();

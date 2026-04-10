@@ -538,60 +538,43 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 	} /* end inserted line items into sales order details */
 
 	 DB_Txn_Commit();
-	echo '<br />';
-	if ($_SESSION['Items'.$identifier]->Quotation==1) {
-		prnMsg(__('Quotation Number') . ' ' . $OrderNo . ' ' . __('has been entered'),'success');
-	} else {
-		prnMsg(__('Order Number') . ' ' . $OrderNo . ' ' . __('has been entered'),'success');
+	 
+	 // Modern Success Dashboard
+	 echo '<div class="db-pos-wrapper" style="max-width: 800px; margin: 40px auto; grid-template-columns: 1fr;">
+	 		<div class="db-card" style="text-align: center; padding: 60px 40px;">
+				<div style="width: 80px; height: 80px; background: var(--success); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; font-size: 40px; box-shadow: 0 10px 20px var(--success-glow);">
+					<i class="fas fa-check"></i>
+				</div>
+				<h1 style="font-size: 2rem; font-weight: 800; color: var(--text-main); margin-bottom: 10px;">' . __('Order Placed successfully!') . '</h1>
+				<p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 40px;">' . __('Your ' . ($_SESSION['Items'.$identifier]->Quotation == 1 ? 'quotation' : 'order') . ' has been recorded in the system.') . '</p>
+				
+				<div style="background: var(--bg-workspace); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border); margin-bottom: 40px;">
+					<span style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 5px;">' . ($_SESSION['Items'.$identifier]->Quotation == 1 ? __('Quotation Number') : __('Order Number')) . '</span>
+					<span style="display: block; font-size: 2.5rem; font-weight: 900; color: var(--primary);">' . $OrderNo . '</span>
+				</div>
+
+				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 600px; margin: 0 auto;">';
+
+	if (count($_SESSION['AllowedPageSecurityTokens']) > 1 AND $_POST['Quotation'] == 0) {
+		echo '<a href="' . $RootPath . '/ConfirmDispatch_Invoice.php?identifier='.$identifier . '&amp;OrderNumber=' . $OrderNo .'" class="db-btn db-btn-primary" style="justify-content: center; height: 50px;">
+				<i class="fas fa-file-invoice-dollar" style="margin-right: 10px;"></i> ' . __('Create Invoice Now') . '
+			  </a>';
+		echo '<a target="_blank" href="' . $RootPath . '/PrintCustOrder_generic.php?identifier='.$identifier . '&amp;TransNo=' . $OrderNo . '" class="db-btn db-btn-secondary" style="justify-content: center; height: 50px;">
+				<i class="fas fa-print" style="margin-right: 10px;"></i> ' . __('Print Packing Slip') . '
+			  </a>';
+	} elseif ($_POST['Quotation'] == 1) {
+		echo '<a target="_blank" href="' . $RootPath . '/PDFQuotation.php?identifier='.$identifier . '&amp;QuotationNo=' . $OrderNo . '&orientation=portrait" class="db-btn db-btn-primary" style="justify-content: center; height: 50px;">
+				<i class="fas fa-file-pdf" style="margin-right: 10px;"></i> ' . __('Print Quotation') . '
+			  </a>';
 	}
+	
+	echo '<a href="'. $RootPath .'/SelectOrderItems.php?identifier='.$identifier . '&amp;NewOrder=Yes" class="db-btn db-btn-secondary" style="justify-content: center; height: 50px; grid-column: span ' . ($_POST['Quotation'] == 1 ? '1' : '2') . ';">
+			<i class="fas fa-plus-circle" style="margin-right: 10px;"></i> ' . __('Begin New Transaction') . '
+		  </a>';
 
-	if (count($_SESSION['AllowedPageSecurityTokens'])>1) {
-		/* Only allow print of packing slip for internal staff - customer logon's cannot go here */
-
-		if ($_POST['Quotation']==0) { /*then its not a quotation its a real order */
-
-			echo '<fieldset>
-					<tr>
-						<td><img src="'.$RootPath.'/css/'.$Theme.'/images/printer.png" title="' . __('Print') . '" alt="" /></td>
-						<td>' . ' ' . '<a target="_blank" href="' . $RootPath . '/PrintCustOrder.php?identifier='.$identifier . '&amp;TransNo=' . $OrderNo . '">' . __('Print packing slip') . ' (' . __('Preprinted stationery') . ')' . '</a></td>
-					</tr>';
-			echo '<tr>
-					<td><img src="'.$RootPath.'/css/'.$Theme.'/images/printer.png" title="' . __('Print') . '" alt="" /></td>
-					<td>' . ' ' . '<a target="_blank" href="' . $RootPath . '/PrintCustOrder_generic.php?identifier='.$identifier . '&amp;TransNo=' . $OrderNo . '">' . __('Print packing slip') . ' (' . __('Laser') . ')' . '</a></td>
-				</tr>';
-
-			echo '<tr>
-					<td><img src="'.$RootPath.'/css/'.$Theme.'/images/reports.png" title="' . __('Invoice') . '" alt="" /></td>
-					<td>' . ' ' . '<a href="' . $RootPath . '/ConfirmDispatch_Invoice.php?identifier='.$identifier . '&amp;OrderNumber=' . $OrderNo .'">' . __('Confirm Dispatch and Produce Invoice') . '</a></td>
-				</tr>';
-
-			echo '</fieldset>';
-
-		} else {
-			/*link to print the quotation */
-			echo '<fieldset>
-					<tr>
-						<td><img src="'.$RootPath.'/css/'.$Theme.'/images/printer.png" title="' . __('Order') . '" alt=""></td>
-						<td>' . ' ' . '<a href="' . $RootPath . '/PDFQuotation.php?identifier='.$identifier . '&amp;QuotationNo=' . $OrderNo . '&orientation=landscape" target="_blank">' . __('Print Quotation (Landscape)') . '</a></td>
-					</tr>';
-			echo '<fieldset>
-					<tr>
-						<td><img src="'.$RootPath.'/css/'.$Theme.'/images/printer.png" title="' . __('Order') . '" alt="" /></td>
-						<td>' . ' ' . '<a href="' . $RootPath . '/PDFQuotation.php?identifier='.$identifier . '&amp;QuotationNo=' . $OrderNo . '&orientation=portrait" target="_blank">' .  __('Print Quotation (Portrait)')  . '</a></td>
-					</tr>
-					</fieldset>';
-		}
-		echo '<fieldset>
-				<tr>
-					<td><img src="'.$RootPath.'/css/'.$Theme.'/images/sales.png" title="' . __('Order') . '" alt="" /></td>
-					<td>' . ' ' . '<a href="'. $RootPath .'/SelectOrderItems.php?identifier='.$identifier . '&amp;NewOrder=Yes">' .  __('Add Another Sales Order')  . '</a></td>
-				</tr>
-				</fieldset>
-					</table>';
-	} else {
-		/*its a customer logon so thank them */
-		prnMsg(__('Thank you for your business'),'success');
-	}
+	echo '</div>
+			</div>
+	 	  </div>';
 
 	unset($_SESSION['Items'.$identifier]->LineItems);
 	unset($_SESSION['Items'.$identifier]);
@@ -1142,14 +1125,13 @@ echo'<field>
 
 echo '</fieldset>';
 
-echo '<div class="centre">
-		<input type="submit" name="BackToLineDetails" value="' . __('Modify Order Lines') . '" />';
-
+echo '<div class="centre" style="margin-top:20px; display:flex; gap:15px; justify-content:center;">
+		<input type="submit" name="BackToLineDetails" class="db-btn db-btn-secondary" value="' . __('Return to Cart') . '" />' ;
 if ($_SESSION['ExistingOrder'.$identifier]==0) {
-	echo '<input type="submit" name="ProcessOrder" value="' . __('Place Order') . '" />';
-	echo '<input type="submit" name="MakeRecurringOrder" value="' . __('Create Recurring Order') . '" />';
+	echo '<input type="submit" name="ProcessOrder" class="db-btn db-btn-primary" value="' . __('Confirm & Place Order') . '" />';
+	echo '<input type="submit" name="MakeRecurringOrder" class="db-btn db-btn-secondary" value="' . __('Create Recurring Order') . '" />';
 } else {
-	echo '<input type="submit" name="ProcessOrder" value="' . __('Commit Order Changes') . '" />';
+	echo '<input type="submit" name="ProcessOrder" class="db-btn db-btn-primary" value="' . __('Confirm Order Changes') . '" />';
 }
 
 echo '</div>

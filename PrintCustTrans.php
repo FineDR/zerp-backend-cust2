@@ -105,17 +105,17 @@ if (isset($PrintPDF)
 							paymentterms.terms,
 							paymentterms.dayinfollowingmonth,
 							paymentterms.daysbeforedue,
-							salesorders.deliverto,
-							salesorders.deladd1,
-							salesorders.deladd2,
-							salesorders.deladd3,
-							salesorders.deladd4,
-							salesorders.deladd5,
-							salesorders.deladd6,
-							salesorders.customerref,
-							salesorders.orderno,
-							salesorders.orddate,
-							locations.locationname,
+							COALESCE(salesorders.deliverto, custbranch.brname) as deliverto,
+							COALESCE(salesorders.deladd1, custbranch.braddress1) as deladd1,
+							COALESCE(salesorders.deladd2, custbranch.braddress2) as deladd2,
+							COALESCE(salesorders.deladd3, custbranch.braddress3) as deladd3,
+							COALESCE(salesorders.deladd4, custbranch.braddress4) as deladd4,
+							COALESCE(salesorders.deladd5, custbranch.braddress5) as deladd5,
+							COALESCE(salesorders.deladd6, custbranch.braddress6) as deladd6,
+							COALESCE(salesorders.customerref, '') as customerref,
+							COALESCE(salesorders.orderno, '" . __('Direct Sale') . "') as orderno,
+							COALESCE(salesorders.orddate, debtortrans.trandate) as orddate,
+							COALESCE(locations.locationname, '') as locationname,
 							shippers.shippername,
 							custbranch.brname,
 							custbranch.braddress1,
@@ -140,15 +140,15 @@ if (isset($PrintPDF)
 						INNER JOIN custbranch
 						ON debtortrans.debtorno=custbranch.debtorno
 						AND debtortrans.branchcode=custbranch.branchcode
-						INNER JOIN salesorders
+						LEFT JOIN salesorders
 						ON debtortrans.order_ = salesorders.orderno
 						INNER JOIN shippers
 						ON debtortrans.shipvia=shippers.shipper_id
 						INNER JOIN salesman
 						ON custbranch.salesman=salesman.salesmancode
-						INNER JOIN locations
+						LEFT JOIN locations
 						ON salesorders.fromstkloc=locations.loccode
-						INNER JOIN locationusers
+						LEFT JOIN locationusers
 						ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
 						INNER JOIN paymentterms
 						ON debtorsmaster.paymentterms=paymentterms.termsindicator
