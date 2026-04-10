@@ -76,7 +76,15 @@ include($PathPrefix . 'includes/MiscFunctions.php');
 // Need the language in this variable as this is the variable used elsewhere in webERP
 /// @todo is that true? There seems to be no usage of $DefaultLanguage in the installer code, nor in any other functions it uses...
 $DefaultLanguage = $_SESSION['Installer']['Language'];
-include($PathPrefix . 'includes/LanguageSetup.php');
+if (!function_exists('__')) {
+	function __($Text) {
+		return $Text;
+	}
+}
+
+if (file_exists($PathPrefix . 'includes/LanguageSetup.php')) {
+	include($PathPrefix . 'includes/LanguageSetup.php');
+}
 
 echo "<!DOCTYPE html>\n";
 

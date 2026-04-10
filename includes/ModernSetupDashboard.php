@@ -164,6 +164,7 @@ while ($row = DB_fetch_assoc($resRecent)) {
             </table>
         </div>
     </div>
+    </div> <!-- Close db-row-2col -->
 
     <!-- Extended Menu -->
     <div class="legacy-menu-container">

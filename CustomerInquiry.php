@@ -395,7 +395,6 @@ if (DB_num_rows($TransResult) == 0) {
 
 	}
 
-}
 //end of while loop
 
 	echo '</tbody></table></div></div></div></div>'; // Close db-table, db-table-wrapper, db-card-body, card-v2, db-page

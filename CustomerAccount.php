@@ -347,7 +347,6 @@ foreach ($Transactions as $MyRow) {
 	$FormatedTranDate = ConvertSQLDate($MyRow['trandate']);
 
 	if ($MyRow['type']==10) { //its an invoice
-	if ($MyRow['type']==10) { //its an invoice
 		echo '<tr>
 			<td>' . __($MyRow['typename']) . '</td>
 			<td>' . $MyRow['transno'] . '</td>

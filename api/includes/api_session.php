@@ -43,7 +43,15 @@ session_name('webERPapi');
 session_start();
 $WebErpSessionType = 'api';
 
-include($PathPrefix . 'includes/LanguageSetup.php');
+if (!function_exists('__')) {
+	function __($Text) {
+		return $Text;
+	}
+}
+
+if (file_exists($PathPrefix . 'includes/LanguageSetup.php')) {
+	include($PathPrefix . 'includes/LanguageSetup.php');
+}
 //  Establish a DB connection, if possible. NOTE that this connection
 //  may not have the same 'value' as any previous connection, so
 //  save the new one in the session variable.

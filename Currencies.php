@@ -457,6 +457,4 @@ or deletion of the records*/
 
 	echo '</div>'; // End db-page
 
-} //end if record deleted no point displaying form to add record
-
 include(__DIR__ . '/includes/footer.php');

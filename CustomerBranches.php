@@ -667,7 +667,7 @@ if (!isset($_GET['delete'])) {
 	echo '<div class="db-grid db-grid-2">
 			<div class="db-field">
 				<label class="db-label">' . __('Street Address') . '</label>
-				<input tabindex="4" type="text" name="BrAddress1" class="db-input" maxlength="40" placeholder="' . __('Line 1') . '" value="'. $_POST['BrAddress1'].'" />';
+				<input tabindex="4" type="text" name="BrAddress1" class="db-input" maxlength="40" placeholder="' . __('Line 1') . '" value="'. $_POST['BrAddress1'].'" /><br />
 
 				<input tabindex="5" type="text" name="BrAddress2" class="db-input" maxlength="40" placeholder="' . __('Line 2') . '" value="'. $_POST['BrAddress2'].'" style="margin-top: 8px;" />
 			</div>
@@ -707,12 +707,12 @@ if (!isset($_GET['delete'])) {
 			<div class="db-field">
 				<label class="db-label">' . __('Special Instructions') . '</label>
 				<input tabindex="10" type="text" name="SpecialInstructions" class="db-input" value="'. $_POST['SpecialInstructions'].'" />
-			</div>';
+			</div>
 
 			<div class="db-field">
 				<label class="db-label">' . __('Days to Deliver') . '</label>
 				<input tabindex="11" type="text" name="EstDeliveryDays" class="db-input db-number" maxlength="2" value="'. $_POST['EstDeliveryDays'].'" />
-			</div>';
+			</div>
 
 			<div class="db-field">
 				<label class="db-label">' . __('Forward Date Day') . '</label>
@@ -744,6 +744,7 @@ if (!isset($_GET['delete'])) {
 			include(__DIR__ . '/includes/footer.php');
 			exit();
 		}
+	} // <-- ADDED THIS BRACE
 
 	echo '<hr style="margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--border-color);" />';
 

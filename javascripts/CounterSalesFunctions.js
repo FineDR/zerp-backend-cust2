@@ -428,8 +428,28 @@ var CounterSales = {
 			remainingRow.style.color = 'var(--danger)';
 			remainingRow.querySelector('span').innerText = 'Remaining';
 		}
-		this.CalculateChangeDue();
+		this._updateChangeDue(totalPaid, totalToPay);
 	},
+
+    _updateChangeDue: function(totalPaid, totalToPay) {
+        const banner = document.getElementById('ChangeDueBanner');
+        const display = document.getElementById('ChangeDueDisplay');
+        const hiddenChange = document.getElementById('ChangeDue');
+        const hiddenCash = document.getElementById('CashReceived');
+        
+        const change = Math.max(0, totalPaid - totalToPay);
+        
+        if (change > 0.005) {
+            if (banner) banner.style.display = 'flex';
+            if (display) display.innerText = change.toFixed(this.decimal);
+            if (hiddenChange) hiddenChange.value = change.toFixed(this.decimal);
+            if (hiddenCash) hiddenCash.value = totalPaid.toFixed(this.decimal);
+        } else {
+            if (banner) banner.style.display = 'none';
+            if (hiddenChange) hiddenChange.value = "0.00";
+            if (hiddenCash) hiddenCash.value = totalPaid.toFixed(this.decimal);
+        }
+    },
 
 	_calculateCurrentTotalPaid: function() {
 		var total = 0;
@@ -485,20 +505,26 @@ var CounterSales = {
         }
     },
 
+    OnSubmitSale: function(form) {
+        // Ensure the ProcessSale button value is still sent when disabled
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'ProcessSale';
+        hiddenInput.value = '1';
+        form.appendChild(hiddenInput);
+
+        const btn = form.querySelector('button[name="ProcessSale"]');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + 'Processing...';
+            btn.style.opacity = '0.7';
+            btn.style.cursor = 'not-allowed';
+        }
+        return true; // Allow form to submit
+    },
+
 	CalculateChangeDue: function() {
-		var totalToPay = parseFloat(document.getElementById('TotalAmountToPay').value);
-		var cashIn = parseFloat(document.getElementById('CashReceived').value) || 0;
-		var totalPaid = this._calculateCurrentTotalPaid();
-		
-		var changeDue = 0;
-		if (cashIn > 0) {
-			// Find how much of the "Paid" is actually cash (for change calculation)
-			// Simplification: if only one payment row and it's cash, or totalPaid > totalToPay
-			if (totalPaid > totalToPay) {
-				changeDue = totalPaid - totalToPay;
-			}
-		}
-		document.getElementById('ChangeDue').value = changeDue.toFixed(this.decimal);
+        // Deprecated - logic merged into CalculateTotals
 	},
 
     SwitchTab: function(tab) {

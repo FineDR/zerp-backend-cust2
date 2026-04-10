@@ -668,7 +668,7 @@ if (isset($_POST['AllocTrans'])) {
 	</div>
 	</div>';
 	}
-	}
+	
 	echo '</div>'; // Close db-page
 }
 include(__DIR__ . '/includes/footer.php');

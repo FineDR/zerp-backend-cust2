@@ -812,3 +812,85 @@
     from { transform: translateY(20px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
+
+/* Refined Payment Row */
+.pos-payment-row-main {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    background: var(--bg-main);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-soft);
+}
+
+.pos-payment-row.primary {
+    margin-bottom: var(--space-4);
+}
+
+.pos-payment-row.primary .pos-payment-row-main {
+    background: white;
+    border: 2px solid var(--primary);
+    box-shadow: 0 4px 15px var(--primary-glow);
+    padding: var(--space-4) var(--space-6);
+}
+
+.pos-payment-label-wide {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--primary-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.pos-payment-input {
+    flex: 1 1 auto;
+    border: none !important;
+    background: transparent !important;
+    font-size: 1.75rem !important;
+    font-weight: 950 !important;
+    color: var(--primary-dark);
+    text-align: right;
+    outline: none !important;
+    min-width: 160px;
+    width: 0;
+}
+
+/* Change Banner */
+.pos-change-banner {
+    margin-top: var(--space-4);
+    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: var(--space-4) var(--space-6);
+    border-radius: var(--radius-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 20px -5px var(--primary-glow);
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pos-change-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+}
+
+.pos-change-amount {
+    font-size: 2rem;
+    font-weight: 950;
+    letter-spacing: -0.5px;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.9); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.pos-pay-btn:disabled {
+    cursor: not-allowed;
+}

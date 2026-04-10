@@ -34,6 +34,8 @@ echo '<script type="text/javascript">
         });
       </script>';
 
+// Success banner removed in favor of the modern modal in the main section below
+
 include(__DIR__ . '/includes/GetPrice.php');
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/StockFunctions.php');
@@ -159,6 +161,7 @@ if (!isset($_SESSION['Items'.$identifier])) {
 		$_SESSION['Items'.$identifier]->LocationName = $MyRow['locationname'];
 		$_SESSION['Items'.$identifier]->Location = $_SESSION['UserStockLocation'];
 		$_SESSION['Items'.$identifier]->DispatchTaxProvince = $MyRow['taxprovinceid'];
+		$_SESSION['Items'.$identifier]->DefaultCashCustomer = $MyRow['cashsalecustomer']; // Store this for later reference in UI
 
 		// Now check to ensure this account exists and set defaults */
 		$SQL = "SELECT debtorsmaster.name,
@@ -446,249 +449,6 @@ if (isset($_POST['Search']) or isset($_POST['Next']) or isset($_POST['Previous']
 } //end of if search
 
 
-/* Always do the stuff below */
-
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" id="SelectParts" method="post">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-echo '<input type="hidden" id="AutoFillCashReceived" name="AutoFillCashReceived" value="0" />';
-echo '<div class="pos-layout">'; // Start Grid
-echo '<input type="hidden" name="identifier" value="' . htmlspecialchars($identifier) . '" />';
-
-// 1. Column 1: Product Catalog (Wider center column)
-echo '<section class="pos-catalog" id="PosCatalogCol">';
-
-    echo '<div class="pos-search-container">
-            <div class="pos-search-box">
-                <i class="fas fa-barcode" style="color: var(--primary);"></i>
-                <input type="text" name="UnifiedSearch" id="UnifiedSearch" 
-                       class="pos-search-input"
-                       placeholder="' . __('Scan barcode or search products...') . '" 
-                       onkeyup="CounterSales.HandleUnifiedSearch(this)" 
-                       onkeypress="if(event.keyCode==13){event.preventDefault(); CounterSales.HandleUnifiedSearch(this);}" 
-                       autocomplete="off" autofocus />
-                <div class="pos-search-hint" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">' . __('F4 to focus') . '</div>
-            </div>
-          </div>';
-
-		// Reverted Category Navigation pills
-		$CatSQL = "SELECT categoryid, categorydescription FROM stockcategory WHERE stocktype IN ('F', 'D', 'L')";
-		$CatResult = DB_query($CatSQL);
-		echo '<div class="pos-categories">';
-		$activeAll = (!isset($_POST['StockCat']) || $_POST['StockCat'] == 'All') ? 'active' : '';
-		echo '<button type="button" onclick="document.getElementById(\'StockCatInput\').value=\'All\'; this.form.submit();" class="pos-category-pill ' . $activeAll . '">
-                <i class="fas fa-th-large"></i> ' . __('All Items') . '
-              </button>';
-		while ($CatRow = DB_fetch_array($CatResult)) {
-			$active = (isset($_POST['StockCat']) && $_POST['StockCat'] == $CatRow['categoryid']) ? 'active' : '';
-			echo '<button type="button" onclick="document.getElementById(\'StockCatInput\').value=\'' . $CatRow['categoryid'] . '\'; this.form.submit();" class="pos-category-pill ' . $active . '">' . htmlspecialchars($CatRow['categorydescription']) . '</button>';
-		}
-        echo '<input type="hidden" name="StockCat" id="StockCatInput" value="' . ($_POST['StockCat'] ?? 'All') . '" />';
-        echo '<input type="hidden" name="PartSearch" value="Yes" />';
-		echo '</div>';
-	// Add some useful help as the order progresses
-		if (isset($SearchResult)) {
-			echo '<br />
-					<div class="page_help_text">' . __('Select an item by entering the quantity required.  Click Order when ready.') . '</div>
-				<br />';
-		
-
-			echo '<div class="pos-product-grid">';
-			echo '<input type="hidden" name="SelectingOrderItems" value="1" />';
-			$i=0;
-
-			while ($MyRow=DB_fetch_array($SearchResult)) {
-				$Price = GetPrice($MyRow['stockid'], $_SESSION['Items' . $identifier]->DebtorNo, $_SESSION['Items' . $identifier]->Branch);
-				$QOH = GetQuantityOnHand($MyRow['stockid'], $_SESSION['Items' . $identifier]->Location);
-				$stockStatus = ($QOH > 10) ? 'stock-high' : (($QOH > 0) ? 'stock-low' : 'stock-out');
-				$stockLabel = ($QOH > 0) ? locale_number_format($QOH, $MyRow['decimalplaces']) : __('0');
-
-								echo '<div class="pos-product-card" data-stockid="' . htmlspecialchars($MyRow['stockid']) . '">
-						<div class="pos-stock-badge ' . $stockStatus . '"><i class="fas fa-layer-group"></i> ' . $stockLabel . '</div>
-						<div class="pos-product-img">
-							<i class="fas fa-box" style="opacity: 0.5;"></i>
-						</div>
-						<div class="pos-product-info">
-                            <div class="pos-product-name" title="' . htmlspecialchars($MyRow['description']) . '">' . htmlspecialchars($MyRow['description']) . '</div>
-                            <div class="pos-product-price">' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' ' . locale_number_format($Price, $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '</div>
-                        </div>
-					</div>';
-				$i++;
-			}
-			echo '</div>'; // end pos-product-grid
-		} // end if $SearchResult
-
-echo "</section>"; // end pos-catalog (Main Column)
-
-echo '<aside class="pos-sidebar" id="PosSidebarCol">';
-
-// 1. Customer Section (TOP)
-echo '<section class="pos-sidebar-card pos-customer-section">
-        <div class="pos-card-header">
-            <h3 style="margin:0; font-size: 0.9rem;"><i class="fas fa-user-circle"></i> ' . __('Customer') . '</h3>
-            <span class="pos-badge" style="font-size: 0.75rem;">' . (($_SESSION['Items'.$identifier]->DebtorNo == $_SESSION['CompanyRecord']['cashsalecustomer']) ? __('Walk-in') : __('Account')) . '</span>
-        </div>
-        <div class="pos-customer-display" id="CustomerDisplay">
-            <div style="font-weight: 700; color: var(--text-dark); font-size: 0.9rem;">' . htmlspecialchars($_SESSION['Items'.$identifier]->CustomerName) . '</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">' . htmlspecialchars($_SESSION['Items'.$identifier]->DebtorNo) . '</div>
-        </div>
-        <div class="pos-customer-search-container">
-            <div class="pos-search-input-wrapper" style="position: relative;">
-                <i class="fas fa-search" style="position: absolute; left: 10px; top: 10px; color: var(--text-muted); font-size: 0.8rem;"></i>
-                <input type="text" id="CustSearchInput" class="pos-input-sm" style="width: 100%; padding-left: 30px;" placeholder="' . __('Search customer...') . '" onkeyup="CounterSales.SearchCustomers(this.value)" autocomplete="off" />
-            </div>
-            <div id="CustSearchResults" class="pos-search-results-dropdown"></div>
-        </div>
-    </section>';
-
-// 2. Cart Section (MIDDLE)
-echo '<section class="pos-cart-container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-        <div class="pos-cart-header">
-            <h3><i class="fas fa-shopping-basket"></i> ' . __('Current Sale') . '</h3>
-            <button type="button" class="pos-badge-btn" style="background: var(--danger-bg); color: var(--danger); border-radius: 8px;" onclick="CounterSales.ClearCart()">
-                <i class="fas fa-trash-alt"></i> ' . __('Clear All') . '
-            </button>
-        </div>
-        <div class="pos-cart-items" id="CartItemsContainer">';
-
-// Initial Cart Render (Same logic as AJAX will use)
-if (count($_SESSION['Items'.$identifier]->LineItems) == 0) {
-    echo '<div class="pos-empty-cart">
-            <i class="fas fa-shopping-basket"></i>
-            <p>' . __('Cart is empty') . '</p>
-          </div>';
-} else {
-    foreach ($_SESSION['Items'.$identifier]->LineItems as $OrderLine) {
-        $SubTotal = $OrderLine->Quantity * $OrderLine->Price * (1 - $OrderLine->DiscountPercent);
-        echo '<div class="pos-cart-item" data-line-id="' . $OrderLine->LineNumber . '">
-                <div class="pos-cart-item-info">
-                    <h4 style="font-size: 0.95rem; margin: 0 0 6px 0;">' . htmlspecialchars($OrderLine->ItemDescription) . '</h4>
-                    <div class="pos-cart-item-meta" style="margin-bottom: 8px;">
-                        <span class="pos-item-code" style="font-weight: 600;">' . $OrderLine->StockID . '</span>
-                        <span style="margin: 0 6px; opacity: 0.5;">|</span>
-                        <span style="font-weight: 600; color: var(--primary);">@ ' . locale_number_format($OrderLine->Price, $_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</span>
-                    </div>
-                    <div class="pos-cart-item-qty">
-                        <button type="button" class="pos-tool-btn" title="' . __('Decrease Quantity') . '" onclick="CounterSales.UpdateQty(' . $OrderLine->LineNumber . ', ' . ($OrderLine->Quantity - 1) . ')"><i class="fas fa-minus"></i></button>
-                        <input type="text" class="pos-qty-input" value="' . $OrderLine->Quantity . '" onchange="CounterSales.UpdateQty(' . $OrderLine->LineNumber . ', this.value)" />
-                        <button type="button" class="pos-tool-btn" title="' . __('Increase Quantity') . '" onclick="CounterSales.UpdateQty(' . $OrderLine->LineNumber . ', ' . ($OrderLine->Quantity + 1) . ')"><i class="fas fa-plus"></i></button>
-                    </div>
-                    <div id="DiscRow' . $OrderLine->LineNumber . '" class="pos-disc-row" style="display: ' . ($OrderLine->DiscountPercent > 0 ? 'flex' : 'none') . '; margin-top: 8px; align-items: center; gap: 8px;">
-                        <input type="text" class="pos-input-sm" style="width: 50px;" value="' . ($OrderLine->DiscountPercent * 100) . '" onchange="CounterSales.UpdateDiscount(' . $OrderLine->LineNumber . ', this.value)" />
-                        <small style="font-size: 0.75rem; color: var(--text-muted);">' . __('% Disc') . '</small>
-                    </div>
-                </div>
-                <div style="text-align: right; display: flex; flex-direction: column; justify-content: space-between;">
-                    <div style="font-weight: 800; font-size: 1.1rem; color: var(--primary-dark);">
-                        <small style="font-size: 0.7rem; vertical-align: middle; opacity: 0.7; margin-right: 2px;">' . $_SESSION['Items'.$identifier]->DefaultCurrency . '</small>
-                        ' . locale_number_format($SubTotal, $_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '
-                    </div>
-                    <div class="pos-item-actions" style="display: flex; gap: 4px; justify-content: flex-end;">
-                        <button type="button" onclick="CounterSales.ToggleDiscount(' . $OrderLine->LineNumber . ')" class="pos-tool-btn" title="' . __('Add Discount') . '"><i class="fas fa-tag"></i></button>
-                        <button type="button" onclick="CounterSales.RemoveItem(' . $OrderLine->LineNumber . ')" class="pos-tool-btn delete" title="' . __('Remove Item') . '"><i class="fas fa-times"></i></button>
-                    </div>
-                </div>
-              </div>';
-    }
-}
-echo '  </div>
-    </section>';
-
-// 3. Payment Section (BOTTOM)
-$DisplayTaxTotal = 0;
-if (isset($_SESSION['Items'.$identifier]->TaxTotals) && is_array($_SESSION['Items'.$identifier]->TaxTotals)) {
-    foreach ($_SESSION['Items'.$identifier]->TaxTotals as $TaxAmount) {
-        $DisplayTaxTotal += $TaxAmount;
-    }
-}
-$DisplayGrandTotal = $_SESSION['Items'.$identifier]->total + $DisplayTaxTotal;
-
-echo '<div class="pos-cart-footer">
-        <div class="pos-payment-card">
-            <div class="pos-summary-group">
-                <div class="pos-summary-line">
-                    <span>' . __('Subtotal (Net)') . '</span>
-                    <span id="SummarySubtotal">' . locale_number_format($_SESSION['Items'.$identifier]->total, $_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</span>
-                </div>';
-if ($DisplayTaxTotal != 0) {
-    echo '      <div class="pos-summary-line" id="TaxRow">
-                    <span>' . __('Tax') . '</span>
-                    <span id="SummaryTax">' . locale_number_format($DisplayTaxTotal, $_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</span>
-                </div>';
-} else {
-    echo '      <div class="pos-summary-line" id="TaxRow" style="display: none;">
-                    <span>' . __('Tax') . '</span>
-                    <span id="SummaryTax">0.00</span>
-                </div>';
-}
-echo '      </div>
-            
-            <div class="pos-total-row">
-                <span class="pos-total-label">' . __('Total Amount') . '</span>
-                <span class="pos-total-amount" id="SummaryGrandTotal">' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' ' . locale_number_format($DisplayGrandTotal, $_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</span>
-            </div>
-
-            <div class="pos-payment-group">
-                <div class="pos-summary-line" style="margin-bottom: var(--space-3); color: var(--text-main); font-weight: 700;">
-                    <span><i class="fas fa-credit-card"></i> ' . __('Payment Methods') . '</span>
-                    <button type="button" class="pos-badge-btn" onclick="CounterSales.AddPaymentRow()"><i class="fas fa-plus"></i> ' . __('Split') . '</button>
-                </div>
-                <div id="PaymentRowsContainer">';
-
-// Re-use logic for payment rows but keep it clean
-$PaymentMethodsResult = DB_query("SELECT paymentid, paymentname FROM paymentmethods");
-$PaymentMethods = [];
-while ($row = DB_fetch_array($PaymentMethodsResult)) { $PaymentMethods[] = $row; }
-
-if (!isset($_POST['PaymentAmounts'])) {
-    $_POST['PaymentAmounts'] = [0 => 0];
-    $_POST['PaymentMethods'] = [0 => ($PaymentMethods[0]['paymentid'] ?? '')];
-    $_POST['BankAccounts'] = [0 => ''];
-}
-
-foreach ($_POST['PaymentAmounts'] as $i => $amount) {
-    echo '<div class="pos-payment-row" id="PaymentRow' . $i . '">
-            <select name="PaymentMethods[' . $i . ']" class="pos-input-sm" style="flex: 1;" onchange="CounterSales.OnPaymentMethodChange(this, ' . $i . ')">';
-    foreach ($PaymentMethods as $pm) {
-        $selected = ($_POST['PaymentMethods'][$i] == $pm['paymentid']) ? 'selected' : '';
-        echo '<option ' . $selected . ' value="' . $pm['paymentid'] . '" data-bank="">' . $pm['paymentname'] . '</option>';
-    }
-    echo '</select>
-            <input type="hidden" name="BankAccounts[' . $i . ']" value="" />
-            <input type="text" name="PaymentAmounts[' . $i . ']" class="pos-input-sm number" style="width: 100px; font-weight: 700; flex-shrink: 0;" value="' . $amount . '" placeholder="0.00" onchange="CounterSales.CalculateTotals()" />
-          </div>';
-}
-
-echo '      </div>
-            <div class="pos-payment-summary">
-                <div class="pos-summary-line" style="font-size: 0.85rem;"><span>' . __('Paid') . '</span><strong id="TotalPaidDisplay" style="color: var(--primary);">0.00</strong></div>
-                <div class="pos-summary-line" id="RemainingBalanceRow" style="font-size: 0.85rem;"><span>' . __('Balance') . '</span><strong id="RemainingBalanceDisplay">0.00</strong></div>
-            </div>
-            
-            <div class="pos-cash-calc">
-                <div class="pos-summary-line" style="flex-direction: column; align-items: flex-start; gap: 2px;">
-                    <label style="font-size: 0.65rem; font-weight: 700; color: var(--primary); text-transform: uppercase;">' . __('Cash Received') . '</label>
-                    <input type="text" class="pos-input-sm number" style="width: 100%; font-size: 1.1rem; border-color: var(--primary-light);" id="CashReceived" name="CashReceived" value="' . ($_POST['CashReceived'] ?? 0) . '" onkeyup="CounterSales.CalculateChangeDue()" />
-                </div>
-                <div class="pos-summary-line" style="flex-direction: column; align-items: flex-start; gap: 2px;">
-                    <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">' . __('Change Due') . '</label>
-                    <input type="text" class="pos-input-sm number" style="width: 100%; font-size: 1.1rem; background: var(--bg-workspace);" id="ChangeDue" name="ChangeDue" value="' . ($_POST['ChangeDue'] ?? 0) . '" readonly />
-                </div>
-            </div>
-            
-            </div>
-            
-            <input type="hidden" id="TotalAmountToPay" name="InvoiceTotal" value="' . $DisplayGrandTotal . '" />
-            <input type="hidden" id="HiddenTaxTotal" name="TaxAmount" value="' . $DisplayTaxTotal . '" />
-        </div>'; // End pos-payment-card
-
-echo '  <button type="submit" name="ProcessSale" value="1" class="pos-pay-btn">
-    <i class="fas fa-check-circle"></i> ' . __('Process the Sale') . '
-  </button>
-';
-echo '</div>'; // end pos-cart-footer
-
-echo '</aside>';
-echo '</div>'; // end pos-layout
 
 /* **********************************
  * Invoice Processing Here
@@ -1022,7 +782,6 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 		$Result = DB_query($SQL, $ErrMsg, '', true);
 
 	/*Now insert the DebtorTrans */
-
 		$SQL = "INSERT INTO debtortrans (transno,
 										type,
 										debtorno,
@@ -1715,7 +1474,6 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 	//   E N D   O F   I N V O I C E   S Q L   P R O C E S S I N G
 	// *************************************************************************
 
-		unset($_SESSION['Items'.$identifier]->LineItems);
 		unset($_SESSION['Items'.$identifier]);
 
 		if ($_SESSION['InvoicePortraitFormat']==0) {
@@ -1725,6 +1483,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 		}
 		$CompletedSaleURL = htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8')
 			. '?CompletedInvoiceNo=' . urlencode($InvoiceNo)
+			. '&identifier=' . urlencode($identifier)
 			. '&CompletedInvoiceOrientation=' . urlencode($CompletedInvoiceOrientation);
 
 		if (!headers_sent()) {
@@ -1737,11 +1496,274 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 		exit();
 
 	}
+
 	// There were input errors so don't process nuffin
 } else {
 	//pretend the user never tried to commit the sale
 	unset($_POST['ProcessSale']);
 }
+
+/* Always do the stuff below */
+
+if (isset($Messages) and count($Messages) > 0) {
+	echo '<div class="pos-messages" style="margin: 10px 20px; z-index: 100;">';
+	foreach ($Messages as $Message) {
+		$Class = ($Message[1] == 'error') ? 'danger' : (($Message[1] == 'warn' || $Message[1] == 'warning') ? 'warning' : 'success');
+		echo '<div class="pos-badge" style="display: block; padding: 15px; margin-bottom: 5px; background-color: var(--' . $Class . '-bg); color: var(--' . $Class . '); border: 1px solid var(--' . $Class . '); font-size: 1rem;">
+				<strong>', $Message[2], '</strong>: ', $Message[0], '
+			  </div>';
+	}
+	// Clear messages so they don't print again in footer.php
+	unset($Messages);
+	echo '</div>';
+}
+
+echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" id="SelectParts" method="post">';
+echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+echo '<input type="hidden" id="AutoFillCashReceived" name="AutoFillCashReceived" value="0" />';
+echo '<div class="pos-layout">'; // Start Grid
+echo '<input type="hidden" name="identifier" value="' . htmlspecialchars($identifier) . '" />';
+
+// 1. Column 1: Product Catalog (Wider center column)
+echo '<section class="pos-catalog" id="PosCatalogCol">';
+
+    echo '<div class="pos-search-container">
+            <div class="pos-search-box">
+                <i class="fas fa-barcode" style="color: var(--primary);"></i>
+                <input type="text" name="UnifiedSearch" id="UnifiedSearch" 
+                       class="pos-search-input"
+                       placeholder="' . __('Scan barcode or search products...') . '" 
+                       onkeyup="CounterSales.HandleUnifiedSearch(this)" 
+                       onkeypress="if(event.keyCode==13){event.preventDefault(); CounterSales.HandleUnifiedSearch(this);}" 
+                       autocomplete="off" autofocus />
+                <div class="pos-search-hint" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">' . __('F4 to focus') . '</div>
+            </div>
+          </div>';
+
+		// Reverted Category Navigation pills
+		$CatSQL = "SELECT categoryid, categorydescription FROM stockcategory WHERE stocktype IN ('F', 'D', 'L')";
+		$CatResult = DB_query($CatSQL);
+		echo '<div class="pos-categories">';
+		$activeAll = (!isset($_POST['StockCat']) || $_POST['StockCat'] == 'All') ? 'active' : '';
+		echo '<button type="button" onclick="document.getElementById(\'StockCatInput\').value=\'All\'; this.form.submit();" class="pos-category-pill ' . $activeAll . '">
+                <i class="fas fa-th-large"></i> ' . __('All Items') . '
+              </button>';
+		while ($CatRow = DB_fetch_array($CatResult)) {
+			$active = (isset($_POST['StockCat']) && $_POST['StockCat'] == $CatRow['categoryid']) ? 'active' : '';
+			echo '<button type="button" onclick="document.getElementById(\'StockCatInput\').value=\'' . $CatRow['categoryid'] . '\'; this.form.submit();" class="pos-category-pill ' . $active . '">' . htmlspecialchars($CatRow['categorydescription']) . '</button>';
+		}
+        echo '<input type="hidden" name="StockCat" id="StockCatInput" value="' . ($_POST['StockCat'] ?? 'All') . '" />';
+        echo '<input type="hidden" name="PartSearch" value="Yes" />';
+		echo '</div>';
+	// Add some useful help as the order progresses
+		if (isset($SearchResult)) {
+			echo '<br />
+					<div class="page_help_text">' . __('Select an item by entering the quantity required.  Click Order when ready.') . '</div>
+				<br />';
+		
+
+			echo '<div class="pos-product-grid">';
+			echo '<input type="hidden" name="SelectingOrderItems" value="1" />';
+			$i=0;
+
+			while ($MyRow=DB_fetch_array($SearchResult)) {
+				$Price = GetPrice($MyRow['stockid'], $_SESSION['Items' . $identifier]->DebtorNo, $_SESSION['Items' . $identifier]->Branch);
+				$QOH = GetQuantityOnHand($MyRow['stockid'], $_SESSION['Items' . $identifier]->Location);
+				$stockStatus = ($QOH > 10) ? 'stock-high' : (($QOH > 0) ? 'stock-low' : 'stock-out');
+				$stockLabel = ($QOH > 0) ? locale_number_format($QOH, $MyRow['decimalplaces']) : __('0');
+
+								echo '<div class="pos-product-card" data-stockid="' . htmlspecialchars($MyRow['stockid']) . '">
+						<div class="pos-stock-badge ' . $stockStatus . '"><i class="fas fa-layer-group"></i> ' . $stockLabel . '</div>
+						<div class="pos-product-img">
+							<i class="fas fa-box" style="opacity: 0.5;"></i>
+						</div>
+						<div class="pos-product-info">
+                            <div class="pos-product-name" title="' . htmlspecialchars($MyRow['description']) . '">' . htmlspecialchars($MyRow['description']) . '</div>
+                            <div class="pos-product-price">' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' ' . locale_number_format($Price, $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '</div>
+                        </div>
+					</div>';
+				$i++;
+			}
+			echo '</div>'; // end pos-product-grid
+		} // end if $SearchResult
+
+echo "</section>"; // end pos-catalog (Main Column)
+
+echo '<aside class="pos-sidebar" id="PosSidebarCol">';
+
+// 1. Customer Section (TOP)
+echo '<section class="pos-sidebar-card pos-customer-section">
+        <div class="pos-card-header">
+            <h3 style="margin:0; font-size: 0.9rem;"><i class="fas fa-user-circle"></i> ' . __('Customer') . '</h3>
+            <span class="pos-badge" style="font-size: 0.75rem;">' . (($_SESSION['Items'.$identifier]->DebtorNo == ($_SESSION['Items'.$identifier]->DefaultCashCustomer ?? '')) ? __('Walk-in') : __('Account')) . '</span>
+        </div>
+        <div class="pos-customer-display" id="CustomerDisplay">
+            <div style="font-weight: 700; color: var(--text-dark); font-size: 0.9rem;">' . htmlspecialchars($_SESSION['Items'.$identifier]->CustomerName) . '</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">' . htmlspecialchars($_SESSION['Items'.$identifier]->DebtorNo) . '</div>
+        </div>
+        <div class="pos-customer-search-container">
+            <div class="pos-search-input-wrapper" style="position: relative;">
+                <i class="fas fa-search" style="position: absolute; left: 10px; top: 10px; color: var(--text-muted); font-size: 0.8rem;"></i>
+                <input type="text" id="CustSearchInput" class="pos-input-sm" style="width: 100%; padding-left: 30px;" placeholder="' . __('Search customer...') . '" onkeyup="CounterSales.SearchCustomers(this.value)" autocomplete="off" />
+            </div>
+            <div id="CustSearchResults" class="pos-search-results-dropdown"></div>
+        </div>
+    </section>';
+
+// 2. Cart Section (MIDDLE)
+echo '<section class="pos-cart-container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+        <div class="pos-cart-header">
+            <h3><i class="fas fa-shopping-basket"></i> ' . __('Current Sale') . '</h3>
+            <button type="button" class="pos-badge-btn" style="background: var(--danger-bg); color: var(--danger); border-radius: 8px;" onclick="CounterSales.ClearCart()">
+                <i class="fas fa-trash-alt"></i> ' . __('Clear All') . '
+            </button>
+        </div>
+        <div class="pos-cart-items" id="CartItemsContainer">';
+
+// Initial Cart Render (Same logic as AJAX will use)
+if (count($_SESSION['Items'.$identifier]->LineItems) == 0) {
+    echo '<div class="pos-empty-cart">
+            <i class="fas fa-shopping-basket"></i>
+            <p>' . __('Cart is empty') . '</p>
+          </div>';
+} else {
+    foreach ($_SESSION['Items'.$identifier]->LineItems as $OrderLine) {
+        $SubTotal = $OrderLine->Quantity * $OrderLine->Price * (1 - $OrderLine->DiscountPercent);
+        echo '<div class="pos-cart-item" data-line-id="' . $OrderLine->LineNumber . '">
+                <div class="pos-cart-item-info">
+                    <h4 style="font-size: 0.95rem; margin: 0 0 6px 0;">' . htmlspecialchars($OrderLine->ItemDescription) . '</h4>
+                    <div class="pos-cart-item-meta" style="margin-bottom: 8px;">
+                        <span class="pos-item-code" style="font-weight: 600;">' . $OrderLine->StockID . '</span>
+                        <span style="margin: 0 6px; opacity: 0.5;">|</span>
+                        <span style="font-weight: 600; color: var(--primary);">@ ' . locale_number_format($OrderLine->Price, $_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</span>
+                    </div>
+                    <div class="pos-cart-item-qty">
+                        <button type="button" class="pos-tool-btn" title="' . __('Decrease Quantity') . '" onclick="CounterSales.UpdateQty(' . $OrderLine->LineNumber . ', ' . ($OrderLine->Quantity - 1) . ')"><i class="fas fa-minus"></i></button>
+                        <input type="text" class="pos-qty-input" value="' . $OrderLine->Quantity . '" onchange="CounterSales.UpdateQty(' . $OrderLine->LineNumber . ', this.value)" />
+                        <button type="button" class="pos-tool-btn" title="' . __('Increase Quantity') . '" onclick="CounterSales.UpdateQty(' . $OrderLine->LineNumber . ', ' . ($OrderLine->Quantity + 1) . ')"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div id="DiscRow' . $OrderLine->LineNumber . '" class="pos-disc-row" style="display: ' . ($OrderLine->DiscountPercent > 0 ? 'flex' : 'none') . '; margin-top: 8px; align-items: center; gap: 8px;">
+                        <input type="text" class="pos-input-sm" style="width: 50px;" value="' . ($OrderLine->DiscountPercent * 100) . '" onchange="CounterSales.UpdateDiscount(' . $OrderLine->LineNumber . ', this.value)" />
+                        <small style="font-size: 0.75rem; color: var(--text-muted);">' . __('% Disc') . '</small>
+                    </div>
+                </div>
+                <div style="text-align: right; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div style="font-weight: 800; font-size: 1.1rem; color: var(--primary-dark);">
+                        <small style="font-size: 0.7rem; vertical-align: middle; opacity: 0.7; margin-right: 2px;">' . $_SESSION['Items'.$identifier]->DefaultCurrency . '</small>
+                        ' . locale_number_format($SubTotal, $_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '
+                    </div>
+                    <div class="pos-item-actions" style="display: flex; gap: 4px; justify-content: flex-end;">
+                        <button type="button" onclick="CounterSales.ToggleDiscount(' . $OrderLine->LineNumber . ')" class="pos-tool-btn" title="' . __('Add Discount') . '"><i class="fas fa-tag"></i></button>
+                        <button type="button" onclick="CounterSales.RemoveItem(' . $OrderLine->LineNumber . ')" class="pos-tool-btn delete" title="' . __('Remove Item') . '"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+              </div>';
+    }
+}
+echo '  </div>
+    </section>';
+
+// 3. Payment Section (BOTTOM)
+$DisplayTaxTotal = 0;
+if (isset($_SESSION['Items'.$identifier]->TaxTotals) && is_array($_SESSION['Items'.$identifier]->TaxTotals)) {
+    foreach ($_SESSION['Items'.$identifier]->TaxTotals as $TaxAmount) {
+        $DisplayTaxTotal += $TaxAmount;
+    }
+}
+$DisplayGrandTotal = $_SESSION['Items'.$identifier]->total + $DisplayTaxTotal;
+
+echo '<div class="pos-cart-footer">
+        <div class="pos-payment-card">
+            <div class="pos-summary-group">
+                <div class="pos-summary-line">
+                    <span>' . __('Subtotal (Net)') . '</span>
+                    <span id="SummarySubtotal">' . locale_number_format($_SESSION['Items'.$identifier]->total, $_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</span>
+                </div>';
+if ($DisplayTaxTotal != 0) {
+    echo '      <div class="pos-summary-line" id="TaxRow">
+                    <span>' . __('Tax') . '</span>
+                    <span id="SummaryTax">' . locale_number_format($DisplayTaxTotal, $_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</span>
+                </div>';
+} else {
+    echo '      <div class="pos-summary-line" id="TaxRow" style="display: none;">
+                    <span>' . __('Tax') . '</span>
+                    <span id="SummaryTax">0.00</span>
+                </div>';
+}
+echo '      </div>
+            
+            <div class="pos-total-row">
+                <span class="pos-total-label">' . __('Total Amount') . '</span>
+                <span class="pos-total-amount" id="SummaryGrandTotal">' . $_SESSION['Items'.$identifier]->DefaultCurrency . ' ' . locale_number_format($DisplayGrandTotal, $_SESSION['Items'.$identifier]->CurrDecimalPlaces) . '</span>
+            </div>
+
+            <div class="pos-payment-group">
+                <div class="pos-summary-line" style="margin-bottom: var(--space-3); color: var(--text-main); font-weight: 700;">
+                    <span><i class="fas fa-credit-card"></i> ' . __('Payment Methods') . '</span>
+                    <button type="button" class="pos-badge-btn" onclick="CounterSales.AddPaymentRow()"><i class="fas fa-plus"></i> ' . __('Split') . '</button>
+                </div>
+                <div id="PaymentRowsContainer">';
+
+// Re-use logic for payment rows but keep it clean
+$PaymentMethodsResult = DB_query("SELECT paymentid, paymentname FROM paymentmethods");
+$PaymentMethods = [];
+while ($row = DB_fetch_array($PaymentMethodsResult)) { $PaymentMethods[] = $row; }
+
+if (!isset($_POST['PaymentAmounts'])) {
+    $_POST['PaymentAmounts'] = [0 => 0];
+    $_POST['PaymentMethods'] = [0 => ($PaymentMethods[0]['paymentid'] ?? '')];
+    $_POST['BankAccounts'] = [0 => ''];
+}
+
+foreach ($_POST['PaymentAmounts'] as $i => $amount) {
+    $isPrimary = ($i == 0);
+    echo '<div class="pos-payment-row' . ($isPrimary ? ' primary' : '') . '" id="PaymentRow' . $i . '">
+            <div class="pos-payment-row-main">
+                <div class="pos-payment-row-context">
+                    <div class="pos-payment-label-wide">' . ($isPrimary ? __('Amount Received') : __('Splitted Amount')) . '</div>
+                    <select name="PaymentMethods[' . $i . ']" class="pos-input-sm" style="margin-top:2px; border:none; background:transparent; padding-left:0; font-weight:600; color:var(--text-muted);" onchange="CounterSales.OnPaymentMethodChange(this, ' . $i . ')">';
+    foreach ($PaymentMethods as $pm) {
+        $selected = ($_POST['PaymentMethods'][$i] == $pm['paymentid']) ? 'selected' : '';
+        echo '<option ' . $selected . ' value="' . $pm['paymentid'] . '" data-bank="">' . $pm['paymentname'] . '</option>';
+    }
+    echo '          </select>
+                </div>
+                <input type="hidden" name="BankAccounts[' . $i . ']" value="" />
+                <input type="text" name="PaymentAmounts[' . $i . ']" class="pos-payment-input number" 
+                       value="' . $amount . '" placeholder="0.00" 
+                       onkeyup="CounterSales.CalculateTotals()" 
+                       onchange="CounterSales.CalculateTotals()" />
+            </div>
+          </div>';
+}
+
+echo '      </div>
+            <div class="pos-payment-summary">
+                <div class="pos-summary-line" style="font-size: 0.85rem;"><span>' . __('Paid') . '</span><strong id="TotalPaidDisplay" style="color: var(--primary);">0.00</strong></div>
+                <div class="pos-summary-line" id="RemainingBalanceRow" style="font-size: 0.85rem;"><span>' . __('Balance') . '</span><strong id="RemainingBalanceDisplay">0.00</strong></div>
+            </div>
+            
+            <div id="ChangeDueBanner" class="pos-change-banner" style="display: none;">
+                <div class="pos-change-label">' . __('Change Due') . '</div>
+                <div class="pos-change-amount" id="ChangeDueDisplay">0.00</div>
+                <input type="hidden" id="CashReceived" name="CashReceived" value="' . ($_POST['CashReceived'] ?? 0) . '" />
+                <input type="hidden" id="ChangeDue" name="ChangeDue" value="' . ($_POST['ChangeDue'] ?? 0) . '" />
+            </div>
+            
+            </div>
+            
+            <input type="hidden" id="TotalAmountToPay" name="InvoiceTotal" value="' . $DisplayGrandTotal . '" />
+            <input type="hidden" id="HiddenTaxTotal" name="TaxAmount" value="' . $DisplayTaxTotal . '" />
+        </div>'; // End pos-payment-card
+
+echo '  <button type="submit" name="ProcessSale" value="1" class="pos-pay-btn">
+    <i class="fas fa-check-circle"></i> ' . __('Process the Sale') . '
+  </button>
+';
+echo '</div>'; // end pos-cart-footer
+
+echo '</aside>';
+echo '</div>'; // end pos-layout
 /*******************************
  * end of Invoice Processing
  * *****************************
@@ -1756,7 +1778,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 ?>
 
 <script defer="defer">
-	CounterSales.SetTotalDue(<?=$_SESSION['Items'.$identifier]->total+$TaxTotal?>);
+	CounterSales.SetTotalDue(<?=$_SESSION['Items'.$identifier]->total + $DisplayTaxTotal?>);
 	CounterSales.SetItemList(<?php echo json_encode($_SESSION['ItemList'] ?? []); ?>);
 	CounterSales.SetQuickEntryTableId('QuickEntryTable');
 	CounterSales.SetRowCounter(<?php echo empty($i) ? 0 : $i; ?>);

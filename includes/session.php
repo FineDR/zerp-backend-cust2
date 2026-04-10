@@ -84,7 +84,15 @@ session_name($SessionName);
 session_start();
 $WebErpSessionType = 'web';
 
-include($PathPrefix . 'includes/LanguageSetup.php');
+if (!function_exists('__')) {
+	function __($Text) {
+		return $Text;
+	}
+}
+
+if (file_exists($PathPrefix . 'includes/LanguageSetup.php')) {
+	include($PathPrefix . 'includes/LanguageSetup.php');
+}
 
 /// @todo instead of delegating to ConnectDB.php the handling of $_POST, do it here, so that that file can then be used
 ///       for even when authentication is not based on login-form

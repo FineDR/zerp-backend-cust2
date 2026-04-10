@@ -853,8 +853,8 @@ if (!isset($DebtorNo)) {
 				</button>
 			</div>
 			<div class="db-card-body">
-				<div class="db-table-wrapper">';
-	
+				<div class="db-table-wrapper">
+
 					<table class="db-table divider">
 						<thead>
 							<tr>
