@@ -1,10 +1,176 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
 // NB: these classes are not autoloaded, and their definition has to be included before the session is started (in session.php)
 include(__DIR__ . '/includes/DefineCartClass.php');
 
 require(__DIR__ . '/includes/session.php');
 
+
+if (isset($_GET['NewOrder'])) {
+	$identifier = date('U');
+	$RedirectURL = $RootPath . '/SelectOrderItems.php?identifier=' . $identifier;
+	if (isset($_GET['SelectedCustomer'])) {
+		$RedirectURL .= '&DebtorNo=' . urlencode($_GET['SelectedCustomer']);
+	} elseif (isset($_GET['DebtorNo'])) {
+		$RedirectURL .= '&DebtorNo=' . urlencode($_GET['DebtorNo']);
+	}
+	header('Location: ' . $RedirectURL);
+	exit;
+}
+
+if (isset($_GET['identifier'])) {
+	$identifier = $_GET['identifier'];
+} elseif (isset($_POST['identifier'])) {
+	$identifier = $_POST['identifier'];
+} else {
+	/*unique session identifier to ensure that there is no conflict with other order entry sessions on the same machine  */
+	$identifier = date('U');
+}
+
+include(__DIR__ . '/includes/GetPrice.php');
+include(__DIR__ . '/includes/SQL_CommonFunctions.php');
+include(__DIR__ . '/includes/StockFunctions.php');
+
+/* AJAX Endpoint for Search/Add to Cart/Update/Remove */
+if (isset($_GET['Ajax'])) {
+	header('Content-Type: application/json');
+
+	function get_cart_data($identifier) {
+		if (!isset($_SESSION['Items' . $identifier])) {
+			return ['status' => 'inactive', 'error' => 'No branch selected'];
+		}
+		$cart = $_SESSION['Items' . $identifier];
+		$items = [];
+		$total = 0;
+		
+		foreach ($cart->LineItems as $line) {
+			$lineTotal = $line->Quantity * $line->Price * (1 - $line->DiscountPercent);
+			$items[] = [
+				'LineNumber' => $line->LineNumber,
+				'StockID' => $line->StockID,
+				'ItemDescription' => $line->ItemDescription,
+				'Quantity' => $line->Quantity,
+				'Price' => $line->Price,
+				'DiscountPercent' => $line->DiscountPercent,
+				'Units' => $line->Units,
+				'DecimalPlaces' => $line->DecimalPlaces,
+				'LineTotal' => $lineTotal,
+				'DisplayLineTotal' => locale_number_format($lineTotal, $cart->CurrDecimalPlaces),
+				'Invoiced' => $cart->Some_Already_Delivered($line->LineNumber)
+			];
+			$total += $lineTotal;
+		}
+
+		return [
+			'status' => 'active',
+			'Items' => $items,
+			'ItemsOrdered' => $cart->ItemsOrdered,
+			'Subtotal' => $total,
+			'DisplaySubtotal' => locale_number_format($total, $cart->CurrDecimalPlaces),
+			'Currency' => $cart->DefaultCurrency,
+			'DecimalPlaces' => $cart->CurrDecimalPlaces,
+			'DebtorNo' => $cart->DebtorNo,
+			'BranchCode' => $cart->Branch,
+			'CustomerName' => $cart->CustomerName
+		];
+	}
+
+	if ($_GET['Ajax'] == 'AddToCart') {
+		$NewItem = $_GET['StockID'];
+		$NewItemQty = filter_number_format($_GET['Qty']) ?? 1;
+		$NewItemDue = date($_SESSION['DefaultDateFormat']);
+		$NewPOLine = 0;
+		
+		ob_start();
+		include(__DIR__ . '/includes/SelectOrderItems_IntoCart.php');
+		ob_end_clean();
+		
+		echo json_encode(['status' => 'success', 'cart' => get_cart_data($identifier)]);
+		exit();
+	}
+
+	if ($_GET['Ajax'] == 'RemoveItem') {
+		$LineNumber = $_GET['LineNumber'];
+		$_SESSION['Items' . $identifier]->remove_from_cart($LineNumber, 'Yes', $identifier);
+		echo json_encode(['status' => 'success', 'cart' => get_cart_data($identifier)]);
+		exit();
+	}
+
+	if ($_GET['Ajax'] == 'UpdateQty') {
+		$LineNumber = $_GET['LineNumber'];
+		$Qty = filter_number_format($_GET['Qty']);
+		$line = $_SESSION['Items' . $identifier]->LineItems[$LineNumber];
+		
+		$_SESSION['Items' . $identifier]->update_cart_item(
+			$LineNumber,
+			$Qty,
+			$line->Price,
+			$line->DiscountPercent,
+			$line->Narrative,
+			'Yes',
+			$line->ItemDue,
+			$line->POLine,
+			$line->GPPercent,
+			$identifier
+		);
+		echo json_encode(['status' => 'success', 'cart' => get_cart_data($identifier)]);
+		exit();
+	}
+
+	if ($_GET['Ajax'] == 'GetCart') {
+		echo json_encode(get_cart_data($identifier));
+		exit();
+	}
+
+	if ($_GET['Ajax'] == 'SearchProducts') {
+		$Keywords = mb_strtoupper($_GET['Keywords']);
+		$StockCat = $_GET['StockCat'] ?? 'All';
+		$SearchString = '%' . str_replace(' ', '%', $Keywords) . '%';
+		
+		$SQL = "SELECT stockmaster.stockid,
+						stockmaster.description,
+						stockmaster.longdescription,
+						stockmaster.units,
+						stockmaster.decimalplaces,
+						stockcategory.categorydescription
+				FROM stockmaster INNER JOIN stockcategory
+				ON stockmaster.categoryid=stockcategory.categoryid
+				WHERE (stockcategory.stocktype='F' OR stockcategory.stocktype='D' OR stockcategory.stocktype='L')
+				AND stockmaster.mbflag <>'G'
+				AND stockmaster.discontinued=0
+				AND (stockmaster.description " . LIKE . " '" . $SearchString . "' OR stockmaster.stockid " . LIKE . " '" . $SearchString . "') ";
+		
+		if ($StockCat != 'All') {
+			$SQL .= " AND stockmaster.categoryid='" . $StockCat . "' ";
+		}
+		
+		$SQL .= " ORDER BY stockmaster.stockid LIMIT " . $_SESSION['DisplayRecordsMax'];
+		
+		$Result = DB_query($SQL);
+		$products = [];
+		while ($row = DB_fetch_array($Result)) {
+			// Get Price & Stock
+			$price = GetPrice($row['stockid'], $_SESSION['Items' . $identifier]->DebtorNo, $_SESSION['Items' . $identifier]->Branch);
+			$qoh = GetQuantityOnHand($row['stockid'], $_SESSION['Items' . $identifier]->Location);
+			
+			$products[] = [
+				'StockID' => $row['stockid'],
+				'Description' => $row['description'],
+				'LongDescription' => $row['longdescription'],
+				'Units' => $row['units'],
+				'Price' => $price,
+				'DisplayPrice' => locale_number_format($price, $_SESSION['Items' . $identifier]->CurrDecimalPlaces),
+				'QOH' => $qoh,
+				'DisplayQOH' => locale_number_format($qoh, $row['decimalplaces'])
+			];
+		}
+		
+		echo json_encode(['status' => 'success', 'products' => $products]);
+		exit();
+	}
+}
 
 if (isset($_GET['ModifyOrderNumber'])) {
 	$Title = __('Modifying Order') . ' ' . $_GET['ModifyOrderNumber'];
@@ -37,14 +203,8 @@ include(__DIR__ . '/includes/header.php');
     echo '<div class="db-tab-container">
             <div class="db-tabs">
                 <button type="button" class="db-tab-btn active" data-tab="search"><i class="fas fa-search"></i> ' . __('Search Products') . '</button>
-                <button type="button" class="db-tab-btn" data-tab="quick"><i class="fas fa-bolt"></i> ' . __('Quick Entry') . '</button>
-                <button type="button" class="db-tab-btn" data-tab="csv"><i class="fas fa-file-csv"></i> ' . __('Import CSV') . '</button>';
-    
-    if (in_array($_SESSION['PageSecurityArray']['ConfirmDispatch_Invoice.php'], $_SESSION['AllowedPageSecurityTokens'])){
-        echo '<button type="button" class="db-tab-btn" data-tab="assets"><i class="fas fa-box-open"></i> ' . __('Asset Disposal') . '</button>';
-    }
-    
-    echo '    </div>
+                <button type="button" class="db-tab-btn" data-tab="csv"><i class="fas fa-file-csv"></i> ' . __('Import CSV') . '</button>
+    </div>
         </div>';
 
     // Simple Tab Switching JS
@@ -122,53 +282,6 @@ if (isset($_GET['NewItem'])){
 	$NewItem = trim($_GET['NewItem']);
 }
 
-if (isset($_GET['identifier'])) {
-	$identifier = $_GET['identifier'];
-} elseif (isset($_POST['identifier'])) {
-	$identifier = $_POST['identifier'];
-} else {
-	/*unique session identifier to ensure that there is no conflict with other order entry sessions on the same machine  */
-	$identifier = date('U');
-}
-
-include(__DIR__ . '/includes/GetPrice.php');
-include(__DIR__ . '/includes/SQL_CommonFunctions.php');
-include(__DIR__ . '/includes/StockFunctions.php');
-
-/* AJAX Endpoint for Search/Add to Cart */
-if (isset($_GET['Ajax'])) {
-	if ($_GET['Ajax'] == 'AddToCart') {
-		$NewItem = $_GET['StockID'];
-		$NewItemQty = filter_number_format($_GET['Qty']) ?? 1;
-		$NewItemDue = date($_SESSION['DefaultDateFormat']);
-		$NewPOLine = 0;
-		$debug_log = __DIR__ . '/SelectOrderItems_debug.log';
-		$log_msg = "[" . date('Y-m-d H:i:s') . "] AJAX AddToCart: StockID=$NewItem, Qty=$NewItemQty, identifier=$identifier\n";
-		
-		if (!isset($_SESSION['Items'.$identifier])) {
-			$log_msg .= "[ERROR] Session Items$identifier is NOT set\n";
-		} else {
-			$log_msg .= "[INFO] Session Items$identifier exists. DebtorNo=" . $_SESSION['Items'.$identifier]->DebtorNo . ", Location=" . $_SESSION['Items'.$identifier]->Location . ", ItemsOrdered=" . $_SESSION['Items'.$identifier]->ItemsOrdered . "\n";
-		}
-
-		ob_start();
-		include(__DIR__ . '/includes/SelectOrderItems_IntoCart.php');
-		$cartOutput = ob_get_clean();
-		
-		if (!empty($cartOutput)) {
-			$log_msg .= "[OUTPUT FROM IntoCart] " . strip_tags($cartOutput) . "\n";
-		}
-		
-		if (isset($_SESSION['Items'.$identifier])) {
-			$log_msg .= "[INFO] ItemsOrdered after processing: " . $_SESSION['Items'.$identifier]->ItemsOrdered . "\n";
-		}
-		$log_msg .= "--------------------------------------------------\n";
-		file_put_contents($debug_log, $log_msg, FILE_APPEND);
-
-		echo 'SUCCESS';
-		exit();
-	}
-}
 if (isset($_GET['NewOrder'])){
   /*New order entry - clear any existing order details from the Items object and initiate a newy*/
 	 if (isset($_SESSION['Items'.$identifier])){
@@ -909,17 +1022,24 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 #Always do the stuff below if not looking for a customerid
 
 	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" id="SelectParts" method="post" enctype="multipart/form-data">';
+	echo '<input type="hidden" name="DeliveryDetailsClicked" id="DeliveryDetailsClicked" value="0" />';
 	echo '<input name="identifier" type="hidden" value="' . $identifier . '" />';
-    echo '<div class="db-global-search-container">
-			<div class="db-search-input-group">
-				<input type="text" name="Keywords" id="GlobalSearch" class="db-input" placeholder="' . __('Search products or enter stock code...') . '" value="' . (isset($_POST['Keywords']) ? $_POST['Keywords'] : '') . '" autofocus />
-				<button type="submit" name="Search" class="db-btn db-btn-primary">
-					<i class="fas fa-search"></i> ' . __('Search') . '
-				</button>
-			</div>
-			<div class="db-field-group" style="margin-top: var(--space-3); display: flex; gap: var(--space-4);">
-				<select name="StockCat" class="db-input db-input-sm" style="width: auto;">
-					<option value="All">' . __('All Categories') . '</option>';
+	echo '<input name="FormID" type="hidden" value="' . $_SESSION['FormID'] . '" />';
+
+	echo '<div class="db-tab-content">';
+
+	/* TAB 1: PRODUCT SEARCH */
+	echo '<div id="tab-search" class="db-tab-pane active">
+			<div class="db-global-search-container">
+				<div class="db-search-input-group">
+					<input type="text" name="Keywords" id="GlobalSearch" class="db-input" placeholder="' . __('Search products or enter stock code...') . '" value="' . (isset($_POST['Keywords']) ? $_POST['Keywords'] : '') . '" autofocus />
+					<button type="submit" name="Search" class="db-btn db-btn-primary">
+						<i class="fas fa-search"></i> ' . __('Search') . '
+					</button>
+				</div>
+				<div class="db-field-group" style="margin-top: var(--space-3); display: flex; gap: var(--space-4);">
+					<select name="StockCat" class="db-input db-input-sm" style="width: auto;">
+						<option value="All">' . __('All Categories') . '</option>';
 	
 	$CatResult = DB_query("SELECT categoryid, categorydescription FROM stockcategory WHERE stocktype='F' OR stocktype='D' OR stocktype='L'");
 	while ($CatRow = DB_fetch_array($CatResult)) {
@@ -962,7 +1082,6 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 			$QuickEntryQty = 'qty_' . $i;
 			$QuickEntryPOLine = 'poline_' . $i;
 			$QuickEntryItemDue = 'itemdue_' . $i;
-			$_POST[$QuickEntryItemDue] = ConvertSQLDate($_POST[$QuickEntryItemDue]);
 			$i++;
 
 			if (isset($_POST[$QuickEntryCode])) {
@@ -1133,7 +1252,7 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 
 		foreach ($_SESSION['Items'.$identifier]->LineItems as $OrderLine) {
 			if (isset($_POST['ItemDue_' . $OrderLine->LineNumber])){
-				$_POST['ItemDue_' . $OrderLine->LineNumber] = ConvertSQLDate($_POST['ItemDue_' . $OrderLine->LineNumber]);
+				// Pointless conversion removed
 			}
 			else {
 				$_POST['ItemDue_' . $OrderLine->LineNumber] = DateAdd (date($_SESSION['DefaultDateFormat']),'d', $_SESSION['Items'.$identifier]->DeliveryDays);
@@ -1279,10 +1398,15 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 			}
 		} /* end of discount matrix lookup code */
 	} // the order session is started or there is a new item being added
-	if (isset($_POST['DeliveryDetails'])){
-		echo '<meta http-equiv="refresh" content="0; url=' . $RootPath . '/DeliveryDetails.php?identifier='.$identifier . '">';
+	if (isset($_POST['DeliveryDetails']) || (isset($_POST['DeliveryDetailsClicked']) && $_POST['DeliveryDetailsClicked'] == '1')){
+		$URL = $RootPath . '/DeliveryDetails.php?identifier='.$identifier;
+		if (!headers_sent()) {
+			header('Location: ' . $URL);
+			exit;
+		}
+		echo '<meta http-equiv="refresh" content="0; url=' . $URL . '">';
 		prnMsg(__('You should automatically be forwarded to the entry of the delivery details page') . '. ' . __('if this does not happen') . ' (' . __('if the browser does not support META Refresh') . ') ' .
-		   '<a href="' . $RootPath . '/DeliveryDetails.php?identifier='.$identifier . '">' . __('click here') . '</a> ' . __('to continue'), 'info');
+		   '<a href="' . $URL . '">' . __('click here') . '</a> ' . __('to continue'), 'info');
 	   	include(__DIR__ . '/includes/footer.php');
 		exit();
 	}
@@ -1467,7 +1591,28 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 			echo '</div>'; // .db-product-grid
 		}
 	}
+	echo '</div>'; // End tab-search
 
+	/* TAB 2: IMPORT CSV */
+	echo '<div id="tab-csv" class="db-tab-pane">
+			<div class="db-card">
+				<div class="db-card-body centre" style="padding: var(--space-12);">
+					<i class="fas fa-file-csv db-icon-blue" style="font-size: 3rem; margin-bottom: var(--space-4);"></i>
+					<h3>' . __('Import Items from CSV') . '</h3>
+					<p class="db-muted" style="margin-bottom: var(--space-6);">' . __('Upload a CSV file with ItemCode, Quantity in each row.') . '</p>
+					
+					<div class="db-field-group" style="max-width: 400px; margin: 0 auto;">
+						<input type="file" name="CSVFile" id="CSVFile" class="db-input" accept=".csv" />
+						<button type="submit" name="UploadFile" class="db-btn db-btn-primary" style="margin-top: var(--space-4); width: 100%;">
+							<i class="fas fa-upload"></i> ' . __('Upload & Process CSV') . '
+						</button>
+					</div>
+				</div>
+			</div>
+		  </div>';
+
+	echo '</div>'; // End db-tab-content
+	
 	/* Close Main Content and Open Sidebar for the Cart */
 	echo '</div><!-- .db-pos-main -->
 		  <div class="db-pos-sidebar">';
