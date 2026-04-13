@@ -428,7 +428,8 @@ echo '<div class="db-page">
 				<p class="db-page-subtitle">' . __('Search and manage your active sales orders') . '</p>
 			</div>
 			<div class="db-header-actions">
-				<a href="' . $RootPath . '/SelectOrderItems.php?NewOrder=Yes" class="db-btn db-btn-primary">+ ' . __('New Sales Order') . '</a>
+				<a href="' . $RootPath . '/SelectOrderItems.php?NewOrder=Yes' . (isset($SelectedCustomer) ? '&SelectedCustomer=' . urlencode($SelectedCustomer) : '') . '" class="db-btn db-btn-primary">+ ' . __('New Sales Order') . '</a>
+
 			</div>
 		</div>
 		<div class="db-page-content">

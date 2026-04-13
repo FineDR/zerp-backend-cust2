@@ -45,9 +45,10 @@ if (!isset($_SESSION['CustomerType'])) {
 }
 if (isset($_POST['JustSelectedACustomer'])) {
 	if (isset($_POST['SubmitCustomerSelection'])) {
-		foreach ($_POST['SubmitCustomerSelection'] as $CustomerID => $BranchCode) $_SESSION['CustomerID'] = $CustomerID;
+		foreach ($_POST['SubmitCustomerSelection'] as $CustomerID => $BranchCode)
+			$_SESSION['CustomerID'] = $CustomerID;
 		$_SESSION['BranchCode'] = $BranchCode;
-	} elseif (!isset($_POST['Search'])){
+	} elseif (!isset($_POST['Search'])) {
 		prnMsg(__('Unable to identify the selected customer'), 'error');
 	}
 }
@@ -99,12 +100,12 @@ if (isset($_POST['Search']) or isset($_POST['CSV']) or isset($_POST['Go']) or is
 						OR debtorsmaster.address2 " . LIKE . " '%" . $SearchKeywords . "%'
 						OR debtorsmaster.address3 " . LIKE . " '%" . $SearchKeywords . "%'
 						OR debtorsmaster.address4 " . LIKE . " '%" . $SearchKeywords . "%')";
-		
+
 		if (isset($_POST['CustType']) && $_POST['CustType'] != 'ALL') {
-			$SQL.= " AND debtortype.typename = '" . $_POST['CustType'] . "'";
+			$SQL .= " AND debtortype.typename = '" . $_POST['CustType'] . "'";
 		}
 		if (isset($_POST['Area']) && $_POST['Area'] != 'ALL') {
-			$SQL.= " AND custbranch.area = '" . $_POST['Area'] . "'";
+			$SQL .= " AND custbranch.area = '" . $_POST['Area'] . "'";
 		}
 	} else {
 		$SQL .= " WHERE debtorsmaster.name " . LIKE . " '%" . mb_strtoupper($_POST['Keywords']) . "%'
@@ -168,12 +169,13 @@ if (isset($_SESSION['CustomerID']) and $_SESSION['CustomerID'] != '' and !isset(
 			
 			<div class="db-card-body">
 				<div class="db-grid db-grid-6">
-					<a href="' . $RootPath . '/SelectSalesOrder.php?SelectedCustomer=' . urlencode($_SESSION['CustomerID']) . '" class="db-action-tile">
+					<a href="' . $RootPath . '/SelectOrderItems.php?NewOrder=Yes&SelectedCustomer=' . urlencode($_SESSION['CustomerID']) . '" class="db-action-tile">
 						<div class="db-action-icon db-icon-blue">
 							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
 						</div>
 						<span class="db-action-text">' . __('New Order') . '</span>
 					</a>
+
 					<a href="' . $RootPath . '/CustomerReceipt.php?CustomerID=' . urlencode($_SESSION['CustomerID']) . '&NewReceipt=Yes&Type=Customer" class="db-action-tile">
 						<div class="db-action-icon db-icon-green">
 							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
@@ -254,25 +256,25 @@ echo '<div class="card-v2" style="background: var(--surface-alt); border: 1px so
 					<div class="db-grid db-grid-2" style="margin-top: var(--space-3);">
 						<div class="db-field">
 							<label class="db-label">' . __('Customer Type') . '</label>';
-	$Result2 = DB_query("SELECT typeid, typename FROM debtortype ORDER BY typename");
-	echo '<select name="CustType">
+$Result2 = DB_query("SELECT typeid, typename FROM debtortype ORDER BY typename");
+echo '<select name="CustType">
 			<option value="ALL">' . __('Any Type') . '</option>';
-	while ($MyRow = DB_fetch_array($Result2)) {
-		$selected = (isset($_POST['CustType']) AND $_POST['CustType'] == $MyRow['typename']) ? 'selected="selected"' : '';
-		echo '<option ' . $selected . ' value="' . $MyRow['typename'] . '">' . $MyRow['typename'] . '</option>';
-	}
-	echo '</select>
+while ($MyRow = DB_fetch_array($Result2)) {
+	$selected = (isset($_POST['CustType']) AND $_POST['CustType'] == $MyRow['typename']) ? 'selected="selected"' : '';
+	echo '<option ' . $selected . ' value="' . $MyRow['typename'] . '">' . $MyRow['typename'] . '</option>';
+}
+echo '</select>
 						</div>
 						<div class="db-field">
 							<label class="db-label">' . __('Sales Area') . '</label>';
-	$Result2 = DB_query("SELECT areacode, areadescription FROM areas");
-	echo '<select name="Area">
+$Result2 = DB_query("SELECT areacode, areadescription FROM areas");
+echo '<select name="Area">
 			<option value="ALL">' . __('Any Area') . '</option>';
-	while ($MyRow = DB_fetch_array($Result2)) {
-		$selected = (isset($_POST['Area']) AND $_POST['Area'] == $MyRow['areacode']) ? 'selected="selected"' : '';
-		echo '<option ' . $selected . ' value="' . $MyRow['areacode'] . '">' . $MyRow['areadescription'] . '</option>';
-	}
-	echo '</select>
+while ($MyRow = DB_fetch_array($Result2)) {
+	$selected = (isset($_POST['Area']) AND $_POST['Area'] == $MyRow['areacode']) ? 'selected="selected"' : '';
+	echo '<option ' . $selected . ' value="' . $MyRow['areacode'] . '">' . $MyRow['areadescription'] . '</option>';
+}
+echo '</select>
 						</div>
 					</div>
 				</details>
@@ -283,10 +285,12 @@ echo '<div class="card-v2" style="background: var(--surface-alt); border: 1px so
 if (isset($SearchResult)) {
 	$ListCount = DB_num_rows($SearchResult);
 	$ListPageMax = ceil($ListCount / $_SESSION['DisplayRecordsMax']);
-	
+
 	if (!isset($_POST['CSV']) && $ListCount > 0) {
-		if (isset($_POST['Next']) && $_POST['PageOffset'] < $ListPageMax) $_POST['PageOffset']++;
-		if (isset($_POST['Previous']) && $_POST['PageOffset'] > 1) $_POST['PageOffset']--;
+		if (isset($_POST['Next']) && $_POST['PageOffset'] < $ListPageMax)
+			$_POST['PageOffset']++;
+		if (isset($_POST['Previous']) && $_POST['PageOffset'] > 1)
+			$_POST['PageOffset']--;
 
 		echo '<form action="' . htmlspecialchars(basename(__FILE__), ENT_QUOTES, 'UTF-8') . '" method="post">
 				<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
@@ -354,7 +358,7 @@ if (isset($_SESSION['CustomerID']) and $_SESSION['CustomerID'] != '' && $_SESSIO
 				WHERE debtorno = '" . $_SESSION['CustomerID'] . "' AND branchcode = '" . $_SESSION['BranchCode'] . "'";
 		$ResBranch = DB_query($SQL);
 		$BRow = DB_fetch_array($ResBranch);
-		
+
 		if ($BRow && $BRow['lat'] != 0) {
 			echo '<div class="card-v2" style="margin-top: var(--space-6);">
 					<div class="card-header-v2">

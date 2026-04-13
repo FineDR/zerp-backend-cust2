@@ -131,9 +131,10 @@ if ($AlreadyOnThisOrder!=1){
 					if ($SellSupportRow['rebatepercent'] > $SellSupportPercent){
 						$SellSupportPercent = $SellSupportRow['rebatepercent'];
 					}
-					if ($SellSupportRow['rebateinfunctionalcurrency'] > $SellSupportAmount){
+					if ($SellSupportRow['rebateinfunctionalcurrency'] > $SellSupportDiscount){
 						$SellSupportDiscount = $SellSupportRow['rebateinfunctionalcurrency'];
 					}
+
 				}
 			}
 

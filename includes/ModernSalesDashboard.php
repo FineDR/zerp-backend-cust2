@@ -45,6 +45,15 @@ $resTop = DB_query($sqlTop);
 while ($row = DB_fetch_assoc($resTop)) {
     $topProds[] = $row;
 }
+
+// Fallback if salesanalysis is empty
+if (empty($topProds)) {
+    $sqlFallback = "SELECT stkcode as stockid, SUM(-qty) as total_qty FROM stockmoves WHERE show_on_inv_crds=1 GROUP BY stkcode ORDER BY total_qty DESC LIMIT 5";
+    $resFallback = DB_query($sqlFallback);
+    while ($row = DB_fetch_assoc($resFallback)) {
+        $topProds[] = $row;
+    }
+}
 $maxQty = !empty($topProds) ? max(array_column($topProds, 'total_qty')) : 1;
 
 // Recent sales

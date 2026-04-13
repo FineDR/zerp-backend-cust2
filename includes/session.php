@@ -16,7 +16,7 @@ if (!isset($PathPrefix)) {
 	$PathPrefix = __DIR__ . '/../';
 }
 
-require($PathPrefix.'vendor/autoload.php');
+require($PathPrefix . 'vendor/autoload.php');
 
 if (!file_exists($PathPrefix . 'config.php')) {
 	// gg: there is no need for htmlspecialchars here, as we never output $RootPath into html
@@ -85,7 +85,8 @@ session_start();
 $WebErpSessionType = 'web';
 
 if (!function_exists('__')) {
-	function __($Text) {
+	function __($Text)
+	{
 		return $Text;
 	}
 }
@@ -103,7 +104,7 @@ if (!isset($_SESSION['AttemptsCounter']) or $AllowDemoMode == true) {
 	$_SESSION['AttemptsCounter'] = 0;
 }
 
-/* Log the script we run so we can optimize CPU time*/	
+/* Log the script we run so we can optimize CPU time*/
 $_SESSION['ScriptStartTime'] = microtime();
 
 if (isset($_SESSION['DatabaseName'])) {
@@ -307,11 +308,13 @@ if (!isset($_SESSION['DBVersion'])) {
 if (!isset($_SESSION['DBUpdateNumber'])) {
 	$_SESSION['DBUpdateNumber'] = -1;
 }
-if (isset($_SESSION['DBVersion'])
+if (
+	isset($_SESSION['DBVersion'])
 	and isset($_SESSION['DBUpdateNumber'])
 	and ($_SESSION['DBVersion'] > $_SESSION['DBUpdateNumber'])
 	and (basename($_SERVER['SCRIPT_NAME']) != 'Logout.php')
-	and (basename($_SERVER['SCRIPT_NAME']) != 'Z_UpgradeDatabase.php')) {
+	and (basename($_SERVER['SCRIPT_NAME']) != 'Z_UpgradeDatabase.php')
+) {
 	header('Location: ' . htmlspecialchars_decode($RootPath) . '/Z_UpgradeDatabase.php');
 	exit();
 }
@@ -416,21 +419,24 @@ if (!isset($_POST['CompanyNameField']) and sizeof($_POST) > 0 and !isset($AllowA
 }
 
 /// @todo move to LoginFunctions.php
-function CryptPass($Password) {
+function CryptPass($Password)
+{
 	$Hash = password_hash($Password, PASSWORD_DEFAULT);
 	return $Hash;
 }
 
 /// @todo move to LoginFunctions.php
-function VerifyPass($Password, $Hash) {
+function VerifyPass($Password, $Hash)
+{
 	if (password_verify($Password, $Hash)) {
 		return true;
 	}
 	return false;
 }
 
-function HighestFileName($PathPrefix) {
-	$files = glob($PathPrefix.'sql/updates/*.php');
+function HighestFileName($PathPrefix)
+{
+	$files = glob($PathPrefix . 'sql/updates/*.php');
 	natsort($files);
 	$LastFile = array_pop($files);
 	return $LastFile ? basename($LastFile, ".php") : '';

@@ -406,7 +406,8 @@ var CounterSales = {
 	},
 
 	OnPaymentMethodChange: function(select, i) {
-		var bankInput = select.parentElement.querySelector('input[type="hidden"]');
+		var parentRow = select.closest('.pos-payment-row');
+		var bankInput = parentRow.querySelector('input[name^="BankAccounts"]');
 		var selectedOption = select.options[select.selectedIndex];
 		bankInput.value = selectedOption.getAttribute('data-bank');
 	},
@@ -473,7 +474,7 @@ var CounterSales = {
         select.name = `PaymentMethods[${i}]`;
         select.setAttribute('onchange', `CounterSales.OnPaymentMethodChange(this, ${i})`);
         
-        const bankInput = newRow.querySelector('input[type="hidden"]');
+        const bankInput = newRow.querySelector('input[name^="BankAccounts"]');
         bankInput.name = `BankAccounts[${i}]`;
         bankInput.value = select.options[select.selectedIndex].getAttribute('data-bank');
 

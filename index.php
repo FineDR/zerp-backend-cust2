@@ -226,7 +226,7 @@ if ($isDashboard) {
 	<?php if ($pendingOrders > 0): ?>
 	<div class="db-alert db-alert-warning">
 		<span class="db-alert-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>
-		<span><?= $pendingOrders ?> <?= __('pending orders require attention') ?> &mdash; <a href="<?= $RootPath ?>/SelectInvoice.php" class="db-alert-link"><?= __('Review now') ?> →</a></span>
+		<span><?= $pendingOrders ?> <?= __('pending orders require attention') ?> &mdash; <a href="<?= $RootPath ?>/SelectSalesOrder.php" class="db-alert-link"><?= __('Review now') ?> →</a></span>
 	</div>
 	<?php endif; ?>
 	<div class="db-alert db-alert-info">
@@ -578,7 +578,7 @@ function GetRptLinks($GroupID) {
 		$RptLinks.= '<b>' . $Title[$Def] . '</b>';
 		$RptLinks.= '</li>';
 		$NoEntries = true;
-		if (isset($_SESSION['ReportList']['groupname']) and count($_SESSION['ReportList']['groupname']) > 0) { // then there are reports to show, show by grouping
+		if (isset($_SESSION['ReportList']) and count($_SESSION['ReportList']) > 0) { // then there are reports to show, show by grouping
 			foreach ($_SESSION['ReportList'] as $Report) {
 				if (isset($Report['groupname']) and $Report['groupname'] == $GroupID and $Report['defaultreport'] == $Def) {
 					$RptLinks.= '<li class="menu_group_item">';

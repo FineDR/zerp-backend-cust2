@@ -1,4 +1,6 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
 /* Creates sales invoices from entered sales orders based on the quantities dispatched that can be modified */
 
@@ -11,6 +13,8 @@ require(__DIR__ . '/includes/session.php');
 $Title = __('Confirm Dispatches and Invoice An Order');
 $ViewTopic = 'ARTransactions';
 $BookMark = 'ConfirmInvoice';
+$ExtraHeadContent = '<link rel="stylesheet" href="' . $RootPath . '/css/modern-zerp/styles.css">
+					<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">';
 include(__DIR__ . '/includes/header.php');
 
 include(__DIR__ . '/includes/CurrenciesArray.php');
@@ -26,7 +30,7 @@ if (empty($_GET['identifier'])) {
 	$identifier = $_GET['identifier'];
 }
 if (isset($_POST['DispatchDate'])) {
-    $_POST['DispatchDate'] = ConvertSQLDate($_POST['DispatchDate']);
+    // Pointless conversion removed
 }
 if (!isset($_GET['OrderNumber']) and !isset($_SESSION['ProcessingOrder'])) {
 	/* This page can only be called with an order number for invoicing*/
@@ -303,28 +307,39 @@ if ($_SESSION['Items' . $identifier]->SpecialInstructions) {
 	prnMsg($_SESSION['Items' . $identifier]->SpecialInstructions, 'warn');
 }
 
-echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/inventory.png" title="', // Icon image.
-__('Confirm Dispatch and Invoice'), '" /> ', // Icon title.
-__('Confirm Dispatch and Invoice'), '</p>', // Page title.
-'<table class="selection">
-		<tr>
-			<td>', __('Customer Code'), '</td>
-			<td class="text">', $_SESSION['Items' . $identifier]->DebtorNo, '</td>
-		</tr>
-		<tr>
-			<td>', __('Customer Name'), '</td>
-			<td class="text">', $_SESSION['Items' . $identifier]->CustomerName, '</td>
-		</tr>
-		<tr>
-			<td>', __('Invoice amounts stated in'), '</td>
-			<td class="text">', $_SESSION['Items' . $identifier]->DefaultCurrency, ' - ', $CurrencyName[$_SESSION['Items' . $identifier]->DefaultCurrency], '</td>
-		</tr>
-	</table>
-	<br />';
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div>
+				<h2 class="db-page-title">' . __('Fulfillment & Invoicing') . '</h2>
+				<p class="db-page-subtitle">' . __('Confirm dispatch quantities and generate the customer invoice.') . '</p>
+			</div>
+			<div class="db-header-actions">
+				<p class="db-page-subtitle">' . __('Customer') . ': <strong>' . $_SESSION['Items' . $identifier]->CustomerName . '</strong> (' . $_SESSION['Items' . $identifier]->DebtorNo . ')</p>
+			</div>
+		</div>';
 
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post">';
-echo '<div>';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post" class="db-pos-wrapper">
+		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+
+echo '<div class="db-pos-main">';
+
+/* ORDER INFO CARD */
+echo '<div class="db-card" style="margin-bottom: var(--space-6);">
+		<div class="db-card-body" style="display: flex; justify-content: space-between; align-items: center;">
+			<div class="db-kpi-item">
+				<span class="db-kpi-label">' . __('Order Number') . '</span>
+				<span class="db-kpi-value">#' . $_SESSION['Items' . $identifier]->OrderNo . '</span>
+			</div>
+			<div class="db-kpi-item">
+				<span class="db-kpi-label">' . __('Currency') . '</span>
+				<span class="db-kpi-value">' . $_SESSION['Items' . $identifier]->DefaultCurrency . '</span>
+			</div>
+			<div class="db-kpi-item">
+				<span class="db-kpi-label">' . __('Dispatch Date') . '</span>
+				<input type="text" name="DispatchDate" class="db-input date" style="width: 150px;" value="' . (isset($_POST['DispatchDate']) ? $_POST['DispatchDate'] : date($_SESSION['DefaultDateFormat'])) . '" />
+			</div>
+		</div>
+	  </div>';
 
 /***************************************************************
 	Line Item Display

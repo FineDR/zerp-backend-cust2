@@ -2830,3 +2830,172 @@ footer, #Footer {
     line-height: 1.5 !important;
     margin: 2px 0 !important;
 }
+
+/* ============================================================
+   SHIMMER LOADING ANIMATIONS
+   ============================================================ */
+.shimmer {
+    background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0) 0%, 
+        rgba(255, 255, 255, 0.4) 50%, 
+        rgba(255, 255, 255, 0) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    background-color: var(--border-soft, #f0f0f0);
+    border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.db-product-card.loading {
+    pointer-events: none;
+    border-color: var(--border-soft);
+}
+
+.db-product-card.loading .db-product-image {
+    background: var(--border-soft);
+}
+
+.db-product-card.loading .db-product-content > * {
+    background: var(--border-soft);
+    border-radius: 4px;
+}
+/* --- MODAL OVERLAY --- */
+.db-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.db-modal {
+    background: white;
+    border-radius: var(--radius-xl);
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    padding: var(--space-8);
+    position: relative;
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+@keyframes modalSlideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.db-modal-header {
+    text-align: center;
+    margin-bottom: var(--space-6);
+}
+
+.db-success-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--success);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-4);
+    font-size: 2.5rem;
+    box-shadow: 0 10px 20px var(--success-glow);
+}
+
+.db-modal-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.db-modal-body {
+    margin-bottom: var(--space-6);
+}
+
+.db-order-number-box {
+    background: var(--bg-workspace);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    text-align: center;
+    margin: var(--space-4) 0;
+}
+
+.db-modal-footer {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+}
+
+.db-grid-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+}
+
+/* --- FORM UTILITIES --- */
+.db-form-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--space-4);
+}
+
+.col-12 { grid-column: span 12; }
+.col-6 { grid-column: span 6; }
+.col-4 { grid-column: span 4; }
+
+@media (max-width: 768px) {
+    .col-6, .col-4 { grid-column: span 12; }
+}
+
+.db-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.db-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.db-input {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    transition: all var(--transition-fast);
+    width: 100%;
+}
+
+.db-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-subtle);
+    outline: none;
+}
+
+textarea.db-input {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.db-sticky-sidebar {
+    position: sticky;
+    top: var(--space-6);
+}
