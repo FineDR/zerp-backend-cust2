@@ -19,53 +19,25 @@ if (isset($_GET['New'])) {
 	unset($_SESSION['Transfer']);
 }
 
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div class="db-page-title">
+				<i class="fas fa-exchange-alt"></i> ' . $Title . '
+			</div>
+			<div class="db-page-actions">
+				<a href="' . $RootPath . '/StockTransfers.php?NewTransfer=Yes" class="db-btn db-btn-outline db-btn-small">
+					<i class="fas fa-plus"></i> ' . __('New Transfer') . '
+				</a>
+			</div>
+		</div>';
+
 if (isset($_GET['From'])) {
 	$_POST['StockLocationFrom']=$_GET['From'];
 	$_POST['StockLocationTo']=$_GET['To'];
 	$_POST['Quantity']=$_GET['Quantity'];
 }
 
-if (isset($_POST['CheckCode'])) {
-
-	echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme,
-		'/images/magnifier.png" title="',// Icon image.
-		__('Dispatch'), '" /> ',// Icon title.
-		__('Select Item to Transfer'), '</p>';// Page title.
-
-	if (mb_strlen($_POST['StockText'])>0) {
-		$SQL="SELECT stockid,
-					description
-			 FROM stockmaster
-			 WHERE description " . LIKE . " '%" . $_POST['StockText'] . "%'";
-	} else {
-		$SQL="SELECT stockid,
-					description
-			  FROM stockmaster
-			  WHERE stockid " . LIKE . " '%" . $_POST['StockCode']."%'";
-	}
-	$ErrMsg=__('The stock information cannot be retrieved because');
-	$Result = DB_query($SQL, $ErrMsg);
-	echo '<table class="selection">
-		<thead>
-			<tr>
-				<th class="SortedColumn">' . __('Stock Code') . '</th>
-				<th class="SortedColumn">' . __('Stock Description') . '</th>
-			</tr>
-		</thead>
-		<tbody>';
-	while($MyRow = DB_fetch_array($Result)) {
-		echo '<tr>
-				<td>' . $MyRow['stockid'] . '</td>
-				<td>' . $MyRow['description'] . '</td>
-				<td><a href="' . $RootPath . '/StockTransfers.php?StockID='.$MyRow['stockid'].'&amp;Description='.$MyRow['description'].'&amp;NewTransfer=Yes&amp;Quantity='. filter_number_format($_POST['Quantity']).'&amp;From='.$_POST['StockLocationFrom'].'&amp;To='.$_POST['StockLocationTo'].'">'
-				.__('Transfer') . '</a></td>
-			</tr>';
-
-	}
-	echo '</tbody></table>';
-	include(__DIR__ . '/includes/footer.php');
-	exit();
-}
+// Code selection logic moved to AJAX search
 
 $NewTransfer = false; /*initialise this first then determine from form inputs */
 
@@ -581,124 +553,6 @@ if (isset($_POST['EnterTransfer']) ) {
 
 }
 
-echo '<p class="page_title_text">
-		<img src="'.$RootPath.'/css/'.$Theme.'/images/supplier.png" title="' . __('Dispatch') . '" alt="" />' . ' ' . $Title . '
-	  </p>';
-
-echo '<form action="'. htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-if (!isset($_GET['Description'])) {
-	$_GET['Description']='';
-}
-echo '<fieldset>
-		<legend>', __('Stock Transfer'), '</legend>
-		<field>
-			<label for="StockID">' .  __('Stock Code'). ':</label>';
-if (!isset($_POST['StockID'])) {
-	$_POST['StockID'] = '';
-}
-	echo '<input type="text"  title="" name="StockID" size="21" value="' . $_POST['StockID'] . '" maxlength="20" />
-		<fieldhelp>'.__('The stock ID should not be blank or contain illegal characters, you can choose left this blank and only keyin').' '.__('Partial Stock Code').' '.__('or').' '.__('Partial Description').' '.__('then push').' '.__('Check Part').'</fieldhelp>
-	</field>';
-
-echo '<field>
-		<label for="StockText">' .  __('Partial Description'). ':</label>
-		<input type="text" name="StockText" title="" size="21" value="' . $_GET['Description'] .'" />
-		<fieldhelp>'.__('You can key in part of stock description or left this and ').' '.__('Partial Stock Code').' '.__('blank and click ').' '.__('Check Part').' '.__('to view the whole stock list').'</fieldhelp>
-		' . __('Partial Stock Code'). ':';
-if (isset($_POST['StockID'])) {
-	echo '<input type="text" title="" name="StockCode" size="21" value="' . $_POST['StockID'] .'" maxlength="20" />
-		<fieldhelp>'.__('You can key in partial of the stock code or just left this blank to click').' '.__('Check Part').'</fieldhelp>';
-} else {
-	echo '<input type="text" title="" name="StockCode" size="21" value="" maxlength="20" />
-		<fieldhelp>'.__('You can key in partial of the stock code or just left this blank to click').' '.__('Check Part').'</fieldhelp>';
-}
-echo '<input type="submit" name="CheckCode" value="'.__('Check Part').'" />
-	</field>';
-
-if (isset($_SESSION['Transfer']->TransferItem[0]->ItemDescription)
-	AND mb_strlen($_SESSION['Transfer']->TransferItem[0]->ItemDescription)>1) {
-
-	echo '<field>
-			<td colspan="3"><font color="blue" size="3">' . $_SESSION['Transfer']->TransferItem[0]->ItemDescription . ' ('.__('In Units of').' ' . $_SESSION['Transfer']->TransferItem[0]->PartUnit . ' )</font></td>
-		</field>';
-}
-
-echo '<field>
-		<label for="StockLocationFrom">' . __('From Stock Location').':</label>
-		<select name="StockLocationFrom">';
-
-$SQL = "SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canupd=1";
-$ResultStkLocs = DB_query($SQL);
-while($MyRow=DB_fetch_array($ResultStkLocs)) {
-	if (isset($_SESSION['Transfer']->StockLocationFrom)) {
-		if ($MyRow['loccode'] == $_SESSION['Transfer']->StockLocationFrom) {
-			 echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		} else {
-			 echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		}
-	} elseif ($MyRow['loccode']==$_SESSION['UserStockLocation']) {
-		echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		if (isset($_SESSION['Transfer']))
-		 $_SESSION['Transfer']->StockLocationFrom=$MyRow['loccode'];
-	} else {
-		 echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-	}
-}
-
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label for="StockLocationTo">' .  __('To Stock Location').': </label>
-		<select name="StockLocationTo"> ';
-
-DB_data_seek($ResultStkLocs,0);
-
-while($MyRow=DB_fetch_array($ResultStkLocs)) {
-	if (isset($_SESSION['Transfer']) AND isset($_SESSION['Transfer']->StockLocationTo)) {
-		if ($MyRow['loccode'] == $_SESSION['Transfer']->StockLocationTo) {
-			 echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		} else {
-			 echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		}
-	} elseif ($MyRow['loccode']==$_SESSION['UserStockLocation'] AND isset($_SESSION['Transfer'])) {
-		echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		if (isset($_SESSION['Transfer']))
-		 $_SESSION['Transfer']->StockLocationTo=$MyRow['loccode'];
-	} else {
-		 echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-	}
-}
-
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label for="Quantity">' . __('Transfer Quantity').':</label>';
-
-if (isset($_SESSION['Transfer']->TransferItem[0]->Controlled)
-	AND $_SESSION['Transfer']->TransferItem[0]->Controlled==1) {
-
-	echo '<input type="hidden" name="Quantity" value="' . locale_number_format($_SESSION['Transfer']->TransferItem[0]->Quantity) . '" />
-		<a href="' . $RootPath .'/StockTransferControlled.php?StockLocationFrom='.$_SESSION['Transfer']->StockLocationFrom.'">
-		' . $_SESSION['Transfer']->TransferItem[0]->Quantity . '</a>
-	</field>';
-} elseif (isset($_SESSION['Transfer']->TransferItem[0]->Controlled)) {
-	echo '<input type="text" class="number" name="Quantity" title="" size="12" maxlength="12" value="' . locale_number_format($_SESSION['Transfer']->TransferItem[0]->Quantity) . '" />
-		<fieldhelp'.__('The transfer quantity cannot be zero').'</fieldhelp>
-	</field>';
-} else {
-	echo '<input type="text" class="number"  title="" name="Quantity" size="12" maxlength="12" value="0" />
-		<fieldhelp>'.__('The transfer quantity cannot be zer0').'</fieldhelp>
-		</field>';
-}
-
-echo '</fieldset>
-	<div class="centre">
-		<input type="submit" name="EnterTransfer" value="' . __('Enter Stock Transfer') . '" />';
-
 if (empty($_SESSION['Transfer']->TransferItem[0]->StockID) and isset($_POST['StockID'])) {
 	$StockID=$_POST['StockID'];
 } elseif (isset($_SESSION['Transfer']->TransferItem[0]->StockID)) {
@@ -706,18 +560,160 @@ if (empty($_SESSION['Transfer']->TransferItem[0]->StockID) and isset($_POST['Sto
 } else {
 	$StockID='';
 }
-if (isset($_SESSION['Transfer'])) {
-	echo '<br />
-		<a href="'.$RootPath.'/StockStatus.php?StockID=' . $StockID . '">' . __('Show Stock Status') . '</a>';
-	echo '<br />
-		<a href="'.$RootPath.'/StockMovements.php?StockID=' . $StockID . '">' . __('Show Movements') . '</a>';
-	echo '<br />
-		<a href="'.$RootPath.'/StockUsage.php?StockID=' . $StockID . '&amp;StockLocation=' . $_SESSION['Transfer']->StockLocationFrom . '">' . __('Show Stock Usage') . '</a>';
-	echo '<br />
-		<a href="'.$RootPath.'/SelectSalesOrder.php?SelectedStockItem=' . $StockID . '&amp;StockLocation=' . $_SESSION['Transfer']->StockLocationFrom . '">' . __('Search Outstanding Sales Orders') . '</a>';
-	echo '<br />
-		<a href="'.$RootPath.'/SelectCompletedOrder.php?SelectedStockItem=' . $StockID . '">' . __('Search Completed Sales Orders') . '</a>';
+
+echo '<form action="'. htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post" id="TransferForm">';
+echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+
+echo '<div class="db-grid db-grid-2">';
+
+// Card 1: Item Selection
+echo '<div class="db-card">
+		<div class="db-card-header">
+			<div class="db-card-title"><i class="fas fa-search"></i> ' . __('Item Selection') . '</div>
+		</div>
+		<div class="db-card-body">
+			<div class="db-field">
+				<label for="StockID">' . __('Search Item (Code or Description)') . '</label>
+				<div class="db-search-container">
+					<input type="text" id="ItemSearch" class="db-input" placeholder="' . __('Enter item code or name...') . '" autocomplete="off" />
+					<div id="SearchResults" class="db-search-results"></div>
+				</div>
+				<input type="hidden" name="StockID" id="StockID" value="' . ($_POST['StockID'] ?? '') . '" />
+			</div>';
+
+if (isset($_SESSION['Transfer']->TransferItem[0]->ItemDescription) && mb_strlen($_SESSION['Transfer']->TransferItem[0]->ItemDescription) > 1) {
+	echo '<div class="db-status-bar db-status-active" style="margin-top:20px">
+			<div class="db-status-icon"><i class="fas fa-info-circle"></i></div>
+			<div class="db-status-text">
+				<strong>' . $_SESSION['Transfer']->TransferItem[0]->ItemDescription . '</strong><br>
+				<small>' . __('In Units of') . ': ' . $_SESSION['Transfer']->TransferItem[0]->PartUnit . '</small>
+			</div>
+		  </div>';
 }
-echo '</div>
-	</form>';
+
+echo '	</div>
+	  </div>';
+
+// Card 2: Transfer Details
+echo '<div class="db-card">
+		<div class="db-card-header">
+			<div class="db-card-title"><i class="fas fa-shipping-fast"></i> ' . __('Transfer Details') . '</div>
+		</div>
+		<div class="db-card-body">
+			<div class="db-grid db-grid-2">
+				<div class="db-field">
+					<label>' . __('From Location') . '</label>
+					<select name="StockLocationFrom" class="db-select">';
+
+$SQL = "SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canupd=1";
+$ResultStkLocs = DB_query($SQL);
+while($MyRow=DB_fetch_array($ResultStkLocs)) {
+	$selected = (isset($_SESSION['Transfer']->StockLocationFrom) && $MyRow['loccode'] == $_SESSION['Transfer']->StockLocationFrom) ? 'selected="selected"' : '';
+	echo '<option ' . $selected . ' value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
+}
+
+echo '				</select>
+				</div>
+				<div class="db-field">
+					<label>' . __('To Location') . '</label>
+					<select name="StockLocationTo" class="db-select">';
+
+DB_data_seek($ResultStkLocs, 0);
+while($MyRow=DB_fetch_array($ResultStkLocs)) {
+	$selected = (isset($_SESSION['Transfer']->StockLocationTo) && $MyRow['loccode'] == $_SESSION['Transfer']->StockLocationTo) ? 'selected="selected"' : '';
+	echo '<option ' . $selected . ' value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
+}
+
+echo '				</select>
+				</div>
+			</div>
+
+			<div class="db-field">
+				<label>' . __('Transfer Quantity') . '</label>';
+
+if (isset($_SESSION['Transfer']->TransferItem[0]->Controlled) && $_SESSION['Transfer']->TransferItem[0]->Controlled == 1) {
+	echo '<div class="db-status-bar db-status-warn">
+			<div class="db-status-icon"><i class="fas fa-exclamation-triangle"></i></div>
+			<div class="db-status-text">
+				' . __('Controlled Item: Click below to manage serials/lots') . '<br>
+				<a href="' . $RootPath .'/StockTransferControlled.php?StockLocationFrom='.$_SESSION['Transfer']->StockLocationFrom.'" class="db-link">
+					<input type="hidden" name="Quantity" value="' . locale_number_format($_SESSION['Transfer']->TransferItem[0]->Quantity) . '" />
+					' . __('Manage Batch/Serial for') . ' ' . $_SESSION['Transfer']->TransferItem[0]->Quantity . ' ' . $_SESSION['Transfer']->TransferItem[0]->PartUnit . '
+				</a>
+			</div>
+		  </div>';
+} else {
+	$qty = isset($_SESSION['Transfer']->TransferItem[0]->Quantity) ? locale_number_format($_SESSION['Transfer']->TransferItem[0]->Quantity) : '0';
+	echo '<input type="text" class="db-input number" name="Quantity" size="12" maxlength="12" value="' . $qty . '" />';
+}
+
+echo '		</div>
+
+			<div style="margin-top: 30px; text-align: right;">
+				<button type="submit" name="EnterTransfer" class="db-btn db-btn-primary">
+					<i class="fas fa-check-circle"></i> ' . __('Enter Stock Transfer') . '
+				</button>
+			</div>
+		</div>
+	  </div>';
+
+echo '</div>'; // End db-grid
+
+if (isset($_SESSION['Transfer']) && isset($_SESSION['Transfer']->TransferItem[0]->StockID) && $_SESSION['Transfer']->TransferItem[0]->StockID != '') {
+	$StockID = $_SESSION['Transfer']->TransferItem[0]->StockID;
+	echo '<div class="db-card" style="margin-top:20px">
+			<div class="db-card-body centre" style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap">
+				<a href="'.$RootPath.'/StockStatus.php?StockID=' . $StockID . '" class="db-link"><i class="fas fa-info-circle"></i> ' . __('Stock Status') . '</a>
+				<a href="'.$RootPath.'/StockMovements.php?StockID=' . $StockID . '" class="db-link"><i class="fas fa-history"></i> ' . __('Movements') . '</a>
+				<a href="'.$RootPath.'/StockUsage.php?StockID=' . $StockID . '&amp;StockLocation=' . $_SESSION['Transfer']->StockLocationFrom . '" class="db-link"><i class="fas fa-chart-line"></i> ' . __('Usage') . '</a>
+				<a href="'.$RootPath.'/SelectSalesOrder.php?SelectedStockItem=' . $StockID . '&amp;StockLocation=' . $_SESSION['Transfer']->StockLocationFrom . '" class="db-link"><i class="fas fa-shopping-cart"></i> ' . __('Outstanding Orders') . '</a>
+			</div>
+		  </div>';
+}
+
+echo '</form>
+	</div>'; // End db-page
+
+echo '<script>
+document.addEventListener("DOMContentLoaded", function() {
+	const itemSearch = document.getElementById("ItemSearch");
+	const searchResults = document.getElementById("SearchResults");
+	const stockIDInput = document.getElementById("StockID");
+
+	itemSearch.addEventListener("input", function() {
+		const query = this.value.trim();
+		if (query.length < 3) {
+			searchResults.style.display = "none";
+			return;
+		}
+
+		fetch("StockSearch_Ajax.php?term=" + encodeURIComponent(query))
+			.then(response => response.json())
+			.then(data => {
+				searchResults.innerHTML = "";
+				if (data.length > 0) {
+					data.forEach(item => {
+						const div = document.createElement("div");
+						div.className = "db-search-item";
+						div.innerHTML = `<strong>${item.id}</strong> - ${item.description}`;
+						div.onclick = function() {
+							stockIDInput.value = item.id;
+							document.getElementById("TransferForm").submit();
+						};
+						searchResults.appendChild(div);
+					});
+					searchResults.style.display = "block";
+				} else {
+					searchResults.style.display = "none";
+				}
+			});
+	});
+
+	document.addEventListener("click", function(e) {
+		if (!itemSearch.contains(e.target) && !searchResults.contains(e.target)) {
+			searchResults.style.display = "none";
+		}
+	});
+});
+</script>';
 include(__DIR__ . '/includes/footer.php');
