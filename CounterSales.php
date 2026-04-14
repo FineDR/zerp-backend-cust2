@@ -289,6 +289,15 @@ if (isset($_POST['CancelOrder'])) {
 
 	if (isset($CompletedInvoiceNo)) {
 		$DownloadURL = $CompletedInvoiceURL . '&Download=True';
+		
+		// Define TRA Receipt URLs
+		$ReceiptURL = $RootPath . '/TRAReceipt.php?InvoiceNo=' . urlencode($CompletedInvoiceNo);
+		$DownloadReceiptURL = $ReceiptURL . '&Download=True';
+		$ReceiptHTML = '
+			<a href="' . htmlspecialchars($DownloadReceiptURL, ENT_QUOTES, 'UTF-8') . '" class="pos-btn-outline" style="margin-top: 5px;">
+				<i class="fas fa-file-invoice-dollar"></i> ' . __('Download Receipt') . '
+			</a>';
+
 		echo '<div class="pos-modal-overlay">
 				<div class="pos-modal-content">
 					<div class="pos-modal-icon">
@@ -298,11 +307,11 @@ if (isset($_POST['CancelOrder'])) {
 					<p class="pos-modal-subtitle">' . __('Invoice #') . $CompletedInvoiceNo . ' ' . __('has been processed.') . '</p>
 					
 					<div class="pos-modal-actions">
-						<a href="' . htmlspecialchars($CompletedInvoiceURL, ENT_QUOTES, 'UTF-8') . '" target="_blank" class="pos-btn-primary">
+						<a href="' . htmlspecialchars($ReceiptURL, ENT_QUOTES, 'UTF-8') . '" target="_blank" class="pos-btn-primary">
 							<i class="fas fa-print"></i> ' . __('Print Receipt') . '
 						</a>
-						<a href="' . htmlspecialchars($DownloadURL, ENT_QUOTES, 'UTF-8') . '" class="pos-btn-outline">
-							<i class="fas fa-download"></i> ' . __('Download PDF') . '
+						<a href="' . htmlspecialchars($DownloadReceiptURL, ENT_QUOTES, 'UTF-8') . '" class="pos-btn-outline">
+							<i class="fas fa-download"></i> ' . __('Download Receipt PDF') . '
 						</a>
 						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" class="pos-btn-ghost">
 							' . __('Start New Sale') . '
@@ -1154,6 +1163,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 			/*Need to figure out the cross rate between customer currency and bank account currency */
 
 			if ($TotalAmountPaid != 0) {
+				$LastReceiptNo = 0;
 				foreach ($_POST['PaymentAmounts'] as $i => $Amount) {
 					$Amount = filter_number_format($Amount);
 					if ($Amount == 0)
@@ -1280,6 +1290,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 									'" . $DebtorTransID . "')";
 					$ErrMsg = __('Cannot insert the customer allocation of the receipt to the invoice because');
 					$Result = DB_query($SQL, $ErrMsg, '', true);
+					$LastReceiptNo = $ReceiptNumber;
 				}
 
 				// Update last paid date for customer
@@ -1306,7 +1317,8 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 		$CompletedSaleURL = htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8')
 			. '?CompletedInvoiceNo=' . urlencode($InvoiceNo)
 			. '&identifier=' . urlencode($identifier)
-			. '&CompletedInvoiceOrientation=' . urlencode($CompletedInvoiceOrientation);
+			. '&CompletedInvoiceOrientation=' . urlencode($CompletedInvoiceOrientation)
+			. '&ReceiptNo=' . urlencode($LastReceiptNo ?? 0);
 
 		if (!headers_sent()) {
 			header('Location: ' . $CompletedSaleURL, true, 303);
