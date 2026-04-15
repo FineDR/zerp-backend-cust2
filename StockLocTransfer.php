@@ -206,15 +206,19 @@ if (isset($_POST['Submit']) AND $InputError==false){
 
 	echo '<div class="db-page">
 			<div class="db-page-header">
-				<div class="db-page-title">
-					<i class="fas fa-shipping-fast"></i> ' . $Title . '
+				<div class="db-header-left">
+					<div class="db-page-title">
+						<i class="fas fa-shipping-fast"></i> ' . $Title . '
+					</div>
+					<div class="db-page-subtitle">' . __('Bulk stock shipment between warehouse locations') . '</div>
 				</div>
-				<div class="db-page-actions">
-					<a href="' . $RootPath . '/StockLocTransfer.php" class="db-btn db-btn-outline db-btn-sm">
-						<i class="fas fa-sync"></i> ' . __('Start Over') . '
+				<div class="db-header-actions">
+					<a href="' . $RootPath . '/StockLocTransfer.php" class="db-btn db-btn-secondary">
+						<i class="fas fa-sync"></i> ' . __('Reset Form') . '
 					</a>
 				</div>
 			</div>';
+
 
 	if (isset($InputError) and $InputError == true) {
 		echo '<div class="db-status-bar db-status-danger" style="margin-bottom: 20px;">
@@ -224,30 +228,24 @@ if (isset($_POST['Submit']) AND $InputError==false){
 	}
 
 	echo '<form enctype="multipart/form-data" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">';
-	echo '<div class="db-grid db-grid-2">
-			<!-- Card 1: Transfer Configuration -->
-			<div class="db-card">
-				<div class="db-card-header">
-					<div class="db-card-title"><i class="fas fa-cog"></i> ' . __('Transfer Configuration') . '</div>
-				</div>
-				<div class="db-card-body">
-					<input type="hidden" name="Trf_ID" value="' . $Trf_ID . '" />
-					<div class="db-form-row" style="margin-bottom: 30px;">
-						<div class="db-form-group">
-							<label class="db-label" style="text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; font-size: 0.7rem; font-weight: 700;">' . __('Transfer Reference') . '</label>
-							<div class="db-badge db-badge-primary" style="font-size: 1.1rem; padding: 8px 16px; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px; background: var(--db-primary-light); color: var(--db-primary); border: 1px solid rgba(var(--db-primary-rgb), 0.1);">
-								<i class="fas fa-hashtag" style="font-size: 0.8rem; opacity: 0.6;"></i>
-								<span style="font-family: monospace; font-weight: 700;">' . $Trf_ID . '</span>
-							</div>
+	echo '<div class="db-bottom-layout">
+			<aside class="db-col-aside">';
+	
+	// Card 1: Transfer Configuration
+	echo '			<div class="db-card">
+						<div class="db-card-header">
+							<div class="db-card-title"><i class="fas fa-cog"></i> ' . __('Configuration') . '</div>
 						</div>
-					</div>
-					
-					<div style="display: flex; gap: 24px; margin-bottom: 5px; flex-wrap: nowrap;">
-						<div class="db-form-group" style="flex: 1; min-width: 0;">
-							<label class="db-label" style="margin-bottom: 8px; font-weight: 600; opacity: 0.8;">' . __('Source Warehouse') . '</label>
-							<div class="db-input-wrapper">
-								<i class="fas fa-warehouse db-input-icon" style="top: 13px;"></i>
-								<select name="FromStockLocation" id="FromStockLocation" class="db-select db-input-light" style="padding-left: 40px; height: 44px; width: 100%;">Line 250: ';
+						<div class="db-card-body">
+							<input type="hidden" name="Trf_ID" value="' . $Trf_ID . '" />
+							<div class="db-form-group" style="margin-bottom: 20px;">
+								<label class="db-label" style="text-transform: uppercase; font-size: 0.7rem; opacity: 0.6;">' . __('Ref #') . '</label>
+								<div class="db-badge db-badge-primary" style="font-family: monospace; font-size: 1rem; width: 100%; justify-content: center;">#' . $Trf_ID . '</div>
+							</div>
+							
+							<div class="db-form-group">
+								<label class="db-label">' . __('From Location') . ':</label>
+								<select name="FromStockLocation" id="FromStockLocation" class="db-select">';
 
 	$SQL = "SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canupd=1 ORDER BY locationname";
 	$ResultStkLocs = DB_query($SQL);
@@ -255,79 +253,82 @@ if (isset($_POST['Submit']) AND $InputError==false){
 		$selected = (isset($_POST['FromStockLocation']) && $MyRow['loccode'] == $_POST['FromStockLocation']) ? 'selected="selected"' : '';
 		echo '<option ' . $selected . ' value="' . $MyRow['loccode'] . '">' . $MyRow['locationname']. '</option>';
 	}
-	echo '				</select>
+	echo '						</select>
 							</div>
-						</div>
-						<div class="db-form-group" style="flex: 1; min-width: 0;">
-							<label class="db-label" style="margin-bottom: 8px; font-weight: 600; opacity: 0.8;">' . __('Destination Warehouse') . '</label>
-							<div class="db-input-wrapper">
-								<i class="fas fa-map-marker-alt db-input-icon" style="top: 13px;"></i>
-								<select name="ToStockLocation" id="ToStockLocation" class="db-select db-input-light" style="padding-left: 40px; height: 44px; width: 100%;">';
+
+							<div class="db-form-group" style="margin-top: 15px;">
+								<label class="db-label">' . __('To Location') . ':</label>
+								<select name="ToStockLocation" id="ToStockLocation" class="db-select">';
 
 	DB_data_seek($ResultStkLocs, 0);
 	while ($MyRow=DB_fetch_array($ResultStkLocs)){
 		$selected = (isset($_POST['ToStockLocation']) && $MyRow['loccode'] == $_POST['ToStockLocation']) ? 'selected="selected"' : '';
 		echo '<option ' . $selected . ' value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 	}
-	echo '				</select>
+	echo '						</select>
 							</div>
 						</div>
-					</div>
-				</div>
-			</div>
+					</div>';
 
-			<!-- Card 2: Add Items -->
-			<div class="db-card">
-				<div class="db-card-header">
-					<div class="db-card-title"><i class="fas fa-plus-circle"></i> ' . __('Add Items to Transfer') . '</div>
-				</div>
-				<div class="db-card-body">
-					<div class="db-form-row">
-						<label class="db-label" style="margin-bottom: 10px; opacity: 0.6; font-size: 0.8rem;">' . __('Item Lookup & Quick Add') . '</label>
-						<div style="display: flex; gap: 10px; align-items: flex-start;">
-							<!-- Search Container -->
-							<div class="db-search-container" style="flex: 1; position: relative;">
-								<i class="fas fa-search" style="position: absolute; left: 15px; top: 13px; opacity: 0.4; z-index: 5;"></i>
-								<input type="text" id="ItemSearch" class="db-input db-input-light" style="padding-left: 45px; height: 44px; border-radius: 6px 0 0 6px; border-right: none;" placeholder="' . __('Enter item code or name...') . '" autocomplete="off" />
-								<div id="SearchResults" class="db-search-results"></div>
+	// Card 2: Add Items
+	echo '			<div class="db-card" style="margin-top: 24px;">
+						<div class="db-card-header">
+							<div class="db-card-title"><i class="fas fa-plus-circle"></i> ' . __('Add Items') . '</div>
+						</div>
+						<div class="db-card-body">
+							<div class="db-form-group">
+								<label class="db-label">' . __('Search Inventory') . ':</label>
+								<div style="position: relative;">
+									<input type="text" id="ItemSearch" class="db-input" placeholder="' . __('Code or name...') . '" autocomplete="off" />
+									<div id="SearchResults" class="db-search-results" style="display: none; position: absolute; z-index: 1000; top: 100%; left: 0; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); max-height: 250px; overflow-y: auto;"></div>
+								</div>
 							</div>
 							
-							<!-- Quantity -->
-							<div class="db-input-wrapper" style="width: 100px;">
-								<input type="number" id="QuickQty" class="db-input db-input-light" style="text-align: center; height: 44px; border-radius: 0; border-right: none;" value="1" step="any" placeholder="Qty" />
+							<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
+								<div class="db-form-group">
+									<label class="db-label">' . __('Qty') . ':</label>
+									<input type="number" id="QuickQty" class="db-input" style="text-align: center;" value="1" step="any" />
+								</div>
+								<div style="display: flex; align-items: flex-end;">
+									<button type="button" id="AddItemBtn" class="db-btn db-btn-primary" style="width: 100%; height: 42px; justify-content: center;">
+										<i class="fas fa-plus"></i> ' . __('Add') . '
+									</button>
+								</div>
 							</div>
-							
-							<!-- Add Button -->
-							<button type="button" id="AddItemBtn" class="db-btn db-btn-primary" style="height: 44px; padding: 0 20px; font-weight: 600; border-radius: 0 6px 6px 0; display: flex; align-items: center; gap: 8px;">
-								<i class="fas fa-plus"></i> ' . __('Add Item') . '
-							</button>
+
+							<div id="PendingItemInfo" class="db-alert db-alert-info" style="display: none; margin-top: 16px; padding: 10px; font-size: 0.8rem;">
+								<div id="PendingItemText" style="word-break: break-all;"></div>
+							</div>
 						</div>
 					</div>
-					<div id="PendingItemInfo" class="db-status-bar db-status-active" style="display: none; margin-top: 15px; border-radius: var(--db-radius-md);">
-						<div class="db-status-icon"><i class="fas fa-barcode"></i></div>
-						<div class="db-status-text" id="PendingItemText"></div>
-					</div>
-				</div>
-			</div>
-		</div> <!-- End Grid -->
+				</aside>
+
+
+				<main class="db-col-main">
 
 		<!-- Card 3: Transfer List -->
-		<div class="db-card" style="margin-top: 20px;">
+		<div class="db-card" style="margin-bottom: 20px;">
 			<div class="db-card-header">
-				<div class="db-card-title"><i class="fas fa-list-ul"></i> ' . __('Transfer List') . '</div>
+				<div class="db-card-title">
+					<div style="display: flex; align-items: center; gap: 10px;">
+						<i class="fas fa-list-ul"></i> ' . __('Transfer List') . '
+					</div>
+					<span class="db-badge" id="ItemCountBadge" style="font-size: 0.7rem;">' . $LinesCounter . ' ' . __('Items') . '</span>
+				</div>
 			</div>
 			<div class="db-card-body">
 				<div class="table-responsive">
 					<table class="db-table" id="TransferTable">
 						<thead>
 							<tr>
-								<th>' . __('Item Code') . '</th>
+								<th style="width: 150px;">' . __('Item Code') . '</th>
 								<th>' . __('Description') . '</th>
-								<th class="text-right">' . __('Quantity') . '</th>
-								<th class="text-center">' . __('Action') . '</th>
+								<th class="text-right" style="width: 100px;">' . __('Qty') . '</th>
+								<th class="text-center" style="width: 80px;">' . __('Action') . '</th>
 							</tr>
 						</thead>
 						<tbody id="TransferListBody">';
+
 	
 	// Pre-populate if post data exists
 	$LinesCounter = 0;
@@ -335,15 +336,19 @@ if (isset($_POST['Submit']) AND $InputError==false){
 		for ($i=0; $i < $_POST['LinesCounter']; $i++){
 			if (isset($_POST['StockID' . $i]) && $_POST['StockID' . $i] != ''){
 				echo '<tr data-index="' . $LinesCounter . '">
-						<td>' . $_POST['StockID' . $i] . '<input type="hidden" name="StockID' . $LinesCounter . '" value="' . $_POST['StockID' . $i] . '" /></td>
-						<td><small>' . __('Existing Item') . '</small></td>
-						<td class="text-right">' . $_POST['StockQTY' . $i] . '<input type="hidden" name="StockQTY' . $LinesCounter . '" value="' . $_POST['StockQTY' . $i] . '" /></td>
+						<td class="db-font-bold">' . $_POST['StockID' . $i] . '<input type="hidden" name="StockID' . $LinesCounter . '" value="' . $_POST['StockID' . $i] . '" /></td>
+						<td class="db-text-muted"><small>' . __('Imported or manual entry') . '</small></td>
+						<td class="text-right db-font-bold text-primary">' . $_POST['StockQTY' . $i] . '<input type="hidden" name="StockQTY' . $LinesCounter . '" value="' . $_POST['StockQTY' . $i] . '" /></td>
 						<td class="text-center">
-							<button type="button" class="db-btn db-btn-outline db-btn-sm" onclick="removeRow(this)">
-								<i class="fas fa-times" style="color: var(--db-danger);"></i>
+							<button type="button" class="db-btn db-btn-sm db-btn-danger" onclick="removeRow(this)">
+								<i class="fas fa-trash-alt"></i> ' . __('Remove') . '
 							</button>
 						</td>
 					  </tr>';
+
+
+
+
 				$LinesCounter++;
 			}
 		}
@@ -352,44 +357,84 @@ if (isset($_POST['Submit']) AND $InputError==false){
 	echo '				</tbody>
 					</table>
 				</div>
-				<div id="EmptyState" style="' . ($LinesCounter > 0 ? 'display: none;' : '') . ' text-align: center; padding: 40px; color: var(--db-text-muted);">
-					<i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
-					<p>' . __('No items added yet. Use the search above to start building your transfer.') . '</p>
-				</div>
-				<div class="db-form-actions" style="margin-top: 25px; border-top: 1px solid var(--db-border); padding-top: 25px;">
-					<input type="hidden" name="LinesCounter" id="LinesCounter" value="' . $LinesCounter . '" />
-					<div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-						<label class="db-checkbox-container" style="color: var(--db-text-muted); font-size: 0.9rem;">
-							<input type="checkbox" name="ClearAll" />
-							<span class="db-checkbox-label">' . __('Clear All on Submit') . '</span>
-						</label>
-						<button type="submit" name="Submit" class="db-btn db-btn-primary db-btn-lg" style="padding-left: 40px; padding-right: 40px; font-weight: 600;">
-							<i class="fas fa-check-double"></i> ' . __('Complete Transfer') . '
-						</button>
+				<div id="EmptyState" style="' . ($LinesCounter > 0 ? 'display: none;' : '') . ' text-align: center; padding: 100px 40px; border: 2px dashed var(--border); border-radius: var(--radius-md); margin: 20px;">
+					<div style="width: 64px; height: 64px; background: var(--bg-workspace); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+						<i class="fas fa-box-open" style="font-size: 2rem; opacity: 0.3;"></i>
 					</div>
+					<h3 class="db-font-bold" style="color: var(--text-main); margin-bottom: 8px;">' . __('List is empty') . '</h3>
+					<p style="max-width: 250px; margin: 0 auto; line-height: 1.5;">' . __('Start by adding items from the sidebar or using bulk upload.') . '</p>
+				</div>
+			</div>
+
+			
+			<div class="db-card-footer" style="padding: 20px; background: var(--surface-alt); border-top: 1px solid var(--border-soft);">
+				<div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+					<label class="db-checkbox-container" style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+						<input type="checkbox" name="ClearAll" />
+						<span>' . __('Clear all items after successful transfer') . '</span>
+					</label>
+					<input type="hidden" name="LinesCounter" id="LinesCounter" value="' . $LinesCounter . '" />
+					<button type="submit" name="Submit" class="db-btn db-btn-primary" style="padding: 12px 30px; font-weight: 700;">
+						<i class="fas fa-check-double"></i> ' . __('Execute Bulk Shipment') . '
+					</button>
 				</div>
 			</div>
 		</div>
 
-		<!-- Card 4: CSV Upload -->
-		<details class="db-card" style="margin-top: 20px; border: 1px solid var(--db-border-light);">
-			<summary class="db-card-header" style="cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; padding: 15px 20px;">
-				<div class="db-card-title" style="font-size: 0.95rem; opacity: 0.8;"><i class="fas fa-file-csv"></i> ' . __('Bulk Upload via CSV') . '</div>
-				<i class="fas fa-chevron-down" style="font-size: 0.8rem; opacity: 0.4;"></i>
-			</summary>
-			<div class="db-card-body" style="background: var(--db-bg-alt); border-top: 1px solid var(--db-border-light);">
-				<div class="db-status-bar db-status-info" style="margin-bottom: 20px; font-size: 0.85rem;">
-					<div class="db-status-icon"><i class="fas fa-question-circle"></i></div>
-					<div class="db-status-text">' . __('Upload a comma separated file with two columns: [Item Code] and [Quantity].') . '</div>
-				</div>
-				<div class="db-form-row">
-					<div class="db-form-group">
-						<label class="db-label">' . __('Select File') . '</label>
-						<input name="SelectedTransferFile" type="file" id="CSVFile" class="db-input db-input-light" style="padding: 10px;" />
+		<div class="db-card" style="margin-top: 24px;">
+			<div class="db-card-header" style="background: var(--surface-alt);">
+				<div class="db-card-title" style="font-size: 0.85rem;"><i class="fas fa-file-csv"></i> ' . __('CSV Bulk Import') . '</div>
+			</div>
+			<div class="db-card-body" style="padding: 24px;">
+				<div style="display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap;">
+					<div style="flex: 1; min-width: 250px;">
+						<label class="db-label" style="margin-bottom: 8px;">' . __('Select CSV File') . ':</label>
+						<div style="position: relative;">
+							<input name="SelectedTransferFile" type="file" id="CSVFile" class="db-input" style="padding: 8px 12px; font-size: 0.85rem;" />
+						</div>
+						<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">
+							<i class="fas fa-info-circle"></i> ' . __('Required format') . ': <code>[Item Code], [Quantity]</code>
+						</div>
 					</div>
+					<button type="submit" name="Submit" class="db-btn db-btn-secondary" style="height: 42px;">
+						<i class="fas fa-upload"></i> ' . __('Upload Items') . '
+					</button>
 				</div>
 			</div>
-		</details>';
+		</div>
+
+	</main>
+</div>';
+
+echo '<style>
+.db-btn-danger {
+	background: #ef4444;
+	color: #ffffff;
+	border-color: #ef4444;
+}
+.db-btn-danger:hover {
+	background: #dc2626;
+	border-color: #dc2626;
+	color: #ffffff;
+	box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+	transform: translateY(-1px);
+}
+.db-search-item {
+	padding: 12px 16px;
+	cursor: pointer;
+	border-bottom: 1px solid var(--border-soft);
+	transition: all 0.2s;
+}
+.db-search-item:hover {
+	background: var(--primary-soft);
+	padding-left: 20px;
+}
+</style>';
+
+
+
+
+
 
 	echo '</form>
 		</div>'; // End db-page
@@ -456,19 +501,28 @@ if (isset($_POST['Submit']) AND $InputError==false){
 			const idx = parseInt(linesCounter.value);
 			const row = document.createElement("tr");
 			row.innerHTML = `
-				<td>${selectedItem.id}<input type="hidden" name="StockID${idx}" value="${selectedItem.id}" /></td>
+				<td class="db-font-bold">${selectedItem.id}<input type="hidden" name="StockID${idx}" value="${selectedItem.id}" /></td>
 				<td>${selectedItem.description}</td>
-				<td class="text-right">${qty}<input type="hidden" name="StockQTY${idx}" value="${qty}" /></td>
+				<td class="text-right db-font-bold text-primary">${qty}<input type="hidden" name="StockQTY${idx}" value="${qty}" /></td>
 				<td class="text-center">
-					<button type="button" class="db-btn db-btn-outline db-btn-sm" onclick="removeRow(this)">
-						<i class="fas fa-times" style="color: var(--db-danger);"></i>
+					<button type="button" class="db-btn db-btn-sm db-btn-danger" onclick="removeRow(this)">
+						<i class="fas fa-trash-alt"></i> ' . __('Remove') . '
 					</button>
 				</td>
 			`;
+
+
+
+
+
+
 			
 			transferBody.appendChild(row);
 			linesCounter.value = idx + 1;
+			document.getElementById("ItemCountBadge").innerText = `${idx + 1} ' . __('Items') . '`;
 			emptyState.style.display = "none";
+
+
 
 			// Reset
 			selectedItem = null;
@@ -477,6 +531,7 @@ if (isset($_POST['Submit']) AND $InputError==false){
 			document.getElementById("PendingItemInfo").style.display = "none";
 			itemSearch.focus();
 		});
+
 
 		document.addEventListener("click", function(e) {
 			if (!itemSearch.contains(e.target) && !searchResults.contains(e.target)) {
@@ -501,10 +556,12 @@ if (isset($_POST['Submit']) AND $InputError==false){
 			qtyInput.name = `StockQTY${i}`;
 		});
 		counter.value = rows.length;
+		document.getElementById("ItemCountBadge").innerText = `${rows.length} ' . __('Items') . '`;
 		if (rows.length === 0) {
 			document.getElementById("EmptyState").style.display = "block";
 		}
 	}
+
 	</script>';
 	include(__DIR__ . '/includes/footer.php');
 }

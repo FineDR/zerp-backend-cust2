@@ -7,9 +7,6 @@ $ViewTopic = 'Setup';
 $BookMark = '';
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/magnifier.png" title="' .
-		__('Search') . '" alt="" />' . ' ' . $Title . '</p>';
-
 if ( isset($_GET['SelectedMeasureID']) )
 	$SelectedMeasureID = $_GET['SelectedMeasureID'];
 elseif (isset($_POST['SelectedMeasureID']))
@@ -17,14 +14,7 @@ elseif (isset($_POST['SelectedMeasureID']))
 
 if (isset($_POST['Submit'])) {
 
-	//initialise no input errors assumed initially before we test
-
 	$InputError = 0;
-
-	/* actions to take once the user has clicked the submit button
-	ie the page has called itself with some user input */
-
-	//first off validate inputs sensible
 
 	if (ContainsIllegalCharacters($_POST['MeasureName'])) {
 		$InputError = 1;
@@ -37,9 +27,6 @@ if (isset($_POST['Submit'])) {
 
 	if (isset($_POST['SelectedMeasureID']) AND $_POST['SelectedMeasureID']!='' AND $InputError !=1) {
 
-
-		/*SelectedMeasureID could also exist if submit had not been clicked this code would not run in this case cos submit is false of course  see the delete code below*/
-		// Check the name does not clash
 		$SQL = "SELECT count(*) FROM unitsofmeasure
 				WHERE unitid <> '" . $SelectedMeasureID ."'
 				AND unitname ".LIKE." '" . $_POST['MeasureName'] . "'";
@@ -49,14 +36,10 @@ if (isset($_POST['Submit'])) {
 			$InputError = 1;
 			prnMsg( __('The unit of measure can not be renamed because another with the same name already exist.'),'error');
 		} else {
-			// Get the old name and check that the record still exist neet to be very carefull here
-			// idealy this is one of those sets that should be in a stored procedure simce even the checks are
-			// relavant
 			$SQL = "SELECT unitname FROM unitsofmeasure
 				WHERE unitid = '" . $SelectedMeasureID . "'";
 			$Result = DB_query($SQL);
 			if ( DB_num_rows($Result) != 0 ) {
-				// This is probably the safest way there is
 				$MyRow = DB_fetch_row($Result);
 				$OldMeasureName = $MyRow[0];
 				$SQL = array();
@@ -73,7 +56,6 @@ if (isset($_POST['Submit'])) {
 		}
 		$Msg = __('Unit of measure changed');
 	} elseif ($InputError !=1) {
-		/*SelectedMeasureID is null cos no item selected on first time round so must be adding a record*/
 		$SQL = "SELECT count(*) FROM unitsofmeasure
 				WHERE unitname " .LIKE. " '".$_POST['MeasureName'] ."'";
 		$Result = DB_query($SQL);
@@ -89,7 +71,6 @@ if (isset($_POST['Submit'])) {
 	}
 
 	if ($InputError!=1){
-		//run the SQL from either of the above possibilites
 		if (is_array($SQL)) {
 			DB_Txn_Begin();
 			$TmpErr = __('Could not update unit of measure');
@@ -116,14 +97,10 @@ if (isset($_POST['Submit'])) {
 	unset ($_POST['MeasureName']);
 
 } elseif (isset($_GET['delete'])) {
-//the link to delete a selected record was clicked instead of the submit button
-// PREVENT DELETES IF DEPENDENT RECORDS IN 'stockmaster'
-	// Get the original name of the unit of measure the ID is just a secure way to find the unit of measure
 	$SQL = "SELECT unitname FROM unitsofmeasure
 		WHERE unitid = '" . $SelectedMeasureID . "'";
 	$Result = DB_query($SQL);
 	if ( DB_num_rows($Result) == 0 ) {
-		// This is probably the safest way there is
 		prnMsg( __('Cannot delete this unit of measure because it no longer exist'),'warn');
 	} else {
 		$MyRow = DB_fetch_row($Result);
@@ -133,111 +110,83 @@ if (isset($_POST['Submit'])) {
 		$MyRow = DB_fetch_row($Result);
 		if ($MyRow[0]>0) {
 			prnMsg( __('Cannot delete this unit of measure because inventory items have been created using this unit of measure'),'warn');
-			echo '<br />' . __('There are') . ' ' . $MyRow[0] . ' ' . __('inventory items that refer to this unit of measure') . '</font>';
 		} else {
 			$SQL="DELETE FROM unitsofmeasure WHERE unitname ".LIKE."'" . $OldMeasureName . "'";
 			$Result = DB_query($SQL);
 			prnMsg( $OldMeasureName . ' ' . __('unit of measure has been deleted') . '!','success');
 		}
-	} //end if account group used in GL accounts
-	unset ($SelectedMeasureID);
-	unset ($_GET['SelectedMeasureID']);
-	unset($_GET['delete']);
-	unset ($_POST['SelectedMeasureID']);
-	unset ($_POST['MeasureID']);
-	unset ($_POST['MeasureName']);
-}
-
- if (!isset($SelectedMeasureID)) {
-
-/* An unit of measure could be posted when one has been edited and is being updated
-  or GOT when selected for modification
-  SelectedMeasureID will exist because it was sent with the page in a GET .
-  If its the first time the page has been displayed with no parameters
-  then none of the above are true and the list of account groups will be displayed with
-  links to delete or edit each. These will call the same page again and allow update/input
-  or deletion of the records*/
-
-	$SQL = "SELECT unitid,
-			unitname
-			FROM unitsofmeasure
-			ORDER BY unitid";
-
-	$ErrMsg = __('Could not get unit of measures because');
-	$Result = DB_query($SQL, $ErrMsg);
-
-	echo '<table class="selection">
-		<thead>
-			<tr>
-				<th class="SortedColumn">' . __('Units of Measure') . '</th>
-			</tr>
-		</thead>
-		<tbody>';
-
-	while ($MyRow = DB_fetch_row($Result)) {
-
-		echo '<tr class="striped_row">
-				<td>' . $MyRow[1] . '</td>
-				<td><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedMeasureID=' . $MyRow[0] . '">' . __('Edit') . '</a></td>
-				<td><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedMeasureID=' . $MyRow[0] . '&amp;delete=1" onclick="return confirm(\'' . __('Are you sure you wish to delete this unit of measure?') . '\');">' . __('Delete')  . '</a></td>
-			</tr>';
-
-	} //END WHILE LIST LOOP
-	echo '</tbody></table>';
-} //end of ifs and buts!
-
-
-if (isset($SelectedMeasureID)) {
-	echo '<div class="centre">
-			<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">' . __('Review Units of Measure') . '</a>
-		</div>';
-}
-
-if (! isset($_GET['delete'])) {
-
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') .  '">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-	if (isset($SelectedMeasureID)) {
-		//editing an existing section
-
-		$SQL = "SELECT unitid,
-				unitname
-				FROM unitsofmeasure
-				WHERE unitid='" . $SelectedMeasureID . "'";
-
-		$Result = DB_query($SQL);
-		if ( DB_num_rows($Result) == 0 ) {
-			prnMsg( __('Could not retrieve the requested unit of measure, please try again.'),'warn');
-			unset($SelectedMeasureID);
-		} else {
-			$MyRow = DB_fetch_array($Result);
-
-			$_POST['MeasureID'] = $MyRow['unitid'];
-			$_POST['MeasureName']  = $MyRow['unitname'];
-
-			echo '<input type="hidden" name="SelectedMeasureID" value="' . $_POST['MeasureID'] . '" />';
-			echo '<fieldset>
-					<legend>', __('Edit Unit of Measure'), '</legend>';
-		}
-
-	}  else {
-		$_POST['MeasureName']='';
-		echo '<fieldset>
-				<legend>', __('Create Unit of Measure'), '</legend>';
 	}
-	echo '<field>
-		<td>' . __('Unit of Measure') . ':' . '</td>
-		<td><input required="required" pattern="(?!^ *$)[^+<>-]{1,}" type="text" name="MeasureName" title="'.__('Cannot be blank or contains illegal characters').'" placeholder="'.__('More than one character').'" size="30" maxlength="30" value="' . $_POST['MeasureName'] . '" /></td>
-		</field>';
-	echo '</fieldset>';
+	unset ($SelectedMeasureID);
+}
 
-	echo '<div class="centre">
-			<input type="submit" name="Submit" value="' . __('Enter Information') . '" />
-		</div>';
+echo '<div class="db-bottom-layout">';
 
-	echo '</form>';
+// SIDEBAR
+echo '<aside class="db-col-aside">';
+echo '<div class="db-card">
+		<div class="db-card-header"><h3 class="db-card-title"><i class="fas fa-plus-circle"></i> ' . (isset($SelectedMeasureID) ? __('Edit Unit') : __('Add New Unit')) . '</h3></div>
+		<div class="db-card-body">
+			<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">
+				<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+if (isset($SelectedMeasureID)) {
+	$SQL = "SELECT unitid, unitname FROM unitsofmeasure WHERE unitid='" . $SelectedMeasureID . "'";
+	$Result = DB_query($SQL);
+	$MyRow = DB_fetch_array($Result);
+	$_POST['MeasureName'] = $MyRow['unitname'];
+	echo '<input type="hidden" name="SelectedMeasureID" value="' . $SelectedMeasureID . '" />';
+}
+echo '			<div class="db-form-group">
+					<label class="db-label">' . __('Unit Name') . '</label>
+					<input type="text" name="MeasureName" class="db-input" required maxlength="30" value="' . ($_POST['MeasureName'] ?? '') . '" placeholder="' . __('e.g. Piece') . '" />
+				</div>
+				<div style="margin-top: 15px;">
+					<button type="submit" name="Submit" class="db-btn db-btn-primary" style="width: 100%;"><i class="fas fa-save"></i> ' . __('Save Unit') . '</button>';
+if (isset($SelectedMeasureID)) {
+	echo '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" class="db-btn db-input-light" style="width: 100%; margin-top: 10px; text-align: center;"><i class="fas fa-times"></i> ' . __('Cancel') . '</a>';
+}
+echo '				</div>
+			</form>
+		</div>
+	  </div>';
+echo '</aside>';
 
-} //end if record deleted no point displaying form to add record
+// MAIN
+echo '<main class="db-col-main">';
+$SQL = "SELECT unitid, unitname FROM unitsofmeasure ORDER BY unitid";
+$Result = DB_query($SQL);
+
+echo '<div class="db-card">
+		<div class="db-card-header"><h3 class="db-card-title"><i class="fas fa-balance-scale"></i> ' . __('Units Portfolio') . '</h3></div>
+		<div class="db-card-body p-0">
+			<div class="db-table-wrapper">
+				<table class="db-table">
+					<thead>
+						<tr>
+							<th>' . __('ID') . '</th>
+							<th>' . __('Unit Name') . '</th>
+							<th class="text-right">' . __('Actions') . '</th>
+						</tr>
+					</thead>
+					<tbody>';
+
+while ($MyRow = DB_fetch_array($Result)) {
+	$isSel = (isset($SelectedMeasureID) && $SelectedMeasureID == $MyRow['unitid']);
+	echo '<tr ' . ($isSel ? 'style="background: var(--bg-soft);"' : '') . '>
+			<td><span class="db-badge db-badge-secondary">' . $MyRow['unitid'] . '</span></td>
+			<td><div class="db-font-bold ' . ($isSel ? 'text-primary' : '') . '">' . $MyRow['unitname'] . '</div></td>
+			<td class="text-right">
+				<div style="display: flex; gap: 8px; justify-content: flex-end;">
+					<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedMeasureID=' . $MyRow['unitid'] . '" class="db-btn db-btn-sm db-input-light"><i class="fas fa-edit"></i></a>
+					<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedMeasureID=' . $MyRow['unitid'] . '&amp;delete=1" class="db-btn db-btn-sm db-btn-outline-danger" onclick="return confirm(\'' . __('Are you sure?') . '\');"><i class="fas fa-trash"></i></a>
+				</div>
+			</td>
+		  </tr>';
+}
+echo '		</tbody>
+				</table>
+			</div>
+		</div>
+	  </div>';
+echo '</main></div>';
 
 include(__DIR__ . '/includes/footer.php');

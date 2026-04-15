@@ -2,16 +2,11 @@
 
 require(__DIR__ . '/includes/session.php');
 
-$Title = __('Customer Notes');
+$Title = __('Inventory Item Notes');
 $ViewTopic = 'Inventory';
 $BookMark = 'ItemNotes';
 include(__DIR__ . '/includes/header.php');
-
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
-
-if (isset($_POST['NoteDate'])) {
-	$_POST['NoteDate'] = ConvertSQLDate($_POST['NoteDate']);
-}
 
 if (isset($_GET['Id'])) {
 	$Id = (int)$_GET['Id'];
@@ -22,178 +17,117 @@ if (isset($_POST['StockID'])) {
 	$StockID = $_POST['StockID'];
 } elseif (isset($_GET['StockID'])) {
 	$StockID = $_GET['StockID'];
+} else {
+	$StockID = '';
 }
 
-echo '<a class="toplink" href="' . $RootPath . '/SelectProduct.php?StockID=' . $StockID . '">' . __('Back to Select Product') . '</a>';
-
-if ( isset($_POST['submit']) ) {
-
-	//initialise no input errors assumed initially before we test
+if (isset($_POST['submit']) && $StockID != '') {
 	$InputError = 0;
-	/* actions to take once the user has clicked the submit button
-	ie the page has called itself with some user input */
-
-	//first off validate inputs sensible
 	if (trim($_POST['Note']) == '') {
 		$InputError = 1;
-		prnMsg( __('The item note may not be empty'), 'error');
+		prnMsg(__('Note content cannot be empty'), 'error');
 	}
 
-	if (isset($Id) and $InputError != 1) {
-
-		$SQL = "UPDATE stockitemnotes SET note='" . $_POST['Note'] . "',
-									date='" . FormatDateForSQL($_POST['NoteDate']) . "'
-				WHERE stockid ='" . $StockID . "'
-				AND noteid='" . $Id . "'";
-		$Msg = __('Stock Item Notes') . ' ' . $StockID  . ' ' . __('has been updated');
-	} elseif ($InputError != 1) {
-
-		$SQL = "INSERT INTO stockitemnotes (stockid,
-										note,
-										date)
-				VALUES ('" . $StockID. "',
-						'" . $_POST['Note'] . "',
-						'" . FormatDateForSQL($_POST['NoteDate']) . "')";
-		$Msg = __('The item note record has been added');
-	}
-
-	if ($InputError != 1) {
-		$Result = DB_query($SQL);
-				//echo '<br />' . $SQL;
-
-		echo '<br />';
-		prnMsg($Msg, 'success');
+	if (isset($Id) && $InputError != 1) {
+		$SQL = "UPDATE stockitemnotes SET note='" . $_POST['Note'] . "', date='" . $_POST['NoteDate'] . "' WHERE stockid ='" . $StockID . "' AND noteid='" . $Id . "'";
+		DB_query($SQL);
+		prnMsg(__('Note updated'), 'success');
 		unset($Id);
-		unset($_POST['Note']);
-		unset($_POST['Noteid']);
-		unset($_POST['NoteDate']);
+	} elseif ($InputError != 1) {
+		$SQL = "INSERT INTO stockitemnotes (stockid, note, date) VALUES ('" . $StockID. "', '" . $_POST['Note'] . "', '" . $_POST['NoteDate'] . "')";
+		DB_query($SQL);
+		prnMsg(__('New note added'), 'success');
 	}
+	unset($_POST['Note']);
 } elseif (isset($_GET['delete'])) {
-//the link to delete a selected record was clicked instead of the submit button
-
-// PREVENT DELETES IF DEPENDENT RECORDS IN 'SalesOrders'
-
-	$SQL = "DELETE FROM stockitemnotes
-			WHERE noteid='".$Id."'
-			AND stockid='".$StockID."'";
-	$Result = DB_query($SQL);
-
-	echo '<br />';
-	prnMsg( __('The item note record has been deleted'), 'success');
+	$SQL = "DELETE FROM stockitemnotes WHERE noteid='".$Id."' AND stockid='".$StockID."'";
+	DB_query($SQL);
+	prnMsg(__('Note removed'), 'success');
 	unset($Id);
-	unset($_GET['delete']);
 }
 
-if (!isset($Id)) {
-	$SQLname = "SELECT description FROM stockmaster
-				WHERE stockid='".$StockID."'";
-	$Result = DB_query($SQLname);
-	$Row = DB_fetch_array($Result);
-	echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/maintenance.png" title="' . __('Search') . '" alt="" />' . __('Notes for Item').': <b>' .$Row['description'] . '</b></p>';
-
-	$SQL = "SELECT noteid,
-					stockid,
-					note,
-					date
-				FROM stockitemnotes
-				WHERE stockid='".$StockID."'
-				ORDER BY date DESC";
-	$Result = DB_query($SQL);
-
-	if (DB_num_rows($Result) > 0) {
-		echo '<table class="selection">
-			<tr>
-				<th>' . __('Date') . '</th>
-				<th>' . __('Note') . '</th>
-				<th colspan="2"></th>
-			</tr>';
-
-		while ($MyRow = DB_fetch_array($Result)) {
-			echo '<tr class="striped_row">
-					<td>', ConvertSQLDate($MyRow['date']), '</td>
-					<td>', $MyRow['note'], '</td>
-					<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?Id=', $MyRow['noteid'], '&StockID=', $MyRow['stockid'], '">' .  __('Edit').' </td>
-					<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?Id=', $MyRow['noteid'], '&StockID=', $MyRow['stockid'], '&delete=1" onclick="return confirm(\'' . __('Are you sure you wish to delete this item note?') . '\');">' .  __('Delete'). '</td>
-				</tr>';
-
-		}
-		//END WHILE LIST LOOP
-		echo '</table>';
-	}
-}
-if (isset($Id)) {
-	echo '<div class="centre">
-			<a href="'.htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?StockID='.$StockID.'">' . __('Review all notes for this Item') . '</a>
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div class="db-page-title"><i class="fas fa-sticky-note"></i> ' . $Title . '</div>
+			<div class="db-page-actions">
+				<a href="' . $RootPath . '/SelectProduct.php?StockID=' . $StockID . '" class="db-btn db-btn-outline db-btn-small"><i class="fas fa-arrow-left"></i> ' . __('Back to Item') . '</a>
+			</div>
 		</div>';
+
+echo '<div class="db-bottom-layout">';
+
+// SIDEBAR
+echo '<aside class="db-col-aside">';
+echo '<div class="db-card">
+		<div class="db-card-header"><h3 class="db-card-title"><i class="fas fa-pencil-alt"></i> ' . (isset($Id) ? __('Edit Note') : __('Create Note')) . '</h3></div>
+		<div class="db-card-body">
+			<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?StockID=' . $StockID . '">
+				<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+				<input type="hidden" name="StockID" value="' . $StockID . '" />';
+if (isset($Id)) {
+	$SQL = "SELECT * FROM stockitemnotes WHERE noteid='".$Id."'";
+	$nRow = DB_fetch_array(DB_query($SQL));
+	$_POST['Note'] = $nRow['note'];
+	$_POST['NoteDate'] = $nRow['date'];
+	echo '<input type="hidden" name="Id" value="' . $Id . '" />';
 }
-
-if (!isset($_GET['delete'])) {
-
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?StockID=' . $StockID . '">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-	if (isset($Id)) {
-		//editing an existing
-		echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/maintenance.png" title="' . __('Search') . '" alt="" />' . __('Notes for Item').': <b>' .$StockID . '</b></p>';
-
-		$SQL = "SELECT noteid,
-						stockid,
-						note,
-						date
-					FROM stockitemnotes
-					WHERE noteid='".$Id."'
-						AND stockid='".$StockID."'";
-
-		$Result = DB_query($SQL);
-
-		$MyRow = DB_fetch_array($Result);
-
-		$_POST['Noteid'] = $MyRow['noteid'];
-		$_POST['Note']	= $MyRow['note'];
-		$_POST['NoteDate']  = $MyRow['date'];
-		$_POST['StockID']  = $MyRow['stockid'];
-		echo '<input type="hidden" name="Id" value="'. $Id .'" />';
-		echo '<input type="hidden" name="StockID" value="' . $_POST['StockID'] . '" />';
-		echo '<fieldset>
-				<legend>', __('Edit existing item note'), '</legend>
-				<field>
-					<label for="Noteid">' .  __('Note ID').':</label>
-					<fieldtext>' . $_POST['Noteid'] . '</fieldtext>
-				</field>';
-	} else {
-		echo '<fieldset>
-				<legend>', __('Create new item note'), '</legend>';
-	}
-
-	echo '<field>
-			<label for="Note">' . __('Item Note'). '</label>';
-	if (isset($_POST['Note'])) {
-		echo '<textarea name="Note" autofocus="autofocus" required="required" rows="3" cols="32">' .$_POST['Note'] . '</textarea>
-			<fieldhelp>', __('Write the item note here'), '</fieldhelp>
-		</field>';
-	} else {
-		echo '<textarea name="Note" autofocus="autofocus" required="required" rows="3" cols="32"></textarea>
-			<fieldhelp>', __('Write the item note here'), '</fieldhelp>
-		</field>';
-	}
-
-	echo '<field>
-			<label for="NoteDate">' . __('Date') . '</label>';
-	if (isset($_POST['NoteDate'])) {
-		echo '<input type="date" required name="NoteDate"  value="' . FormatDateForSQL($_POST['NoteDate']) . '" size="11" maxlength="10" />
-			<fieldhelp>', __('The date of this note'), '</fieldhelp>
-		</field>';
-	} else {
-		echo '<input type="date" required name="NoteDate" value="' . date('Y-m-d') . '" size="11" maxlength="10" />
-			<fieldhelp>', __('The date of this note'), '</fieldhelp>
-		</field>';
-	}
-	echo '</fieldset>';
-	echo '<div class="centre">
-			<input type="submit" name="submit" value="'.__('Enter Information').'" />
+echo '			<div class="db-form-group">
+					<label class="db-label">' . __('Note Content') . '</label>
+					<textarea name="Note" class="db-input" rows="5" required autofocus>' . ($_POST['Note'] ?? '') . '</textarea>
+				</div>
+				<div class="db-form-group">
+					<label class="db-label">' . __('Reference Date') . '</label>
+					<input type="date" name="NoteDate" class="db-input" value="' . ($_POST['NoteDate'] ?? date('Y-m-d')) . '" required />
+				</div>
+				<button type="submit" name="submit" class="db-btn db-btn-primary" style="width: 100%; margin-top: 20px;"><i class="fas fa-save"></i> ' . __('Save Note') . '</button>';
+if (isset($Id)) {
+	echo '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?StockID=' . $StockID . '" class="db-btn db-input-light" style="width: 100%; margin-top: 10px; text-align:center;"><i class="fas fa-times"></i> ' . __('Cancel') . '</a>';
+}
+echo '			</form>
 		</div>
-	</form>';
+	  </div>';
+echo '</aside>';
 
-} //end if record deleted no point displaying form to add record
+// MAIN
+echo '<main class="db-col-main">';
+$SQL = "SELECT noteid, stockid, note, date FROM stockitemnotes WHERE stockid='".$StockID."' ORDER BY date DESC";
+$Result = DB_query($SQL);
+$Row = DB_fetch_array(DB_query("SELECT description FROM stockmaster WHERE stockid='".$StockID."'"));
+
+echo '<div class="db-card">
+		<div class="db-card-header"><h3 class="db-card-title"><i class="fas fa-history"></i> ' . __('Note Timeline') . ': <span class="text-primary">' . ($Row['description'] ?? $StockID) . '</span></h3></div>
+		<div class="db-card-body p-0">
+			<div class="db-table-wrapper">
+				<table class="db-table">
+					<thead>
+						<tr>
+							<th style="width: 150px;">' . __('Date') . '</th>
+							<th>' . __('Detailed Note') . '</th>
+							<th class="text-right">' . __('Actions') . '</th>
+						</tr>
+					</thead>
+					<tbody>';
+if (DB_num_rows($Result) == 0) {
+	echo '<tr><td colspan="3" class="text-center db-muted p-5">' . __('No notes found for this inventory item.') . '</td></tr>';
+} else {
+	while ($MyRow = DB_fetch_array($Result)) {
+		echo '<tr>
+				<td><div class="db-badge db-badge-secondary">' . ConvertSQLDate($MyRow['date']) . '</div></td>
+				<td style="white-space: pre-wrap;">' . $MyRow['note'] . '</td>
+				<td class="text-right">
+					<div style="display: flex; gap: 8px; justify-content: flex-end;">
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?Id=' . $MyRow['noteid'] . '&StockID=' . $StockID . '" class="db-btn db-btn-sm db-input-light"><i class="fas fa-edit"></i></a>
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?Id=' . $MyRow['noteid'] . '&StockID=' . $StockID . '&delete=1" class="db-btn db-btn-sm db-btn-outline-danger" onclick="return confirm(\'Delete note?\');"><i class="fas fa-trash"></i></a>
+					</div>
+				</td>
+			  </tr>';
+	}
+}
+echo '					</tbody>
+				</table>
+			</div>
+		</div>
+	  </div>';
+echo '</main></div></div>';
 
 include(__DIR__ . '/includes/footer.php');

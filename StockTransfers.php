@@ -21,11 +21,14 @@ if (isset($_GET['New'])) {
 
 echo '<div class="db-page">
 		<div class="db-page-header">
-			<div class="db-page-title">
-				<i class="fas fa-exchange-alt"></i> ' . $Title . '
+			<div class="db-header-left">
+				<div class="db-page-title">
+					<i class="fas fa-exchange-alt"></i> ' . $Title . '
+				</div>
+				<div class="db-page-subtitle">' . __('Transfer stock between locations instantly') . '</div>
 			</div>
-			<div class="db-page-actions">
-				<a href="' . $RootPath . '/StockTransfers.php?NewTransfer=Yes" class="db-btn db-btn-outline db-btn-small">
+			<div class="db-header-actions">
+				<a href="' . $RootPath . '/StockTransfers.php?NewTransfer=Yes" class="db-btn db-btn-secondary">
 					<i class="fas fa-plus"></i> ' . __('New Transfer') . '
 				</a>
 			</div>
@@ -564,46 +567,76 @@ if (empty($_SESSION['Transfer']->TransferItem[0]->StockID) and isset($_POST['Sto
 echo '<form action="'. htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post" id="TransferForm">';
 echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-echo '<div class="db-grid db-grid-2">';
+echo '<div class="db-bottom-layout">
+		<aside class="db-col-aside">';
 
 // Card 1: Item Selection
-echo '<div class="db-card">
-		<div class="db-card-header">
-			<div class="db-card-title"><i class="fas fa-search"></i> ' . __('Item Selection') . '</div>
-		</div>
-		<div class="db-card-body">
-			<div class="db-field">
-				<label for="StockID">' . __('Search Item (Code or Description)') . '</label>
-				<div class="db-search-container">
-					<input type="text" id="ItemSearch" class="db-input" placeholder="' . __('Enter item code or name...') . '" autocomplete="off" />
-					<div id="SearchResults" class="db-search-results"></div>
-				</div>
-				<input type="hidden" name="StockID" id="StockID" value="' . ($_POST['StockID'] ?? '') . '" />
-			</div>';
+echo '			<div class="db-card">
+						<div class="db-card-header">
+							<div class="db-card-title"><i class="fas fa-search"></i> ' . __('Search Item') . '</div>
+						</div>
+						<div class="db-card-body">
+							<div class="db-form-group">
+								<label class="db-label" for="ItemSearch">' . __('Code or Description') . ':</label>
+								<div style="position: relative;">
+									<input type="text" id="ItemSearch" class="db-input" placeholder="' . __('Enter item info...') . '" autocomplete="off" autofocus />
+									<div id="SearchResults" class="db-search-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); max-height: 250px; overflow-y: auto;"></div>
+								</div>
+								<input type="hidden" name="StockID" id="StockID" value="' . ($StockID ?? '') . '" />
+							</div>';
 
 if (isset($_SESSION['Transfer']->TransferItem[0]->ItemDescription) && mb_strlen($_SESSION['Transfer']->TransferItem[0]->ItemDescription) > 1) {
-	echo '<div class="db-status-bar db-status-active" style="margin-top:20px">
-			<div class="db-status-icon"><i class="fas fa-info-circle"></i></div>
-			<div class="db-status-text">
-				<strong>' . $_SESSION['Transfer']->TransferItem[0]->ItemDescription . '</strong><br>
-				<small>' . __('In Units of') . ': ' . $_SESSION['Transfer']->TransferItem[0]->PartUnit . '</small>
-			</div>
-		  </div>';
+	echo '					<div class="db-alert db-alert-info" style="margin-top: 15px; flex-direction: column; align-items: flex-start;">
+								<div style="font-weight: 700; font-size: 0.9rem;">' . $_SESSION['Transfer']->TransferItem[0]->ItemDescription . '</div>
+								<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+									<i class="fas fa-tag"></i> ' . $_SESSION['Transfer']->TransferItem[0]->StockID . '
+									<span style="margin-left: 10px;"><i class="fas fa-box"></i> ' . $_SESSION['Transfer']->TransferItem[0]->PartUnit . '</span>
+								</div>
+							</div>';
 }
 
-echo '	</div>
-	  </div>';
+echo '				</div>
+					<div class="db-card-footer" style="padding: 10px 20px; background: var(--surface-alt); border-top: 1px solid var(--border-soft);">
+						<div style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+							<i class="fas fa-info-circle"></i> ' . __('Search to select an item') . '
+						</div>
+					</div>
+				</div>';
+
+if (isset($_SESSION['Transfer']) && isset($_SESSION['Transfer']->TransferItem[0]->StockID) && $_SESSION['Transfer']->TransferItem[0]->StockID != '') {
+	$StockID = $_SESSION['Transfer']->TransferItem[0]->StockID;
+	echo '		<div class="db-card" style="margin-top: 20px;">
+						<div class="db-card-header">
+							<div class="db-card-title"><i class="fas fa-link"></i> ' . __('Quick Actions') . '</div>
+						</div>
+						<div class="db-card-body" style="display: flex; flex-direction: column; gap: 8px;">
+							<a href="'.$RootPath.'/StockStatus.php?StockID=' . $StockID . '" class="db-btn db-btn-secondary db-btn-sm" style="justify-content: flex-start; width: 100%;">
+								<i class="fas fa-info-circle"></i> ' . __('Stock Status') . '
+							</a>
+							<a href="'.$RootPath.'/StockMovements.php?StockID=' . $StockID . '" class="db-btn db-btn-secondary db-btn-sm" style="justify-content: flex-start; width: 100%;">
+								<i class="fas fa-history"></i> ' . __('Movements') . '
+							</a>
+							<a href="'.$RootPath.'/StockUsage.php?StockID=' . $StockID . '&amp;StockLocation=' . $_SESSION['Transfer']->StockLocationFrom . '" class="db-btn db-btn-secondary db-btn-sm" style="justify-content: flex-start; width: 100%;">
+								<i class="fas fa-chart-line"></i> ' . __('Usage') . '
+							</a>
+						</div>
+					</div>';
+}
+
+echo '		</aside>
+
+		<main class="db-col-main">';
 
 // Card 2: Transfer Details
-echo '<div class="db-card">
-		<div class="db-card-header">
-			<div class="db-card-title"><i class="fas fa-shipping-fast"></i> ' . __('Transfer Details') . '</div>
-		</div>
-		<div class="db-card-body">
-			<div class="db-grid db-grid-2">
-				<div class="db-field">
-					<label>' . __('From Location') . '</label>
-					<select name="StockLocationFrom" class="db-select">';
+echo '			<div class="db-card">
+						<div class="db-card-header">
+							<div class="db-card-title"><i class="fas fa-shipping-fast"></i> ' . __('Transfer Configuration') . '</div>
+						</div>
+						<div class="db-card-body">
+							<div class="db-grid db-grid-2">
+								<div class="db-form-group">
+									<label class="db-label">' . __('From Location') . ':</label>
+									<select name="StockLocationFrom" class="db-select" ' . (!isset($_SESSION['Transfer']->TransferItem[0]) ? 'disabled' : '') . '>';
 
 $SQL = "SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canupd=1";
 $ResultStkLocs = DB_query($SQL);
@@ -613,10 +646,10 @@ while($MyRow=DB_fetch_array($ResultStkLocs)) {
 }
 
 echo '				</select>
-				</div>
-				<div class="db-field">
-					<label>' . __('To Location') . '</label>
-					<select name="StockLocationTo" class="db-select">';
+								</div>
+								<div class="db-form-group">
+									<label class="db-label">' . __('To Location') . ':</label>
+									<select name="StockLocationTo" class="db-select" ' . (!isset($_SESSION['Transfer']->TransferItem[0]) ? 'disabled' : '') . '>';
 
 DB_data_seek($ResultStkLocs, 0);
 while($MyRow=DB_fetch_array($ResultStkLocs)) {
@@ -625,54 +658,63 @@ while($MyRow=DB_fetch_array($ResultStkLocs)) {
 }
 
 echo '				</select>
-				</div>
-			</div>
+								</div>
+							</div>
 
-			<div class="db-field">
-				<label>' . __('Transfer Quantity') . '</label>';
+							<div class="db-form-group" style="margin-top: 15px;">
+								<label class="db-label">' . __('Transfer Quantity') . ':</label>';
 
 if (isset($_SESSION['Transfer']->TransferItem[0]->Controlled) && $_SESSION['Transfer']->TransferItem[0]->Controlled == 1) {
-	echo '<div class="db-status-bar db-status-warn">
-			<div class="db-status-icon"><i class="fas fa-exclamation-triangle"></i></div>
-			<div class="db-status-text">
-				' . __('Controlled Item: Click below to manage serials/lots') . '<br>
-				<a href="' . $RootPath .'/StockTransferControlled.php?StockLocationFrom='.$_SESSION['Transfer']->StockLocationFrom.'" class="db-link">
-					<input type="hidden" name="Quantity" value="' . locale_number_format($_SESSION['Transfer']->TransferItem[0]->Quantity) . '" />
-					' . __('Manage Batch/Serial for') . ' ' . $_SESSION['Transfer']->TransferItem[0]->Quantity . ' ' . $_SESSION['Transfer']->TransferItem[0]->PartUnit . '
-				</a>
-			</div>
-		  </div>';
+	echo '				<div class="db-alert db-alert-warning">
+							<i class="fas fa-exclamation-triangle db-alert-icon"></i>
+							<div style="flex: 1;">
+								<div class="db-font-bold">' . __('Controlled Item') . '</div>
+								<div style="font-size: 0.8rem;">' . __('You must manage batch/serial numbers for this transfer.') . '</div>
+							</div>
+							<a href="' . $RootPath .'/StockTransferControlled.php?StockLocationFrom='.$_SESSION['Transfer']->StockLocationFrom.'" class="db-btn db-btn-primary db-btn-sm">
+								<i class="fas fa-list-ol"></i> ' . __('Manage Serials') . '
+							</a>
+							<input type="hidden" name="Quantity" value="' . locale_number_format($_SESSION['Transfer']->TransferItem[0]->Quantity) . '" />
+						</div>';
 } else {
 	$qty = isset($_SESSION['Transfer']->TransferItem[0]->Quantity) ? locale_number_format($_SESSION['Transfer']->TransferItem[0]->Quantity) : '0';
-	echo '<input type="text" class="db-input number" name="Quantity" size="12" maxlength="12" value="' . $qty . '" />';
+	echo '				<div style="display: flex; gap: 10px; align-items: center;">
+							<input type="text" class="db-input number" name="Quantity" size="12" maxlength="12" value="' . $qty . '" ' . (!isset($_SESSION['Transfer']->TransferItem[0]) ? 'disabled' : '') . ' style="max-width: 200px; font-size: 1.25rem; font-weight: 700;" />
+							<span class="db-badge" style="padding: 8px 15px; font-size: 0.9rem;">' . (isset($_SESSION['Transfer']->TransferItem[0]) ? $_SESSION['Transfer']->TransferItem[0]->PartUnit : '-') . '</span>
+						</div>';
 }
 
 echo '		</div>
 
-			<div style="margin-top: 30px; text-align: right;">
-				<button type="submit" name="EnterTransfer" class="db-btn db-btn-primary">
-					<i class="fas fa-check-circle"></i> ' . __('Enter Stock Transfer') . '
-				</button>
-			</div>
-		</div>
-	  </div>';
-
-echo '</div>'; // End db-grid
-
-if (isset($_SESSION['Transfer']) && isset($_SESSION['Transfer']->TransferItem[0]->StockID) && $_SESSION['Transfer']->TransferItem[0]->StockID != '') {
-	$StockID = $_SESSION['Transfer']->TransferItem[0]->StockID;
-	echo '<div class="db-card" style="margin-top:20px">
-			<div class="db-card-body centre" style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap">
-				<a href="'.$RootPath.'/StockStatus.php?StockID=' . $StockID . '" class="db-link"><i class="fas fa-info-circle"></i> ' . __('Stock Status') . '</a>
-				<a href="'.$RootPath.'/StockMovements.php?StockID=' . $StockID . '" class="db-link"><i class="fas fa-history"></i> ' . __('Movements') . '</a>
-				<a href="'.$RootPath.'/StockUsage.php?StockID=' . $StockID . '&amp;StockLocation=' . $_SESSION['Transfer']->StockLocationFrom . '" class="db-link"><i class="fas fa-chart-line"></i> ' . __('Usage') . '</a>
-				<a href="'.$RootPath.'/SelectSalesOrder.php?SelectedStockItem=' . $StockID . '&amp;StockLocation=' . $_SESSION['Transfer']->StockLocationFrom . '" class="db-link"><i class="fas fa-shopping-cart"></i> ' . __('Outstanding Orders') . '</a>
-			</div>
-		  </div>';
-}
-
-echo '</form>
+							<div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-soft); display: flex; justify-content: flex-end; gap: 10px;">
+								<button type="submit" name="EnterTransfer" class="db-btn db-btn-primary" ' . (!isset($_SESSION['Transfer']->TransferItem[0]) ? 'disabled' : '') . ' style="padding: 12px 30px;">
+									<i class="fas fa-check-circle"></i> ' . __('Confirm Transfer') . '
+								</button>
+							</div>
+						</div>
+					</div>
+				</main>
+			</div> <!-- End db-bottom-layout -->
+		</form>
 	</div>'; // End db-page
+
+echo '<style>
+.db-search-item {
+	padding: 10px 15px;
+	cursor: pointer;
+	border-bottom: 1px solid var(--border-soft);
+	transition: background 0.2s;
+}
+.db-search-item:hover {
+	background: var(--primary-soft);
+}
+.db-search-item:last-child {
+	border-bottom: none;
+}
+.db-search-item strong {
+	color: var(--primary);
+}
+</style>';
 
 echo '<script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -704,7 +746,8 @@ document.addEventListener("DOMContentLoaded", function() {
 					});
 					searchResults.style.display = "block";
 				} else {
-					searchResults.style.display = "none";
+					searchResults.innerHTML = \'<div class="db-search-item" style="color: var(--text-muted); text-align: center;">' . __('No items found') . '</div>\';
+					searchResults.style.display = "block";
 				}
 			});
 	});
@@ -716,4 +759,5 @@ document.addEventListener("DOMContentLoaded", function() {
 	});
 });
 </script>';
+
 include(__DIR__ . '/includes/footer.php');

@@ -6,7 +6,6 @@ $Title = __('Brands Maintenance');
 $ViewTopic = 'Inventory';
 $BookMark = '';
 include(__DIR__ . '/includes/header.php');
-
 include(__DIR__ . '/includes/ImageFunctions.php');
 
 if (isset($_GET['SelectedBrand'])){
@@ -19,76 +18,42 @@ $SupportedImgExt = array('png','jpg','jpeg');
 
 if (isset($_POST['submit'])) {
 
-
-	//initialise no input errors assumed initially before we test
 	$InputError = 0;
-
-	/* actions to take once the user has clicked the submit button
-	ie the page has called itself with some user input */
 
 	if (isset($SelectedBrand) AND $InputError !=1) {
 
 		if (isset($_FILES['BrandPicture']) AND $_FILES['BrandPicture']['name'] !='') {
 
 			$Result	= $_FILES['BrandPicture']['error'];
-		 	$UploadTheFile = 'Yes'; //Assume all is well to start off with
+		 	$UploadTheFile = 'Yes';
 
 			$ImgExt = pathinfo($_FILES['BrandPicture']['name'], PATHINFO_EXTENSION);
 			$FileName = $_SESSION['part_pics_dir'] . '/BRAND-' . $SelectedBrand . '.' . $ImgExt;
 
-			 //But check for the worst
 			if (!in_array ($ImgExt, $SupportedImgExt)) {
-				prnMsg(__('Only ' . implode(", ", $SupportedImgExt) . ' files are supported - a file extension of ' . implode(", ", $SupportedImgExt) . ' is expected'),'warn');
+				prnMsg(__('Only ' . implode(", ", $SupportedImgExt) . ' files are supported'),'warn');
 				$UploadTheFile ='No';
-			} elseif ( $_FILES['BrandPicture']['size'] > ($_SESSION['MaxImageSize']*1024)) { //File Size Check
-				prnMsg(__('The file size is over the maximum allowed. The maximum size allowed in KB is') . ' ' . $_SESSION['MaxImageSize'],'warn');
+			} elseif ( $_FILES['BrandPicture']['size'] > ($_SESSION['MaxImageSize']*1024)) {
+				prnMsg(__('The file size is over the maximum allowed'),'warn');
 				$UploadTheFile ='No';
-			} elseif ( $_FILES['BrandPicture']['type'] == 'text/plain' ) {  //File Type Check
-				prnMsg( __('Only graphics files can be uploaded'),'warn');
-				 	$UploadTheFile ='No';
-			}
-			foreach ($SupportedImgExt as $Ext) {
-				$File = $_SESSION['part_pics_dir'] . '/BRAND-' . $SelectedBrand . '.' . $Ext;
-				if (file_exists ($File) ) {
-					$Result = unlink($File);
-					if (!$Result){
-						prnMsg(__('The existing image could not be removed'),'error');
-						$UploadTheFile ='No';
-					}
-				}
 			}
 
 			if ($UploadTheFile=='Yes'){
+				foreach ($SupportedImgExt as $Ext) {
+					$OldFile = $_SESSION['part_pics_dir'] . '/BRAND-' . $SelectedBrand . '.' . $Ext;
+					if (file_exists ($OldFile) ) @unlink($OldFile);
+				}
 				$Result  =  move_uploaded_file($_FILES['BrandPicture']['tmp_name'], $FileName);
-				$Message = ($Result)?__('File url')  . '<a href="' . $FileName .'">' .  $FileName . '</a>' : __('Something is wrong with uploading a file');
 				$_POST['BrandsImage'] = 'BRAND-' . $SelectedBrand;
-			} else {
-				$_POST['BrandsImage'] = '';
 			}
 		}
-		if ( isset($_POST['BrandsImage'])){
-			foreach ($SupportedImgExt as $Ext) {
-				$File = $_SESSION['part_pics_dir'] . '/BRAND-' . $SelectedBrand . '.' . $Ext;
-				if (file_exists ($File) ) {
-					$_POST['BrandsImage'] = 'BRAND-' . $SelectedBrand;
-					break;
-				} else {
-					$_POST['BrandsImage'] = '';
-				}
-			}
 
-		}
-		if (isset($_POST['ClearImage']) ) {
+		if (isset($_POST['ClearImage'])) {
 			foreach ($SupportedImgExt as $Ext) {
 				$File = $_SESSION['part_pics_dir'] . '/BRAND-' . $SelectedBrand . '.' . $Ext;
-				if (file_exists ($File) ) {
-					@unlink($File);
-					$_POST['BrandsImage'] = '';
-					if (is_file($ImageFile)) {
-						prnMsg(__('You do not have access to delete this item image file.'),'error');
-					}
-				}
+				if (file_exists ($File) ) @unlink($File);
 			}
+			$_POST['BrandsImage'] = '';
 		}
 
 		$SQL = "UPDATE manufacturers SET manufacturers_name='" . $_POST['BrandsName'] . "',
@@ -98,252 +63,143 @@ if (isset($_POST['submit'])) {
 		}
 		$SQL .= " WHERE manufacturers_id = '" . $SelectedBrand . "'";
 
-		$ErrMsg = __('An error occurred updating the') . ' ' . $SelectedBrand . ' ' . __('brand record because');
-
-		$Result = DB_query($SQL, $ErrMsg);
-
+		$Result = DB_query($SQL);
 		prnMsg( __('The brand record has been updated'),'success');
-		unset($_POST['BrandsName']);
-		unset($_POST['BrandsURL']);
-		unset($_POST['BrandsImage']);
 		unset($SelectedBrand);
 
 	} elseif ($InputError !=1) {
 
-		/*SelectedBrand is null cos no item selected on first time round so must be adding a	record must be submitting new entries in the new Location form */
-
-		$SQL = "INSERT INTO manufacturers (manufacturers_name,
-										manufacturers_url)
-						VALUES ('" . $_POST['BrandsName'] . "',
-								'" . $_POST['BrandsURL'] . "')";
-
-		$ErrMsg =  __('An error occurred inserting the new brand record because');
-		$Result = DB_query($SQL, $ErrMsg);
+		$SQL = "INSERT INTO manufacturers (manufacturers_name, manufacturers_url)
+						VALUES ('" . $_POST['BrandsName'] . "', '" . $_POST['BrandsURL'] . "')";
+		$Result = DB_query($SQL);
 		$LastInsertId = DB_Last_Insert_ID('manufacturers', 'manufacturers_id');
 
 		if (isset($_FILES['BrandPicture']) AND $_FILES['BrandPicture']['name'] !='') {
-
-			$Result	= $_FILES['BrandPicture']['error'];
-		 	$UploadTheFile = 'Yes'; //Assume all is well to start off with
-
 			$ImgExt = pathinfo($_FILES['BrandPicture']['name'], PATHINFO_EXTENSION);
 			$FileName = $_SESSION['part_pics_dir'] . '/BRAND-' . $LastInsertId . '.' . $ImgExt;
-
-			 //But check for the worst
-			if (!in_array ($ImgExt, $SupportedImgExt)) {
-				prnMsg(__('Only ' . implode(", ", $SupportedImgExt) . ' files are supported - a file extension of ' . implode(", ", $SupportedImgExt) . ' is expected'),'warn');
-				$UploadTheFile ='No';
-			} elseif ( $_FILES['BrandPicture']['size'] > ($_SESSION['MaxImageSize']*1024)) { //File Size Check
-				prnMsg(__('The file size is over the maximum allowed. The maximum size allowed in KB is') . ' ' . $_SESSION['MaxImageSize'],'warn');
-				$UploadTheFile ='No';
-			} elseif ( $_FILES['BrandPicture']['type'] == 'text/plain' ) {  //File Type Check
-				prnMsg( __('Only graphics files can be uploaded'),'warn');
-				 	$UploadTheFile ='No';
-			}
-			foreach ($SupportedImgExt as $Ext) {
-				$File = $_SESSION['part_pics_dir'] . '/BRAND-' . $LastInsertId . '.' . $Ext;
-				if (file_exists ($File) ) {
-					$Result = unlink($File);
-					if (!$Result){
-						prnMsg(__('The existing image could not be removed'),'error');
-						$UploadTheFile ='No';
-					}
+			if (in_array ($ImgExt, $SupportedImgExt) && $_FILES['BrandPicture']['size'] <= ($_SESSION['MaxImageSize']*1024)) {
+				if (move_uploaded_file($_FILES['BrandPicture']['tmp_name'], $FileName)) {
+					DB_query("UPDATE manufacturers SET manufacturers_image='BRAND-" . $LastInsertId . "' WHERE manufacturers_id='" . $LastInsertId . "'");
 				}
 			}
-
-			if ($UploadTheFile=='Yes'){
-				$Result  =  move_uploaded_file($_FILES['BrandPicture']['tmp_name'], $FileName);
-				$Message = ($Result)?__('File url')  . '<a href="' . $FileName .'">' .  $FileName . '</a>' : __('Something is wrong with uploading a file');
-				DB_query("UPDATE manufacturers
-					SET  manufacturers_image='" . 'BRAND-' . $LastInsertId . "'
-					WHERE manufacturers_id = '" . $LastInsertId . "'
-					");
-			}
 		}
-
 		prnMsg( __('The new brand record has been added'),'success');
-
-		unset($_POST['BrandsName']);
-		unset($_POST['BrandsURL']);
-		unset($_POST['BrandsImage']);
 		unset($SelectedBrand);
 	}
 
 } elseif (isset($_GET['delete'])) {
-//the link to delete a selected record was clicked instead of the submit button
-
 	$CancelDelete = false;
-
-// PREVENT DELETES IF DEPENDENT RECORDS
 	$SQL= "SELECT COUNT(*) FROM salescatprod WHERE manufacturers_id='". $SelectedBrand . "'";
 	$Result = DB_query($SQL);
 	$MyRow = DB_fetch_row($Result);
 	if ($MyRow[0]>0) {
 		$CancelDelete = true;
 		prnMsg( __('Cannot delete this brand because products have been defined as from this brand'),'warn');
-		echo  __('There are') . ' ' . $MyRow[0] . ' ' . __('items with this brand code');
 	}
 
 	if (!$CancelDelete) {
-
-		$Result = DB_query("DELETE FROM manufacturers WHERE manufacturers_id='" . $SelectedBrand . "'");
+		DB_query("DELETE FROM manufacturers WHERE manufacturers_id='" . $SelectedBrand . "'");
 		foreach ($SupportedImgExt as $Ext) {
 			$File = $_SESSION['part_pics_dir'] . '/BRAND-' . $SelectedBrand . '.' . $Ext;
-			if (file_exists ($File) ) {
-				@unlink($File);
-			}
+			if (file_exists ($File) ) @unlink($File);
 		}
 		prnMsg( __('Brand') . ' ' . $SelectedBrand . ' ' . __('has been deleted') . '!', 'success');
-		unset ($SelectedBrand);
-	} //end if Delete Brand
-	unset($SelectedBrand);
-	unset($_GET['delete']);
+	}
+	unset ($SelectedBrand);
 }
 
-if (!isset($SelectedBrand)) {
+echo '<div class="db-bottom-layout">';
 
-/* It could still be the second time the page has been run and a record has been selected for modification - SelectedBrand will exist because it was sent with the new call. If its the first time the page has been displayed with no parameters
-then none of the above are true and the list of Brands will be displayed with
-links to delete or edit each. These will call the same page again and allow update/input
-or deletion of the records*/
-
-	$SQL = "SELECT manufacturers_id,
-				manufacturers_name,
-				manufacturers_url,
-				manufacturers_image
-			FROM manufacturers";
-	$Result = DB_query($SQL);
-
-	if (DB_num_rows($Result)==0){
-		prnMsg(__('There are no brands to display'),'error');
-	}
-	echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/supplier.png" Title="' .
-			__('Brands') . '" alt="" />' . ' ' . $Title . '</p>';
-
-	echo '<table class="selection">';
-	echo '<tr>
-			<th>' . __('Brand Code') . '</th>
-			<th>' . __('Brand Name') . '</th>
-			<th>' . __('Brand URL') . '</th>
-			<th>' . __('Brands Image') . '</th>
-			<th colspan="2"></th>
-		</tr>';
-
-while ($MyRow = DB_fetch_array($Result)) {
-    $Glob = (glob($_SESSION['part_pics_dir'] . '/BRAND-' . $MyRow['manufacturers_id'] . '.{' . implode(",", $SupportedImgExt) . '}', GLOB_BRACE));
-	$ImageFile = reset($Glob);
-	$BrandImgLink = GetImageLink($ImageFile, '/BRAND-' . $MyRow['manufacturers_id'], 120, 120, "", "");
-
-	echo '<tr class="striped_row">
-			<td>', $MyRow['manufacturers_id'], '</td>
-			<td>', $MyRow['manufacturers_name'], '</td>
-			<td><a target="_blank" href="', $MyRow['manufacturers_url'], '">', $MyRow['manufacturers_url'], '</a></td>
-			<td>', $BrandImgLink, '</td>
-			<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedBrand=', $MyRow['manufacturers_id'], '&amp;edit=1">' . __('Edit') . '</a></td>
-			<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedBrand=', $MyRow['manufacturers_id'], '&amp;delete=1" onclick="return confirm(\'' . __('Are you sure you wish to delete this brand?') . '\');">' . __('Delete') . '</a></td>
-		</tr>';
-
-	}
-	//END WHILE LIST LOOP
-	echo '</table>';
-}
-
-//end of ifs and buts!
-
+// SIDEBAR
+echo '<aside class="db-col-aside">';
+echo '<div class="db-card">
+		<div class="db-card-header"><h3 class="db-card-title"><i class="fas fa-tags"></i> ' . (isset($SelectedBrand) ? __('Edit Brand') : __('Create Brand')) . '</h3></div>
+		<div class="db-card-body">
+			<form enctype="multipart/form-data" method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">
+				<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 if (isset($SelectedBrand)) {
-	echo '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">' . __('Review BrandRecords') . '</a>';
+	$SQL = "SELECT manufacturers_id, manufacturers_name, manufacturers_url, manufacturers_image FROM manufacturers WHERE manufacturers_id='" . $SelectedBrand . "'";
+	$Result = DB_query($SQL);
+	$MyRow = DB_fetch_array($Result);
+	$_POST['BrandsName'] = $MyRow['manufacturers_name'];
+	$_POST['BrandsURL'] = $MyRow['manufacturers_url'];
+	echo '<input type="hidden" name="SelectedBrand" value="' . $SelectedBrand . '" />';
 }
+echo '			<div class="db-form-group">
+					<label class="db-label">' . __('Brand Name') . '</label>
+					<input type="text" name="BrandsName" class="db-input" required value="' . ($_POST['BrandsName'] ?? '') . '" placeholder="' . __('e.g. Acme Corp') . '" />
+				</div>
+				<div class="db-form-group">
+					<label class="db-label">' . __('Website URL') . '</label>
+					<input type="text" name="BrandsURL" class="db-input" value="' . ($_POST['BrandsURL'] ?? '') . '" placeholder="https://..." />
+				</div>
+				<div class="db-form-group">
+					<label class="db-label">' . __('Brand Logo') . '</label>
+					<input type="file" name="BrandPicture" class="db-input db-input-light" accept="image/*" />';
+if (isset($SelectedBrand)) {
+	echo '			<div style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
+						<input type="checkbox" name="ClearImage" id="ClearImage" />
+						<label class="db-label mb-0" for="ClearImage">' . __('Remove Current Image') . '</label>
+					</div>';
+}
+echo '				</div>
+				<div style="margin-top: 20px;">
+					<button type="submit" name="submit" class="db-btn db-btn-primary" style="width: 100%;"><i class="fas fa-save"></i> ' . __('Save Brand Assets') . '</button>';
+if (isset($SelectedBrand)) {
+	echo '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" class="db-btn db-input-light" style="width: 100%; margin-top: 10px; text-align: center;"><i class="fas fa-times"></i> ' . __('Cancel') . '</a>';
+}
+echo '				</div>
+			</form>
+		</div>
+	  </div>';
+echo '</aside>';
 
-if (!isset($_GET['delete'])) {
+// MAIN
+echo '<main class="db-col-main">';
+$SQL = "SELECT manufacturers_id, manufacturers_name, manufacturers_url, manufacturers_image FROM manufacturers ORDER BY manufacturers_id";
+$Result = DB_query($SQL);
 
-	echo '<form enctype="multipart/form-data" method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-	if (isset($SelectedBrand)) {
-		//editing an existing Brand
-		echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/supplier.png" Title="' .
-			__('Brand') . '" alt="" />' . ' ' . $Title . '</p>';
-
-		$SQL = "SELECT manufacturers_id,
-					manufacturers_name,
-					manufacturers_url,
-					manufacturers_image
-				FROM manufacturers
-				WHERE manufacturers_id='" . $SelectedBrand . "'";
-
-		$Result = DB_query($SQL);
-		$MyRow = DB_fetch_array($Result);
-
-		$_POST['BrandsName']  = $MyRow['manufacturers_name'];
-		$_POST['BrandsURL'] = $MyRow['manufacturers_url'];
-		$_POST['BrandsImage'] = $MyRow['manufacturers_image'];
-
-
-		echo '<input type="hidden" name="SelectedBrand" value="' . $SelectedBrand . '" />';
-		echo '<fieldset>';
-		echo '<legend>' . __('Update Brand Details') . '</legend>';
-	} else { //end of if $SelectedBrand only do the else when a new record is being entered
-
-		echo '<fieldset>
-				<legend>' . __('New Brand Details') . '</legend>';
+if (DB_num_rows($Result) == 0) {
+	echo '<div class="centre"><p class="db-muted">' . __('No brands configured yet.') . '</p></div>';
+} else {
+	echo '<div class="db-card">
+			<div class="db-card-header"><h3 class="db-card-title"><i class="fas fa-th-large"></i> ' . __('Brands Portfolio') . '</h3></div>
+			<div class="db-card-body p-0">
+				<div class="db-table-wrapper">
+					<table class="db-table">
+						<thead>
+							<tr>
+								<th>' . __('Logo') . '</th>
+								<th>' . __('Brand Info') . '</th>
+								<th class="text-right">' . __('Actions') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
+	while ($MyRow = DB_fetch_array($Result)) {
+		$Glob = (glob($_SESSION['part_pics_dir'] . '/BRAND-' . $MyRow['manufacturers_id'] . '.{' . implode(",", $SupportedImgExt) . '}', GLOB_BRACE));
+		$ImageFile = reset($Glob);
+		$BrandImgLink = GetImageLink($ImageFile, '/BRAND-' . $MyRow['manufacturers_id'], 60, 60, "db-avatar db-avatar-lg", "");
+		
+		echo '<tr>
+				<td style="width: 80px;">' . $BrandImgLink . '</td>
+				<td>
+					<div class="db-font-bold text-primary">' . $MyRow['manufacturers_name'] . '</div>
+					<div class="db-muted" style="font-size: 0.8rem;"><a href="' . $MyRow['manufacturers_url'] . '" target="_blank">' . $MyRow['manufacturers_url'] . '</a></div>
+				</td>
+				<td class="text-right">
+					<div style="display: flex; gap: 8px; justify-content: flex-end;">
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedBrand=' . $MyRow['manufacturers_id'] . '" class="db-btn db-btn-sm db-input-light"><i class="fas fa-edit"></i></a>
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedBrand=' . $MyRow['manufacturers_id'] . '&amp;delete=1" class="db-btn db-btn-sm db-btn-outline-danger" onclick="return confirm(\'' . __('Are you sure?') . '\');"><i class="fas fa-trash"></i></a>
+					</div>
+				</td>
+			  </tr>';
 	}
-	if (!isset($_POST['BrandsName'])) {
-		$_POST['BrandsName'] = '';
-	}
-	if (!isset($_POST['BrandsURL'])) {
-		$_POST['BrandsURL'] = ' ';
-	}
-	if (!isset($_POST['BrandsImage'])) {
-		$_POST['BrandsImage'] = '';
-	}
-
-	echo '<field>
-			<label for="BrandsName">' .  __('Brand Name') . ':' . '</label>
-			<input type="text" required="required" autofocus="autofocus" name="BrandsName" value="'. $_POST['BrandsName'] . '" size="32" maxlength="32" />
-		</field>
-		<field>
-			<label for="BrandsURL">' . __('Brand URL') . ':' . '</label>
-			<input type="text" name="BrandsURL" value="' . $_POST['BrandsURL'] . '" size="50" maxlength="50" />
-		</field>
-		<field>
-			<label for="BrandPicture">' .  __('Brand Image File (' . implode(", ", $SupportedImgExt) . ')') . ':</label>
-			<input type="file" id="BrandPicture" name="BrandPicture" />';
-
-	if (isset ($_GET['edit']) ) {
-		echo '<field>
-				<label for="ClearImage">'.__('Clear Image').'</label>
-				<input type="checkbox" name="ClearImage" id="ClearImage" value="1">
-			</field>';
-	}
-
-	echo '</field>';
-		if (isset($SelectedBrand)){
-            $Glob = (glob($_SESSION['part_pics_dir'] . '/BRAND-' . $SelectedBrand . '.{' . implode(",", $SupportedImgExt) . '}', GLOB_BRACE));
-			$ImageFile = reset($Glob);
-			if (extension_loaded('gd') && function_exists('gd_info') && file_exists($ImageFile)) {
-				$BrandImgLink = '<img src="GetStockImage.php?automake=1&amp;textcolor=FFFFFF&amp;bgcolor=CCCCCC'.
-					'&amp;StockID='.urlencode('/BRAND-' . $SelectedBrand).
-					'&amp;text='.
-					'&amp;width=100'.
-					'&amp;height=100'.
-					'" alt="" />';
-			} else {
-				if ( isset($SelectedBrand) AND  !empty($SelectedBrand) AND file_exists($ImageFile) ) {
-					$BrandImgLink = '<img src="' . $ImageFile . '" height="100" width="100" />';
-				} else {
-					$BrandImgLink = __('No Image');
-				}
-			}
-			$BrandImgLink = GetImageLink($ImageFile, '/BRAND-' . $SelectedBrand, 100, 100, "", "");
-			echo '<field><td colspan="2">' . $BrandImgLink . '</td></field>';
-		}
-
-		echo 	'</fieldset>
-			<div class="centre">
-				<input type="submit" name="submit" value="' .  __('Enter Information') . '" />
+	echo '				</tbody>
+					</table>
+				</div>
 			</div>
-			</form>';
-
-} //end if record deleted no point displaying form to add record
+		  </div>';
+}
+echo '</main></div>';
 
 include(__DIR__ . '/includes/footer.php');

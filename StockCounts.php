@@ -9,30 +9,116 @@ $ViewTopic = 'Inventory';
 $BookMark = '';
 include(__DIR__ . '/includes/header.php');
 
-echo '<form name="EnterCountsForm" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post" enctype="multipart/form-data">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/inventory.png" title="' .
-	__('Inventory Adjustment') . '" alt="" />' . ' ' . $Title . '</p>';
+echo '<style>
+	.db-side-btn {
+		transition: all 0.2s ease-in-out !important;
+	}
+	.db-side-btn:hover {
+		background-color: var(--primary-soft) !important;
+		color: var(--primary) !important;
+		transform: translateX(4px);
+		box-shadow: var(--shadow-sm);
+	}
+	.db-side-btn-active:hover {
+		transform: none !important;
+		background-color: var(--primary) !important;
+		color: white !important;
+	}
+</style>';
 
 if (!isset($_POST['Action']) AND !isset($_GET['Action'])) {
+
 	$_GET['Action'] = 'Enter';
 }
 if (isset($_POST['Action'])) {
 	$_GET['Action'] = $_POST['Action'];
 }
-
 if ($_GET['Action']!='View' AND $_GET['Action']!='Enter'){
 	$_GET['Action'] = 'Enter';
 }
 
-echo '<table class="selection"><tr>';
+echo '<form name="EnterCountsForm" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" enctype="multipart/form-data">
+		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+		<input type="hidden" name="Action" value="' . $_GET['Action'] . '" />
+		<div class="db-bottom-layout">';
+
+
+// SIDEBAR START
+echo '<aside class="db-col-aside">';
+
+// CARD 1: WORKFLOW MODE
+echo '<div class="db-card" style="margin-bottom: 20px;">
+		<div class="db-card-header">
+			<div class="db-card-title"><i class="fas fa-tasks"></i> ' . __('Workflow') . '</div>
+		</div>
+		<div class="db-card-body" style="padding: 15px; display: flex; flex-direction: column; gap: 10px;">';
 if ($_GET['Action']=='View'){
-	echo '<td><a href="' . $RootPath . '/StockCounts.php?&amp;Action=Enter">' . __('Resuming Entering Counts') . '</a> </td><td>' . __('Viewing Entered Counts') . '</td>';
+	echo '		<a href="' . $RootPath . '/StockCounts.php?Action=Enter" class="db-btn db-btn-outline-primary db-side-btn" style="text-align: left; padding: 12px 15px; width: 100%;">
+					<i class="fas fa-plus-circle" style="margin-right: 10px;"></i> ' . __('Enter New Counts') . '
+				</a>
+				<div class="db-btn db-btn-primary db-side-btn-active" style="text-align: left; padding: 12px 15px; width: 100%; cursor: default; box-shadow: var(--shadow-sm);">
+					<i class="fas fa-list-ul" style="margin-right: 10px;"></i> ' . __('Viewing Entered Counts') . '
+				</div>';
 } else {
-	echo '<td>' . __('Entering Counts')  . '</td><td> <a href="' . $RootPath . '/StockCounts.php?&amp;Action=View">' . __('View Entered Counts') . '</a></td>';
+	echo '		<div class="db-btn db-btn-primary db-side-btn-active" style="text-align: left; padding: 12px 15px; width: 100%; cursor: default; box-shadow: var(--shadow-sm);">
+					<i class="fas fa-plus-circle" style="margin-right: 10px;"></i> ' . __('Entering Counts Now') . '
+				</div>
+				<a href="' . $RootPath . '/StockCounts.php?Action=View" class="db-btn db-btn-outline-primary db-side-btn" style="text-align: left; padding: 12px 15px; width: 100%;">
+					<i class="fas fa-list-ul" style="margin-right: 10px;"></i> ' . __('View Entered Counts') . '
+				</a>';
 }
-echo '</tr></table><br />';
+
+echo '		</div>
+	  </div>';
+
+
+// CARD 2: LOCATION SELECTION (If in Enter mode)
+if ($_GET['Action'] == 'Enter') {
+	echo '<div class="db-card" style="margin-bottom: 20px;">
+			<div class="db-card-header">
+				<div class="db-card-title"><i class="fas fa-warehouse"></i> ' . __('Inventory Site') . '</div>
+			</div>
+			<div class="db-card-body">
+				<div class="db-form-group">
+					<label class="db-label">' . __('Counting Location') . '</label>
+					<select name="Location" class="db-select db-input-light" onchange="this.form.submit();">';
+	
+	$SQL = "SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canupd=1";
+	$LocRes = DB_query($SQL);
+	while ($MyRow = DB_fetch_array($LocRes)) {
+		$selected = (isset($_POST['Location']) AND $MyRow['loccode']==$_POST['Location']) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
+	}
+	echo '			</select>
+				</div>
+			</div>
+		  </div>';
+
+	// CARD 3: CSV IMPORT
+	echo '<div class="db-card">
+			<div class="db-card-header">
+				<div class="db-card-title"><i class="fas fa-file-import"></i> ' . __('Bulk Import') . '</div>
+			</div>
+			<div class="db-card-body">
+				<div class="db-form-group">
+					<label class="db-label">' . __('CSV Count Sheet') . '</label>
+					<input name="userfile" type="file" class="db-input" style="font-size: 0.8rem; padding: 6px;" />
+				</div>
+				<button type="submit" class="db-btn db-btn-secondary" style="width: 100%; margin-bottom: 15px;">
+					<i class="fas fa-upload"></i> ' . __('Upload & Process') . '
+				</button>
+				<div class="text-center">
+					<a href="' . $RootPath . '/StockCounts.php?gettemplate=1" class="db-link" style="font-size: 0.85rem;"><i class="fas fa-download"></i> ' . __('Get Template') . '</a>
+				</div>
+			</div>
+		  </div>';
+}
+
+echo '</aside>';
+// SIDEBAR END
+
+echo '<main class="db-col-main">';
+
 
 $FieldHeadings = array(
 	'StockCode',       	//  0 'STOCKCODE',
@@ -238,72 +324,60 @@ if ($_GET['Action'] == 'Enter') {
 		fclose($FileHandle);
 	} // end of if import file button hit
 
-	$CatsResult = DB_query("SELECT DISTINCT stockcategory.categoryid,
-								categorydescription
-						FROM stockcategory INNER JOIN stockmaster
-							ON stockcategory.categoryid=stockmaster.categoryid
-							INNER JOIN stockcheckfreeze
-							ON stockmaster.stockid=stockcheckfreeze.stockid");
-
 	if (DB_num_rows($CatsResult) ==0) {
-		prnMsg(__('The stock check sheets must be run first to create the stock check. Only once these are created can the stock counts be entered. Currently there is no stock check to enter counts for'),'error');
-		echo '<div class="center"><a href="' . $RootPath . '/StockCheck.php">' . __('Create New Stock Check') . '</a></div>';
+		echo '<div class="db-card" style="height: 100%; min-height: 400px; display: flex; align-items: center; justify-content: center; text-align: center;">
+				<div class="db-card-body">
+					<div style="width: 80px; height: 80px; background: var(--db-bg-alt); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--db-text-muted);">
+						<i class="fas fa-exclamation-triangle" style="font-size: 2.5rem; opacity: 0.3;"></i>
+					</div>
+					<h3 class="db-font-bold" style="color: var(--text-main); margin-bottom: 8px;">' . __('No Active Stock Check') . '</h3>
+					<p style="max-width: 400px; margin: 0 auto 20px; color: var(--text-muted);">' . __('A stock check must be initialized before counts can be entered. There are currently no items frozen for counting.') . '</p>
+					<a href="' . $RootPath . '/StockCheck.php" class="db-btn db-btn-primary">' . __('Initialize New Stock Check') . '</a>
+				</div>
+			</div>';
 	} else {
-		echo '<table cellpadding="2" class="selection">';
-		echo '<tr>
-				<th colspan="3">' .__('Stock Check Counts at Location') . ':<select name="Location">';
-		$SQL = "SELECT locations.loccode, locationname FROM locations
-				INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canupd=1";
-		$Result = DB_query($SQL);
-
-		while ($MyRow=DB_fetch_array($Result)){
-
-			if (isset($_POST['Location']) AND $MyRow['loccode']==$_POST['Location']){
-				echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-			} else {
-				echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-			}
-		}
-		echo '</select>&nbsp;<input type="submit" name="EnterByCat" value="' . __('Enter By Category') . '" /><select name="StkCat" onChange="ReloadForm(EnterCountsForm.EnterByCat)" >';
-
-		echo '<option value="">' . __('Not Yet Selected') . '</option>';
-
+		echo '<div class="db-card">
+				<div class="db-card-header">
+					<div class="db-card-title"><i class="fas fa-clipboard-list"></i> ' . __('Entering Stock Counts') . '</div>
+				</div>
+				<div class="db-card-body">';
+		
+		echo '<div style="display: flex; gap: 20px; align-items: flex-end; margin-bottom: 25px; flex-wrap: wrap;">
+				<div class="db-form-group" style="flex: 1; min-width: 250px;">
+					<label class="db-label">' . __('Select Product Category') . '</label>
+					<select name="StkCat" class="db-select db-input-light" onChange="ReloadForm(EnterCountsForm.EnterByCat)">
+						<option value="">' . __('All Categories / Manual Entry') . '</option>';
 		while ($MyRow=DB_fetch_array($CatsResult)){
-			if ($_POST['StkCat']==$MyRow['categoryid']) {
-				echo '<option selected="selected" value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
-			} else {
-				echo '<option value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
-			}
+			$selected = ($_POST['StkCat']==$MyRow['categoryid']) ? 'selected="selected"' : '';
+			echo '<option ' . $selected . ' value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
 		}
-		echo '</select></th></tr>';
-
-		echo '<tr>
-				<td></td><td>OR</td>
-			</tr>
-			<tr>
-				<th colspan="3">
-					<input type="hidden" name="MAX_FILE_SIZE" value="1000000" />
-					' . __('Upload file') . ': <input name="userfile" type="file" />
-					<input type="submit" value="' . __('Send File') . '" />
-				</th>
-				<td><a href="' . $RootPath . '/StockCounts.php?gettemplate=1">Get Import Template</a></td>
-			</tr>
-			<tr><td></td></tr>';
+		echo '		</select>
+				</div>
+				<button type="submit" name="EnterByCat" class="db-btn db-btn-secondary" style="height: 44px; padding: 0 25px;">
+					<i class="fas fa-filter"></i> ' . __('Update List') . '
+				</button>
+			</div>';
 
 		if (isset($_POST['EnterByCat'])){
-
 			$StkCatResult = DB_query("SELECT categorydescription FROM stockcategory WHERE categoryid='" . $_POST['StkCat'] . "'");
 			$StkCatRow = DB_fetch_row($StkCatResult);
 
-			echo '<tr>
-					<th colspan="4">' . __('Entering Counts For Stock Category') . ': ' . $StkCatRow[0] . '</th>
-				</tr>
-				<tr>
-					<th>' . __('Stock Code') . '</th>
-					<th>' . __('Description') . '</th>
-					<th>' . __('Quantity') . '</th>
-					<th>' . __('Reference') . '</th>
-				</tr>';
+			echo '	<div class="db-status-bar db-status-info" style="margin-bottom: 20px;">
+
+						<div class="db-status-icon"><i class="fas fa-info-circle"></i></div>
+						<div class="db-status-text">' . __('Entering counts for stock category') . ': <strong>' . $StkCatRow[0] . '</strong></div>
+					</div>
+					<div class="db-table-wrapper">
+						<table class="db-table">
+							<thead>
+								<tr>
+									<th>' . __('Stock Code') . '</th>
+									<th>' . __('Description') . '</th>
+									<th>' . __('Quantity Counted') . '</th>
+									<th>' . __('Reference / Note') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
 			$StkItemsResult = DB_query("SELECT stockcheckfreeze.stockid,
 												description
 										FROM stockcheckfreeze INNER JOIN stockmaster
@@ -314,41 +388,57 @@ if ($_GET['Action'] == 'Enter') {
 			$RowCount=1;
 			while ($StkRow = DB_fetch_array($StkItemsResult)) {
 				echo '<tr>
-						<td><input type="hidden" name="StockID_' . $RowCount . '" value="' . $StkRow['stockid'] . '" />' . $StkRow['stockid'] . '</td>
-						<td>' . $StkRow['description'] . '</td>
-						<td><input type="text" name="Qty_' . $RowCount . '" maxlength="10" size="10" /></td>
-						<td><input type="text" name="Ref_' . $RowCount . '" maxlength="20" size="20" /></td>
+						<td><input type="hidden" name="StockID_' . $RowCount . '" value="' . $StkRow['stockid'] . '" /><span class="db-font-bold text-primary">' . $StkRow['stockid'] . '</span></td>
+						<td style="font-size: 0.85rem; color: var(--text-main);">' . $StkRow['description'] . '</td>
+						<td><input type="text" name="Qty_' . $RowCount . '" class="db-input number" maxlength="10" placeholder="0.00" /></td>
+						<td><input type="text" name="Ref_' . $RowCount . '" class="db-input" maxlength="20" placeholder="' . __('Optional ref...') . '" /></td>
 					</tr>';
 				$RowCount++;
 			}
+			echo '			</tbody>
+						</table>
+					</div>';
 
 		} else {
-			echo '<tr>
-					<th>' . __('Bar Code') . '</th>
-					<th>' . __('Stock Code') . '</th>
-					<th>' . __('Quantity') . '</th>
-					<th>' . __('Reference') . '</th>
-				</tr>';
+			echo '	<div class="db-status-bar db-status-active" style="margin-bottom: 20px;">
+						<div class="db-status-icon"><i class="fas fa-keyboard"></i></div>
+						<div class="db-status-text">' . __('Manual Entry: Use barcodes or stock codes to enter counts quickly.') . '</div>
+					</div>
+					<div class="db-table-wrapper">
+						<table class="db-table">
+							<thead>
+								<tr>
+									<th>' . __('Bar Code') . '</th>
+									<th>' . __('Stock Code') . '</th>
+									<th>' . __('Quantity') . '</th>
+									<th>' . __('Reference') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
 
 			for ($RowCount=1;$RowCount<=10;$RowCount++){
-
 				echo '<tr>
-						<td><input type="text" name="BarCode_' . $RowCount . '" maxlength="20" size="20" /></td>
-						<td><input type="text" name="StockID_' . $RowCount . '" maxlength="20" size="20" /></td>
-						<td><input type="text" name="Qty_' . $RowCount . '" maxlength="10" size="10" /></td>
-						<td><input type="text" name="Ref_' . $RowCount . '" maxlength="20" size="20" /></td>
+						<td><input type="text" name="BarCode_' . $RowCount . '" class="db-input" maxlength="20" placeholder="' . __('Scan barcode...') . '" /></td>
+						<td><input type="text" name="StockID_' . $RowCount . '" class="db-input" maxlength="20" placeholder="' . __('Stock code...') . '" /></td>
+						<td><input type="text" name="Qty_' . $RowCount . '" class="db-input number" maxlength="10" placeholder="0.00" /></td>
+						<td><input type="text" name="Ref_' . $RowCount . '" class="db-input" maxlength="20" placeholder="' . __('Ref...') . '" /></td>
 					</tr>';
-
 			}
+			echo '			</tbody>
+						</table>
+					</div>';
 		}
 
-		echo '</table>
-				<br />
-				<div class="centre">
-					<input type="hidden" name="RowCount" value="' .$RowCount . '" />
-					<input type="submit" name="EnterCounts" value="' . __('Enter Above Counts') . '" />
-				</div>';
+		echo '			</div> <!-- end card body -->
+						<div class="db-card-footer" style="padding: 20px; text-align: right; background: var(--db-bg-alt);">';
+		echo '				<input type="hidden" name="RowCount" value="' .$RowCount . '" />
+							<button type="submit" name="EnterCounts" class="db-btn db-btn-primary db-btn-lg" style="padding-left: 40px; padding-right: 40px;">
+								<i class="fas fa-check-double"></i> ' . __('Submit Counts') . '
+							</button>
+						</div>
+					</div>';
 	} // there is a stock check to enter counts for
+
 //END OF action=ENTER
 } elseif ($_GET['Action']=='View'){
 
@@ -364,38 +454,66 @@ if ($_GET['Action'] == 'Enter') {
 		}
 	}
 
-	//START OF action=VIEW
 	$SQL = "select stockcounts.*,
 					canupd from stockcounts
 					INNER JOIN locationusers ON locationusers.loccode=stockcounts.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1";
 	$Result = DB_query($SQL);
-	echo '<input type="hidden" name="Action" value="View" />';
-	echo '<table cellpadding="2" class="selection">';
-	echo '<tr>
-			<th>' . __('Stock Code') . '</th>
-			<th>' . __('Location') . '</th>
-			<th>' . __('Qty Counted') . '</th>
-			<th>' . __('Reference') . '</th>
-			<th>' . __('Delete?') . '</th></tr>';
+	
+	echo '<div class="db-card">
+			<div class="db-card-header">
+				<div class="db-card-title"><i class="fas fa-list-alt"></i> ' . __('Review Entered Counts') . '</div>
+			</div>
+			<div class="db-card-body" style="padding: 0;">
+				<div class="db-table-wrapper">
+					<table class="db-table">
+						<thead>
+							<tr>
+								<th>' . __('Stock Code') . '</th>
+								<th>' . __('Location') . '</th>
+								<th>' . __('Qty Counted') . '</th>
+								<th>' . __('Reference') . '</th>
+								<th class="text-center">' . __('Remove?') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
+
+	if (DB_num_rows($Result) == 0) {
+		echo '<tr><td colspan="5" class="text-center" style="padding: 40px; color: var(--text-muted);">' . __('No counts have been entered yet.') . '</td></tr>';
+	}
+
 	while ($MyRow=DB_fetch_array($Result)){
 		echo '<tr>
-			<td>'.$MyRow['stockid'].'</td>
+			<td><span class="db-font-bold text-primary">'.$MyRow['stockid'].'</span></td>
 			<td>'.$MyRow['loccode'].'</td>
-			<td>'.$MyRow['qtycounted'].'</td>
-			<td>'.$MyRow['reference'].'</td>
-			<td>';
+			<td>'.locale_number_format($MyRow['qtycounted'], 2).'</td>
+			<td style="font-size: 0.85rem; color: var(--text-muted);">'.$MyRow['reference'].'</td>
+			<td class="text-center">';
 		if ($MyRow['canupd']==1) {
-			echo '<input type="checkbox" name="DEL[' . $MyRow['id'] . ']" maxlength="20" size="20" />';
-
+			echo '<label class="db-checkbox">
+					<input type="checkbox" name="DEL[' . $MyRow['id'] . ']" />
+					<span class="db-checkbox-mark"></span>
+				  </label>';
 		}
 		echo '</td></tr>';
 
 	}
-	echo '</table><br /><div class="centre"><input type="submit" name="SubmitChanges" value="' . __('Save Changes') . '" /></div>';
+	echo '				</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="db-card-footer" style="padding: 20px; text-align: right; background: var(--db-bg-alt);">
+				<button type="submit" name="SubmitChanges" class="db-btn db-btn-danger">
+					<i class="fas fa-trash-alt"></i> ' . __('Delete Selected Counts') . '
+				</button>
+			</div>
+		</div>';
+
 
 //END OF action=VIEW
 }
 
-echo '</div>
-      </form>';
+	echo '	</main>
+	</div> <!-- end db-bottom-layout -->
+</form>';
 include(__DIR__ . '/includes/footer.php');
+

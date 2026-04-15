@@ -10,7 +10,60 @@ include(__DIR__ . '/includes/header.php');
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/GLFunctions.php');
 
-echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/inventory.png" title="' . __('Contract') . '" alt="" />' . __('Fulfill Stock Requests') . '</p>';
+echo '<div class="db-bottom-layout">';
+
+// SIDEBAR START
+echo '<aside class="db-col-aside">';
+
+// CARD 1: LOCATION CONTEXT
+echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">
+		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+		<div class="db-card" style="margin-bottom: 20px;">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><i class="fas fa-warehouse"></i> ' . __('Issuing Location') . '</h3>
+			</div>
+			<div class="db-card-body">
+				<div class="db-form-group">
+					<label class="db-label">' . __('Source Warehouse') . '</label>
+					<select name="Location" class="db-select db-input-light" onchange="this.form.submit();">
+						<option value="">' . __('Select a Location') . '</option>';
+$SQL = "SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canupd=1 WHERE internalrequest = 1 ORDER BY locationname";
+$ResStkLocs = DB_query($SQL);
+while ($RowLoc = DB_fetch_array($ResStkLocs)) {
+	$selected = (isset($_POST['Location']) AND $_POST['Location'] == $RowLoc['loccode']) ? 'selected="selected"' : '';
+	echo '<option ' . $selected . ' value="' . $RowLoc['loccode'] . '">' . $RowLoc['locationname'] . '</option>';
+}
+echo '				</select>
+				</div>
+				<p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 10px;">
+					' . __('Pick the warehouse from which you are issuing these requests.') . '
+				</p>
+			</div>
+		</div>
+	  </form>';
+
+// CARD 2: ACTION DASHBOARD (Only show if location is selected)
+if (isset($_POST['Location'])) {
+	echo '<div class="db-card">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><i class="fas fa-check-double"></i> ' . __('Fulfillment Actions') . '</h3>
+			</div>
+			<div class="db-card-body">
+				<p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
+					' . __('Enter delivered quantities and serial numbers below, then click to process all updates.') . '
+				</p>
+				<button type="submit" form="fulfillment_form" name="UpdateAll" class="db-btn db-btn-primary" style="width: 100%;">
+					<i class="fas fa-save"></i> ' . __('Process Fulfillment') . '
+				</button>
+			</div>
+		</div>';
+}
+
+echo '</aside>';
+// SIDEBAR END
+
+echo '<main class="db-col-main">';
+
 
 if (isset($_POST['UpdateAll'])) {
 	foreach ($_POST as $key => $Value) {
@@ -227,47 +280,12 @@ if (isset($_POST['UpdateAll'])) {
 }
 
 if (!isset($_POST['Location'])) {
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
-	echo '<div>';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	echo '<table class="selection">
-			<tr>
-				<td>' . __('Choose a location to issue requests from') . '</td>
-				<td><select name="Location">';
-	$SQL = "SELECT locations.loccode, locationname
-			FROM locations
-			INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canupd=1
-			WHERE internalrequest = 1
-			ORDER BY locationname";
-	$ResultStkLocs = DB_query($SQL);
-	while ($MyRow = DB_fetch_array($ResultStkLocs)) {
-		/// @todo there seems to be no code setting $_SESSION['Adjustment'], ever
-		///       If there was, we would need to include the DefineXXX.php fil at the top of this file, to have the
-		///       corresponding class definition loaded
-		if (isset($_SESSION['Adjustment']->StockLocation)) {
-			if ($MyRow['loccode'] == $_SESSION['Adjustment']->StockLocation) {
-				echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-			}
-			else {
-				echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-			}
-		}
-		elseif ($MyRow['loccode'] == $_SESSION['UserStockLocation']) {
-			echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-			$_POST['StockLocation'] = $MyRow['loccode'];
-		}
-		else {
-			echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		}
-	}
-	echo '</select></td></tr>';
-	echo '</table><br />';
-	echo '<div class="centre"><input type="submit" name="EnterAdjustment" value="' . __('Show Requests') . '" /></div>';
-	echo '</div>
-		  </form>';
-	include(__DIR__ . '/includes/footer.php');
-	exit();
+	echo '<div class="db-status-bar db-status-info">
+			<div class="db-status-icon"><i class="fas fa-arrow-left"></i></div>
+			<div class="db-status-text">' . __('Please select an issuing location from the sidebar to begin fulfilling requests.') . '</div>
+		  </div>';
 }
+
 
 /* Retrieve the requisition header information
 */
@@ -299,27 +317,28 @@ if (isset($_POST['Location'])) {
 		exit();
 	}
 
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
-	echo '<div>';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	echo '<table class="selection">
-			<tr>
-				<th>' . __('Request Number') . '</th>
-				<th>' . __('Department') . '</th>
-				<th>' . __('Location Of Stock') . '</th>
-				<th>' . __('Requested Date') . '</th>
-				<th>' . __('Narrative') . '</th>
-			</tr>';
+	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" id="fulfillment_form">
+			<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+			<input type="hidden" name="Location" value="' . $_POST['Location'] . '" />';
 
 	while ($MyRow = DB_fetch_array($Result)) {
+		echo '<div class="db-card" style="margin-bottom: 25px;">
+				<div class="db-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+					<div style="display: flex; align-items: center; gap: 15px;">
+						<span class="db-badge db-badge-primary">#' . $MyRow['dispatchid'] . '</span>
+						<h3 class="db-card-title">' . $MyRow['description'] . '</h3>
+					</div>
+					<div class="db-font-bold" style="font-size: 0.8rem; color: var(--text-muted);">
+						<span style="color: var(--primary);"><i class="fas fa-calendar-alt"></i> ' . ConvertSQLDate($MyRow['despatchdate']) . '</span>
+					</div>
+				</div>
+				
+				<div class="db-card-body">
+					<div class="db-status-bar db-status-info" style="margin-bottom: 20px; border: none; padding: 10px 15px;">
+						<div class="db-status-icon"><i class="fas fa-quote-left"></i></div>
+						<div class="db-status-text" style="font-style: italic;">' . ($MyRow['narrative'] ?: __('No context provided for this request.')) . '</div>
+					</div>';
 
-		echo '<tr>
-				<td>' . $MyRow['dispatchid'] . '</td>
-				<td>' . $MyRow['description'] . '</td>
-				<td>' . $MyRow['locationname'] . '</td>
-				<td class="centre">' . ConvertSQLDate($MyRow['despatchdate']) . '</td>
-				<td>' . $MyRow['narrative'] . '</td>
-			</tr>';
 		$LineSQL = "SELECT stockrequestitems.dispatchitemsid,
 						stockrequestitems.dispatchid,
 						stockrequestitems.stockid,
@@ -336,64 +355,69 @@ if (isset($_POST['Location'])) {
 				AND completed=0";
 		$LineResult = DB_query($LineSQL);
 
-		echo '<tr>
-				<td></td>
-				<td colspan="5" align="left">
-					<table class="selection" align="left">
-					<tr>
-						<th>' . __('Product') . '</th>
-						<th>' . __('Quantity') . '<br />' . __('Required') . '</th>
-						<th>' . __('Quantity') . '<br />' . __('Delivered') . '</th>
-						<th>' . __('Units') . '</th>
-						<th>' . __('Lot/Batch/Serial') . '</th>
-						<th>' . __('Completed') . '</th>
-						<th>' . __('Tag') . '</th>
-					</tr>';
+		echo '		<div class="db-table-wrapper" style="border: 1px solid var(--border-soft); border-radius: var(--radius-sm);">
+						<table class="db-table">
+							<thead>
+								<tr>
+									<th>' . __('Product / Unit') . '</th>
+									<th class="text-right">' . __('Required') . '</th>
+									<th class="text-right">' . __('To Issue') . '</th>
+									<th>' . __('Batch/Lot/Serial') . '</th>
+									<th class="text-center">' . __('Done') . '</th>
+									<th style="width: 200px;">' . __('GL Tag') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
 
 		while ($LineRow = DB_fetch_array($LineResult)) {
-			echo '<tr>
-					<td>' . $LineRow['description'] . '</td>
-					<td class="number">' . locale_number_format($LineRow['quantity'] - $LineRow['qtydelivered'], $LineRow['decimalplaces']) . '</td>
-					<td class="number"><input type="text" class="number" name="' . $LineRow['dispatchid'] . 'Qty' . $LineRow['dispatchitemsid'] . '" value="' . locale_number_format($LineRow['quantity'] - $LineRow['qtydelivered'], $LineRow['decimalplaces']) . '" size="11" maxlength="10" /></td>
-					<td>' . $LineRow['uom'] . '</td>';
+			echo '			<tr>
+								<td>
+									<div class="db-font-bold text-primary">' . $LineRow['stockid'] . '</div>
+									<div style="font-size: 0.8rem; color: var(--text-muted);">' . $LineRow['description'] . '</div>
+									<div class="db-badge db-badge-secondary" style="font-size: 0.7rem; margin-top: 5px;">' . $LineRow['uom'] . '</div>
+								</td>
+								<td class="text-right db-font-bold" style="color: var(--text-muted);">' . locale_number_format($LineRow['quantity'] - $LineRow['qtydelivered'], $LineRow['decimalplaces']) . '</td>
+								<td class="text-right">
+									<input type="text" class="db-input number" name="' . $LineRow['dispatchid'] . 'Qty' . $LineRow['dispatchitemsid'] . '" value="' . locale_number_format($LineRow['quantity'] - $LineRow['qtydelivered'], $LineRow['decimalplaces']) . '" style="width: 100px; text-align: right;" />
+								</td>
+								<td>';
 			if ($LineRow['controlled'] == 1) {
-				echo '<td class="number"><input type="text" name="' . $LineRow['dispatchid'] . 'Ser' . $LineRow['dispatchitemsid'] . '" size="21" maxlength="30" /></td>';
+				echo '				<input type="text" class="db-input" name="' . $LineRow['dispatchid'] . 'Ser' . $LineRow['dispatchitemsid'] . '" placeholder="' . __('Serial Number') . '" />';
+			} else {
+				echo '				<span style="font-size: 0.75rem; color: var(--text-muted);">' . __('Not Controlled') . '</span>';
 			}
-			else {
-				echo '<td>' . __('Stock item is not controlled') . '</td>';
-			}
-			echo '<td class="centre"><input type="checkbox" name="' . $LineRow['dispatchid'] . 'Completed' . $LineRow['dispatchitemsid'] . '" /></td>';
+			echo '				</td>
+								<td class="text-center">
+									<input type="checkbox" name="' . $LineRow['dispatchid'] . 'Completed' . $LineRow['dispatchitemsid'] . '" style="width: 18px; height: 18px; cursor: pointer;" />
+								</td>
+								<td>';
 
-			//Select the tag
-			$SQLTag = "SELECT tagref,
-							tagdescription
-					FROM tags
-					ORDER BY tagref";
+			// Select GL tags
+			$SQLTag = "SELECT tagref, tagdescription FROM tags ORDER BY tagref";
 			$ResultTag = DB_query($SQLTag);
-			echo '<td><select multiple="multiple" name="' . $LineRow['dispatchid'] . 'Tag' . $LineRow['dispatchitemsid'] . '[]">';
+			echo '					<select name="' . $LineRow['dispatchid'] . 'Tag' . $LineRow['dispatchitemsid'] . '[]" class="db-select" style="font-size: 0.8rem; padding: 4px;">';
 			while ($MyRowTag = DB_fetch_array($ResultTag)) {
-				if (isset($_POST['tag']) and $_POST['tag'] == $MyRowTag['tagref'] and in_array($MyRowTag['tagref'])) {
-					echo '<option selected="selected" value="', $MyRowTag['tagref'], '">', $MyRowTag['tagref'], ' - ', $MyRowTag['tagdescription'], '</option>';
-				}
-				else {
-					echo '<option value="', $MyRowTag['tagref'], '">', $MyRowTag['tagref'], ' - ', $MyRowTag['tagdescription'], '</option>';
-				}
+				echo '<option value="' . $MyRowTag['tagref'] . '">' . $MyRowTag['tagref'] . ' - ' . $MyRowTag['tagdescription'] . '</option>';
 			}
-			echo '</select></td>';
-			// End select tag
-			echo '</tr>';
-			echo '<input type="hidden" class="number" name="' . $LineRow['dispatchid'] . 'StockID' . $LineRow['dispatchitemsid'] . '" value="' . $LineRow['stockid'] . '" />';
-			echo '<input type="hidden" class="number" name="' . $LineRow['dispatchid'] . 'Location' . $LineRow['dispatchitemsid'] . '" value="' . $_POST['Location'] . '" />';
-			echo '<input type="hidden" class="number" name="' . $LineRow['dispatchid'] . 'RequestedQuantity' . $LineRow['dispatchitemsid'] . '" value="' . locale_number_format($LineRow['quantity'] - $LineRow['qtydelivered'], $LineRow['decimalplaces']) . '" />';
-			echo '<input type="hidden" class="number" name="' . $LineRow['dispatchid'] . 'Department' . $LineRow['dispatchitemsid'] . '" value="' . $MyRow['description'] . '" />';
-			echo '<input type="hidden" class="number" name="' . $LineRow['dispatchid'] . 'Controlled' . $LineRow['dispatchitemsid'] . '" value="' . $LineRow['controlled'] . '" />';
-		} // end while order line detail
-		echo '</table></td></tr>';
-	} //end while header loop
-	echo '</table>';
-	echo '<div class="centre"><input type="submit" name="UpdateAll" value="' . __('Update') . '" /></div>
-		</div>
-	</form>';
-}
+			echo '					</select>
+								</td>
+							</tr>';
+			
+			echo '<input type="hidden" name="' . $LineRow['dispatchid'] . 'StockID' . $LineRow['dispatchitemsid'] . '" value="' . $LineRow['stockid'] . '" />';
+			echo '<input type="hidden" name="' . $LineRow['dispatchid'] . 'Location' . $LineRow['dispatchitemsid'] . '" value="' . $_POST['Location'] . '" />';
+			echo '<input type="hidden" name="' . $LineRow['dispatchid'] . 'RequestedQuantity' . $LineRow['dispatchitemsid'] . '" value="' . ($LineRow['quantity'] - $LineRow['qtydelivered']) . '" />';
+			echo '<input type="hidden" name="' . $LineRow['dispatchid'] . 'Department' . $LineRow['dispatchitemsid'] . '" value="' . $MyRow['description'] . '" />';
+			echo '<input type="hidden" name="' . $LineRow['dispatchid'] . 'Controlled' . $LineRow['dispatchitemsid'] . '" value="' . $LineRow['controlled'] . '" />';
+		}
+		echo '				</tbody>
+						</table>
+					</div>
+				</div>
+			  </div>';
+	}
+	echo '</form>';
 
+}
+	echo '	</main>
+	</div>'; // End db-bottom-layout
 include(__DIR__ . '/includes/footer.php');

@@ -7,90 +7,76 @@ $ViewTopic = 'Inventory';
 $BookMark = 'InventoryMovement';
 include(__DIR__ . '/includes/header.php');
 
-if (isset($_POST['BeforeDate'])){$_POST['BeforeDate'] = ConvertSQLDate($_POST['BeforeDate']);}
-if (isset($_POST['AfterDate'])){$_POST['AfterDate'] = ConvertSQLDate($_POST['AfterDate']);}
+echo '<div class="db-bottom-layout">';
 
-if (isset($_GET['StockID'])) {
-	$StockID = trim(mb_strtoupper($_GET['StockID']));
-} elseif (isset($_POST['StockID'])) {
-	$StockID = trim(mb_strtoupper($_POST['StockID']));
-} else {
-	$StockID = '';
+// SIDEBAR START
+echo '<aside class="db-col-aside">
+		<form action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" method="post">
+			<input type="hidden" name="FormID" value="', $_SESSION['FormID'], '" />
+			
+			<div class="db-card" style="margin-bottom: 20px;">
+				<div class="db-card-header">
+					<h3 class="db-card-title"><i class="fas fa-filter"></i> ' . __('Search Criteria') . '</h3>
+				</div>
+				<div class="db-card-body">
+					<div class="db-form-group">
+						<label class="db-label">' . __('Stock Code') . '</label>
+						<input type="text" name="StockID" class="db-input" value="', $StockID, '" required="required" placeholder="' . __('e.g. ITEM-001') . '" />
+					</div>
+					
+					<div class="db-form-group">
+						<label class="db-label">' . __('Location') . '</label>
+						<select name="StockLocation" class="db-select">';
+$SQL_Loc = "SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1 ORDER BY locationname";
+$ResStkLocs = DB_query($SQL_Loc);
+while ($RowLoc = DB_fetch_array($ResStkLocs)) {
+	$selected = (isset($_POST['StockLocation']) AND $_POST['StockLocation'] == $RowLoc['loccode']) ? 'selected="selected"' : '';
+	echo '<option ' . $selected . ' value="' . $RowLoc['loccode'] . '">' . $RowLoc['locationname'] . '</option>';
+}
+echo '					</select>
+					</div>
+
+					<div class="db-form-group">
+						<label class="db-label">' . __('From Date') . '</label>
+						<input name="AfterDate" type="date" class="db-input" value="', FormatDateForSQL($_POST['AfterDate']), '" />
+					</div>
+					
+					<div class="db-form-group">
+						<label class="db-label">' . __('To Date') . '</label>
+						<input name="BeforeDate" type="date" class="db-input" value="', FormatDateForSQL($_POST['BeforeDate']), '" />
+					</div>
+
+					<button type="submit" name="ShowMoves" class="db-btn db-btn-primary" style="width: 100%; margin-top: 15px;">
+						<i class="fas fa-sync"></i> ' . __('Show Movements') . '
+					</button>
+				</div>
+			</div>';
+
+// QUICK LINKS CARD
+if ($StockID != '') {
+	echo '<div class="db-card">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><i class="fas fa-external-link-alt"></i> ' . __('Related Inquiries') . '</h3>
+			</div>
+			<div class="db-card-body" style="padding: 10px;">
+				<a href="', $RootPath, '/StockStatus.php?StockID=', urlencode($StockID), '" class="db-btn db-input-light" style="width: 100%; justify-content: flex-start; margin-bottom: 8px; font-size: 0.8rem;">
+					<i class="fas fa-info-circle"></i> ' . __('Show Stock Status') . '
+				</a>
+				<a href="', $RootPath, '/StockUsage.php?StockID=', urlencode($StockID), '" class="db-btn db-input-light" style="width: 100%; justify-content: flex-start; margin-bottom: 8px; font-size: 0.8rem;">
+					<i class="fas fa-chart-line"></i> ' . __('Show Stock Usage') . '
+				</a>
+				<a href="', $RootPath, '/SelectSalesOrder.php?SelectedStockItem=', urlencode($StockID), '" class="db-btn db-input-light" style="width: 100%; justify-content: flex-start; font-size: 0.8rem;">
+					<i class="fas fa-shopping-cart"></i> ' . __('Search Orders') . '
+				</a>
+			</div>
+		  </div>';
 }
 
-$StockInfo = '';
-if ('' != $StockID) {
-	$Result = DB_query("SELECT description, units FROM stockmaster WHERE stockid='" . $StockID . "'");
-	$MyRow = DB_fetch_row($Result);
+echo '		</form>
+	</aside>';
 
-	$StockInfo = '<br /><b>' . $StockID . ' - ' . $MyRow['0'] . ' : ' . __('in units of') . ' : ' . $MyRow[1] . '</b>';
-}
+echo '<main class="db-col-main">';
 
-echo '<p class="page_title_text">
-		<img src="', $RootPath, '/css/', $_SESSION['Theme'], '/images/inventory.png" title="', __('Inventory'), '" alt="" /> ', $Title, $StockInfo, '</p>';
-
-echo '<form action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" method="post">
-	<input type="hidden" name="FormID" value="', $_SESSION['FormID'], '" />';
-
-if (!isset($_POST['BeforeDate']) or !Is_date($_POST['BeforeDate'])) {
-	$_POST['BeforeDate'] = date($_SESSION['DefaultDateFormat']);
-}
-if (!isset($_POST['AfterDate']) or !Is_date($_POST['AfterDate'])) {
-	$_POST['AfterDate'] = date($_SESSION['DefaultDateFormat'], mktime(0, 0, 0, date('m') - 3, date('d'), date('y')));
-}
-if (!isset($_POST['StockLocation'])) {
-	$_POST['StockLocation'] = $_SESSION['DefaultFactoryLocation'];
-}
-
-echo '<fieldset>
-		<legend>', __('Inquiry Criteria'), '</legend>
-		<field>
-			<label for="StockID">', __('Stock Code'), ':</label>
-			<input type="text" name="StockID" size="21" value="', $StockID, '" required="required" maxlength="20" />
-		</field>';
-
-echo '<field>
-		<label for="StockLocation">', __('From Stock Location'), ':</label>
-		<select required="required" name="StockLocation"> ';
-
-$SQL = "SELECT locations.loccode,
-				locationname
-		FROM locations
-		INNER JOIN locationusers
-			ON locationusers.loccode=locations.loccode
-				AND locationusers.userid='" . $_SESSION['UserID'] . "'
-				AND locationusers.canview=1
-		ORDER BY locationname";
-
-$ResultStkLocs = DB_query($SQL);
-
-while ($MyRow = DB_fetch_array($ResultStkLocs)) {
-	if (isset($_POST['StockLocation']) and $_POST['StockLocation'] != 'All') {
-		if ($MyRow['loccode'] == $_POST['StockLocation']) {
-			echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		} else {
-			echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		}
-	} elseif ($MyRow['loccode'] == $_SESSION['UserStockLocation']) {
-		echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		$_POST['StockLocation'] = $MyRow['loccode'];
-	} else {
-		echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-	}
-}
-
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label>', __('Show Movements between'), ':</label>
-		<input name="AfterDate" type="date" size="11" required="required" maxlength="10" value="', FormatDateForSQL($_POST['AfterDate']), '" /> ' . __('and') . ':
-		<input name="BeforeDate" type="date" size="11" required="required" maxlength="10" value="', FormatDateForSQL($_POST['BeforeDate']), '" />
-	</field>
-	</fieldset>
-	<div class="centre">
-		<input type="submit" name="ShowMoves" value="', __('Show Stock Movements'), '" />
-	</div>';
 
 $SQLBeforeDate = FormatDateForSQL($_POST['BeforeDate']);
 $SQLAfterDate = FormatDateForSQL($_POST['AfterDate']);
@@ -136,24 +122,30 @@ $MovtsResult = DB_query($SQL, $ErrMsg);
 if (DB_num_rows($MovtsResult) > 0) {
 	$MyRow = DB_fetch_array($MovtsResult);
 
-	echo '<table>';
-	echo '<tr>
-			<th>', __('Type'), '</th>
-			<th>', __('Number'), '</th>
-			<th>', __('Date'), '</th>
-			<th>', __('User ID'), '</th>
-			<th>', __('Customer'), '</th>
-			<th>', __('Branch'), '</th>
-			<th>', __('Quantity'), '</th>
-			<th>', __('Reference'), '</th>
-			<th>', __('Price'), '</th>
-			<th>', __('Discount'), '</th>
-			<th>', __('New Qty'), '</th>
-			<th>', __('Narrative'), '</th>';
+	echo '<div class="db-card">
+			<div class="db-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+				<h3 class="db-card-title"><i class="fas fa-exchange-alt"></i> ' . __('Movement History') . '</h3>
+				<span class="db-badge db-badge-primary">' . $StockID . '</span>
+			</div>
+			<div class="db-card-body">
+				<div class="db-table-wrapper" style="border: 1px solid var(--border-soft); border-radius: var(--radius-sm);">
+					<table class="db-table">
+						<thead>
+							<tr>
+								<th>', __('Type / Number'), '</th>
+								<th>', __('Date'), '</th>
+								<th>', __('Customer / User'), '</th>
+								<th class="text-right">', __('Quantity'), '</th>
+								<th>', __('Reference'), '</th>
+								<th class="text-right">', __('Price'), '</th>
+								<th class="text-right">', __('New Qty'), '</th>
+								<th>', __('Narrative'), '</th>';
 	if ($MyRow['controlled'] == 1) {
-		echo '<th>', __('Serial No.'), '</th>';
+		echo '					<th>', __('Serial No.'), '</th>';
 	}
-	echo '</tr>';
+	echo '					</tr>
+						</thead>
+						<tbody>';
 
 	DB_data_seek($MovtsResult, 0);
 
@@ -173,83 +165,59 @@ if (DB_num_rows($MovtsResult) > 0) {
 			}
 		}
 
+		$link = '';
 		if ($MyRow['type'] == 10) {
-			/*its a sales invoice allow link to show invoice it was sold on*/
-
-			echo '<tr class="striped_row">
-					<td><a target="_blank" href="', $RootPath, '/PrintCustTrans.php?FromTransNo=', urlencode($MyRow['transno']), '&amp;InvOrCredit=Invoice&View=Yes">', $MyRow['typename'], '</a></td>
-					<td>', $MyRow['transno'], '</td>
-					<td>', $DisplayTranDate, '</td>
-					<td>', $MyRow['userid'], '</td>
-					<td>', $MyRow['debtorno'], '</td>
-					<td>', $MyRow['branchcode'], ' - ', $MyRow['brname'], '</td>
-					<td class="number">', locale_number_format($MyRow['qty'], $MyRow['decimalplaces']), '</td>
-					<td>', $MyRow['reference'], '</td>
-					<td class="number">', locale_number_format($MyRow['price'], $_SESSION['CompanyRecord']['decimalplaces']), '</td>
-					<td class="number">', locale_number_format($MyRow['discountpercent'] * 100, 2), '%%</td>
-					<td class="number">', locale_number_format($MyRow['newqoh'], $MyRow['decimalplaces']), '</td>
-					<td>', $MyRow['narrative'], '</td>';
-			if ($MyRow['controlled'] == 1) {
-				echo '<td>', $SerialText, '</td>';
-			}
-			echo '</tr>';
-
+			$link = '<a class="db-link" target="_blank" href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . urlencode($MyRow['transno']) . '&amp;InvOrCredit=Invoice&View=Yes">' . $MyRow['typename'] . '</a>';
 		} elseif ($MyRow['type'] == 11) {
-
-			echo '<tr class="striped_row">
-					<td><a target="_blank" href="', $RootPath, '/PrintCustTrans.php?FromTransNo=', urlencode($MyRow['transno']), '&amp;InvOrCredit=Credit">', $MyRow['typename'], '</a></td>
-					<td>', $MyRow['transno'], '</td>
-					<td>', $DisplayTranDate, '</td>
-					<td>', $MyRow['userid'], '</td>
-					<td>', $MyRow['debtorno'], '</td>
-					<td>', $MyRow['branchcode'], '</td>
-					<td class="number">', locale_number_format($MyRow['qty'], $MyRow['decimalplaces']), '</td>
-					<td>', $MyRow['reference'], '</td>
-					<td class="number">', locale_number_format($MyRow['price'], $_SESSION['CompanyRecord']['decimalplaces']), '</td>
-					<td class="number">', locale_number_format($MyRow['discountpercent'] * 100, 2), '%%</td>
-					<td class="number">', locale_number_format($MyRow['newqoh'], $MyRow['decimalplaces']), '</td>
-					<td>', $MyRow['narrative'], '</td>';
-			if ($MyRow['controlled'] == 1) {
-				echo '<td>', $SerialText, '</td>';
-			}
-			echo '</tr>';
-
+			$link = '<a class="db-link" target="_blank" href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . urlencode($MyRow['transno']) . '&amp;InvOrCredit=Credit">' . $MyRow['typename'] . '</a>';
 		} else {
-
-			echo '<tr class="striped_row">
-					<td>', $MyRow['typename'], '</td>
-					<td>', $MyRow['transno'], '</td>
-					<td>', $DisplayTranDate, '</td>
-					<td>', $MyRow['userid'], '</td>
-					<td>', $MyRow['debtorno'], '</td>
-					<td>', $MyRow['branchcode'], '</td>
-					<td class="number">', locale_number_format($MyRow['qty'], $MyRow['decimalplaces']), '</td>
-					<td>', $MyRow['reference'], '</td>
-					<td class="number">', locale_number_format($MyRow['price'], $_SESSION['CompanyRecord']['decimalplaces']), '</td>
-					<td class="number">', locale_number_format($MyRow['discountpercent'] * 100, 2), '%</td>
-					<td class="number">', locale_number_format($MyRow['newqoh'], $MyRow['decimalplaces']), '</td>
-					<td>', $MyRow['narrative'], '</td>';
-			if ($MyRow['controlled'] == 1) {
-				echo '<td>', $SerialText, '</td>';
-			}
-			echo '</tr>';
-
+			$link = $MyRow['typename'];
 		}
-		//end of page full new headings if
 
+		echo '			<tr class="striped_row">
+							<td>
+								<div class="db-font-bold">' . $link . '</div>
+								<div style="font-size: 0.75rem; color: var(--text-muted);">' . __('Trans #') . ' ' . $MyRow['transno'] . '</div>
+							</td>
+							<td>' . $DisplayTranDate . '</td>
+							<td>
+								<div class="db-font-bold">' . ($MyRow['brname'] ?: $MyRow['debtorno']) . '</div>
+								<div style="font-size: 0.75rem; color: var(--text-muted);">' . __('User') . ': ' . $MyRow['userid'] . '</div>
+							</td>
+							<td class="text-right db-font-bold" style="color: var(--primary);">' . locale_number_format($MyRow['qty'], $MyRow['decimalplaces']) . '</td>
+							<td>' . $MyRow['reference'] . '</td>
+							<td class="text-right">
+								<div class="db-font-bold">' . locale_number_format($MyRow['price'], $_SESSION['CompanyRecord']['decimalplaces']) . '</div>
+								<div style="font-size: 0.75rem; color: var(--text-muted);">' . locale_number_format($MyRow['discountpercent'] * 100, 2) . '% Disc</div>
+							</td>
+							<td class="text-right db-font-bold" style="color: var(--text-muted);">' . locale_number_format($MyRow['newqoh'], $MyRow['decimalplaces']) . '</td>
+							<td style="font-size: 0.8rem;">' . $MyRow['narrative'] . '</td>';
+		if ($MyRow['controlled'] == 1) {
+			echo '			<td style="font-size: 0.75rem;">' . $SerialText . '</td>';
+		}
+		echo '			</tr>';
 	}
-	//end of while loop
-
+	echo '				</tbody>
+					</table>
+				</div>
+			</div>
+		  </div>';
+} else {
+	if ($StockID != '') {
+		echo '<div class="db-status-bar db-status-info">
+				<div class="db-status-icon"><i class="fas fa-info-circle"></i></div>
+				<div class="db-status-text">' . __('No stock movements found for the selected criteria.') . '</div>
+			  </div>';
+	} else {
+		echo '<div class="db-status-bar db-status-info">
+				<div class="db-status-icon"><i class="fas fa-arrow-left"></i></div>
+				<div class="db-status-text">' . __('Please enter a stock code and select filters in the sidebar to view movements.') . '</div>
+			  </div>';
+	}
 }
 
-echo '</table>
-		<div class="centre">
-			<br /><a href="', $RootPath, '/StockStatus.php?StockID=', urlencode($StockID), '">', __('Show Stock Status'), '</a>
-			<br /><a href="', $RootPath, '/StockUsage.php?StockID=', urlencode($StockID), '&amp;StockLocation=', urlencode($_POST['StockLocation']), '">', __('Show Stock Usage'), '</a>
-			<br /><a href="', $RootPath, '/SelectSalesOrder.php?SelectedStockItem=', urlencode($StockID), '&amp;StockLocation=', urlencode($_POST['StockLocation']), '">', __('Search Outstanding Sales Orders'), '</a>
-			<br /><a href="', $RootPath, '/SelectCompletedOrder.php?SelectedStockItem=', urlencode($StockID), '">', __('Search Completed Sales Orders'), '</a>
-		</div>
-	</div>
-	</form>';
+echo '	</main>
+	</div>'; // end db-bottom-layout
+
 
 include(__DIR__ . '/includes/footer.php');

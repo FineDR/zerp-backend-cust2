@@ -25,10 +25,10 @@ $SQL = "SELECT stockmaster.stockid,
 				WHERE bom.component = stockmaster.stockid )
 		ORDER BY stockmaster.stockid";
 $Result = DB_query($SQL);
-if (DB_num_rows($Result) != 0){
+if (DB_num_rows($Result) != 0) {
 	$TotalValue = 0;
 	echo '<p class="page_title_text">
-			<img src="'.$RootPath.'/css/'.$Theme.'/images/inventory.png" title="' . __('Raw Materials Not Used in any BOM') . '" alt="" />
+			<img src="' . $RootPath . '/css/' . $Theme . '/images/inventory.png" title="' . __('Raw Materials Not Used in any BOM') . '" alt="" />
 			' . __('Raw Materials Not Used in any BOM') . '
 		</p>';
 	echo '<table class="selection">
@@ -46,13 +46,13 @@ if (DB_num_rows($Result) != 0){
 		$LineValue = $MyRow['qoh'] * $MyRow['stdcost'];
 		$TotalValue = $TotalValue + $LineValue;
 
-		echo'<tr class="striped_row">
+		echo '<tr class="striped_row">
 				<td class="number">', $i, '</td>
 				<td>', $CodeLink, '</td>
 				<td>', $MyRow['description'], '</td>
-				<td class="number">', locale_number_format($MyRow['qoh'],$MyRow['decimalplaces']), '</td>
-				<td class="number">', locale_number_format($MyRow['stdcost'],$_SESSION['CompanyRecord']['decimalplaces']), '</td>
-				<td class="number">', locale_number_format($LineValue,$_SESSION['CompanyRecord']['decimalplaces']), '</td>
+				<td class="number">', locale_number_format($MyRow['qoh'], $MyRow['decimalplaces']), '</td>
+				<td class="number">', locale_number_format($MyRow['stdcost'], $_SESSION['CompanyRecord']['decimalplaces']), '</td>
+				<td class="number">', locale_number_format($LineValue, $_SESSION['CompanyRecord']['decimalplaces']), '</td>
 			</tr>';
 
 		$i++;
@@ -60,8 +60,8 @@ if (DB_num_rows($Result) != 0){
 
 	echo '<tr class="total_row">
 			<td colspan="4"></td>
-			<td>', __('Total').':</td>
-			<td class="number">', locale_number_format($TotalValue,$_SESSION['CompanyRecord']['decimalplaces']), '</td>
+			<td>', __('Total') . ':</td>
+			<td class="number">', locale_number_format($TotalValue, $_SESSION['CompanyRecord']['decimalplaces']), '</td>
 		</tr>';
 
 	echo '</table>';

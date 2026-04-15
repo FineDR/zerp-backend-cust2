@@ -8,12 +8,18 @@ include(__DIR__ . '/includes/DefineStockTransfers.php');
 
 require(__DIR__ . '/includes/session.php');
 
-$Title = __('Inventory Transfer') . ' - ' . __('Receiving');// Screen identification.
-$ViewTopic = 'Inventory';// Filename's id in ManualContents.php's TOC.
-$BookMark = 'LocationTransfers';// Anchor's id in the manual's html document.
+include(__DIR__ . '/includes/SQL_CommonFunctions.php');
+
+$Title = __('Inventory Transfer') . ' - ' . __('Receiving');
 include(__DIR__ . '/includes/header.php');
 
-include(__DIR__ . '/includes/SQL_CommonFunctions.php');
+echo '<div class="db-page-header">
+		<div class="db-page-header-icon"><i class="fas fa-dolly-flatbed"></i></div>
+		<div class="db-page-header-content">
+			<div class="db-page-header-title">' . $Title . '</div>
+			<div class="db-page-header-subtitle">' . __('Manage and process incoming stock shipments from other locations.') . '</div>
+		</div>
+	</div>';
 
 if (isset($_GET['NewTransfer'])) {
 	unset($_SESSION['Transfer']);
@@ -512,175 +518,216 @@ if (isset($_GET['Trf_ID'])) {
 	} while ($MyRow = DB_fetch_array($Result));
 
 } /* $_GET['Trf_ID'] is set */
+echo '<div class="db-bottom-layout">';
+
 
 if (isset($_SESSION['Transfer'])) {
-	//Begin Form for receiving shipment
-
-	echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/supplier.png" title="' .
-		 __('Dispatch') . '" alt="" />' . ' ' . $Title . '</p>';
-	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">';
-	echo '<div>';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-	prnMsg(__('Please Verify Shipment Quantities Received'), 'info');
-
-	$i = 0;//Line Item Array pointer
-
-	echo '<br />
-			<table class="selection">';
-	echo '<tr>
-			<th colspan="7"><h3>' . __('Location Transfer Reference') . ' #' . $_SESSION['Transfer']->TrfID . ' ' .
-		 __('from') . ' ' . $_SESSION['Transfer']->StockLocationFromName . ' ' . __('to') . ' ' .
-		 $_SESSION['Transfer']->StockLocationToName . '</h3></th>
-		</tr>';
-
-	$Tableheader = '<tr>
-						<th>' . __('Item Code') . '</th>
-						<th>' . __('Item Description') . '</th>
-						<th>' . __('Quantity Dispatched') . '</th>
-						<th>' . __('Quantity Received') . '</th>
-						<th>' . __('Quantity To Receive') . '</th>
-						<th>' . __('Units') . '</th>
-						<th>' . __('Cancel Balance') . '</th>
-					</tr>';
-
-	echo $Tableheader;
-
-	foreach ($_SESSION['Transfer']->TransferItem AS $TrfLine) {
-
-		echo '<tr class="striped_row">
-			<td>' . $TrfLine->StockID . '</td>
-			<td>' . $TrfLine->ItemDescription . '</td>';
-
-		echo '<td class="number">' . locale_number_format($TrfLine->ShipQty, $TrfLine->DecimalPlaces) . '</td>';
-		if (isset($_POST['Qty' . $i]) AND is_numeric(filter_number_format($_POST['Qty' . $i]))) {
-
-			$_SESSION['Transfer']->TransferItem[$i]->Quantity = round(filter_number_format($_POST['Qty' . $i]), $TrfLine->DecimalPlaces);
-
-			$Qty = round(filter_number_format($_POST['Qty' . $i]), $TrfLine->DecimalPlaces);
-
-		} elseif ($TrfLine->Controlled == 1) {
-			if (sizeOf($TrfLine->SerialItems) == 0) {
-				$Qty = 0;
-			} else {
-				$Qty = $TrfLine->Quantity;
-			}
-		} else {
-			$Qty = $TrfLine->Quantity;
-		}
-		echo '<td class="number">' . locale_number_format($TrfLine->PrevRecvQty, $TrfLine->DecimalPlaces) . '</td>';
-
-		if ($TrfLine->Controlled == 1) {
-			echo '<td class="number"><input type="hidden" name="Qty' . $i . '" value="' .
-				 locale_number_format($Qty, $TrfLine->DecimalPlaces) . '" /><a href="' . $RootPath .
-				 '/StockTransferControlled.php?TransferItem=' . $i . '" />' . $Qty . '</a></td>';
-		} else {
-			echo '<td><input type="text" class="number" name="Qty' . $i . '" maxlength="10" size="auto" value="' .
-				 locale_number_format($Qty, $TrfLine->DecimalPlaces) . '" /></td>';
-		}
-
-		echo '<td>' . $TrfLine->PartUnit . '</td>';
-
-		echo '<td><input type="checkbox" name="CancelBalance' . $i . '" value="1" /></td>';
-
-
-		if ($TrfLine->Controlled == 1) {
-			if ($TrfLine->Serialised == 1) {
-				echo '<td><a href="' . $RootPath . '/StockTransferControlled.php?TransferItem=' . $i . '">' .
-					 __('Enter Serial Numbers') . '</a></td>';
-			} else {
-				echo '<td><a href="' . $RootPath . '/StockTransferControlled.php?TransferItem=' . $i . '">' .
-					 __('Enter Batch Refs') . '</a></td>';
-			}
-		}
-
-		echo '</tr>';
-
-		$i++; /* the array of TransferItem s is indexed numerically and i matches the index no */
-	} /*end of foreach TransferItem */
-
-	echo '</table>
-		<br />
-		<div class="centre">
-			<input type="submit" name="ProcessTransfer" value="' . __('Process Inventory Transfer') . '" />
-			<br />
-		</div>
-		</div>
-		</form>';
-	echo '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?NewTransfer=true">' .
-		 __('Select A Different Transfer') . '</a>';
-
-} else { /*Not $_SESSION['Transfer'] set */
-
-	echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/supplier.png" title="' .
-		 __('Dispatch') . '" alt="" />' . ' ' . $Title . '</p>';
-
-	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" id="form1">';
-	echo '<div>';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-	$LocResult = DB_query("SELECT locationname, locations.loccode FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1 ORDER BY locationname");
-
-	echo '<table class="selection">';
-	echo '<tr>
-			<td>' . __('Select Location Receiving Into') . ':</td>
-			<td>';
-	echo '<select name="RecLocation" onchange="ReloadForm(form1.RefreshTransferList)">';
+	echo '<aside class="db-col-aside">';
+	
+	// Selection Card (Moved to Sidebar)
+	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" id="form1">
+			<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+			<div class="db-card">
+				<div class="db-card-header">
+					<div class="db-card-title"><i class="fas fa-map-marker-alt"></i> ' . __('Receiving Into') . '</div>
+				</div>
+				<div class="db-card-body">
+					<div class="db-form-group">
+						<label class="db-label">' . __('Warehouse') . '</label>
+						<select name="RecLocation" class="db-select" style="height: 40px;">';
+	
 	if (!isset($_POST['RecLocation'])) {
 		$_POST['RecLocation'] = $_SESSION['UserStockLocation'];
 	}
+	
+	$LocResult = DB_query("SELECT locationname, locations.loccode FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1 ORDER BY locationname");
 	while ($MyRow = DB_fetch_array($LocResult)) {
-		if ($MyRow['loccode'] == $_POST['RecLocation']) {
-			echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		} else {
-			echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		}
+		$selected = ($MyRow['loccode'] == $_POST['RecLocation']) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 	}
-	echo '</select>
-		<input type="submit" name="RefreshTransferList" value="' . __('Refresh Transfer List') . '" /></td>
-		</tr>
-		</table>
-		<br />';
+	echo '				</select>
+					</div>
+					<button type="submit" name="RefreshTransferList" class="db-btn db-btn-secondary" style="width: 100%; margin-top: 10px;">
+						<i class="fas fa-sync-alt"></i> ' . __('Refresh List') . '
+					</button>
+				</div>
+			</div>
+		</form>';
 
+	// Pending List (Condensed for Sidebar)
 	$SQL = "SELECT DISTINCT reference,
 				locations.locationname as trffromloc,
 				shipdate
 			FROM loctransfers
-			INNER JOIN locations
-				ON loctransfers.shiploc=locations.loccode
+			INNER JOIN locations ON loctransfers.shiploc=locations.loccode
+			INNER JOIN locationusers ON locationusers.loccode=loctransfers.recloc AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canupd=1
 			WHERE recloc='" . $_POST['RecLocation'] . "'
 				AND pendingqty > 0
 			ORDER BY reference";
 
 	$TrfResult = DB_query($SQL);
 	if (DB_num_rows($TrfResult) > 0) {
-		$LocSql = "SELECT locationname FROM locations WHERE loccode='" . $_POST['RecLocation'] . "'";
-		$LocResult = DB_query($LocSql);
-		$LocRow = DB_fetch_array($LocResult);
-		echo '<table class="selection">';
-		echo '<tr><th colspan="4"><h3>' . __('Pending Transfers Into') . ' ' . $LocRow['locationname'] . '</h3></th></tr>';
-		echo '<tr>
-			<th>' . __('Transfer Ref') . '</th>
-			<th>' . __('Transfer From') . '</th>
-			<th>' . __('Dispatch Date') . '</th></tr>';
-
+		echo '<div class="db-card" style="margin-top: 20px;">
+				<div class="db-card-header">
+					<div class="db-card-title"><i class="fas fa-list-ul"></i> ' . __('Pending') . '</div>
+				</div>
+				<div class="db-card-body" style="padding: 0;">';
 		while ($MyRow = DB_fetch_array($TrfResult)) {
-
-			echo '<tr class="striped_row">
-					<td class="number">' . $MyRow['reference'] . '</td>
-					<td>' . $MyRow['trffromloc'] . '</td>
-					<td>' . ConvertSQLDateTime($MyRow['shipdate']) . '</td>
-					<td><a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?Trf_ID=' .
-				 $MyRow['reference'] . '">' . __('Receive') . '</a></td>
-					</tr>';
+			$isActive = (isset($_SESSION['Transfer']) && $_SESSION['Transfer']->TrfID == $MyRow['reference']) ? 'db-status-active' : '';
+			echo '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?Trf_ID=' . $MyRow['reference'] . '" 
+					 class="db-search-item ' . $isActive . '" style="display: block; text-decoration: none; padding: 12px 15px; border-bottom: 1px solid var(--border-soft);">
+						<div class="db-font-bold text-primary" style="font-size: 0.9rem;">#' . $MyRow['reference'] . '</div>
+						<div style="font-size: 0.75rem; color: var(--text-muted);">' . $MyRow['trffromloc'] . '</div>
+						<div style="font-size: 0.7rem; opacity: 0.6; margin-top: 4px;">' . ConvertSQLDateTime($MyRow['shipdate']) . '</div>
+					 </a>';
 		}
-		echo '</table>';
-	} elseif (!isset($_POST['ProcessTransfer'])) {
-		prnMsg(__('There are no incoming transfers to this location'), 'info');
+		echo '	</div>
+			  </div>';
 	}
-	echo '</div>
-		  </form>';
+
+	echo '</aside>
+
+	<main class="db-col-main">
+		<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
+			<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+
+			
+			<div class="db-card" style="margin-bottom: 24px;">
+				<div class="db-card-header">
+					<div class="db-card-title"><i class="fas fa-info-circle"></i> ' . __('Shipment Details') . '</div>
+					<div class="db-badge db-badge-primary">#' . $_SESSION['Transfer']->TrfID . '</div>
+				</div>
+				<div class="db-card-body">
+					<div style="display: flex; gap: 30px; align-items: center; justify-content: space-around; padding: 10px 0;">
+						<div style="text-align: center;">
+							<div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">' . __('Dispatching From') . '</div>
+							<div class="db-badge db-badge-secondary" style="padding: 10px 20px;">
+								<i class="fas fa-warehouse" style="margin-right: 8px;"></i>' . $_SESSION['Transfer']->StockLocationFromName . '
+							</div>
+						</div>
+						
+						<div style="color: var(--border); font-size: 1.5rem; opacity: 0.5;">
+							<i class="fas fa-arrow-right"></i>
+						</div>
+						
+						<div style="text-align: center;">
+							<div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">' . __('Receiving Into') . '</div>
+							<div class="db-badge db-badge-primary" style="padding: 10px 20px;">
+								<i class="fas fa-map-marker-alt" style="margin-right: 8px;"></i>' . $_SESSION['Transfer']->StockLocationToName . '
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+			<div class="db-status-bar db-status-active" style="margin-bottom: 24px;">
+				<div class="db-status-icon"><i class="fas fa-check-circle"></i></div>
+				<div class="db-status-text">' . __('Please verify shipment quantities received below.') . '</div>
+			</div>
+
+
+			<!-- Card 3: Receiving Items -->
+			<div class="db-card">
+				<div class="db-card-body" style="padding: 0;">
+					<div class="table-responsive">
+						<table class="db-table db-table-hover">
+							<thead>
+								<tr>
+									<th>' . __('Item Code') . '</th>
+									<th>' . __('Description') . '</th>
+									<th class="text-right">' . __('Dispatched') . '</th>
+									<th class="text-right">' . __('Prev. Recv') . '</th>
+									<th class="text-center" style="width: 140px;">' . __('To Receive') . '</th>
+									<th>' . __('Units') . '</th>
+									<th class="text-center">' . __('Cancel Bal.') . '</th>
+									<th class="text-center">' . __('Serial/Batch') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
+
+	$i = 0;
+	foreach ($_SESSION['Transfer']->TransferItem AS $TrfLine) {
+		if (isset($_POST['Qty' . $i]) AND is_numeric(filter_number_format($_POST['Qty' . $i]))) {
+			$_SESSION['Transfer']->TransferItem[$i]->Quantity = round(filter_number_format($_POST['Qty' . $i]), $TrfLine->DecimalPlaces);
+			$Qty = round(filter_number_format($_POST['Qty' . $i]), $TrfLine->DecimalPlaces);
+		} elseif ($TrfLine->Controlled == 1) {
+			$Qty = (sizeOf($TrfLine->SerialItems) == 0) ? 0 : $TrfLine->Quantity;
+		} else {
+			$Qty = $TrfLine->Quantity;
+		}
+
+		echo '<tr>
+				<td class="font-weight-bold" style="color: var(--db-primary);">' . $TrfLine->StockID . '</td>
+				<td>' . $TrfLine->ItemDescription . '</td>
+				<td class="text-right">' . locale_number_format($TrfLine->ShipQty, $TrfLine->DecimalPlaces) . '</td>
+				<td class="text-right">' . locale_number_format($TrfLine->PrevRecvQty, $TrfLine->DecimalPlaces) . '</td>
+				<td class="text-center">';
+
+		if ($TrfLine->Controlled == 1) {
+			echo '<input type="hidden" name="Qty' . $i . '" value="' . locale_number_format($Qty, $TrfLine->DecimalPlaces) . '" />
+				  <span class="db-badge db-badge-info" style="font-size: 1rem; padding: 6px 12px; min-width: 60px;">' . $Qty . '</span>';
+		} else {
+			echo '<input type="text" class="db-input db-input-light text-center" name="Qty' . $i . '" maxlength="10" style="height: 36px; border-radius: 4px;" value="' . locale_number_format($Qty, $TrfLine->DecimalPlaces) . '" />';
+		}
+
+		echo '</td>
+				<td>' . $TrfLine->PartUnit . '</td>
+				<td class="text-center">
+					<label class="db-checkbox-container" style="margin: 0; display: inline-block;">
+						<input type="checkbox" name="CancelBalance' . $i . '" value="1" />
+						<span class="db-checkbox-label" style="padding-left: 25px;"></span>
+					</label>
+				</td>
+				<td class="text-center">';
+
+		if ($TrfLine->Controlled == 1) {
+			$icon = ($TrfLine->Serialised == 1) ? 'fa-barcode' : 'fa-boxes';
+			$label = ($TrfLine->Serialised == 1) ? __('Serial #s') : __('Batch Refs');
+			echo '<a href="' . $RootPath . '/StockTransferControlled.php?TransferItem=' . $i . '" class="db-btn db-btn-sm db-btn-outline-primary" style="white-space: nowrap;">
+					<i class="fas ' . $icon . '"></i> ' . $label . '
+				  </a>';
+		} else {
+			echo '<span style="opacity: 0.2;">-</span>';
+		}
+
+		echo '</td>
+			</tr>';
+		$i++;
+	}
+
+	echo '				</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			
+			<div class="db-form-actions" style="margin-top: 30px; display: flex; align-items: center; justify-content: flex-end;">
+				<button type="submit" name="ProcessTransfer" class="db-btn db-btn-primary db-btn-lg" style="padding-left: 40px; padding-right: 40px; font-weight: 600;">
+					<i class="fas fa-check-double"></i> ' . __('Process Inventory Transfer') . '
+				</button>
+			</div>
+		</main>';
+} else {
+	// Empty State - No transfer selected
+	echo '	<main class="db-col-main">
+				<div class="db-card" style="height: 100%; min-height: 400px; display: flex; align-items: center; justify-content: center; text-align: center;">
+					<div class="db-card-body">
+						<div style="width: 80px; height: 80px; background: var(--db-bg-alt); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--db-text-muted);">
+							<i class="fas fa-dolly-flatbed" style="font-size: 2.5rem; opacity: 0.3;"></i>
+						</div>
+						<h3 class="db-font-bold" style="color: var(--text-main); margin-bottom: 8px;">' . __('Select a Transfer') . '</h3>
+						<p style="max-width: 300px; margin: 0 auto; color: var(--text-muted);">' . __('Choose an incoming shipment from the pending list in the sidebar to begin receiving stock.') . '</p>
+					</div>
+				</div>
+			</main>';
 }
+
+echo '</div>'; // End db-bottom-layout
+
+
+
+
 include(__DIR__ . '/includes/footer.php');
 
 function RecordItemCancelledInTransfer($TransferReference, $StockID, $CancelQty) {

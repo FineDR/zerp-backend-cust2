@@ -12,7 +12,83 @@ $ViewTopic = 'Sales';
 $BookMark = '';
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/inventory.png" title="' . __('Inventory') . '" alt="" />' . ' ' . __('Update Price By Cost') . '</p>';
+echo '<div class="db-bottom-layout">';
+
+// SIDEBAR: Filters
+echo '<aside class="db-col-aside">';
+echo '<div class="db-card">
+		<div class="db-card-header">
+			<h3 class="db-card-title"><i class="fas fa-filter"></i> ' . __('Pricing Filters') . '</h3>
+		</div>
+		<div class="db-card-body">
+			<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
+				<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+
+// Category
+$SQL = "SELECT categoryid, categorydescription FROM stockcategory ORDER BY categorydescription";
+$Result1 = DB_query($SQL);
+echo '			<div class="db-form-group">
+					<label class="db-label">' . __('Stock Category') . '</label>
+					<select name="StockCat" class="db-select">
+						<option value="all">' . __('All Categories') . '</option>';
+while ($MyRow1 = DB_fetch_array($Result1)) {
+	echo '				<option ' . ((isset($_POST['StockCat']) && $_POST['StockCat'] == $MyRow1['categoryid']) ? 'selected' : '') . ' value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
+}
+echo '				</select>
+				</div>';
+
+// Comparator & Margin
+if (!isset($_POST['Margin'])) {
+	$_POST['Margin'] = 1;
+}
+$CostType = ($_SESSION['WeightedAverageCosting'] == 1) ? __('Average Cost') : __('Standard Cost');
+
+echo '			<div class="db-form-group">
+					<label class="db-label">' . __('Price Comparison') . '</label>
+					<div style="display: flex; gap: 8px;">
+						<select name="Comparator" class="db-select" style="flex: 2;">
+							<option ' . ((isset($_POST['Comparator']) && $_POST['Comparator'] == 1) ? 'selected' : '') . ' value="1">' . __('<=') . '</option>
+							<option ' . ((isset($_POST['Comparator']) && $_POST['Comparator'] == 2) ? 'selected' : '') . ' value="2">' . __('>=') . '</option>
+						</select>
+						<div style="flex: 3; display: flex; align-items: center; gap: 5px;">
+							<span class="db-muted" style="font-size: 0.8rem;">' . $CostType . ' x</span>
+							<input type="text" class="db-input text-right" name="Margin" maxlength="8" size="5" value="' . $_POST['Margin'] . '" />
+						</div>
+					</div>
+				</div>';
+
+// Sales Type
+$Result = DB_query("SELECT typeabbrev, sales_type FROM salestypes");
+echo '			<div class="db-form-group">
+					<label class="db-label">' . __('Price List (Sales Type)') . '</label>
+					<select name="SalesType" class="db-select">';
+while ($MyRow = DB_fetch_array($Result)) {
+	echo '				<option ' . ((isset($_POST['SalesType']) && $_POST['SalesType'] == $MyRow['typeabbrev']) ? 'selected' : '') . ' value="' . $MyRow['typeabbrev'] . '">' . $MyRow['sales_type'] . '</option>';
+}
+echo '				</select>
+				</div>';
+
+// Currency
+$Result = DB_query("SELECT currency, currabrev FROM currencies");
+echo '			<div class="db-form-group">
+					<label class="db-label">' . __('Currency') . '</label>
+					<select name="CurrCode" class="db-select">';
+while ($MyRow = DB_fetch_array($Result)) {
+	echo '				<option ' . ((isset($_POST['CurrCode']) && $_POST['CurrCode'] == $MyRow['currabrev']) ? 'selected' : '') . ' value="' . $MyRow['currabrev'] . '">' . $MyRow['currency'] . '</option>';
+}
+echo '				</select>
+				</div>';
+
+echo '			<button type="submit" name="submit" value="' . __('Submit') . '" class="db-btn db-btn-primary w-100">
+					<i class="fas fa-search"></i> ' . __('Search Items') . '
+				</button>
+			</form>
+		</div>
+	  </div>
+	</aside>';
+
+// MAIN CONTENT
+echo '<main class="db-col-main">';
 
 if (isset($_POST['submit']) OR isset($_POST['update'])) {
 	if ($_POST['Comparator'] == 1) {
@@ -142,166 +218,128 @@ if (isset($_POST['submit']) OR isset($_POST['update'])) {
 	$ResultType = DB_query($SQLtype);
 	$SalesTypeRow = DB_fetch_array($ResultType);
 
-	if (isset($CategoryRow['categorgdescription'])) {
-		$CategoryText = $CategoryRow['categorgdescription'] . ' ' . __('category');
+	if (isset($CategoryRow['categorydescription'])) {
+		$CategoryText = $CategoryRow['categorydescription'] . ' ' . __('category');
 	} else {
 		$CategoryText = __('all Categories');
-	} /*end of else Category */
+	}
 
-	echo '<div class="page_help_text">' . __('Items in') . ' ' . $CategoryText . ' ' . __('With Prices') . ' ' . $Comparator . '' . $_POST['Margin'] . ' ' . __('times') . ' ' . __('Cost in Price List') . ' ' . $SalesTypeRow['sales_type'] . '</div><br /><br />';
+	echo '<div class="db-card">
+			<div class="db-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+				<h3 class="db-card-title"><i class="fas fa-list"></i> ' . __('Pricing Review') . ': <span class="text-primary">' . $CategoryText . '</span></h3>
+				<div class="db-badge db-badge-info">' . $NumRow . ' ' . __('Items Found') . '</div>
+			</div>
+			<div class="db-card-body p-0">';
 
-	if ($NumRow > 0) { //the number of prices returned from the main prices query is
-		echo '<form action="' .htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') .'" method="post" id="update">';
-		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-		echo'<input type="hidden" value="' . $_POST['StockCat'] . '" name="StockCat" />
-			<input type="hidden" value="' . $_POST['Margin'] . '" name="Margin" />
-			<input type="hidden" value="' . $_POST['CurrCode'] . '" name="CurrCode" />
-			<input type="hidden" value="' . $_POST['Comparator'] . '" name="Comparator" />
-			<input type="hidden" value="' . $_POST['SalesType'] . '" name="SalesType" />';
+	if ($NumRow > 0) {
+		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" id="update">
+				<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+				<input type="hidden" value="' . $_POST['StockCat'] . '" name="StockCat" />
+				<input type="hidden" value="' . $_POST['Margin'] . '" name="Margin" />
+				<input type="hidden" value="' . $_POST['CurrCode'] . '" name="CurrCode" />
+				<input type="hidden" value="' . $_POST['Comparator'] . '" name="Comparator" />
+				<input type="hidden" value="' . $_POST['SalesType'] . '" name="SalesType" />
 
-		echo '<table class="selection">
-			<thead>
-				<tr>
-					<th class="SortedColumn">' . __('Code') . '</th>
-					<th class="SortedColumn">' . __('Description') . '</th>
-					<th class="SortedColumn">' . __('Customer') . '</th>
-					<th class="SortedColumn">' . __('Branch') . '</th>
-					<th class="SortedColumn">' . __('Start Date') . '</th>
-					<th class="SortedColumn">' . __('End Date') . '</th>
-					<th class="SortedColumn">' . __('Cost') . '</th>
-					<th class="SortedColumn">' . __('GP %') . '</th>
-					<th class="SortedColumn">' . __('Price Proposed') . '</th>
-					<th class="SortedColumn">' . __('List Price') . '</th>
-				<tr>
-			</thead>
-			<tbody>';
+				<div class="db-table-wrapper">
+					<table class="db-table">
+						<thead>
+							<tr>
+								<th>' . __('Item') . '</th>
+								<th>' . __('Customer / Branch') . '</th>
+								<th>' . __('Validity') . '</th>
+								<th class="text-right">' . __('Cost') . '</th>
+								<th class="text-center">' . __('GP %') . '</th>
+								<th class="text-right">' . __('Proposed') . '</th>
+								<th class="text-right" style="width: 150px;">' . __('List Price') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
-		$PriceCounter =0;
+		$PriceCounter = 0;
 		while ($MyRow = DB_fetch_array($Result)) {
-
-			//get cost
-			if ($MyRow['cost'] == '') {
-				$Cost = 0;
-			} else {
-				$Cost = $MyRow['cost'];
-			} /*end of else Cost */
-
-			//variables for update
-			echo '<input type="hidden" value="' . $MyRow['stockid'] . '" name="StockID_' . $PriceCounter .'" />
-				<input type="hidden" value="' . $MyRow['debtorno'] . '" name="DebtorNo_' . $PriceCounter .'" />
-				<input type="hidden" value="' . $MyRow['branchcode'] . '" name="BranchCode_' . $PriceCounter .'" />
-				<input type="hidden" value="' . $MyRow['startdate'] . '" name="StartDate_' . $PriceCounter .'" />
-				<input type="hidden" value="' . $MyRow['enddate'] . '" name="EndDate_' . $PriceCounter .'" />';
-			//variable for current margin
-			if ($MyRow['price'] != 0){
-				$CurrentGP = (($MyRow['price']/$MyRow['rate'])-$Cost)*100 / ($MyRow['price']/$MyRow['rate']);
+			$Cost = ($MyRow['cost'] == '') ? 0 : $MyRow['cost'];
+			
+			// Margin calc
+			if ($MyRow['price'] != 0) {
+				$CurrentGP = (($MyRow['price'] / $MyRow['rate']) - $Cost) * 100 / ($MyRow['price'] / $MyRow['rate']);
 			} else {
 				$CurrentGP = 0;
 			}
-			//variable for proposed
 			$ProposedPrice = $Cost * filter_number_format($_POST['Margin']);
-			if ($MyRow['enddate']=='9999-12-31'){
-				$EndDateDisplay = __('No End Date');
-			} else {
-				$EndDateDisplay = ConvertSQLDate($MyRow['enddate']);
-			}
-			echo '<tr class="striped_row">
-					<td>' . $MyRow['stockid'] . '</td>
-					<td>' . $MyRow['description'] . '</td>
-					<td>' . $MyRow['customer'] . '</td>
-					<td>' . $MyRow['branch'] . '</td>
-					<td class="date">' . ConvertSQLDate($MyRow['startdate']) . '</td>
-					<td class="date">' . $EndDateDisplay . '</td>
-					<td class="number">' . locale_number_format($Cost, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-					<td class="number">' . locale_number_format($CurrentGP, 1) . '%</td>
-					<td class="number">' . locale_number_format($ProposedPrice, $MyRow['decimalplaces']) . '</td>
-					<td><input type="text" class="number" name="Price_' . $PriceCounter . '" maxlength="14" size="10" value="' . locale_number_format($MyRow['price'],$MyRow['decimalplaces']) . '" /></td>
-				</tr> ';
+			$EndDateDisplay = ($MyRow['enddate'] == '9999-12-31') ? __('Permanent') : ConvertSQLDate($MyRow['enddate']);
+			
+			$gpClass = ($CurrentGP < 10) ? 'db-badge-danger' : (($CurrentGP < 25) ? 'db-badge-warning' : 'db-badge-success');
+
+			echo '<tr>
+					<td>
+						<div class="db-font-bold text-primary">' . $MyRow['stockid'] . '</div>
+						<div class="db-muted" style="font-size: 0.75rem;">' . htmlspecialchars($MyRow['description']) . '</div>
+					</td>
+					<td>
+						<div class="db-font-medium">' . ($MyRow['customer'] ?: __('General')) . '</div>
+						<div class="db-muted" style="font-size: 0.75rem;">' . ($MyRow['branch'] ?: __('All Branches')) . '</div>
+					</td>
+					<td>
+						<div style="font-size: 0.85rem;">' . ConvertSQLDate($MyRow['startdate']) . '</div>
+						<div class="db-muted" style="font-size: 0.75rem;">→ ' . $EndDateDisplay . '</div>
+					</td>
+					<td class="text-right">' . locale_number_format($Cost, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
+					<td class="text-center">
+						<span class="db-badge ' . $gpClass . '">' . locale_number_format($CurrentGP, 1) . '%</span>
+					</td>
+					<td class="text-right text-primary db-font-bold">' . locale_number_format($ProposedPrice, $MyRow['decimalplaces']) . '</td>
+					<td class="text-right">
+						<input type="hidden" value="' . $MyRow['stockid'] . '" name="StockID_' . $PriceCounter . '" />
+						<input type="hidden" value="' . $MyRow['debtorno'] . '" name="DebtorNo_' . $PriceCounter . '" />
+						<input type="hidden" value="' . $MyRow['branchcode'] . '" name="BranchCode_' . $PriceCounter . '" />
+						<input type="hidden" value="' . $MyRow['startdate'] . '" name="StartDate_' . $PriceCounter . '" />
+						<input type="hidden" value="' . $MyRow['enddate'] . '" name="EndDate_' . $PriceCounter . '" />
+						<input type="text" class="db-input text-right p-1" name="Price_' . $PriceCounter . '" maxlength="14" style="width: 100%; height: 32px;" value="' . locale_number_format($MyRow['price'], $MyRow['decimalplaces']) . '" />
+					</td>
+				</tr>';
 			$PriceCounter++;
-		} //end of looping
-
-		echo '</tbody>
-			<tfoot>
-				<tr>
-			<td class="number" colspan="4"><input type="submit" name="submit" value="' . __('Update') . '" onclick="return confirm(\'' . __('If the prices above do not have a commencement date as today, this will create new prices with commencement date of today at the entered figures and update the existing prices with historical start dates to have an end date of yesterday. Are You Sure?') . '\');" /></td>
-			<td class="text" colspan="3"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '"><input type="submit" value="' . __('Back') . '" /></a></td>
-			 </tr>
-			</tfoot>
-			</table>
-			</form>';
-	} else {
-		prnMsg(__('There were no prices meeting the criteria specified to review'),'info');
-		echo '<br /><div class="centre"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">' . __('Back') . '<a/></div>';
-	}
-} else { /*The option to submit was not hit so display form */
-	echo '<div class="page_help_text">' . __('Prices can be displayed based on their relation to cost') . '</div><br />';
-	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	echo '<fieldset>
-			<legend>', __('Bulk Price Update'), '</legend>';
-
-	$SQL = "SELECT categoryid, categorydescription
-			  FROM stockcategory
-			  ORDER BY categorydescription";
-	$Result1 = DB_query($SQL);
-	echo '<field>
-			<label for="StockCat">' . __('Category') . ':</label>
-			<select name="StockCat">';
-	echo '<option value="all">' . __('All Categories') . '</option>';
-	while ($MyRow1 = DB_fetch_array($Result1)) {
-		echo '<option value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
-	}
-	echo '</select>
-		</field>';
-	echo '<field>
-			<label for="Margin">' . __('Price') . '</label>
-			<select name="Comparator">
-				<option value="1">' . __('Less than or equal to') . '</option>
-				<option value="2">' . __('Greater than or equal to') . '</option>';
-	if ($_SESSION['WeightedAverageCosting']==1) {
-		echo '</select>' . ' '. __('Average Cost') . ' x ';
-	} else {
-		echo '</select>' . ' '. __('Standard Cost') . ' x ';
-	}
-	if (!isset($_POST['Margin'])){
-		$_POST['Margin']=1;
-	}
-	echo '<input type="text" class="number" name="Margin" maxlength="8" size="8" value="' .$_POST['Margin'] . '" />
-		</field>';
-	$Result = DB_query("SELECT typeabbrev, sales_type FROM salestypes");
-	echo '<field>
-			<label for="SalesType">' . __('Sales Type') . '/' . __('Price List') . ':</label>
-			<select name="SalesType">';
-	while ($MyRow = DB_fetch_array($Result)) {
-		if ($_POST['SalesType'] == $MyRow['typeabbrev']) {
-			echo '<option selected="selected" value="' . $MyRow['typeabbrev'] . '">' . $MyRow['sales_type'] . '</option>';
-		} else {
-			echo '<option value="' . $MyRow['typeabbrev'] . '">' . $MyRow['sales_type'] . '</option>';
 		}
-	} //end while loop
-	DB_data_seek($Result, 0);
-	$Result = DB_query("SELECT currency, currabrev FROM currencies");
-	echo '</select>
-		</field>';
 
-	echo '<field>
-			<label for="CurrCode">' . __('Currency') . ':</label>
-			<select name="CurrCode">';
-	while ($MyRow = DB_fetch_array($Result)) {
-		if (isset($_POST['CurrCode']) and $_POST['CurrCode'] == $MyRow['currabrev']) {
-			echo '<option selected="selected" value="' . $MyRow['currabrev'] . '">' . $MyRow['currency'] . '</option>';
-		} else {
-			echo '<option value="' . $MyRow['currabrev'] . '">' . $MyRow['currency'] . '</option>';
-		}
-	} //end while loop
-	DB_data_seek($Result, 0);
-	echo '</select>
-		</field>';
-	echo '</fieldset>';
+		echo '			</tbody>
+					</table>
+				</div>
+				<div class="db-card-body border-top" style="display: flex; justify-content: flex-end; gap: 10px;">
+					<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" class="db-btn db-btn-secondary">
+						<i class="fas fa-undo"></i> ' . __('Reset') . '
+					</a>
+					<button type="submit" name="submit" value="' . __('Update') . '" class="db-btn db-btn-primary" onclick="return confirm(\'' . __('This will create new prices with commencement date of today and update existing historical prices. Are you sure?') . '\');">
+						<i class="fas fa-save"></i> ' . __('Update All Prices') . '
+					</button>
+				</div>
+			  </form>';
+	} else {
+		echo '<div class="text-center db-muted" style="padding: 60px;">
+				<i class="fas fa-exclamation-circle fa-3x" style="margin-bottom: 20px; opacity: 0.3;"></i>
+				<h4 class="db-font-bold">' . __('No Matches Found') . '</h4>
+				<p>' . __('There were no prices meeting the specified criteria.') . '</p>
+				<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" class="db-btn db-btn-outline-primary" style="margin-top: 15px;">
+					<i class="fas fa-arrow-left"></i> ' . __('Back to Search') . '
+				</a>
+			  </div>';
+	}
+	echo '	</div>
+		  </div>';
+} else {
+	echo '<div class="db-card">
+			<div class="db-card-body text-center" style="padding: 80px;">
+				<div style="width: 80px; height: 80px; background: var(--primary-soft); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px;">
+					<i class="fas fa-tags fa-3x"></i>
+				</div>
+				<h3 class="db-font-bold">' . __('Bulk Price Update') . '</h3>
+				<p class="db-muted" style="max-width: 450px; margin: 0 auto 25px;">' . __('Review and update selling prices in bulk based on a multiple of your current costs. Select your criteria from the sidebar to begin.') . '</p>
+				<div class="db-badge db-badge-secondary">' . __('Step 1: Configure filters') . '</div>
+				<i class="fas fa-arrow-right mx-2 db-muted"></i>
+				<div class="db-badge db-badge-secondary">' . __('Step 2: Review margins') . '</div>
+				<i class="fas fa-arrow-right mx-2 db-muted"></i>
+				<div class="db-badge db-badge-secondary">' . __('Step 3: Save changes') . '</div>
+			</div>
+		  </div>';
+}
 
-	echo '<div class="centre">
-			<input type="submit" name="submit" value="' . __('Submit') . '" /></div>
-		</div>
-	</form>';
-} /*end of else not submit */
+echo '</main></div>';
 include(__DIR__ . '/includes/footer.php');
