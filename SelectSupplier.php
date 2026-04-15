@@ -158,23 +158,69 @@ if (isset($_SESSION['SupplierID'])) {
 		$MyRow = DB_fetch_row($SupplierNameResult);
 		$SupplierName = $MyRow[0];
 	}
+}
 
+echo '<div class="db-bottom-layout">';
+
+// START SIDEBAR
+echo '<aside class="db-col-aside">';
+
+// CARD 1: ACTIVE SUPPLIER (If selected)
+if (isset($_SESSION['SupplierID'])) {
+	echo '<div class="db-card" style="margin-bottom: 20px; background: var(--primary-soft); border: 1px solid var(--primary-light);">
+			<div class="db-card-body">
+				<div style="font-size: 0.75rem; text-transform: uppercase; color: var(--db-primary); font-weight: 700; margin-bottom: 8px; opacity: 0.7;">' . __('Active Supplier') . '</div>
+				<div class="db-font-bold text-primary" style="font-size: 1.1rem; line-height: 1.2;">' . $SupplierName . '</div>
+				<div style="font-family: monospace; font-size: 0.85rem; margin-top: 5px; color: var(--text-muted);">[' . $_SESSION['SupplierID'] . ']</div>
+			</div>
+		  </div>';
+}
+
+// CARD 2: SEARCH FORM (Moved to Sidebar)
+echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
+		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+		<div class="db-card">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><i class="fas fa-search" style="margin-right: 8px;"></i> ' . __('Find Supplier') . '</h3>
+			</div>
+			<div class="db-card-body">
+				<div class="db-form-group">
+					<label class="db-label">' . __('Supplier Name') . '</label>
+					<input type="text" name="Keywords" class="db-input" value="' . (isset($_POST['Keywords']) ? $_POST['Keywords'] : '') . '" placeholder="' . __('Keywords...') . '" />
+				</div>
+				<div class="db-form-group">
+					<label class="db-label">' . __('Supplier Code') . '</label>
+					<input type="text" name="SupplierCode" class="db-input" value="' . (isset($_POST['SupplierCode']) ? $_POST['SupplierCode'] : '') . '" placeholder="' . __('Code...') . '" />
+				</div>
+				<button type="submit" name="Search" class="db-btn db-btn-primary" style="width: 100%; margin-top: 10px;">
+					<i class="fas fa-search" style="margin-right: 8px;"></i> ' . __('Search Now') . '
+				</button>
+			</div>
+		</div>
+	  </form>';
+
+echo '</aside>';
+// END SIDEBAR
+
+echo '<main class="db-col-main">';
+
+if (isset($_SESSION['SupplierID'])) {
 	echo '<div class="db-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-6); margin-bottom: var(--space-8);">
 			
 			<!-- Inquiries & Reports -->
 			<div class="db-card">
 				<div class="db-card-header" style="border-bottom: 1px solid var(--border-soft); padding: var(--space-4);">
-					<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px; color: var(--primary);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> ' . __('Inquiries & Reports') . '</h3>
+					<h3 class="db-card-title"><i class="fas fa-file-alt" style="margin-right: 8px; color: var(--db-primary);"></i> ' . __('Inquiries & Reports') . '</h3>
 				</div>
 				<div class="db-card-body" style="padding: var(--space-3);">
 					<ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px;">
-						<li><a href="' . $RootPath . '/SupplierInquiry.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Account Inquiry') . '</a></li>
-						<li><a href="' . $RootPath . '/SupplierGRNAndInvoiceInquiry.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '&SupplierName='.urlencode($SupplierName).'" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Delivery & GRN Inquiry') . '</a></li>
-						<li><a href="' . $RootPath . '/PO_SelectOSPurchOrder.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Outstanding Purchase Orders') . '</a></li>
-						<li><a href="' . $RootPath . '/PO_SelectPurchOrder.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('All Purchase Orders') . '</a></li>
-						<li><a href="' . $RootPath . '/ShiptsList.php?SupplierID=' . $_SESSION['SupplierID'] . '&SupplierName=' . urlencode($SupplierName) . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Open Shipments') . '</a></li>
-						<li><a href="' . $RootPath . '/Shipt_Select.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Search/Manage Shipments') . '</a></li>
-						<li><a href="' . $RootPath . '/SuppPriceList.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Supplier Price List') . '</a></li>
+						<li><a href="' . $RootPath . '/SupplierInquiry.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link">' . __('Account Inquiry') . '</a></li>
+						<li><a href="' . $RootPath . '/SupplierGRNAndInvoiceInquiry.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '&SupplierName='.urlencode($SupplierName).'" class="db-menu-link">' . __('Delivery & GRN Inquiry') . '</a></li>
+						<li><a href="' . $RootPath . '/PO_SelectOSPurchOrder.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '" class="db-menu-link">' . __('Outstanding Purchase Orders') . '</a></li>
+						<li><a href="' . $RootPath . '/PO_SelectPurchOrder.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '" class="db-menu-link">' . __('All Purchase Orders') . '</a></li>
+						<li><a href="' . $RootPath . '/ShiptsList.php?SupplierID=' . $_SESSION['SupplierID'] . '&SupplierName=' . urlencode($SupplierName) . '" class="db-menu-link">' . __('Open Shipments') . '</a></li>
+						<li><a href="' . $RootPath . '/Shipt_Select.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '" class="db-menu-link">' . __('Search/Manage Shipments') . '</a></li>
+						<li><a href="' . $RootPath . '/SuppPriceList.php?SelectedSupplier=' . $_SESSION['SupplierID'] . '" class="db-menu-link">' . __('Supplier Price List') . '</a></li>
 					</ul>
 				</div>
 			</div>
@@ -182,15 +228,15 @@ if (isset($_SESSION['SupplierID'])) {
 			<!-- Transactions -->
 			<div class="db-card">
 				<div class="db-card-header" style="border-bottom: 1px solid var(--border-soft); padding: var(--space-4);">
-					<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px; color: var(--primary);"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg> ' . __('Transactions') . '</h3>
+					<h3 class="db-card-title"><i class="fas fa-exchange-alt" style="margin-right: 8px; color: var(--db-primary);"></i> ' . __('Transactions') . '</h3>
 				</div>
 				<div class="db-card-body" style="padding: var(--space-3);">
 					<ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px;">
-						<li><a href="' . $RootPath . '/PO_Header.php?NewOrder=Yes&SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('New Purchase Order') . '</a></li>
-						<li><a href="' . $RootPath . '/SupplierInvoice.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Enter Supplier Invoice') . '</a></li>
-						<li><a href="' . $RootPath . '/SupplierCredit.php?New=true&SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Enter Credit Note') . '</a></li>
-						<li><a href="' . $RootPath . '/Payments.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Enter Payment / Receipt') . '</a></li>
-						<li><a href="' . $RootPath . '/ReverseGRN.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Reverse GRN') . '</a></li>
+						<li><a href="' . $RootPath . '/PO_Header.php?NewOrder=Yes&SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link">' . __('New Purchase Order') . '</a></li>
+						<li><a href="' . $RootPath . '/SupplierInvoice.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link">' . __('Enter Supplier Invoice') . '</a></li>
+						<li><a href="' . $RootPath . '/SupplierCredit.php?New=true&SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link">' . __('Enter Credit Note') . '</a></li>
+						<li><a href="' . $RootPath . '/Payments.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link">' . __('Enter Payment / Receipt') . '</a></li>
+						<li><a href="' . $RootPath . '/ReverseGRN.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link">' . __('Reverse GRN') . '</a></li>
 					</ul>
 				</div>
 			</div>
@@ -198,57 +244,39 @@ if (isset($_SESSION['SupplierID'])) {
 			<!-- Maintenance -->
 			<div class="db-card">
 				<div class="db-card-header" style="border-bottom: 1px solid var(--border-soft); padding: var(--space-4);">
-					<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px; color: var(--primary);"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg> ' . __('Maintenance') . '</h3>
+					<h3 class="db-card-title"><i class="fas fa-tools" style="margin-right: 8px; color: var(--db-primary);"></i> ' . __('Maintenance') . '</h3>
 				</div>
 				<div class="db-card-body" style="padding: var(--space-3);">
 					<ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px;">
-						<li><a href="' . $RootPath . '/Suppliers.php" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Add New Supplier') . '</a></li>
-						<li><a href="' . $RootPath . '/Suppliers.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Modify/Delete Supplier') . '</a></li>
-						<li><a href="' . $RootPath . '/SupplierContacts.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Manage Contacts') . '</a></li>
-						<li><a href="' . $RootPath . '/SellThroughSupport.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Sell Through Support') . '</a></li>
-						<li><a href="' . $RootPath . '/Shipments.php?NewShipment=Yes" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('New Shipment Setup') . '</a></li>
-						<li><a href="' . $RootPath . '/SuppLoginSetup.php" class="db-menu-link" style="display: flex; padding: 10px var(--space-3); border-radius: var(--radius-md); color: var(--text-body); font-weight: 500;">' . __('Login Configuration') . '</a></li>
+						<li><a href="' . $RootPath . '/Suppliers.php" class="db-menu-link">' . __('Add New Supplier') . '</a></li>
+						<li><a href="' . $RootPath . '/Suppliers.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link">' . __('Modify/Delete Supplier') . '</a></li>
+						<li><a href="' . $RootPath . '/SupplierContacts.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link">' . __('Manage Contacts') . '</a></li>
+						<li><a href="' . $RootPath . '/SellThroughSupport.php?SupplierID=' . $_SESSION['SupplierID'] . '" class="db-menu-link">' . __('Sell Through Support') . '</a></li>
+						<li><a href="' . $RootPath . '/Shipments.php?NewShipment=Yes" class="db-menu-link">' . __('New Shipment Setup') . '</a></li>
+						<li><a href="' . $RootPath . '/SuppLoginSetup.php" class="db-menu-link">' . __('Login Configuration') . '</a></li>
 					</ul>
 				</div>
 			</div>
 
 		</div>';
 }
-} else {
-	// Supplier is not selected yet
-	echo '<div class="db-alert db-alert-info" style="margin-bottom: var(--space-6);">
-			<div style="display: flex; align-items: center; gap: var(--space-3);">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-				<div>' . __('No supplier currently selected. Please use the search form below to find a supplier.') . '</div>
+
+if (!isset($_SESSION['SupplierID']) && !isset($_POST['Search'])) {
+	// Empty State
+	echo '<div class="db-card" style="height: 100%; min-height: 400px; display: flex; align-items: center; justify-content: center; text-align: center;">
+			<div class="db-card-body">
+				<div style="width: 80px; height: 80px; background: var(--db-bg-alt); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--db-text-muted);">
+					<i class="fas fa-user-friends" style="font-size: 2.5rem; opacity: 0.3;"></i>
+				</div>
+				<h3 class="db-font-bold" style="color: var(--text-main); margin-bottom: 8px;">' . __('Find a Supplier') . '</h3>
+				<p style="max-width: 300px; margin: 0 auto; color: var(--text-muted);">' . __('Use the search form in the sidebar to find and select a supplier to manage.') . '</p>
 			</div>
 		</div>';
 }
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">
-		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-		
-		<div class="db-card" style="margin-bottom: var(--space-6);">
-			<div class="db-card-header">
-				<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> ' . __('Search for Suppliers') . '</h3>
-			</div>
-			<div class="db-card-body">
-				<div class="db-grid db-grid-3">
-					<div class="db-form-group">
-						<label class="db-form-label">' . __('Search by Name (Keywords)') . '</label>
-						<input type="text" name="Keywords" class="db-form-input" value="' . (isset($_POST['Keywords']) ? $_POST['Keywords'] : '') . '" placeholder="' . __('Enter partial name...') . '" maxlength="25" />
-					</div>
-					<div class="db-form-group">
-						<label class="db-form-label">' . __('Search by Supplier Code') . '</label>
-						<input type="text" autofocus="autofocus" name="SupplierCode" class="db-form-input" value="' . (isset($_POST['SupplierCode']) ? $_POST['SupplierCode'] : '') . '" placeholder="' . __('Enter partial code...') . '" maxlength="18" />
-					</div>
-					<div class="db-form-group" style="display: flex; align-items: flex-end;">
-						<button type="submit" name="Search" class="db-btn db-btn-primary" style="width: 100%;">
-							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-							' . __('Search Now') . '
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>';
+
+
+
+
 //if (isset($Result) AND !isset($SingleSupplierReturned)) {
 if (isset($_POST['Search'])) {
 	$ListCount = DB_num_rows($Result);
@@ -338,8 +366,9 @@ if (isset($_SESSION['SupplierID']) and $_SESSION['SupplierID'] != '') {
 
 			echo '<div class="db-card" style="margin-top: var(--space-6);">
 					<div class="db-card-header">
-						<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ' . __('Supplier Location Mapping') . '</h3>
+						<h3 class="db-card-title"><i class="fas fa-map-marker-alt" style="margin-right: 8px; color: var(--db-primary);"></i> ' . __('Supplier Location Mapping') . '</h3>
 					</div>
+
 					<div class="db-card-body">
 						<div class="centre" id="map" style="width: 100%; height: ' . $map_height . 'px; border-radius: 0 0 var(--radius-lg) var(--radius-lg);"></div>
 					</div>
@@ -383,8 +412,9 @@ if (isset($_SESSION['SupplierID']) and $_SESSION['SupplierID'] != '') {
 
 			echo '<div class="db-card" style="margin-top: var(--space-6);">
 					<div class="db-card-header">
-						<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> ' . __('Supplier Extended Insights') . '</h3>
+						<h3 class="db-card-title"><i class="fas fa-info-circle" style="margin-right: 8px; color: var(--db-primary);"></i> ' . __('Supplier Extended Insights') . '</h3>
 					</div>
+
 					<div class="db-table-wrapper">
 						<table class="db-table">
 							<tbody>
@@ -407,6 +437,9 @@ if (isset($_SESSION['SupplierID']) and $_SESSION['SupplierID'] != '') {
 		}
 	}
 }
+echo '	</main>
+	</div>'; // End db-bottom-layout
 echo '</div>'; // End db-page
+
 
 include(__DIR__ . '/includes/footer.php');
