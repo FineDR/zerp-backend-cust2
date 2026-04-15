@@ -1232,6 +1232,10 @@ hr {
     white-space: nowrap;
 }
 
+.mt-4 { margin-top: 1.5rem !important; }
+.mt-5 { margin-top: 2rem !important; }
+
+
 .db-btn-primary {
     background: var(--primary);
     color: var(--text-inverse);
@@ -2966,11 +2970,21 @@ footer, #Footer {
 }
 
 .db-label {
+    display: block;
     font-size: 0.75rem;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.db-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 20px;
+    width: 100%;
 }
 
 .db-input {
