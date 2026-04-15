@@ -1,290 +1,259 @@
 <?php
 
 require(__DIR__ . '/includes/session.php');
-
 use Dompdf\Dompdf;
 
-include(__DIR__ . '/includes/SetDomPDFOptions.php');
-
-$Title = __('Top Items Searching');
-
+$Title = __('Inventory Velocity Analysis');
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/StockFunctions.php');
 
-//check if input already
-if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
-	// everything below here to view NumberOfTopItems items sale on selected location
-	$FromDate = FormatDateForSQL(DateAdd(date($_SESSION['DefaultDateFormat']),'d', -filter_number_format($_POST['NumberOfDays'])));
+// Parameter Initialization
+if (!isset($_POST['NumberOfDays'])) { $_POST['NumberOfDays'] = 30; }
+if (!isset($_POST['NumberOfTopItems'])) { $_POST['NumberOfTopItems'] = 50; }
+if (!isset($_POST['Location'])) { $_POST['Location'] = 'All'; }
+if (!isset($_POST['StockCat'])) { $_POST['StockCat'] = 'All'; }
+if (!isset($_POST['Customers'])) { $_POST['Customers'] = 'All'; }
+if (!isset($_POST['Sequence'])) { $_POST['Sequence'] = 'valuesales'; }
+if (!isset($_POST['MaxDaysOfStock'])) { $_POST['MaxDaysOfStock'] = 9999; }
 
-	$SQL = "SELECT 	salesorderdetails.stkcode,
-					SUM(salesorderdetails.qtyinvoiced) AS totalinvoiced,
-					SUM(salesorderdetails.qtyinvoiced * salesorderdetails.unitprice/currencies.rate ) AS valuesales,
-					stockmaster.description,
-					stockmaster.units,
-					stockmaster.mbflag,
-					currencies.rate,
-					debtorsmaster.currcode,
-					fromstkloc,
-					stockmaster.decimalplaces
-			FROM 	salesorderdetails, salesorders INNER JOIN locationusers ON locationusers.loccode=salesorders.fromstkloc AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1,
-			debtorsmaster,stockmaster, currencies
-			WHERE 	salesorderdetails.orderno = salesorders.orderno
-					AND salesorderdetails.stkcode = stockmaster.stockid
-					AND salesorders.debtorno = debtorsmaster.debtorno
-					AND debtorsmaster.currcode = currencies.currabrev
-					AND salesorderdetails.actualdispatchdate >= '" . $FromDate . "'";
+$ShowResults = isset($_POST['View']) || isset($_POST['PrintPDF']);
 
-	if ($_POST['Location'] != 'All') {
-		$SQL = $SQL . "	AND salesorders.fromstkloc = '" . $_POST['Location'] . "'";
-	}
+// Query Calculation Branch
+if ($ShowResults) {
+    $FromDate = FormatDateForSQL(DateAdd(date($_SESSION['DefaultDateFormat']),'d', -filter_number_format($_POST['NumberOfDays'])));
+    
+    $SQL = "SELECT salesorderdetails.stkcode,
+                   SUM(salesorderdetails.qtyinvoiced) AS totalinvoiced,
+                   SUM(salesorderdetails.qtyinvoiced * salesorderdetails.unitprice/currencies.rate ) AS valuesales,
+                   stockmaster.description, stockmaster.units, stockmaster.mbflag, stockmaster.decimalplaces, currencies.rate, debtorsmaster.currcode, fromstkloc
+            FROM salesorderdetails, salesorders 
+            INNER JOIN locationusers ON locationusers.loccode=salesorders.fromstkloc AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1,
+            debtorsmaster, stockmaster, currencies
+            WHERE salesorderdetails.orderno = salesorders.orderno
+            AND salesorderdetails.stkcode = stockmaster.stockid
+            AND salesorders.debtorno = debtorsmaster.debtorno
+            AND debtorsmaster.currcode = currencies.currabrev
+            AND salesorderdetails.actualdispatchdate >= '" . $FromDate . "'";
 
-	if ($_POST['Customers'] != 'All') {
-		$SQL = $SQL . "	AND debtorsmaster.typeid = '" . $_POST['Customers'] . "'";
-	}
+    if ($_POST['Location'] != 'All') { $SQL .= " AND salesorders.fromstkloc = '" . $_POST['Location'] . "'"; }
+    if ($_POST['Customers'] != 'All') { $SQL .= " AND debtorsmaster.typeid = '" . $_POST['Customers'] . "'"; }
+    if ($_POST['StockCat'] != 'All') { $SQL .= " AND stockmaster.categoryid = '" . $_POST['StockCat'] . "'"; }
 
-	if ($_POST['StockCat'] != 'All') {
-		$SQL = $SQL . "	AND stockmaster.categoryid = '" . $_POST['StockCat'] . "'";
-	}
-
-	$SQL = $SQL . "	GROUP BY salesorderdetails.stkcode
-					ORDER BY `" . $_POST['Sequence'] . "` DESC
-					LIMIT " . filter_number_format($_POST['NumberOfTopItems']);
-
-	$Result = DB_query($SQL);
-
-	$HTML = '';
-
-	if (isset($_POST['PrintPDF'])) {
-		$HTML .= '<html>
-					<head>';
-		$HTML .= '<link href="css/reports.css" rel="stylesheet" type="text/css" />';
-	}
-
-	$HTML .= '<meta name="author" content="WebERP " . $Version">
-				<meta name="Creator" content="webERP https://www.weberp.org">
-				</head>
-				<body>
-				<div class="centre" id="ReportHeader">
-					' . $_SESSION['CompanyRecord']['coyname'] . '<br />
-					' . __('Top sales items list') . '<br />
-					' . __('Printed') . ': ' . date($_SESSION['DefaultDateFormat']) . '<br />
-					' . __('Location') . ' - ' . $_POST['Location'] . '<br />
-					' . __('Customers') . ' - ' . $_POST['Customers'] . '<br />
-					' . __('Stock Category') . ' - ' . $_POST['StockCat'] . '<br />
-				</div>';
-
-	$HTML .= '<table class="selection">
-				<thead>
-					<tr>
-						<th>' . __('#') . '</th>
-						<th class="SortedColumn">' . __('Code') . '</th>
-						<th class="SortedColumn">' . __('Description') . '</th>
-						<th class="SortedColumn">' . __('Total Invoiced') . '</th>
-						<th class="SortedColumn">' . __('Units') . '</th>
-						<th class="SortedColumn">' . __('Value Sales') . '</th>
-						<th class="SortedColumn">' . __('On Hand') . '</th>
-						<th class="SortedColumn">' . __('On Order') . '</th>
-						<th class="SortedColumn">' . __('Stock (Days)') . '</th>
-					</tr>
-		</thead>
-		<tbody>';
-
-	$i = 1;
-	while ($MyRow = DB_fetch_array($Result)) {
-		$QOH = 0;
-		$QOO = 0;
-		switch ($MyRow['mbflag']) {
-			case 'A':
-			case 'D':
-			case 'K':
-				$QOH = __('N/A');
-				$QOO = __('N/A');
-			break;
-			case 'M':
-			case 'B':
-				// get the QOH for the location user can view.
-				$QOH = GetQuantityOnHand($MyRow['stkcode'], 'USER_CAN_VIEW');
-				// Get the QOO due to Purchase orders for all locations.
-				$QOO = GetQuantityOnOrder($MyRow['stkcode'], 'ALL');
-			break;
-		}
-		if (is_numeric($QOH) and is_numeric($QOO)){
-			$DaysOfStock = ($QOH + $QOO) / ($MyRow['totalinvoiced'] / $_POST['NumberOfDays']);
-		} elseif (is_numeric($QOH)){
-			$DaysOfStock = $QOH/ ($MyRow['totalinvoiced'] / $_POST['NumberOfDays']);
-		} elseif (is_numeric($QOO)){
-			$DaysOfStock = $QOO/ ($MyRow['totalinvoiced'] / $_POST['NumberOfDays']);
-
-		} else {
-			$DaysOfStock = 0;
-		}
-		if ($DaysOfStock < $_POST['MaxDaysOfStock']){
-			$CodeLink = '<a href="' . $RootPath . '/SelectProduct.php?StockID=' . $MyRow['stkcode'] . '">' . $MyRow['stkcode'] . '</a>';
-			$QOH = is_numeric($QOH)?locale_number_format($QOH,$MyRow['decimalplaces']):$QOH;
-			$QOO = is_numeric($QOO)?locale_number_format($QOO,$MyRow['decimalplaces']):$QOO;
-			$HTML .= '<tr class="striped_row">
-						<td class="number">' . $i . '</td>
-						<td>' . $CodeLink . '</td>
-						<td>' . $MyRow['description'] . '</td>
-						<td class="number">' . locale_number_format($MyRow['totalinvoiced'],$MyRow['decimalplaces']) . '</td>
-						<td>' . $MyRow['units'] . '</td>
-						<td class="number">' . locale_number_format($MyRow['valuesales'],$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						<td class="number">' . $QOH . '</td>
-						<td class="number">' . $QOO . '</td>
-						<td class="number">' . locale_number_format($DaysOfStock, 0) . '</td>
-					</tr>';
-		}
-		$i++;
-	}
-
-	if (isset($_POST['PrintPDF'])) {
-		$HTML .= '</tbody>
-				<div class="footer fixed-section">
-					<div class="right">
-						<span class="page-number">Page </span>
-					</div>
-				</div>
-			</table>';
-	} else {
-		$HTML .= '</tbody>
-				</table>
-				<div class="centre">
-					<form><input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" /></form>
-				</div>';
-	}
-	$HTML .= '</body>
-		</html>';
-
-	if (isset($_POST['PrintPDF'])) {
-		$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
-		$DomPDF->loadHtml($HTML);
-
-		// (Optional) Setup the paper size and orientation
-		$DomPDF->setPaper($_SESSION['PageSize'], 'landscape');
-
-		// Render the HTML as PDF
-		$DomPDF->render();
-
-		// Output the generated PDF to Browser
-		$DomPDF->stream($_SESSION['DatabaseName'] . '_TopSalesItems_' . date('Y-m-d') . '.pdf', array(
-			"Attachment" => false
-		));
-	} else {
-		$Title = __('Top Sales Items List');
-		include(__DIR__ . '/includes/header.php');
-		echo '<p class="page_title_text">
-				<img src="' . $RootPath . '/css/' . $Theme . '/images/sales.png" title="' . __('Top Sales Items List') . '" alt="" />' . ' ' . __('Top Sales Items List') . '
-			</p>';
-		echo $HTML;
-		include(__DIR__ . '/includes/footer.php');
-	}
-
-} else {
-	$ViewTopic = 'Sales';
-	$BookMark = '';
-	include(__DIR__ . '/includes/header.php');
-
-	echo '<p class="page_title_text">
-			<img src="' . $RootPath . '/css/' . $Theme . '/images/magnifier.png" title="' . __('Top Sales Order Search') . '" alt="" />' . ' ' . __('Top Sales Order Search') . '
-		</p>';
-	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post" target="_blank">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	echo '<fieldset>
-			<legend>', __('Report Criteria'), '</legend>';
-	//to view store location
-	echo '<field>
-			<label for="Location">' . __('Select Location') . ':  </label>
-			<select name="Location">';
-	$SQL = "SELECT locations.loccode,
-					locationname
-			FROM locations
-			INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1 ORDER BY locations.locationname";
-	$Result = DB_query($SQL);
-	echo '<option value="All">' . __('All') . '</option>';
-	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-	}
-	echo '</select>
-		</field>';
-	//to view list of customer
-	echo '<field>
-			<label for="Customers">' . __('Select Customer Type') . ':</label>
-			<select name="Customers">';
-
-	$SQL = "SELECT typename,
-					typeid
-			FROM debtortype
-			ORDER BY typename";
-	$Result = DB_query($SQL);
-	echo '<option value="All">' . __('All') . '</option>';
-	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<option value="' . $MyRow['typeid'] . '">' . $MyRow['typename'] . '</option>';
-	}
-	echo '</select>
-		</field>';
-
-	// stock category selection
-	$SQL="SELECT categoryid,
-					categorydescription
-			FROM stockcategory
-			ORDER BY categorydescription";
-	$Result1 = DB_query($SQL);
-
-	echo '<field>
-			<label for="StockCat">' . __('In Stock Category') . ' </label>
-			<select name="StockCat">';
-	if (!isset($_POST['StockCat'])){
-		$_POST['StockCat']='All';
-	}
-	if ($_POST['StockCat']=='All'){
-		echo '<option selected="selected" value="All">' . __('All') . '</option>';
-	} else {
-		echo '<option value="All">' . __('All') . '</option>';
-	}
-	while ($MyRow1 = DB_fetch_array($Result1)) {
-		if ($MyRow1['categoryid']==$_POST['StockCat']){
-			echo '<option selected="selected" value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
-		} else {
-			echo '<option value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
-		}
-	}
-    echo '</select>
-        </field>';
-
-	//view order by list to display
-	echo '<field>
-			<label for="Sequence">' . __('Select Order By ') . ':</label>
-			<select name="Sequence">
-				<option value="totalinvoiced">' . __('Total Pieces') . '</option>
-				<option value="valuesales">' . __('Value of Sales') . '</option>
-			</select>
-		</field>';
-
-	//View number of days
-	echo '<field>
-			<label for="NumberOfDays">' . __('Number Of Days') . ':</label>
-			<input class="integer" required="required" pattern="(?!^0*$)(\d+)" title="" tabindex="3" type="text" name="NumberOfDays" size="8" maxlength="8" value="30" />
-			<fieldhelp>'.__('The input must be positive integer').'</fieldhelp>
-		 </field>';
-
-	//Stock in days less than
-	echo '<field>
-			<label for="MaxDaysOfStock">' . __('With less than') . ':</label>
-			<input class="integer" required="required" pattern="(?!^0*$)(\d+)" title="" tabindex="4" type="text" name="MaxDaysOfStock" size="8" maxlength="8" value="99999" />
-			<fieldhelp>'.__('The input must be positive integer').'</fieldhelp>
-			' . ' ' . __('Days of Stock (QOH + QOO) Available') . '
-		 </field>';
-	//view number of NumberOfTopItems items
-	echo '<field>
-			<label for="NumberOfTopItems">' . __('Number Of Top Items') . ':</label>
-			<input class="integer" required="required" pattern="(?!^0*$)(\d+)" title="" tabindex="4" type="text" name="NumberOfTopItems" size="8" maxlength="8" value="100" />
-			<fieldhelp>'.__('The input must be positive integer').'</fieldhelp>
-		 </field>
-	</fieldset>
-	<div class="centre">
-			<input type="submit" name="PrintPDF" title="PDF" value="' . __('Print PDF') . '" />
-			<input type="submit" name="View" title="View" value="' . __('View') . '" />
-		</div>
-	</form>';
-include(__DIR__ . '/includes/footer.php');
+    $SQL .= " GROUP BY salesorderdetails.stkcode
+              ORDER BY `" . $_POST['Sequence'] . "` DESC
+              LIMIT " . (int)$_POST['NumberOfTopItems'];
+    $Result = DB_query($SQL);
 }
+
+// PDF Generation Branch
+if (isset($_POST['PrintPDF'])) {
+    include(__DIR__ . '/includes/SetDomPDFOptions.php');
+    $HTML = '<html><head><link href="css/reports.css" rel="stylesheet" type="text/css" /></head><body>';
+    $HTML .= '<div class="centre" id="ReportHeader">' . $_SESSION['CompanyRecord']['coyname'] . '<br />' . __('Top Sales Items') . '<br />' . __('Lookback Period') . ': ' . $_POST['NumberOfDays'] . ' ' . __('Days') . '</div>';
+    $HTML .= '<table class="db-table"><thead><tr><th>Item</th><th>Qty</th><th>Value</th><th>QOH</th></tr></thead><tbody>';
+    while ($Row = DB_fetch_array($Result)) {
+        $HTML .= '<tr><td>' . $Row['stkcode'] . ' - ' . $Row['description'] . '</td><td class="number">' . locale_number_format($Row['totalinvoiced'], $Row['decimalplaces']) . '</td><td class="number">' . locale_number_format($Row['valuesales'], 2) . '</td><td class="number">' . GetQuantityOnHand($Row['stkcode'], 'USER_CAN_VIEW') . '</td></tr>';
+    }
+    $HTML .= '</tbody></table></body></html>';
+    $DomPDF = new Dompdf($DomPDFOptions);
+    $DomPDF->loadHtml($HTML);
+    $DomPDF->setPaper($_SESSION['PageSize'], 'landscape');
+    $DomPDF->render();
+    $DomPDF->stream($_SESSION['DatabaseName'] . '_TopSalesItems_' . date('Y-m-d') . '.pdf', array("Attachment" => false));
+    exit;
+}
+
+include(__DIR__ . '/includes/header.php');
+
+echo '<div class="db-page">
+        <div class="db-page-header">
+            <div class="db-page-title">
+                <i class="fas fa-chart-line"></i> ' . $Title . '
+            </div>
+        </div>
+
+        <form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
+            <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+            
+            <div class="db-bottom-layout">
+                <!-- Sidebar Parameters Panel -->
+                <aside class="db-col-aside">
+                    <div class="db-card">
+                        <div class="db-card-header">
+                            <div class="db-card-title"><i class="fas fa-filter"></i> ' . __('Velocity Filters') . '</div>
+                        </div>
+                        <div class="db-card-body">
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Lookback (Days)') . '</label>
+                                <input type="number" name="NumberOfDays" class="db-input" value="' . (int)$_POST['NumberOfDays'] . '" min="1" required />
+                                <small class="text-muted">' . __('Examine sales within this period') . '</small>
+                            </div>
+
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Rank By') . '</label>
+                                <select name="Sequence" class="db-select">
+                                    <option ' . ($_POST['Sequence'] == 'valuesales' ? 'selected' : '') . ' value="valuesales">' . __('Value of Sales') . '</option>
+                                    <option ' . ($_POST['Sequence'] == 'totalinvoiced' ? 'selected' : '') . ' value="totalinvoiced">' . __('Quantity (Pieces)') . '</option>
+                                </select>
+                            </div>
+
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Max Stock Buffer (Days)') . '</label>
+                                <input type="number" name="MaxDaysOfStock" class="db-input" value="' . (int)$_POST['MaxDaysOfStock'] . '" min="1" />
+                                <small class="text-muted">' . __('Only show items with buffer less than this') . '</small>
+                            </div>
+
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Category') . '</label>
+                                <select name="StockCat" class="db-select">
+                                    <option value="All">' . __('All Categories') . '</option>';
+                                    $catRes = DB_query("SELECT categoryid, categorydescription FROM stockcategory ORDER BY categorydescription");
+                                    while ($cat = DB_fetch_array($catRes)) {
+                                        $sel = ($_POST['StockCat'] == $cat['categoryid']) ? 'selected' : '';
+                                        echo '<option ' . $sel . ' value="' . $cat['categoryid'] . '">' . $cat['categorydescription'] . '</option>';
+                                    }
+    echo '                      </select>
+                            </div>
+
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Location') . '</label>
+                                <select name="Location" class="db-select">
+                                    <option value="All">' . __('All Locations') . '</option>';
+                                    $locRes = DB_query("SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1 ORDER BY locationname");
+                                    while ($loc = DB_fetch_array($locRes)) {
+                                        $sel = ($_POST['Location'] == $loc['loccode']) ? 'selected' : '';
+                                        echo '<option ' . $sel . ' value="' . $loc['loccode'] . '">' . $loc['locationname'] . '</option>';
+                                    }
+    echo '                      </select>
+                            </div>
+
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Display Limit') . '</label>
+                                <input type="number" name="NumberOfTopItems" class="db-input" value="' . (int)$_POST['NumberOfTopItems'] . '" min="1" max="500" />
+                            </div>
+
+                            <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px;">
+                                <button type="submit" name="View" class="db-btn db-btn-primary" style="justify-content: center;">
+                                    <i class="fas fa-bolt"></i> ' . __('Calculate Velocity') . '
+                                </button>
+                                <button type="submit" name="PrintPDF" class="db-btn db-btn-outline-primary" style="justify-content: center;">
+                                    <i class="fas fa-file-pdf"></i> ' . __('Export PDF') . '
+                                </button>
+                                ' . ($ShowResults ? '<a href="' . htmlspecialchars($_SERVER['PHP_SELF']) . '" class="db-btn db-btn-outline" style="justify-content: center;">' . __('Reset') . '</a>' : '') . '
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Intelligence Content Body -->
+                <main class="db-col-main">';
+
+                    if ($ShowResults) {
+                        $ProbCount = 0; $TotalRevenue = 0; $TotalStockDays = 0; $ItemsWithStockInfo = 0;
+                        $data = [];
+                        
+                        while ($Row = DB_fetch_array($Result)) {
+                            $QOH = 0; $QOO = 0;
+                            if (in_array($Row['mbflag'], ['M', 'B'])) {
+                                $QOH = GetQuantityOnHand($Row['stkcode'], 'USER_CAN_VIEW');
+                                $QOO = GetQuantityOnOrder($Row['stkcode'], 'ALL');
+                            }
+                            
+                            $dailyUsage = $Row['totalinvoiced'] / (float)$_POST['NumberOfDays'];
+                            $daysStock = ($dailyUsage > 0) ? ($QOH + $QOO) / $dailyUsage : 9999;
+                            
+                            if ($daysStock < $_POST['MaxDaysOfStock']) {
+                                $Row['qoh'] = $QOH;
+                                $Row['qoo'] = $QOO;
+                                $Row['days_stock'] = $daysStock;
+                                $TotalRevenue += $Row['valuesales'];
+                                $TotalStockDays += $daysStock;
+                                $ItemsWithStockInfo++;
+                                $ProbCount++;
+                                $data[] = $Row;
+                            }
+                        }
+                        
+                        $avgBuffer = ($ItemsWithStockInfo > 0) ? $TotalStockDays / $ItemsWithStockInfo : 0;
+                        $leadItem = count($data) > 0 ? $data[0]['description'] : 'N/A';
+
+                        echo '<div class="kpi-grid" style="margin-bottom: var(--space-6);">
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--success-soft); color: var(--success);"><i class="fas fa-funnel-dollar"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Top Items Revenue') . '</span><span class="value">' . locale_number_format($TotalRevenue, 0) . '</span></div>
+                                </div>
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--primary-soft); color: var(--primary);"><i class="fas fa-crown"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Peak Velocity Item') . '</span><span class="value" style="font-size: 1.1rem; filter: none;">' . $leadItem . '</span></div>
+                                </div>
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--warning-soft); color: var(--warning);"><i class="fas fa-hourglass-half"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Avg Network Buffer') . '</span><span class="value">' . locale_number_format($avgBuffer, 0) . ' ' . __('Days') . '</span></div>
+                                </div>
+                              </div>';
+
+                        if ($ProbCount > 0) {
+                            echo '<div class="db-card">
+                                    <div class="db-card-header"><div class="db-card-title"><i class="fas fa-medal"></i> ' . __('Inventory Excellence Detections') . '</div></div>
+                                    <div class="db-card-body p-0">
+                                        <div class="db-table-wrapper">
+                                            <table class="db-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 80px;">' . __('Rank') . '</th>
+                                                        <th>' . __('Item Context') . '</th>
+                                                        <th class="text-right">' . __('Qty Invoiced') . '</th>
+                                                        <th class="text-right">' . __('Revenue') . '</th>
+                                                        <th class="text-right">' . __('Buffer (Days)') . '</th>
+                                                        <th class="text-right">' . __('Stock Detail') . '</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>';
+                                                $rank = 1;
+                                                foreach ($data as $Row) {
+                                                    $badge = '';
+                                                    if ($rank == 1) $badge = '<i class="fas fa-medal" style="color: #FFD700; font-size: 1.2rem;"></i>';
+                                                    elseif ($rank == 2) $badge = '<i class="fas fa-medal" style="color: #C0C0C0; font-size: 1.1rem;"></i>';
+                                                    elseif ($rank == 3) $badge = '<i class="fas fa-medal" style="color: #CD7F32; font-size: 1rem;"></i>';
+                                                    else $badge = '<span class="text-muted">#' . $rank . '</span>';
+                                                    
+                                                    $riskClass = ($Row['days_stock'] < 7) ? 'text-danger' : (($Row['days_stock'] < 30) ? 'text-warning' : 'text-success');
+
+                                                    echo '<tr>
+                                                            <td class="text-center">' . $badge . '</td>
+                                                            <td>
+                                                                <a href="' . $RootPath . '/SelectProduct.php?StockID=' . $Row['stkcode'] . '" class="db-font-bold text-primary">' . $Row['stkcode'] . '</a>
+                                                                <div class="db-font-sm text-muted">' . $Row['description'] . '</div>
+                                                            </td>
+                                                            <td class="text-right db-font-semibold">' . locale_number_format($Row['totalinvoiced'], $Row['decimalplaces']) . '</td>
+                                                            <td class="text-right db-font-bold">' . locale_number_format($Row['valuesales'], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
+                                                            <td class="text-right db-font-bold ' . $riskClass . '">' . locale_number_format($Row['days_stock'], 0) . '</td>
+                                                            <td class="text-right">
+                                                                <div class="db-font-sm"><span class="text-muted">' . __('QOH') . ':</span> ' . locale_number_format($Row['qoh'], $Row['decimalplaces']) . '</div>
+                                                                <div class="db-font-sm"><span class="text-muted">' . __('QOO') . ':</span> ' . locale_number_format($Row['qoo'], $Row['decimalplaces']) . '</div>
+                                                            </td>
+                                                          </tr>';
+                                                    $rank++;
+                                                }
+                            echo '              </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                  </div>';
+                        }
+                    } else {
+                        echo '<div class="db-card" style="min-height: 500px; display: flex; align-items: center; justify-content: center; text-align: center; background: var(--surface-alt);">
+                                <div class="db-card-body">
+                                    <i class="fas fa-tachometer-alt" style="font-size: 5rem; color: var(--border-color); margin-bottom: 20px;"></i>
+                                    <h2 class="text-muted">' . __('Velocity Calculation Hub') . '</h2>
+                                    <p>' . __('Analyze item movement by revenue or volume. Define your lookback period and risk thresholds on the left.') . '</p>
+                                </div>
+                              </div>';
+                    }
+
+    echo '      </main>
+            </div>
+        </form>
+    </div>';
+
+include(__DIR__ . '/includes/footer.php');
