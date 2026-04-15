@@ -7,234 +7,204 @@ $ViewTopic = 'Sales';
 $BookMark = '';
 include(__DIR__ . '/includes/header.php');
 
+// Parameter Initialization
+if (!isset($_POST['DateRange'])) { $_POST['DateRange'] = 'ThisMonth'; }
+if (!isset($_POST['OrderBy'])) { $_POST['OrderBy'] = 'NetSales'; }
+if (!isset($_POST['NoToDisplay'])) { $_POST['NoToDisplay'] = 20; }
 if (isset($_POST['FromDate'])){$_POST['FromDate'] = ConvertSQLDate($_POST['FromDate']);}
 if (isset($_POST['ToDate'])){$_POST['ToDate'] = ConvertSQLDate($_POST['ToDate']);}
 
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/transactions.png" title="' . __('Sales Inquiry') . '" alt="" />' . ' ' . __('Top Customer Sales Inquiry') . '</p>';
-echo '<div class="page_help_text">' . __('Select the parameters for the report') . '</div><br />';
-
-if (!isset($_POST['DateRange'])){
-	/* then assume report is for This Month - maybe wrong to do this but hey better than reporting an error?*/
-	$_POST['DateRange']='ThisMonth';
+if ($_POST['DateRange'] == 'Custom' && !isset($_POST['FromDate'])) {
+    $_POST['FromDate'] = date($_SESSION['DefaultDateFormat'], mktime(0,0,0, date('m')-12, date('d'), date('Y')));
+    $_POST['ToDate'] = date($_SESSION['DefaultDateFormat']);
 }
 
-echo '<form id="form1" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">
-	<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-	<fieldset>
-		<legend>' . __('Date Selection') . '</legend>
-		<field>
-		<label for="DateRange">' . __('Custom Range') . ':</label>
-		<input type="radio" name="DateRange" value="Custom" ';
+$ShowResults = isset($_POST['ShowSales']);
 
-if ($_POST['DateRange']=='Custom'){
-	echo 'checked="checked"';
+// Query Calculation Branch
+if ($ShowResults) {
+    switch ($_POST['DateRange']) {
+        case 'ThisWeek':
+            $FromDate = date('Y-m-d', mktime(0,0,0,date('m'),date('d')-date('w')+1,date('Y')));
+            $ToDate = date('Y-m-d');
+            break;
+        case 'ThisMonth':
+            $FromDate = date('Y-m-d', mktime(0,0,0,date('m'),1,date('Y')));
+            $ToDate = date('Y-m-d');
+            break;
+        case 'ThisQuarter':
+            $qStart = match (date('m')) { 1,2,3=>1, 4,5,6=>4, 7,8,9=>7, default=>10 };
+            $FromDate = date('Y-m-d', mktime(0,0,0, $qStart, 1, date('Y')));
+            $ToDate = date('Y-m-d');
+            break;
+        case 'Custom':
+            $FromDate = FormatDateForSQL($_POST['FromDate']);
+            $ToDate = FormatDateForSQL($_POST['ToDate']);
+    }
+
+    $SQL = "SELECT stockmoves.debtorno, debtorsmaster.name,
+                   SUM(CASE WHEN stockmoves.type=10 OR stockmoves.type=11 THEN -qty ELSE 0 END) as salesquantity,
+                   SUM(CASE WHEN stockmoves.type=10 THEN price*(1-discountpercent)* -qty ELSE 0 END) as salesvalue,
+                   SUM(CASE WHEN stockmoves.type=11 THEN price*(1-discountpercent)* (-qty) ELSE 0 END) as returnvalue,
+                   SUM(CASE WHEN stockmoves.type=11 OR stockmoves.type=10 THEN price*(1-discountpercent)* (-qty) ELSE 0 END) as netsalesvalue
+            FROM stockmoves INNER JOIN debtorsmaster ON stockmoves.debtorno=debtorsmaster.debtorno
+            WHERE (stockmoves.type=10 OR stockmoves.type=11) AND show_on_inv_crds = 1
+            AND trandate >= '" . $FromDate . "' AND trandate <= '" . $ToDate . "'
+            GROUP BY stockmoves.debtorno";
+
+    if ($_POST['OrderBy'] == 'NetSales') {
+        $SQL .= " ORDER BY netsalesvalue DESC ";
+    } else {
+        $SQL .= " ORDER BY salesquantity DESC ";
+    }
+    if (is_numeric($_POST['NoToDisplay']) && $_POST['NoToDisplay'] > 0) {
+        $SQL .= " LIMIT " . (int)$_POST['NoToDisplay'];
+    }
+    $SalesResult = DB_query($SQL);
 }
-echo	' onchange="ReloadForm(form1.ShowSales)" />
-		</field>
-	<field>
-		<label for="DateRange">' . __('This Week') . ':</label>
-		<input type="radio" name="DateRange" value="ThisWeek" ';
-if ($_POST['DateRange']=='ThisWeek'){
-	echo 'checked="checked"';
-}
-echo	' onchange="ReloadForm(form1.ShowSales)" />
-		</field>
-	<field>
-		<label for="DateRange">' . __('This Month') . ':</label>
-		<input type="radio" name="DateRange" value="ThisMonth" ';
-if ($_POST['DateRange']=='ThisMonth'){
-	echo 'checked="checked"';
-}
-echo	' onchange="ReloadForm(form1.ShowSales)" />
-		</field>
-	<field>
-		<label for="DateRange">' . __('This Quarter') . ':</label>
-		<input type="radio" name="DateRange" value="ThisQuarter" ';
-if ($_POST['DateRange']=='ThisQuarter'){
-	echo 'checked="checked"';
-}
-echo	' onchange="ReloadForm(form1.ShowSales)" />
-		</field>';
-if ($_POST['DateRange']=='Custom'){
-	if (!isset($_POST['FromDate'])){
-		unset($_POST['ShowSales']);
-		$_POST['FromDate'] = date($_SESSION['DefaultDateFormat'],mktime(1,1,1,date('m')-12,date('d')+1,date('Y')));
-		$_POST['ToDate'] = date($_SESSION['DefaultDateFormat']);
-	}
-	echo '<field>
-			<label for="FromDate">' . __('Date From') . ':</label>
-			<input type="date" name="FromDate" maxlength="10" size="11" value="' . FormatDateForSQL($_POST['FromDate']) . '" />
-		</field>';
-	echo '<field>
-			<label for="ToDate">' . __('Date To') . ':</label>
-			<input type="date" name="ToDate" maxlength="10" size="11" value="' . FormatDateForSQL($_POST['ToDate']) . '" />
-		</field>';
-}
-echo '</fieldset>
-		<fieldset>'; //new sub table to set parameters for order of display
 
+echo '<div class="db-page">
+        <div class="db-page-header">
+            <div class="db-page-title">
+                <i class="fas fa-trophy"></i> ' . $Title . '
+            </div>
+        </div>
 
-if (!isset($_POST['OrderBy'])){ //default to order by net sales
-	$_POST['OrderBy']='NetSales';
-}
-echo '<legend>' . __('Display') . '</legend>
-	<field>
-		<label for="OrderBy">' . __('Order By Net Sales') . ':</label>
-		<input type="radio" name="OrderBy" value="NetSales" ';
-if ($_POST['OrderBy']=='NetSales'){
-	echo 'checked="checked"';
-}
-echo	' />
-		</field>';
+        <form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
+            <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+            
+            <div class="db-bottom-layout">
+                <!-- Sidebar Parameters Panel -->
+                <aside class="db-col-aside">
+                    <div class="db-card">
+                        <div class="db-card-header">
+                            <div class="db-card-title"><i class="fas fa-calendar-alt"></i> ' . __('Search Context') . '</div>
+                        </div>
+                        <div class="db-card-body">
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Time Horizon') . '</label>
+                                <select name="DateRange" class="db-select" onchange="this.form.submit()">
+                                    <option ' . ($_POST['DateRange'] == 'ThisWeek' ? 'selected' : '') . ' value="ThisWeek">' . __('This Week') . '</option>
+                                    <option ' . ($_POST['DateRange'] == 'ThisMonth' ? 'selected' : '') . ' value="ThisMonth">' . __('This Month') . '</option>
+                                    <option ' . ($_POST['DateRange'] == 'ThisQuarter' ? 'selected' : '') . ' value="ThisQuarter">' . __('This Quarter') . '</option>
+                                    <option ' . ($_POST['DateRange'] == 'Custom' ? 'selected' : '') . ' value="Custom">' . __('Custom Range') . '</option>
+                                </select>
+                            </div>';
+                            
+                            if ($_POST['DateRange'] == 'Custom') {
+                                echo '<div class="db-grid-2">
+                                        <div class="db-form-group"><label class="db-label">' . __('From') . '</label><input type="date" name="FromDate" class="db-input" value="' . FormatDateForSQL($_POST['FromDate']) . '" /></div>
+                                        <div class="db-form-group"><label class="db-label">' . __('To') . '</label><input type="date" name="ToDate" class="db-input" value="' . FormatDateForSQL($_POST['ToDate']) . '" /></div>
+                                      </div>';
+                            }
 
-echo '<field>
-		<label for="OrderBy">' . __('Order By Quantity') . ':</label>
-		<input type="radio" name="OrderBy" value="Quantity" ';
-if ($_POST['OrderBy']=='Quantity'){
-	echo 'checked="checked"';
-}
-if (!isset($_POST['NoToDisplay'])){
-	$_POST['NoToDisplay']=20;
-}
-	echo	' />
-				</field>
-				<field>
-					<label for="NoToDisplay">' . __('Number to Display') . ':</label>
-					<input type="text" class="number" name="NoToDisplay" size="4" maxlength="4" value="' . $_POST['NoToDisplay'] .'"  />
-				</field>
-		</field>
-	</fieldset>';
+    echo '                  <div class="db-form-group">
+                                <label class="db-label">' . __('Rank By') . '</label>
+                                <select name="OrderBy" class="db-select">
+                                    <option ' . ($_POST['OrderBy'] == 'NetSales' ? 'selected' : '') . ' value="NetSales">' . __('Net Sales Value') . '</option>
+                                    <option ' . ($_POST['OrderBy'] == 'Quantity' ? 'selected' : '') . ' value="Quantity">' . __('Sales Quantity') . '</option>
+                                </select>
+                            </div>
 
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Volume Limit') . '</label>
+                                <input type="number" name="NoToDisplay" class="db-input" value="' . (int)$_POST['NoToDisplay'] . '" min="1" max="500" />
+                            </div>
 
-echo '<div class="centre"><input tabindex="4" type="submit" name="ShowSales" value="' . __('Show Sales') . '" /></div>';
-echo '</form>';
+                            <div style="margin-top: 30px;">
+                                <button type="submit" name="ShowSales" class="db-btn db-btn-primary" style="width: 100%; justify-content: center;">
+                                    <i class="fas fa-sync"></i> ' . __('Refresh Rankings') . '
+                                </button>
+                                ' . ($ShowResults ? '<a href="' . htmlspecialchars($_SERVER['PHP_SELF']) . '" class="db-btn db-btn-outline" style="width: 100%; justify-content: center; margin-top: 10px;">' . __('Reset') . '</a>' : '') . '
+                            </div>
+                        </div>
+                    </div>
+                </aside>
 
-if (isset($_POST['ShowSales'])){
-	$InputError=0; //assume no input errors now test for errors
-	if ($_POST['DateRange']=='Custom'){
-		if (!Is_Date($_POST['FromDate'])){
-			$InputError = 1;
-			prnMsg(__('The date entered for the from date is not in the appropriate format. Dates must be entered in the format') . ' ' . $_SESSION['DefaultDateFormat'], 'error');
-		}
-		if (!Is_Date($_POST['ToDate'])){
-			$InputError = 1;
-			prnMsg(__('The date entered for the to date is not in the appropriate format. Dates must be entered in the format') . ' ' . $_SESSION['DefaultDateFormat'], 'error');
-		}
-		if (Date1GreaterThanDate2($_POST['FromDate'],$_POST['ToDate'])){
-			$InputError = 1;
-			prnMsg(__('The from date is expected to be a date prior to the to date. Please review the selected date range'),'error');
-		}
-	}
-	switch ($_POST['DateRange']) {
-		case 'ThisWeek':
-			$FromDate = date('Y-m-d',mktime(0,0,0,date('m'),date('d')-date('w')+1,date('Y')));
-			$ToDate = date('Y-m-d');
-			break;
-		case 'ThisMonth':
-			$FromDate = date('Y-m-d',mktime(0,0,0,date('m'),1,date('Y')));
-			$ToDate = date('Y-m-d');
-			break;
-		case 'ThisQuarter':
-			$QuarterStartMonth = match (date('m')) {
-				1, 2, 3 => 1,
-				4, 5, 6 => 4,
-				7, 8, 9 => 7,
-				default => 10,
-			};
-			$FromDate = date('Y-m-d',mktime(0,0,0,$QuarterStartMonth,1,date('Y')));
-			$ToDate = date('Y-m-d');
-			break;
-		case 'Custom':
-			$FromDate = FormatDateForSQL($_POST['FromDate']);
-			$ToDate = FormatDateForSQL($_POST['ToDate']);
-	}
-	$SQL = "SELECT stockmoves.debtorno,
-					debtorsmaster.name,
-					SUM(CASE WHEN stockmoves.type=10
-							OR stockmoves.type=11 THEN
-							 -qty
-							ELSE 0 END) as salesquantity,
-					SUM(CASE WHEN stockmoves.type=10 THEN
-							price*(1-discountpercent)* -qty
-							ELSE 0 END) as salesvalue,
-					SUM(CASE WHEN stockmoves.type=11 THEN
-							price*(1-discountpercent)* (-qty)
-							ELSE 0 END) as returnvalue,
-					SUM(CASE WHEN stockmoves.type=11
-								OR stockmoves.type=10 THEN
-							price*(1-discountpercent)* (-qty)
-							ELSE 0 END) as netsalesvalue,
-					SUM((standardcost * -qty)) as cost
-			FROM stockmoves
-			INNER JOIN debtorsmaster
-			ON stockmoves.debtorno=debtorsmaster.debtorno
-			WHERE (stockmoves.type=10 or stockmoves.type=11)
-			AND show_on_inv_crds =1
-			AND trandate>='" . $FromDate . "'
-			AND trandate<='" . $ToDate . "'
-			GROUP BY stockmoves.debtorno";
+                <!-- Intelligence Content Body -->
+                <main class="db-col-main">';
 
-	if ($_POST['OrderBy']=='NetSales'){
-		$SQL .= " ORDER BY netsalesvalue DESC ";
-	} else {
-		$SQL .= " ORDER BY salesquantity DESC ";
-	}
-	if (is_numeric($_POST['NoToDisplay'])){
-		if ($_POST['NoToDisplay'] > 0){
-			$SQL .= " LIMIT " . $_POST['NoToDisplay'];
-		}
-	}
+                    if ($ShowResults) {
+                        $CumulativeSales = 0; $CumulativeReturns = 0; $CumulativeNet = 0;
+                        $data = [];
+                        while ($Row = DB_fetch_array($SalesResult)) {
+                            $CumulativeSales += $Row['salesvalue'];
+                            $CumulativeReturns += $Row['returnvalue'];
+                            $CumulativeNet += $Row['netsalesvalue'];
+                            $data[] = $Row;
+                        }
+                        $mvp = (count($data) > 0) ? $data[0]['name'] : 'N/A';
 
-	$ErrMsg = __('The sales data could not be retrieved because') . ' - ' . DB_error_msg();
-	$SalesResult = DB_query($SQL, $ErrMsg);
+                        echo '<div class="kpi-grid" style="margin-bottom: var(--space-6);">
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--primary-soft); color: var(--primary);"><i class="fas fa-star"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Portfolio Net') . '</span><span class="value">' . locale_number_format($CumulativeNet, 0) . '</span></div>
+                                </div>
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--danger-soft); color: var(--danger);"><i class="fas fa-undo"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Total Returns') . '</span><span class="value">' . locale_number_format(abs($CumulativeReturns), 0) . '</span></div>
+                                </div>
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--warning-soft); color: var(--warning);"><i class="fas fa-crown"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Current MVP') . '</span><span class="value" style="font-size: 1.1rem; filter: none;">' . $mvp . '</span></div>
+                                </div>
+                              </div>';
 
+                        if (count($data) > 0) {
+                            echo '<div class="db-card">
+                                    <div class="db-card-header"><div class="db-card-title"><i class="fas fa-medal"></i> ' . __('Customer Excellence Registry') . '</div></div>
+                                    <div class="db-card-body p-0">
+                                        <div class="db-table-wrapper">
+                                            <table class="db-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 80px;">' . __('Rank') . '</th>
+                                                        <th>' . __('Customer Detail') . '</th>
+                                                        <th class="text-right">' . __('Value') . '</th>
+                                                        <th class="text-right">' . __('Returns') . '</th>
+                                                        <th class="text-right">' . __('Net Impact') . '</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>';
+                                                $rank = 1;
+                                                foreach ($data as $Row) {
+                                                    $badge = '';
+                                                    if ($rank == 1) $badge = '<i class="fas fa-medal" style="color: #FFD700; font-size: 1.2rem;"></i>';
+                                                    elseif ($rank == 2) $badge = '<i class="fas fa-medal" style="color: #C0C0C0; font-size: 1.1rem;"></i>';
+                                                    elseif ($rank == 3) $badge = '<i class="fas fa-medal" style="color: #CD7F32; font-size: 1rem;"></i>';
+                                                    else $badge = '<span class="text-muted">#' . $rank . '</span>';
 
-	echo '<table cellpadding="2" class="selection">
-			<tr>
-				<th>' . __('Rank') . '</th>
-				<th>' . __('Customer') . '</th>
-				<th>' . __('Sales Value') . '</th>
-				<th>' . __('Refunds') . '</th>
-				<th>' . __('Net Sales') . '</th>
-				<th>' . __('Sales')  . '<br />' . __('Quantity') . '</th>
-			</tr>';
+                                                    echo '<tr>
+                                                            <td class="text-center">' . $badge . '</td>
+                                                            <td>
+                                                                <div class="db-font-bold text-primary">' . $Row['name'] . '</div>
+                                                                <small class="text-muted">' . $Row['debtorno'] . '</small>
+                                                            </td>
+                                                            <td class="text-right">' . locale_number_format($Row['salesvalue'], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
+                                                            <td class="text-right text-danger">' . locale_number_format($Row['returnvalue'], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
+                                                            <td class="text-right db-font-bold">' . locale_number_format($Row['netsalesvalue'], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
+                                                          </tr>';
+                                                    $rank++;
+                                                }
+                            echo '              </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                  </div>';
+                        }
+                    } else {
+                        echo '<div class="db-card" style="min-height: 500px; display: flex; align-items: center; justify-content: center; text-align: center; background: var(--surface-alt);">
+                                <div class="db-card-body">
+                                    <i class="fas fa-users-cog" style="font-size: 5rem; color: var(--border-color); margin-bottom: 20px;"></i>
+                                    <h2 class="text-muted">' . __('Customer Excellence Hub') . '</h2>
+                                    <p>' . __('Analyze customer performance by value or volume. Select your horizon on the left to begin.') . '</p>
+                                </div>
+                              </div>';
+                    }
 
-	$CumulativeTotalSales = 0;
-	$CumulativeTotalRefunds = 0;
-	$CumulativeTotalNetSales = 0;
-	$CumulativeTotalQuantity = 0;
-	$i=1;
+    echo '      </main>
+            </div>
+        </form>
+    </div>';
 
-	while ($SalesRow=DB_fetch_array($SalesResult)) {
-
-		echo '<tr class="striped_row">
-				<td>' . $i . '</td>
-				<td>' . $SalesRow['debtorno'] . ' - ' . $SalesRow['name'] . '</td>
-				<td class="number">' . locale_number_format($SalesRow['salesvalue'],$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-				<td class="number">' . locale_number_format($SalesRow['returnvalue'],$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-				<td class="number">' . locale_number_format($SalesRow['netsalesvalue'],$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-				<td class="number">' . locale_number_format($SalesRow['salesquantity'],'Variable') . '</td>
-			</tr>';
-		$i++;
-
-		$CumulativeTotalSales += $SalesRow['salesvalue'];
-		$CumulativeTotalRefunds += $SalesRow['returnvalue'];
-		$CumulativeTotalNetSales += ($SalesRow['salesvalue']+$SalesRow['returnvalue']);
-		$CumulativeTotalQuantity += $SalesRow['salesquantity'];
-
-	} //loop around category sales for the period
-
-	echo '<tr class="striped_row"><td colspan="8"><hr /></td></tr>';
-	echo '<tr class="striped_row">';
-
-	echo '<td class="number" colspan="2">' . __('GRAND Total') . '</td>
-		<td class="number">' . locale_number_format($CumulativeTotalSales,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		<td class="number">' . locale_number_format($CumulativeTotalRefunds,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		<td class="number">' . locale_number_format($CumulativeTotalNetSales,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		<td class="number">' . locale_number_format($CumulativeTotalQuantity,'Variable') . '</td>
-		</tr>';
-
-	echo '</table>';
-
-} //end of if user hit show sales
 include(__DIR__ . '/includes/footer.php');
