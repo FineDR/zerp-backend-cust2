@@ -55,7 +55,7 @@ $ViewTopic = 'AccountsPayable';
 $BookMark = 'SelectSupplier';
 include(__DIR__ . '/includes/header.php');
 
-echo '<div class="db-page">
+echo '<div class="db-page" style="max-width: 1400px; margin: 0 auto;">
 		<div class="db-page-header">
 			<div>
 				<h1 class="db-page-title">' . $Title . '</h1>

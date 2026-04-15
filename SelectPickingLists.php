@@ -9,14 +9,68 @@ $ViewTopic = 'Sales';
 $BookMark = 'SelectPickingLists';
 include(__DIR__ . '/includes/header.php');
 
-echo '<div class="dashboard-shell-container">
+echo '<div class="dashboard-shell-container" style="max-width: 1400px; margin: 0 auto;">
 		<header class="db-page-header">
 			<div>
 				<h2 class="db-page-title">' . $Title . '</h2>
 				<p class="db-page-subtitle">' . __('Manage and search picking lists across locations') . '</p>
 			</div>
-		</header>
-		<div class="MainBody">';
+			<div class="db-page-actions">
+				<a href="PickingLists.php?New=Yes" class="db-btn db-btn-primary"><i class="fas fa-plus"></i> ' . __('New Request') . '</a>
+			</div>
+		</header>';
+
+        // Premium KPI Metrics Row
+        $sqlPending = "SELECT COUNT(*) FROM pickreq WHERE status='New' AND closed=0";
+        $resPending = DB_query($sqlPending);
+        $rowPending = DB_fetch_row($resPending);
+        $PendingCount = $rowPending[0];
+
+        $sqlItems = "SELECT SUM(quantity) FROM pickreqdetails INNER JOIN pickreq ON pickreq.prid=pickreqdetails.prid WHERE pickreq.status='New' AND pickreq.closed=0";
+        $resItems = DB_query($sqlItems);
+        $rowItems = DB_fetch_row($resItems);
+        $TotalItems = $rowItems[0] ?? 0;
+
+        $sqlOldest = "SELECT MIN(initdate) FROM pickreq WHERE status='New' AND closed=0";
+        $resOldest = DB_query($sqlOldest);
+        $rowOldest = DB_fetch_row($resOldest);
+        $OldestDate = $rowOldest[0];
+        $DelayDays = $OldestDate ? floor((time() - strtotime($OldestDate)) / 86400) : 0;
+
+        echo '<div class="kpi-grid" style="padding: 0 var(--space-6); margin-bottom: var(--space-6);">
+            <div class="kpi-card-v2">
+                <div class="kpi-icon" style="background: var(--warning-soft); color: var(--warning);">
+                    <i class="fas fa-hourglass-start"></i>
+                </div>
+                <div class="kpi-data">
+                    <span class="label">' . __('To Be Picked') . '</span>
+                    <span class="value">' . $PendingCount . '</span>
+                </div>
+            </div>
+            
+            <div class="kpi-card-v2">
+                <div class="kpi-icon" style="background: var(--info-soft); color: var(--info);">
+                    <i class="fas fa-list-ol"></i>
+                </div>
+                <div class="kpi-data">
+                    <span class="label">' . __('Scheduled Units') . '</span>
+                    <span class="value">' . locale_number_format($TotalItems, 0) . '</span>
+                </div>
+            </div>
+
+            <div class="kpi-card-v2">
+                <div class="kpi-icon" style="background: ' . ($DelayDays > 2 ? 'var(--danger-soft)' : 'var(--primary-soft)') . '; color: ' . ($DelayDays > 2 ? 'var(--danger)' : 'var(--primary)') . ';">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="kpi-data">
+                    <span class="label">' . __('Oldest Delay') . '</span>
+                    <span class="value">' . $DelayDays . ' ' . __('Days') . '</span>
+                </div>
+            </div>
+        </div>';
+
+echo '<div class="MainBody" style="display: flex; flex-direction: column; gap: var(--space-6);">';
+
 
 if (isset($_GET['SelectedStockItem'])) {
 	$SelectedStockItem = $_GET['SelectedStockItem'];
@@ -55,14 +109,19 @@ $statuses = [
     'Cancelled' => __('Cancelled')
 ];
 
-echo '<div class="db-tabs-container" style="margin-bottom: var(--space-4);">
-		<div class="db-tabs">';
-foreach ($statuses as $statusValue => $statusLabel) {
-    $activeClass = ($_POST['Status'] == $statusValue) ? 'active' : '';
-    echo '<button type="button" class="db-tab ' . $activeClass . '" onclick="document.getElementById(\'StatusSelector\').value=\'' . $statusValue . '\'; this.form.submit();">' . $statusLabel . '</button>';
-}
-echo '  </div>
-	  </div>';
+echo '<div class="db-card" style="margin: 0 var(--space-6);">
+        <div class="db-card-header">
+            <div class="db-card-title"><i class="fas fa-filter"></i> ' . __('Fulfillment Status') . '</div>
+        </div>
+        <div class="db-card-body">
+            <div class="db-tabs" style="justify-content: flex-start; border-bottom: none;">';
+            foreach ($statuses as $statusValue => $statusLabel) {
+                $activeClass = (($_POST['Status'] ?? 'New') == $statusValue) ? 'active' : '';
+                echo '<button type="submit" name="Status" value="' . $statusValue . '" class="db-tab ' . $activeClass . '">' . $statusLabel . '</button>';
+            }
+echo '      </div>
+        </div>
+      </div>';
 
 echo '<form action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" method="post">
 	<input type="hidden" name="FormID" value="', $_SESSION['FormID'], '" />
@@ -187,125 +246,88 @@ if (isset($_POST['SearchParts'])) {
 	$StockItemsResult = DB_query($SQL, $ErrMsg);
 }
 
-if (true or !isset($OrderNumber) or $OrderNumber == "") { //revisit later, right now always show all inputs
-	echo '<div class="card-v2">
-            <div class="card-header-v2">
-                <h3>' . __('Search Filters') . '</h3>
+echo '<div class="db-card" style="margin: 0 var(--space-6);">
+        <div class="db-card-header">
+            <div class="db-card-title"><i class="fas fa-search"></i> ' . __('Fulfillment Search') . '</div>
+        </div>
+        <div class="db-card-body">
+            <div class="db-grid-3">
+                <div class="db-field">
+                    <label>' . __('Sales Order #') . '</label>
+                    <input type="text" name="OrderNumber" value="' . ($OrderNumber ?? '') . '" placeholder="e.g. 10452" />
+                </div>
+                <div class="db-field">
+                    <label>' . __('Pick List ID') . '</label>
+                    <input type="text" name="PickList" value="' . ($PickList ?? '') . '" placeholder="e.g. 0000045" />
+                </div>
+                <div class="db-field">
+                    <label>' . __('Warehouse') . '</label>
+                    <select name="StockLocation" class="db-select">';
+                    $SQL = "SELECT loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1";
+                    $ResLoc = DB_query($SQL);
+                    while ($LRow = DB_fetch_array($ResLoc)) {
+                        $sel = ($LRow['loccode'] == ($_POST['StockLocation'] ?? $_SESSION['UserStockLocation'])) ? 'selected' : '';
+                        echo '<option ' . $sel . ' value="' . $LRow['loccode'] . '">' . $LRow['locationname'] . '</option>';
+                    }
+echo '              </select>
+                </div>
             </div>
-            <div class="card-body-v2">
-                <div class="db-field-group">';
-	if (isset($SelectedStockItem) and $SelectedStockItem != '') {
-		echo '<div class="db-field" style="grid-column: span 12;">
-                <div class="alert-v2 alert-info">' . __('For the part') . ': <b>' . $SelectedStockItem . '</b> <input type="hidden" name="SelectedStockItem" value="' . $SelectedStockItem . '" /></div>
-              </div>';
-	}
-
-	echo '<div class="db-field">
-            <label>' . __('Sales Order') . '</label>
-            <input name="OrderNumber" autofocus="autofocus" maxlength="8" value="' . $OrderNumber . '" placeholder="' . __('Enter Order #') . '"/>
-          </div>';
-	echo '<div class="db-field">
-            <label>' . __('Pick List') . '</label>
-            <input name="PickList" maxlength="10" value="' . $PickList . '" placeholder="' . __('Enter Pick List #') . '"/>
-          </div>';
-
-	$SQL = "SELECT locations.loccode,
-					locationname
-				FROM locations
-				INNER JOIN locationusers
-					ON locationusers.loccode=locations.loccode
-					AND locationusers.userid='" . $_SESSION['UserID'] . "'
-					AND locationusers.canview=1";
-	$ResultStkLocs = DB_query($SQL);
-	echo '<div class="db-field">
-            <label>' . __('Stock Location') . '</label>
-            <select name="StockLocation">';
-
-	while ($MyRow = DB_fetch_array($ResultStkLocs)) {
-		if (isset($_POST['StockLocation'])) {
-			if ($MyRow['loccode'] == $_POST['StockLocation']) {
-				echo '<option selected="selected" value="', $MyRow['loccode'], '">', $MyRow['locationname'], '</option>';
-			} else {
-				echo '<option value="', $MyRow['loccode'], '">', $MyRow['locationname'], '</option>';
-			}
-		} elseif ($MyRow['loccode'] == $_SESSION['UserStockLocation']) {
-			echo '<option selected="selected" value="', $MyRow['loccode'], '">', $MyRow['locationname'], '</option>';
-		} else {
-			echo '<option value="', $MyRow['loccode'], '">', $MyRow['locationname'], '</option>';
-		}
-	}
-	echo '</select>
-		</div>';
-
-    echo '</div>'; // End db-field-group
-
-    echo '<div class="form-actions" style="margin-top: var(--space-4);">
-            <button type="submit" name="SearchPickLists" class="primary-btn-modern">
-                <i class="fas fa-search"></i> ' . __('Search Pick Lists') . '
-            </button>
-          </div>';
-    echo '</div></div><br />';
-}
+            <div class="db-action-btn-row" style="margin-top: 15px; justify-content: flex-end;">
+                <button type="submit" name="SearchPickLists" class="db-btn db-btn-primary">
+                    <i class="fas fa-search"></i> ' . __('Search Registers') . '
+                </button>
+            </div>
+        </div>
+    </div>';
 $SQL = "SELECT categoryid,
 			categorydescription
 		FROM stockcategory
 		ORDER BY categorydescription";
 $Result1 = DB_query($SQL);
 
-echo '<div class="card-v2">
-        <div class="card-header-v2">
-            <h3>' . __('Search by Stock Item') . '</h3>
+echo '<div class="db-card" style="margin: 0 var(--space-6);">
+        <div class="db-card-header" style="cursor: pointer;" onclick="document.getElementById(\'PartSearchBody\').style.display= (document.getElementById(\'PartSearchBody\').style.display==\'none\'?\'block\':\'none\')">
+            <div class="db-card-title"><i class="fas fa-barcode"></i> ' . __('Search by Stock Item') . ' <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">(' . __('Advanced') . ')</span></div>
         </div>
-        <div class="card-body-v2">
-            <div class="db-field-group">
+        <div id="PartSearchBody" class="db-card-body" style="display: ' . (isset($StockItemsResult)?'block':'none') . ';">
+            <div class="db-grid-3">
                 <div class="db-field">
-                    <label>' . __('Stock Category') . '</label>
-                    <select name="StockCat">';
-
-while ($MyRow1 = DB_fetch_array($Result1)) {
-	if (isset($_POST['StockCat']) and $MyRow1['categoryid'] == $_POST['StockCat']) {
-		echo '<option selected="selected" value="', $MyRow1['categoryid'], '">', $MyRow1['categorydescription'], '</option>';
-	} else {
-		echo '<option value="', $MyRow1['categoryid'], '">', $MyRow1['categorydescription'], '</option>';
-	}
-}
-
+                    <label>' . __('Keywords') . '</label>
+                    <input type="text" name="Keywords" placeholder="e.g. Spare Parts" />
+                </div>
+                <div class="db-field">
+                    <label>' . __('Category') . '</label>
+                    <select name="StockCat" class="db-select">';
+                    $SQL = "SELECT categoryid, categorydescription FROM stockcategory ORDER BY categorydescription";
+                    $ResCat = DB_query($SQL);
+                    while ($CRow = DB_fetch_array($ResCat)) {
+                        echo '<option value="' . $CRow['categoryid'] . '">' . $CRow['categorydescription'] . '</option>';
+                    }
 echo '              </select>
                 </div>
                 <div class="db-field">
-                    <label>' . __('Keywords') . '</label>
-                    <input type="text" name="Keywords" maxlength="25" placeholder="' . __('e.g. Spare Parts') . '" />
+                    <label>' . __('Action') . '</label>
+                    <button type="submit" name="SearchParts" class="db-btn db-btn-outline" style="width: 100%;">
+                        <i class="fas fa-bolt"></i> ' . __('Search Parts') . '
+                    </button>
                 </div>
-                <div class="db-field">
-                    <label>' . __('Stock Code') . '</label>
-                    <input type="text" name="StockCode" maxlength="18" placeholder="' . __('e.g. COMP01') . '" />
-                </div>
-            </div>
-            <div class="form-actions" style="margin-top: var(--space-4);">
-                <button type="submit" name="SearchParts" class="primary-btn-modern">
-                    <i class="fas fa-barcode"></i> ' . __('Search Parts Now') . '
-                </button>
-                <button type="submit" name="ResetPart" class="btn-secondary">
-                    <i class="fas fa-undo"></i> ' . __('Show All') . '
-                </button>
             </div>
         </div>
-    </div><br />';
+    </div>';
 
 if (isset($StockItemsResult)) {
-	echo '<div class="card-v2">
-            <div class="card-header-v2">
-                <h3>' . __('Stock Search Results') . '</h3>
+	echo '<div class="db-card" style="margin: 0 var(--space-6);">
+            <div class="db-card-header">
+                <div class="db-card-title"><i class="fas fa-barcode"></i> ' . __('Parts Found') . '</div>
             </div>
-            <div class="card-body-v2">
-                <div class="activity-table-wrapper">
-                    <table class="activity-table">
+            <div class="db-card-body p-0">
+                <div class="db-table-wrapper">
+                    <table class="db-table">
                         <thead>
                             <tr>
-                                <th>', __('Code'), '</th>
+                                <th>', __('Pick Part'), '</th>
                                 <th>', __('Description'), '</th>
                                 <th>', __('On Hand'), '</th>
-                                <th>', __('Picked'), '</th>
                                 <th>', __('Units'), '</th>
                             </tr>
                         </thead>
@@ -313,20 +335,20 @@ if (isset($StockItemsResult)) {
 
 	while ($MyRow = DB_fetch_array($StockItemsResult)) {
 		echo '<tr>
-				<td><input type="submit" name="SelectedStockItem" class="primary-btn-modern" value="', $MyRow['stockid'], '"</td>
-				<td>', $MyRow['description'], '</td>
-				<td class="number">', locale_number_format($MyRow['qoh'], $MyRow['decimalplaces']), '</td>
-				<td class="number">', locale_number_format($MyRow['qpicked'], $MyRow['decimalplaces']), '</td>
+				<td><button type="submit" name="SelectedStockItem" value="', $MyRow['stockid'], '" class="db-btn db-btn-outline" style="padding: 4px 12px; font-weight: 700;">', $MyRow['stockid'], '</button></td>
+				<td><div class="db-font-bold">', $MyRow['description'], '</div></td>
+				<td>', locale_number_format($MyRow['qoh'], $MyRow['decimalplaces']), '</td>
 				<td>', $MyRow['units'], '</td>
 			</tr>';
-	}//end of while loop
+	}
 
 	echo '      </tbody>
                     </table>
                 </div>
             </div>
-        </div><br />';
-}//end if stock search results to show
+        </div>';
+}
+//end if stock search results to show
 else {
 	//figure out the SQL required from the inputs available
 
@@ -450,83 +472,71 @@ else {
 	$PickReqResult = DB_query($SQL, $ErrMsg);
 
 	if (DB_num_rows($PickReqResult) > 0) {
-		echo '<div class="card-v2">
-                <div class="card-header-v2">
-                    <h3>' . __('Pick List Results') . '</h3>
+	if (DB_num_rows($PickReqResult) > 0) {
+		echo '<div class="db-card" style="margin: 0 var(--space-6);">
+                <div class="db-card-header">
+                    <div class="db-card-title"><i class="fas fa-list-ul"></i> ' . __('Picking List Register') . '</div>
                 </div>
-                <div class="card-body-v2">
-                    <div class="activity-table-wrapper">
-                        <table class="activity-table">
+                <div class="db-card-body p-0">
+                    <div class="db-table-wrapper">
+                        <table class="db-table">
                             <thead>
                                 <tr>
-                                    <th>', __('View/Modify'), '</th>
-                                    <th>', __('Picking List'), '</th>
-                                    <th>', __('Packing List'), '</th>
-                                    <th>', __('Labels'), '</th>
+                                    <th>', __('Pick ID'), '</th>
                                     <th>', __('Order'), '</th>
                                     <th>', __('Customer'), '</th>
                                     <th>', __('Request Date'), '</th>
-                                    <th>', __('Ship Date'), '</th>
                                     <th>', __('Status'), '</th>
+                                    <th class="text-right">', __('Actions'), '</th>
                                 </tr>
                             </thead>
                             <tbody>';
 
-		echo '<tbody>';
-
 		while ($MyRow = DB_fetch_array($PickReqResult)) {
-
 			$ModifyPickList = $RootPath . '/PickingLists.php?Prid=' . $MyRow['prid'];
 			$PrintPickList = $RootPath . '/GeneratePickingList.php?TransNo=' . $MyRow['orderno'];
-
-			if ($_SESSION['PackNoteFormat'] == 1) {
-				/*Laser printed A4 default */
-				$PrintDispatchNote = $RootPath . '/PrintCustOrder_generic.php?TransNo=' . $MyRow['orderno'];
-			} else {
-				/*pre-printed stationery default */
-				$PrintDispatchNote = $RootPath . '/PrintCustOrder.php?TransNo=' . $MyRow['orderno'];
-			}
-
-			if ($MyRow['printedpackingslip'] == 0) {
-				$PrintText = __('Print');
-			} else {
-				$PrintText = __('Reprint');
-				$PrintDispatchNote .= '&Reprint=OK';
-			}
-
+			$PrintDispatchNote = ($_SESSION['PackNoteFormat'] == 1 ? $RootPath . '/PrintCustOrder_generic.php?TransNo=' : $RootPath . '/PrintCustOrder.php?TransNo=') . $MyRow['orderno'] . ($MyRow['printedpackingslip'] == 0 ? '' : '&Reprint=OK');
 			$PrintLabels = $RootPath . '/PDFShipLabel.php?Type=Sales&ORD=' . $MyRow['orderno'];
-			$FormatedRequestDate = ConvertSQLDate($MyRow['requestdate']);
-			$FormatedInitDate = ConvertSQLDate($MyRow['initdate']);
-			$FormatedShipDate = ConvertSQLDate($MyRow['shipdate']);
-			$Confirm_Invoice = '';
-
-			if ($MyRow['status'] == "Shipped") {
-				$Confirm_Invoice = '<td><a href="' . $RootPath . '/ConfirmDispatch_Invoice.php?OrderNumber=' . $MyRow['orderno'] . '">' . __('Invoice Order') . '</a></td>';
-			}
+			
+            $stCfg = [
+                'New' => 'warning',
+                'Picked' => 'info',
+                'Shipped' => 'success',
+                'Cancelled' => 'danger',
+                'Invoiced' => 'primary'
+            ];
+            $color = $stCfg[$MyRow['status']] ?? 'secondary';
 
 			echo '<tr>
-					<td><a href="', $ModifyPickList, '" class="primary-btn-modern" style="padding: 4px 12px; font-size: 0.8rem;">' . str_pad($MyRow['prid'], 10, '0', STR_PAD_LEFT) . '</a></td>
-					<td><a href="', $PrintPickList, '" class="btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;"><i class="fas fa-file-pdf"></i> ' . __('Print') . '</a></td>
-					<td><a target="_blank" href="', $PrintDispatchNote, '" class="btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;"><i class="fas fa-file-pdf"></i> ' . $PrintText . '</a></td>
-					<td><a target="_blank" href="', $PrintLabels . '" class="btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;"><i class="fas fa-tag"></i> ' . __('Labels') . '</a></td>
-					<td><span class="ref-badge">#', $MyRow['orderno'], '</span></td>
-					<td><span class="cust-name">', $MyRow['name'], '</span></td>
-					<td><span class="date-stmp">', $FormatedRequestDate, '</span></td>
-					<td><span class="date-stmp">', $FormatedShipDate, '</span></td>
-					<td><span class="badge-v2 badge-info">', $MyRow['status'], '</span></td>
-					', ($Confirm_Invoice != '' ? '<td><a href="' . $RootPath . '/ConfirmDispatch_Invoice.php?OrderNumber=' . $MyRow['orderno'] . '" class="primary-btn-modern" style="padding: 4px 12px; font-size: 0.8rem;">' . __('Invoice') . '</a></td>' : ''), '
+					<td>
+                        <a href="', $ModifyPickList, '" class="db-btn db-btn-outline" style="padding: 4px 12px; font-weight: 700;">
+                            ' . str_pad($MyRow['prid'], 8, '0', STR_PAD_LEFT) . '
+                        </a>
+                    </td>
+					<td><span class="db-badge db-badge-secondary">#', $MyRow['orderno'], '</span></td>
+					<td><div class="db-font-bold">', $MyRow['name'], '</div></td>
+					<td>', ConvertSQLDate($MyRow['requestdate']), '</td>
+					<td><span class="db-badge db-badge-' . $color . '">', $MyRow['status'], '</span></td>
+					<td class="text-right db-action-btn-row">
+						<a href="', $PrintPickList, '" class="db-btn db-btn-outline-primary" title="' . __('Pick List') . '"><i class="fas fa-file-pdf"></i> ' . __('Pick') . '</a>
+						<a target="_blank" href="', $PrintDispatchNote, '" class="db-btn db-btn-outline-primary" title="' . __('Packing Slip') . '"><i class="fas fa-box-open"></i></a>
+						<a target="_blank" href="', $PrintLabels . '" class="db-btn db-btn-outline-primary" title="' . __('Labels') . '"><i class="fas fa-tag"></i></a>
+					    ' . ($MyRow['status'] == "Shipped" ? '<a href="' . $RootPath . '/ConfirmDispatch_Invoice.php?OrderNumber=' . $MyRow['orderno'] . '" class="db-btn db-btn-outline-success"><i class="fas fa-file-invoice"></i></a>' : '') . '
+                    </td>
 				</tr>';
-		} //end of while loop
-
-		echo '</tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>';
-	} // end if Pick Lists to show
+		}
+		echo '</tbody></table></div></div></div>';
+	} else {
+        echo '<div class="db-card p-10 text-center" style="margin: 0 var(--space-6);">
+                <i class="fas fa-search fa-3x mb-4" style="color: var(--text-muted); opacity: 0.3;"></i>
+                <h3>' . __('No Pick Lists Found') . '</h3>
+                <p>' . __('There are no picking lists matching the selected criteria.') . '</p>
+              </div>';
+    }
 }
-echo '</form>';
-echo '</div></div><!-- .MainBody & .dashboard-shell-container -->';
+}
+echo '</div> <!-- End MainBody vertical stack -->
+      </form>';
 
 if (isset($_POST['Status']) && $_POST['Status'] == 'New') {
 	//office is generating picks. Warehouse needs to see latest "To Do" list so refresh every 5 minutes

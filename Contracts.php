@@ -28,8 +28,72 @@ foreach ($_POST as $FormVariableName=>$FormVariableValue) {
 $ViewTopic = 'Contracts';
 $BookMark = 'CreateContract';
 include(__DIR__ . '/includes/header.php');
-
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
+
+// KPI Metrics Logic
+$sqlOrders = "SELECT COUNT(*) FROM contracts WHERE status=2";
+$resOrders = DB_query($sqlOrders);
+$rowOrders = DB_fetch_row($resOrders);
+$OrderedCount = $rowOrders[0];
+
+$sqlQuotes = "SELECT COUNT(*) FROM contracts WHERE status=1";
+$resQuotes = DB_query($sqlQuotes);
+$rowQuotes = DB_fetch_row($resQuotes);
+$QuoteCount = $rowQuotes[0];
+
+$sqlDrafts = "SELECT COUNT(*) FROM contracts WHERE status=0";
+$resDrafts = DB_query($sqlDrafts);
+$rowDrafts = DB_fetch_row($resDrafts);
+$DraftCount = $rowDrafts[0];
+
+echo '<div class="dashboard-shell-container" style="max-width: 1400px; margin: 0 auto;">
+        <header class="db-page-header">
+            <div>
+                <h2 class="db-page-title">' . $Title . '</h2>
+                <p class="db-page-subtitle">' . __('Manage contract lifecycle from draft to confirmed order') . '</p>
+            </div>
+            <div class="db-page-actions">
+                <a href="' . $RootPath . '/SelectContract.php" class="db-btn db-btn-outline">
+                    <i class="fas fa-list"></i> ' . __('Search Contracts') . '
+                </a>
+                <a href="' . $RootPath . '/Contracts.php?NewContract=Yes" class="db-btn db-btn-primary">
+                    <i class="fas fa-plus"></i> ' . __('New Contract') . '
+                </a>
+            </div>
+        </header>
+
+        <!-- Premium KPI Row -->
+        <div class="kpi-grid" style="padding: 0 var(--space-6); margin-bottom: var(--space-6);">
+            <div class="kpi-card-v2">
+                <div class="kpi-icon" style="background: var(--success-soft); color: var(--success);">
+                    <i class="fas fa-check-double"></i>
+                </div>
+                <div class="kpi-data">
+                    <span class="label">' . __('Ordered Contracts') . '</span>
+                    <span class="value">' . $OrderedCount . '</span>
+                </div>
+            </div>
+            <div class="kpi-card-v2">
+                <div class="kpi-icon" style="background: var(--info-soft); color: var(--info);">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <div class="kpi-data">
+                    <span class="label">' . __('Quotation Pipeline') . '</span>
+                    <span class="value">' . $QuoteCount . '</span>
+                </div>
+            </div>
+            <div class="kpi-card-v2">
+                <div class="kpi-icon" style="background: var(--warning-soft); color: var(--warning);">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <div class="kpi-data">
+                    <span class="label">' . __('Drafts') . '</span>
+                    <span class="value">' . $DraftCount . '</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="MainBody" style="display: flex; flex-direction: column; gap: var(--space-6); padding-bottom: var(--space-10);">';
 
 /*If the page is called is called without an identifier being set then
  * it must be either a new contract, or the start of a modification of an
@@ -111,7 +175,7 @@ if (isset($_SESSION['Contract'.$identifier]) AND
 	}
 } /* end of if going to contract BOM or contract requriements */
 
-echo '<a href="'. $RootPath . '/SelectContract.php">' .  __('Back to Contract Selection'). '</a><br />';
+// Workflow links handled within the header or action cards
 
 $SupportedImgExt = array('png','jpg','jpeg');
 
@@ -747,357 +811,322 @@ if (isset($_POST['SelectedCustomer'])) {
 if (!isset($_SESSION['Contract'.$identifier]->DebtorNo)
 		OR $_SESSION['Contract'.$identifier]->DebtorNo=='' ) {
 
-	echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/contract.png" title="' . __('Contract') . '" alt="" />' . ' ' . __('Contract: Select Customer') . '</p>';
-	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" name="CustomerSelection" method="post">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+    echo '<div class="db-card" style="margin: 0 var(--space-6);">
+            <div class="db-card-header">
+                <div class="db-card-title"><i class="fas fa-user-tag"></i> ' . __('Stage 1: Select Customer') . '</div>
+            </div>
+            <div class="db-card-body">
+                <form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" name="CustomerSelection" method="post">
+                <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+                
+                <div class="db-field-group">
+                    <div class="db-field">
+                        <label>' . __('Customer Branch Name') . '</label>
+                        <input type="text" name="CustKeywords" autofocus="autofocus" placeholder="' . __('Enter keywords...') . '" />
+                    </div>
+                    <div class="db-field">
+                        <label>' . __('Branch Code') . '</label>
+                        <input type="text" name="CustCode" placeholder="' . __('e.g. CUST001') . '" />
+                    </div>
+                    <div class="db-field">
+                        <label>' . __('Branch Phone') . '</label>
+                        <input type="text" name="CustPhone" placeholder="' . __('e.g. 0123456') . '" />
+                    </div>
+                </div>
 
-	echo '<fieldset>
-			<legend class="search">', __('Search Criteria'), '</legend>
-			<field>
-				<label for="CustKeywords">', __('Part of the Customer Branch Name'), ':</label>
-				<input type="search" name="CustKeywords" autofocus="autofocus" maxlength="25" />
-			</field>
-			<field>
-				<label for="CustCode">', '<b>', __('OR'), ' </b>', __('Part of the Customer Branch Code'), ':</label>
-				<input type="search" name="CustCode" maxlength="18" />
-			</field>
-			<field>
-				<label for="CustPhone">', '<b>', __('OR'), ' </b>', __('Part of the Branch Phone Number'), ':</label>
-				<input type="search" name="CustPhone" maxlength="18" />
-			</field>
-		</fieldset>
-		<div class="centre">
-			<input type="submit" name="SearchCustomers" value="', __('Search Now'), '" />
-			<input type="reset" name="reset" value="', __('Reset'), '" />
-		</div>';
+                <div class="db-action-btn-row" style="margin-top: 20px; justify-content: flex-end;">
+                    <button type="submit" name="SearchCustomers" class="db-btn db-btn-primary">
+                        <i class="fas fa-search"></i> ' . __('Search Customers') . '
+                    </button>
+                </div>
+                </form>
+            </div>
+          </div>';
 
 	if (isset($Result_CustSelect)) {
-
-		echo '<br /><table cellpadding="2" class="selection">';
-
-		$TableHeader = '<tr>
-							<th>' . __('Customer') . '</th>
-							<th>' . __('Branch') . '</th>
-							<th>' . __('Contact') . '</th>
-							<th>' . __('Phone') . '</th>
-							<th>' . __('Fax') . '</th>
-						</tr>';
-		echo $TableHeader;
+		echo '<div class="db-card" style="margin: 0 var(--space-6);">
+                <div class="db-card-header">
+                    <div class="db-card-title"><i class="fas fa-users"></i> ' . __('Customer Search Results') . '</div>
+                </div>
+                <div class="db-card-body p-0">
+                    <form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post">
+                    <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+                    <div class="db-table-wrapper">
+                        <table class="db-table">
+                            <thead>
+                                <tr>
+                                    <th>' . __('Customer') . '</th>
+                                    <th>' . __('Select Branch') . '</th>
+                                    <th>' . __('Contact') . '</th>
+                                    <th>' . __('Phone') . '</th>
+                                </tr>
+                            </thead>
+                            <tbody>';
 
 		$j = 1;
-
 		$LastCustomer='';
 		while ($MyRow=DB_fetch_array($Result_CustSelect)) {
-			if ($LastCustomer !=  $MyRow['name']) {
-				echo '<tr class="striped_row"><td>' .  $MyRow['name']  . '</td>';
-			} else {
-				echo '<tr class="striped_row"><td></td>';
-			}
-			echo '<td><input type="submit" name="Submit'.$j.'" value="' . $MyRow['brname'] . '" /></td>
-					<input type="hidden" name="SelectedCustomer'.$j.'" value="'. $MyRow['debtorno'] . '" />
-					<input type="hidden" name="SelectedBranch'.$j.'" value="' . $MyRow['branchcode'] . '" />
-					<td>' . $MyRow['contactname']  . '</td>
+			echo '<tr>
+					<td><div class="db-font-bold text-primary">' . ($LastCustomer != $MyRow['name'] ? $MyRow['name'] : '') . '</div></td>
+					<td>
+                        <button type="submit" name="Submit' . $j . '" class="db-btn db-btn-outline-primary" style="padding: 4px 12px; min-width: 140px;">
+                            ' . $MyRow['brname'] . '
+                        </button>
+                        <input type="hidden" name="SelectedCustomer' . $j . '" value="' . $MyRow['debtorno'] . '" />
+                        <input type="hidden" name="SelectedBranch' . $j . '" value="' . $MyRow['branchcode'] . '" />
+                    </td>
+					<td>' . $MyRow['contactname'] . '</td>
 					<td>' . $MyRow['phoneno'] . '</td>
-					<td>' . $MyRow['faxno'] . '</td>
-					</tr>';
-			$LastCustomer=$MyRow['name'];
+				</tr>';
+			$LastCustomer = $MyRow['name'];
 			$j++;
-//end of page full new headings if
 		}
-//end of while loop
-
-		echo '</table>';
-	}//end if results to show
-
-	echo '</form>';
+		echo '      </tbody>
+                        </table>
+                    </div>
+                    </form>
+                </div>
+              </div>';
+	}
 
 //end if RequireCustomerSelection
-} else { /*A customer is already selected so get into the contract setup proper */
+} else { /* A customer is already selected so show the Contract Header Entry Stage */
 
-	echo '<form name="ContractEntry" enctype="multipart/form-data" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+	$ContractTitle = $_SESSION['ExistingContract'] == 0 ? __('New Contract Entry') : __('Modify Contract') . ': ' . $_SESSION['Contract'.$identifier]->ContractRef;
+    
+    $stCfg = [0 => 'secondary', 1 => 'info', 2 => 'success'];
+    $stLabels = [0 => __('Draft'), 1 => __('Quoted'), 2 => __('Ordered')];
+    $badgeColor = $stCfg[$_SESSION['Contract'.$identifier]->Status] ?? 'secondary';
+    $badgeLabel = $stLabels[$_SESSION['Contract'.$identifier]->Status] ?? __('Unknown');
 
-	echo '<p class="page_title_text">
-			<img src="'.$RootPath.'/css/'.$Theme.'/images/contract.png" title="' . __('Contract') . '" alt="" /> ' . $_SESSION['Contract'.$identifier]->CustomerName;
+    echo '<div class="db-card" style="margin: 0 var(--space-6);">
+            <div class="db-card-header">
+                <div class="db-card-title">
+                    <i class="fas fa-file-signature"></i> ' . $ContractTitle . '
+                    <span class="db-badge db-badge-' . $badgeColor . '" style="margin-left: 10px;">' . $badgeLabel . '</span>
+                </div>
+            </div>
+            <div class="db-card-body">
+                <form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . $identifier . '" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+                
+                <div class="db-grid-2">
+                    <div class="db-section">
+                        <h4 class="db-section-title"><i class="fas fa-info-circle"></i> ' . __('Contract Identity') . '</h4>
+                        
+                        <div class="db-field" style="margin-bottom: 20px;">
+                            <label>' . __('Customer') . '</label>
+                            <div class="db-font-bold text-primary" style="background: var(--surface-alt); padding: 10px; border-radius: var(--radius-sm);">
+                                ' . $_SESSION['Contract'.$identifier]->DebtorNo . ' - ' . $_SESSION['Contract'.$identifier]->CustomerName . '<br/>
+                                <small class="text-muted">' . __('Branch') . ': ' . $_SESSION['Contract'.$identifier]->BranchName . '</small>
+                            </div>
+                        </div>
 
-	if ($_SESSION['CompanyRecord']['currencydefault'] !=  $_SESSION['Contract'.$identifier]->CurrCode){
-		echo ' - ' . __('All amounts stated in') . ' ' . $_SESSION['Contract'.$identifier]->CurrCode . '<br />';
-	}
-	if ($_SESSION['ExistingContract']) {
-		echo  __('Modify Contract') . ': ' . $_SESSION['Contract'.$identifier]->ContractRef;
-	}
-	echo '</p>';
+                        <div class="db-field">
+                            <label>' . __('Contract Reference') . '</label>
+                            <input type="text" name="ContractRef" value="' . $_SESSION['Contract'.$identifier]->ContractRef . '" ' . ($_SESSION['ExistingContract'] == 0 ? 'autofocus' : 'readonly') . ' placeholder="' . __('min 5 chars') . '" />
+                        </div>
+                        <div class="db-field">
+                            <label>' . __('Contract Description') . '</label>
+                            <textarea name="ContractDescription" rows="4" placeholder="' . __('Detailed service/item description...') . '">' . $_SESSION['Contract'.$identifier]->ContractDescription . '</textarea>
+                        </div>
+                    </div>
 
-	$SQL = "SELECT code, description FROM workcentres INNER JOIN locationusers ON locationusers.loccode=workcentres.location AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canupd=1";
-	$WCResults = DB_query($SQL);
+                    <div class="db-section">
+                        <h4 class="db-section-title"><i class="fas fa-cog"></i> ' . __('Operational Details') . '</h4>
+                        <div class="db-field text-right" style="margin-bottom: 10px;">
+                            <a href="' . $RootPath . '/StockCategories.php" target="_blank" class="db-font-sm text-primary"><i class="fas fa-external-link-alt"></i> ' . __('Manage Categories') . '</a>
+                        </div>
+                        <div class="db-field">
+                            <label>' . __('Stock Category') . '</label>
+                            <select name="CategoryID" class="db-select">';
+                            $SQL = "SELECT categoryid, categorydescription FROM stockcategory ORDER BY categorydescription";
+                            $ResCat = DB_query($SQL);
+                            while ($CRow = DB_fetch_array($ResCat)) {
+                                $sel = ($CRow['categoryid'] == ($_SESSION['Contract'.$identifier]->CategoryID ?? '')) ? 'selected' : '';
+                                echo '<option ' . $sel . ' value="' . $CRow['categoryid'] . '">' . $CRow['categorydescription'] . '</option>';
+                            }
+    echo '                  </select>
+                        </div>
+                        <div class="db-field">
+                            <label>' . __('Warehouse (Location)') . '</label>
+                            <select name="LocCode" class="db-select">';
+                            $SQL = "SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canupd=1 ORDER BY locationname";
+                            $ResLoc = DB_query($SQL);
+                            while ($LRow = DB_fetch_array($ResLoc)) {
+                                $sel = ($LRow['loccode'] == ($_SESSION['Contract'.$identifier]->LocCode ?? '')) ? 'selected' : '';
+                                echo '<option ' . $sel . ' value="' . $LRow['loccode'] . '">' . $LRow['locationname'] . '</option>';
+                            }
+    echo '                  </select>
+                        </div>
+                        <div class="db-field">
+                            <label>' . __('Completion Date') . '</label>
+                            <input type="text" name="RequiredDate" class="db-input datepicker" value="' . $_SESSION['Contract'.$identifier]->RequiredDate . '" />
+                        </div>
+                    </div>
+                </div>
 
-	if (DB_num_rows($WCResults)==0){
-		prnMsg( __('There are no work centres set up yet') . '. ' . __('Please use the link below to set up work centres'),'warn');
-		echo '<br /><a href="'.$RootPath.'/WorkCentres.php">' . __('Work Centre Maintenance') . '</a>';
-		include(__DIR__ . '/includes/footer.php');
-		exit();
-	}
+                <div class="db-grid-3" style="margin-top: 20px;">
+                    <div class="db-field">
+                        <label>' . __('Margin (%)') . '</label>
+                        <input type="text" name="Margin" class="number" value="' . locale_number_format($_SESSION['Contract'.$identifier]->Margin, 2) . '" />
+                    </div>
+                    <div class="db-field">
+                        <label>' . __('Customer Reference') . '</label>
+                        <input type="text" name="CustomerRef" value="' . $_SESSION['Contract'.$identifier]->CustomerRef . '" />
+                    </div>
+                    <div class="db-field">
+                        <label>' . ($_SESSION['Contract'.$identifier]->CurrCode ?? 'USD') . ' ' . __('Exchange Rate') . '</label>
+                        <input type="text" name="ExRate" class="number" value="' . locale_number_format($_SESSION['Contract'.$identifier]->ExRate, 'Variable') . '" />
+                    </div>
+                </div>';
 
-	echo '<fieldset>
-			<legend>', __('Contract Header'), '</legend>
-			<field>
-				<label for="ContractRef">', __('Contract Reference'), ':</label>';
-	if ($_SESSION['Contract' . $identifier]->Status == 0) {
-		/*Then the contract has not become an order yet and we can allow changes to the ContractRef */
-		echo '<input type="text" name="ContractRef" size="21" autofocus="autofocus" required="required" maxlength="20" value="', $_SESSION['Contract' . $identifier]->ContractRef, '" />';
-	} else {
-		/*Just show the contract Ref - dont allow modification */
-		echo '<input type="hidden" name="ContractRef" value="', $_SESSION['Contract' . $identifier]->ContractRef, '" />', $_SESSION['Contract' . $identifier]->ContractRef;
-	}
-	echo '</field>';
+                if ($_SESSION['ExistingContract'] != 0) {
+    echo '      <div class="db-field" style="margin-top: 20px;">
+                    <label>' . __('Contract Status') . '</label>
+                    <select name="Status" class="db-select">';
+                    if ($_SESSION['Contract'.$identifier]->Status == 0) {
+                        echo '<option selected value="0">' . __('Draft') . '</option><option value="1">' . __('Quoted') . '</option>';
+                    } elseif ($_SESSION['Contract'.$identifier]->Status == 1) {
+                        echo '<option value="0">' . __('Draft') . '</option><option selected value="1">' . __('Quoted') . '</option><option value="2">' . __('Ordered') . '</option>';
+                    } else {
+                        echo '<option value="1">' . __('Quoted') . '</option><option selected value="2">' . __('Ordered') . '</option>';
+                    }
+    echo '          </select>
+                </div>';
+                }
 
-	echo '<field>
-			<label for="CategoryID">', __('Category'), ':</label>
-			<select name="CategoryID">';
-	$SQL = "SELECT categoryid, categorydescription FROM stockcategory";
-	$ErrMsg = __('The stock categories could not be retrieved because');
-	$Result = DB_query($SQL, $ErrMsg);
-	while ($MyRow = DB_fetch_array($Result)) {
-		if (!isset($_SESSION['Contract' . $identifier]->CategoryID) or $MyRow['categoryid'] == $_SESSION['Contract' . $identifier]->CategoryID) {
-			echo '<option selected="selected" value="', $MyRow['categoryid'], '">', $MyRow['categorydescription'], '</option>';
-		} else {
-			echo '<option value="', $MyRow['categoryid'], '">', $MyRow['categorydescription'], '</option>';
-		}
-	}
-	echo '</select>';
-	echo '&nbsp;<a target="_blank" href="', $RootPath, '/StockCategories.php">', __('Add or Modify Contract Categories'), '</a>
-		</field>';
+    echo '      <div class="db-field" style="margin-top: 20px;">
+                    <label><i class="fas fa-file-upload"></i> ' . __('Drawing/Reference Image') . '</label>
+                    <input type="file" name="Drawing" class="db-input" />
+                    <p class="db-font-sm text-muted" style="margin-top: 5px;">' . __('Leave blank to keep current image.') . '</p>
+                </div>
 
-	$SQL = "SELECT locations.loccode,
-					locationname
-				FROM locations
-				INNER JOIN locationusers
-					ON locationusers.loccode=locations.loccode
-					AND locationusers.userid='" . $_SESSION['UserID'] . "'
-					AND locationusers.canupd=1";
-	$ErrMsg = __('The stock locations could not be retrieved because');
-	$Result = DB_query($SQL, $ErrMsg);
+                <div class="db-action-btn-row" style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 20px; justify-content: flex-end;">
+                    <button type="submit" name="CommitContract" class="db-btn db-btn-primary">
+                        <i class="fas fa-save"></i> ' . ($_SESSION['ExistingContract'] == 0 ? __('Create Contract') : __('Update Header')) . '
+                    </button>
+                    <button type="submit" name="CreateQuotation" class="db-btn db-btn-outline-success">
+                        <i class="fas fa-paper-plane"></i> ' . __('Generate Quotation') . '
+                    </button>
+                    <button type="submit" name="CancelContract" class="db-btn db-btn-outline-danger" onclick="return confirm(\'' . __('Confirm cancellation? This will delete components and requirements.') . '\')">
+                        <i class="fas fa-times-circle"></i> ' . __('Cancel Contract') . '
+                    </button>
+                </div>
+                </form>
+            </div>
+          </div>';
 
-	echo '<field>
-			<label for="LocCode">', __('Location'), ':</label>
-			<select name="LocCode">';
-	while ($MyRow = DB_fetch_array($Result)) {
-		if (!isset($_SESSION['Contract' . $identifier]->LocCode) or $MyRow['loccode'] == $_SESSION['Contract' . $identifier]->LocCode) {
-			echo '<option selected="selected" value="', $MyRow['loccode'], '">', $MyRow['locationname'], '</option>';
-		} else {
-			echo '<option value="', $MyRow['loccode'], '">', $MyRow['locationname'], '</option>';
-		}
-	}
-	echo '</select>
-		</field>';
+    // Summary Section: BOM & Requirements
+    echo '<div class="db-grid-2" style="margin: 0 var(--space-6);">';
+        
+        // BOM Summary
+        echo '<div class="db-card">
+                <div class="db-card-header" style="justify-content: space-between;">
+                    <div class="db-card-title"><i class="fas fa-cubes"></i> ' . __('Stock Items Required') . '</div>
+                    <button type="submit" form="ActionForm" name="EnterContractBOM" class="db-btn db-btn-outline-primary db-btn-sm"><i class="fas fa-edit"></i> ' . __('Edit') . '</button>
+                </div>
+                <div class="db-card-body p-0">
+                    <div class="db-table-wrapper">
+                        <table class="db-table">
+                            <thead>
+                                <tr>
+                                    <th>' . __('Item') . '</th>
+                                    <th class="text-right">' . __('Qty') . '</th>
+                                    <th class="text-right">' . __('Total Cost') . '</th>
+                                </tr>
+                            </thead>
+                            <tbody>';
+                            $ContractBOMCost = 0;
+                            if (count($_SESSION['Contract'.$identifier]->ContractBOM) > 0) {
+                                foreach ($_SESSION['Contract'.$identifier]->ContractBOM as $Component) {
+                                    $cost = $Component->ItemCost * $Component->Quantity;
+                                    echo '<tr>
+                                            <td><div class="db-font-bold text-primary">' . $Component->StockID . '</div><small class="text-muted">' . $Component->ItemDescription . '</small></td>
+                                            <td class="text-right">' . locale_number_format($Component->Quantity, $Component->DecimalPlaces) . '</td>
+                                            <td class="text-right">' . locale_number_format($cost, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
+                                          </tr>';
+                                    $ContractBOMCost += $cost;
+                                }
+                                echo '<tfoot><tr><th colspan="2">' . __('Total Stock Cost') . '</th><th class="text-right">' . locale_number_format($ContractBOMCost, $_SESSION['CompanyRecord']['decimalplaces']) . '</th></tr></tfoot>';
+                            } else {
+                                echo '<tr><td colspan="3" class="text-center p-10 text-muted"><i>' . __('No items entered') . '</i></td></tr>';
+                            }
+        echo '      </tbody>
+                        </table>
+                    </div>
+                </div>
+              </div>';
 
-	$SQL = "SELECT  code,
-					description
-				FROM workcentres
-				INNER JOIN locationusers
-					ON locationusers.loccode=workcentres.location
-					AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canupd=1";
-	$WcResults = DB_query($SQL);
-	if (DB_num_rows($WcResults) == 0) {
-		prnMsg(__('There are no work centres set up yet') . '. ' . __('Please use the link below to set up work centres'), 'warn');
-		echo '<br /><a href="', $RootPath, '/WorkCentres.php">', __('Work Centre Maintenance'), '</a>';
-		include(__DIR__ . '/includes/footer.php');
-		exit();
-	}
-	echo '<field>
-			<label for="DefaultWorkCentre">', __('Default Work Centre'), ': </label>
-			<select name="DefaultWorkCentre">';
+        // Requirements Summary
+        echo '<div class="db-card">
+                <div class="db-card-header" style="justify-content: space-between;">
+                    <div class="db-card-title"><i class="fas fa-tasks"></i> ' . __('Other Requirements') . '</div>
+                    <button type="submit" form="ActionForm" name="EnterContractRequirements" class="db-btn db-btn-outline-primary db-btn-sm"><i class="fas fa-edit"></i> ' . __('Edit') . '</button>
+                </div>
+                <div class="db-card-body p-0">
+                    <div class="db-table-wrapper">
+                        <table class="db-table">
+                            <thead>
+                                <tr>
+                                    <th>' . __('Requirement') . '</th>
+                                    <th class="text-right">' . __('Total Cost') . '</th>
+                                </tr>
+                            </thead>
+                            <tbody>';
+                            $ContractReqtsCost = 0;
+                            if (count($_SESSION['Contract'.$identifier]->ContractReqts) > 0) {
+                                foreach ($_SESSION['Contract'.$identifier]->ContractReqts as $Requirement) {
+                                    $cost = $Requirement->CostPerUnit * $Requirement->Quantity;
+                                    echo '<tr>
+                                            <td><div class="db-font-bold text-primary">' . $Requirement->Requirement . '</div></td>
+                                            <td class="text-right">' . locale_number_format($cost, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
+                                          </tr>';
+                                    $ContractReqtsCost += $cost;
+                                }
+                                echo '<tfoot><tr><th>' . __('Total Other Cost') . '</th><th class="text-right">' . locale_number_format($ContractReqtsCost, $_SESSION['CompanyRecord']['decimalplaces']) . '</th></tr></tfoot>';
+                            } else {
+                                echo '<tr><td colspan="2" class="text-center p-10 text-muted"><i>' . __('No requirements entered') . '</i></td></tr>';
+                            }
+        echo '      </tbody>
+                        </table>
+                    </div>
+                </div>
+              </div>
+          </div>';
 
-	while ($MyRow = DB_fetch_array($WcResults)) {
-		if (isset($_POST['DefaultWorkCentre']) and $MyRow['code'] == $_POST['DefaultWorkCentre']) {
-			echo '<option selected="selected" value="', $MyRow['code'], '">', $MyRow['description'], '</option>';
-		} else {
-			echo '<option value="', $MyRow['code'], '">', $MyRow['description'], '</option>';
-		}
-	} //end while loop
-	echo '</select>
-		</field>';
+    // Summary Banner
+    echo '<div class="db-card" style="margin: 0 var(--space-6); background: var(--surface-alt); border-left: 4px solid var(--primary);">
+            <div class="db-card-body">
+                <div class="db-grid-2">
+                    <div class="text-center">
+                        <div class="text-muted" style="margin-bottom: 5px;">' . __('Total Contract Cost') . '</div>
+                        <h2 class="text-primary">' . locale_number_format(($ContractBOMCost + $ContractReqtsCost), $_SESSION['CompanyRecord']['decimalplaces']) . '</h2>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-muted" style="margin-bottom: 5px;">' . __('Contract Price (Est.)') . '</div>
+                        <h2 class="text-success">' . locale_number_format(($ContractBOMCost + $ContractReqtsCost) / ((100 - $_SESSION['Contract'.$identifier]->Margin) / 100), $_SESSION['CompanyRecord']['decimalplaces']) . '</h2>
+                    </div>
+                </div>
+            </div>
+          </div>';
 
-	echo '<field>
-			<label for="ContractDescription">', __('Contract Description'), ':</label>
-			<textarea name="ContractDescription" required="required" style="rows="8" cols="50">', $_SESSION['Contract' . $identifier]->ContractDescription, '</textarea>
-		</field>';
+    // Invisible action form for the summary cards
+    echo '<form id="ActionForm" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . $identifier . '" method="post">
+            <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+            <input type="hidden" name="ContractRef" value="' . $_SESSION['Contract'.$identifier]->ContractRef . '" />
+            <input type="hidden" name="ContractDescription" value="' . $_SESSION['Contract'.$identifier]->ContractDescription . '" />
+            <input type="hidden" name="CategoryID" value="' . $_SESSION['Contract'.$identifier]->CategoryID . '" />
+            <input type="hidden" name="LocCode" value="' . $_SESSION['Contract'.$identifier]->LocCode . '" />
+            <input type="hidden" name="RequiredDate" value="' . $_SESSION['Contract'.$identifier]->RequiredDate . '" />
+            <input type="hidden" name="Margin" value="' . $_SESSION['Contract'.$identifier]->Margin . '" />
+            <input type="hidden" name="CustomerRef" value="' . $_SESSION['Contract'.$identifier]->CustomerRef . '" />
+            <input type="hidden" name="ExRate" value="' . $_SESSION['Contract'.$identifier]->ExRate . '" />
+          </form>';
 
-	$ImageFileArray = glob($_SESSION['part_pics_dir'] . '/' . $_SESSION['Contract' . $identifier]->ContractRef . '.{' . implode(",", $SupportedImgExt) . '}', GLOB_BRACE);
-	$ImageFile = reset($ImageFileArray);
-	echo '<field>
-			<label for="Drawing">', __('Drawing File'), ' ', implode(", ", $SupportedImgExt), ' ', __('format only'), ':</label>
-			<input type="file" id="Drawing" name="Drawing" value="', $ImageFile, '" />
-		</field>';
+} // End Stage switcher
 
-	if (!isset($_SESSION['Contract' . $identifier]->RequiredDate)) {
-		$_SESSION['Contract' . $identifier]->RequiredDate = DateAdd(date($_SESSION['DefaultDateFormat']), 'm', 1);
-	}
-
-	echo '<field>
-			<label for="RequiredDate">', __('Required Date'), ':</label>
-			<input type="date" name="RequiredDate" size="11" value="', FormatDateForSQL($_SESSION['Contract' . $identifier]->RequiredDate), '" />
-		</field>';
-
-	echo '<field>
-			<label for="CustomerRef">', __('Customer Reference'), ':</label>
-			<input type="text" name="CustomerRef" size="21" maxlength="20" value="', $_SESSION['Contract' . $identifier]->CustomerRef, '" />
-		</field>';
-
-	if (!isset($_SESSION['Contract' . $identifier]->Margin)) {
-		$_SESSION['Contract' . $identifier]->Margin = 50;
-	}
-	echo '<field>
-			<label for="Margin">', __('Gross Profit'), ' %:</label>
-			<input class="number" type="text" name="Margin" size="6" required="required" maxlength="6" value="', locale_number_format($_SESSION['Contract' . $identifier]->Margin, 2), '" />
-		</field>';
-
-	if ($_SESSION['CompanyRecord']['currencydefault'] !=  $_SESSION['Contract' . $identifier]->CurrCode) {
-		echo '<field>
-				<label for="ExRate">', $_SESSION['Contract' . $identifier]->CurrCode, ' ', __('Exchange Rate'), ':</label>
-				<input class="number" type="text" name="ExRate" size="10" required="required" maxlength="10" value="', locale_number_format($_SESSION['Contract' . $identifier]->ExRate, 'Variable'), '" />
-			</field>';
-	} else {
-		echo '<input type="hidden" name="ExRate" value="', locale_number_format($_SESSION['Contract' . $identifier]->ExRate, 'Variable'), '" />';
-	}
-
-	echo '<field>
-			<label for="Status">', __('Contract Status'), ':</label>';
-
-	$StatusText = array();
-	$StatusText[0] = __('Setup');
-	$StatusText[1] = __('Quote');
-	$StatusText[2] = __('Completed');
-	echo '<div class="fieldtext">';
-	if ($_SESSION['Contract' . $identifier]->Status == 0) {
-		echo __('Contract Setup');
-	} elseif ($_SESSION['Contract' . $identifier]->Status == 1) {
-		echo __('Customer Quoted');
-	} elseif ($_SESSION['Contract' . $identifier]->Status == 2) {
-		echo __('Order Placed');
-	}
-	echo '<input type="hidden" name="Status" value="', $_SESSION['Contract' . $identifier]->Status, '" />';
-	echo '</div>
-		</field>';
-
-	if ($_SESSION['Contract' . $identifier]->Status >= 1) {
-		echo '<field>
-				<td>' . __('Quotation Reference/Sales Order No') . ':</td>
-				<td><a href="' . $RootPath . '/SelectSalesOrder.php?OrderNumber=' . urlencode($_SESSION['Contract' . $identifier]->OrderNo) . '&amp;Quotations=Quotes_Only">' . $_SESSION['Contract' . $identifier]->OrderNo . '</a></td>
-			</field>';
-	}
-	if ($_SESSION['Contract' . $identifier]->Status !=  2 and isset($_SESSION['Contract' . $identifier]->WO)) {
-		echo '<field>
-				<td>' . __('Contract Work Order Ref') . ':</td>
-				<td>' . $_SESSION['Contract' . $identifier]->WO . '</td>
-			</field>';
-	}
-	echo '</fieldset>';
-
-
-	echo '<table>
-			<tr>
-				<td>
-					<table class="selection">
-						<tr>
-							<th colspan="6">' . __('Stock Items Required') . '</th>
-						</tr>';
-	$ContractBOMCost = 0;
-	if (count($_SESSION['Contract'.$identifier]->ContractBOM)!= 0){
-		echo '<tr>
-				<th>' . __('Item Code') . '</th>
-				<th>' . __('Item Description') . '</th>
-				<th>' . __('Quantity') . '</th>
-				<th>' . __('Unit') . '</th>
-				<th>' . __('Unit Cost') . '</th>
-				<th>' . __('Total Cost') . '</th>
-			</tr>';
-
-		foreach ($_SESSION['Contract'.$identifier]->ContractBOM as $Component) {
-			echo '<tr>
-					<td>' . $Component->StockID . '</td>
-					<td>' . $Component->ItemDescription . '</td>
-					<td class="number">' . locale_number_format($Component->Quantity, $Component->DecimalPlaces) . '</td>
-					<td>' . $Component->UOM . '</td>
-					<td class="number">' . locale_number_format($Component->ItemCost,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-					<td class="number">' . locale_number_format(($Component->ItemCost * $Component->Quantity),$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-				</tr>';
-			$ContractBOMCost += ($Component->ItemCost *  $Component->Quantity);
-		}
-		echo '<tr>
-				<th colspan="5"><b>' . __('Total stock cost') . '</b></th>
-					<th class="number"><b>' . locale_number_format($ContractBOMCost,$_SESSION['CompanyRecord']['decimalplaces']) . '</b></th>
-				</tr>';
-	} else { //there are no items set up against this contract
-		echo '<tr>
-				<td colspan="6"><i>' . __('None Entered') . '</i></td>
-			</tr>';
-	}
-	echo '</table></td>'; //end of contract BOM table
-	echo '<td valign="top">
-			<table class="selection">
-				<tr>
-					<th colspan="4">' . __('Other Requirements') . '</th>
-				</tr>';
-	$ContractReqtsCost = 0;
-	if (count($_SESSION['Contract'.$identifier]->ContractReqts)!= 0){
-		echo '<tr>
-				<th>' . __('Requirement') . '</th>
-				<th>' . __('Quantity') . '</th>
-				<th>' . __('Unit Cost') . '</th>
-				<th>' . __('Total Cost') . '</th>
-			</tr>';
-		foreach ($_SESSION['Contract'.$identifier]->ContractReqts as $Requirement) {
-			echo '<tr>
-					<td>' . $Requirement->Requirement . '</td>
-					<td class="number">' . locale_number_format($Requirement->Quantity,'Variable') . '</td>
-					<td class="number">' . locale_number_format($Requirement->CostPerUnit,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-					<td class="number">' . locale_number_format(($Requirement->CostPerUnit * $Requirement->Quantity),$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-				</tr>';
-			$ContractReqtsCost += ($Requirement->CostPerUnit * $Requirement->Quantity);
-		}
-		echo '<tr>
-				<th colspan="3"><b>' . __('Total other costs') . '</b></th>
-				<th class="number"><b>' . locale_number_format($ContractReqtsCost,$_SESSION['CompanyRecord']['decimalplaces']) . '</b></th>
-			</tr>';
-	} else { //there are no items set up against this contract
-		echo '<tr>
-				<td colspan="4"><i>' . __('None Entered') . '</i></td>
-			</tr>';
-	}
-	echo '</table></td></tr></table>';
-	echo '<br />';
-	echo'<table class="selection">
-			<tr>
-				<th>' . __('Total Contract Cost') . '</th>
-				<th class="number">' . locale_number_format(($ContractBOMCost+$ContractReqtsCost),$_SESSION['CompanyRecord']['decimalplaces']) . '</th>
-				<th>' . __('Contract Price') . '</th>
-				<th class="number">' . locale_number_format(($ContractBOMCost+$ContractReqtsCost)/((100-$_SESSION['Contract'.$identifier]->Margin)/100),$_SESSION['CompanyRecord']['decimalplaces']) . '</th>
-			</tr>
-		</table>';
-
-	echo'<p></p>';
-	echo '<div class="centre">
-			<input type="submit" name="EnterContractBOM" value="' . __('Enter Items Required') . '" />
-			<input type="submit" name="EnterContractRequirements" value="' . __('Enter Other Requirements') .'" />';
-	if ($_SESSION['Contract'.$identifier]->Status==0) { // not yet quoted
-		echo '<input type="submit" name="CommitContract" value="' . __('Commit Changes') .'" />';
-	} elseif ($_SESSION['Contract'.$identifier]->Status==1) { //quoted but not yet ordered
-		echo '<input type="submit" name="CommitContract" value="' . __('Update Quotation') .'" />';
-	}
-	if ($_SESSION['Contract'.$identifier]->Status==0) { //not yet quoted
-		echo ' <input type="submit" name="CreateQuotation" value="' . __('Create Quotation') .'" />
-			</div>';
-	} else {
-		echo '</div>';
-	}
-	if ($_SESSION['Contract'.$identifier]->Status!= 2) {
-		echo '<div class="centre">
-				 <br />
-				 <input type="reset" name="CancelContract" value="' . __('Cancel and Delete Contract') . '" />
-			  </div>';
-	}
-	echo '</form>';
-} /*end of if customer selected  and entering contract header*/
+echo '</div> <!-- End MainBody vertical stack -->
+    </div> <!-- End dashboard-shell-container -->';
 
 include(__DIR__ . '/includes/footer.php');

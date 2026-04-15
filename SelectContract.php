@@ -7,206 +7,198 @@ $ViewTopic = 'Contracts';
 $BookMark = 'SelectContract';
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme,
-	'/images/contract.png" title="', // Icon image.
-	__('Contracts'), '" /> ', // Icon title.
-	__('Select A Contract'), '</p>';// Page title.
+// KPI Metrics Logic (Global Context)
+$sqlOrders = "SELECT COUNT(*) FROM contracts WHERE status=2";
+$resOrders = DB_query($sqlOrders);
+$rowOrders = DB_fetch_row($resOrders);
+$OrderedCount = $rowOrders[0];
 
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+$sqlQuotes = "SELECT COUNT(*) FROM contracts WHERE status=1";
+$resQuotes = DB_query($sqlQuotes);
+$rowQuotes = DB_fetch_row($resQuotes);
+$QuoteCount = $rowQuotes[0];
 
-echo '<fieldset>
-		<legend class="search">', __('Contract Search'), '</legend>';
+$sqlDrafts = "SELECT COUNT(*) FROM contracts WHERE status=0";
+$resDrafts = DB_query($sqlDrafts);
+$rowDrafts = DB_fetch_row($resDrafts);
+$DraftCount = $rowDrafts[0];
 
-if (isset($_GET['ContractRef'])){
-	$_POST['ContractRef']=$_GET['ContractRef'];
+// Handle Query Parameters
+if (isset($_GET['ContractRef'])) {
+	$_POST['ContractRef'] = $_GET['ContractRef'];
 }
-if (isset($_GET['SelectedCustomer'])){
-	$_POST['SelectedCustomer']=$_GET['SelectedCustomer'];
-}
-
-
-if (isset($_POST['ContractRef']) AND $_POST['ContractRef']!='') {
-	$_POST['ContractRef'] = trim($_POST['ContractRef']);
-	echo __('Contract Reference') . ' - ' . $_POST['ContractRef'];
-} else {
-	if (isset($_POST['SelectedCustomer'])) {
-		echo __('For customer') . ': ' . $_POST['SelectedCustomer'] . ' ' . __('and') . ' ';
-		echo '<input type="hidden" name="SelectedCustomer" value="' . $_POST['SelectedCustomer'] . '" />';
-	}
+if (!isset($_POST['Status'])) {
+	$_POST['Status'] = isset($_GET['Status']) ? $_GET['Status'] : 4;
 }
 
-if (!isset($_POST['ContractRef']) or $_POST['ContractRef']==''){
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div class="db-page-title">
+				<i class="fas fa-file-signature"></i> ' . $Title . '
+			</div>
+			<div class="db-header-actions">
+				<a href="' . $RootPath . '/Contracts.php?NewContract=Yes" class="db-btn db-btn-primary">
+					<i class="fas fa-plus"></i> ' . __('New Contract') . '
+				</a>
+			</div>
+		</div>
 
-	echo '<field>
-			<label for="ContractRef">', __('Contract Reference') . ':</label>
-			<input type="text" name="ContractRef" maxlength="20" size="20" />
-		</field>';
+		<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
+			<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+			
+			<div class="db-bottom-layout">
+				<!-- Sidebar Filters -->
+				<aside class="db-col-aside">
+					<div class="db-card">
+						<div class="db-card-header">
+							<div class="db-card-title"><i class="fas fa-filter"></i> ' . __('Search Options') . '</div>
+						</div>
+						<div class="db-card-body">
+							<div class="db-form-group">
+								<label class="db-label">' . __('Contract Reference') . '</label>
+								<input type="text" name="ContractRef" class="db-input" placeholder="' . __('Search reference...') . '" value="' . (isset($_POST['ContractRef']) ? $_POST['ContractRef'] : '') . '" />
+							</div>
+							
+							<div class="db-form-group">
+								<label class="db-label">' . __('Contract Status') . '</label>
+								<select name="Status" class="db-select">';
+								$Statuses = [
+									0 => __('Not Yet Quoted'),
+									1 => __('Quoted - No Order'),
+									2 => __('Order Placed'),
+									3 => __('Completed'),
+									4 => __('All Contracts')
+								];
+								foreach ($Statuses as $val => $label) {
+									$sel = (isset($_POST['Status']) && $_POST['Status'] == $val) ? 'selected' : '';
+									echo '<option ' . $sel . ' value="' . $val . '">' . $label . '</option>';
+								}
+	echo '						</select>
+							</div>
 
-	echo '<field>
-			<label for="Status">', __('Search Contracts In'), '</label>
-			<select name="Status">';
+							<div style="margin-top: 20px;">
+								<button type="submit" name="SearchContracts" class="db-btn db-btn-primary" style="width: 100%; justify-content: center;">
+									<i class="fas fa-search"></i> ' . __('Apply Filters') . '
+								</button>
+							</div>
+						</div>
+					</div>
 
-	if (isset($_GET['Status'])){
-		$_POST['Status']=$_GET['Status'];
-	}
-	if (!isset($_POST['Status'])){
-		$_POST['Status']=4;
-	}
+					<div class="db-card" style="margin-top: 20px; background: var(--surface-alt);">
+						<div class="db-card-body" style="padding: 15px;">
+							<p class="db-font-sm text-muted">
+								<i class="fas fa-info-circle"></i> ' . __('Select a contract to modify its components, requirements, or generate quotes.') . '
+							</p>
+						</div>
+					</div>
+				</aside>
 
-	$Statuses[] = __('Not Yet Quoted');
-	$Statuses[] = __('Quoted - No Order Placed');
-	$Statuses[] = __('Order Placed');
-	$Statuses[] = __('Completed');
-	$Statuses[] = __('All Contracts');
+				<!-- Main Content Column -->
+				<main class="db-col-main">
+					<!-- KPI Metric Blocks -->
+					<div class="kpi-grid" style="margin-bottom: var(--space-6);">
+						<div class="kpi-card-v2">
+							<div class="kpi-icon" style="background: var(--success-soft); color: var(--success);">
+								<i class="fas fa-check-double"></i>
+							</div>
+							<div class="kpi-data">
+								<span class="label">' . __('Confirmed') . '</span>
+								<span class="value">' . $OrderedCount . '</span>
+							</div>
+						</div>
+						<div class="kpi-card-v2">
+							<div class="kpi-icon" style="background: var(--info-soft); color: var(--info);">
+								<i class="fas fa-file-invoice-dollar"></i>
+							</div>
+							<div class="kpi-data">
+								<span class="label">' . __('In Quote') . '</span>
+								<span class="value">' . $QuoteCount . '</span>
+							</div>
+						</div>
+						<div class="kpi-card-v2">
+							<div class="kpi-icon" style="background: var(--warning-soft); color: var(--warning);">
+								<i class="fas fa-edit"></i>
+							</div>
+							<div class="kpi-data">
+								<span class="label">' . __('Drafts') . '</span>
+								<span class="value">' . $DraftCount . '</span>
+							</div>
+						</div>
+					</div>';
 
-	$StatusCount = count($Statuses);
+					// Construct SQL
+					if (isset($_POST['ContractRef']) AND $_POST['ContractRef'] != '') {
+						$SearchRef = trim($_POST['ContractRef']);
+						$SQL = "SELECT contractref, contractdescription, contracts.debtorno, debtorsmaster.name AS customername, branchcode, status, orderno, wo, requireddate
+								FROM contracts INNER JOIN debtorsmaster ON contracts.debtorno = debtorsmaster.debtorno
+								INNER JOIN locationusers ON locationusers.loccode=contracts.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1
+								WHERE contractref " . LIKE . " '%" . $SearchRef . "%'";
+					} else {
+						$SQL = "SELECT contractref, contractdescription, contracts.debtorno, debtorsmaster.name AS customername, branchcode, status, orderno, wo, requireddate
+								FROM contracts INNER JOIN debtorsmaster ON contracts.debtorno = debtorsmaster.debtorno
+								INNER JOIN locationusers ON locationusers.loccode=contracts.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1";
+						if (isset($_POST['Status']) && $_POST['Status'] != 4) {
+							$SQL .= " AND status='" . $_POST['Status'] . "'";
+						}
+					}
+					$SQL .= " ORDER BY contractref DESC";
 
-	for ( $i = 0; $i < $StatusCount; $i++ ) {
-		if ( $i == $_POST['Status'] ) {
-			echo '<option selected="selected" value="' . $i . '">' . $Statuses[$i] . '</option>';
-		} else {
-			echo '<option value="' . $i . '">' . $Statuses[$i] . '</option>';
-		}
-	}
+					$ContractsResult = DB_query($SQL);
 
-	echo '</select>
-		</field>';
-}
-echo '</fieldset>';
-echo '<div class="centre">
-		<input type="submit" name="SearchContracts" value="' . __('Search') . '" />';
-echo '&nbsp;&nbsp;<a href="' . $RootPath . '/Contracts.php">' . __('New Contract') . '</a></div>';
+					echo '<div class="db-card">
+							<div class="db-card-header" style="justify-content: space-between;">
+								<div class="db-card-title"><i class="fas fa-list-alt"></i> ' . __('Contract Portfolio') . '</div>
+								<span class="db-badge db-badge-info">' . DB_num_rows($ContractsResult) . ' ' . __('Results') . '</span>
+							</div>
+							<div class="db-card-body p-0">
+								<div class="db-table-wrapper">
+									<table class="db-table">
+										<thead>
+											<tr>
+												<th>' . __('Contract Reference') . '</th>
+												<th>' . __('Customer') . '</th>
+												<th>' . __('Status') . '</th>
+												<th>' . __('Required') . '</th>
+												<th class="text-right">' . __('Manage') . '</th>
+											</tr>
+										</thead>
+										<tbody>';
 
+					$stCfg = [0 => 'secondary', 1 => 'info', 2 => 'success', 3 => 'primary'];
+					$stLabels = [0 => __('Draft'), 1 => __('Quoted'), 2 => __('Ordered'), 3 => __('Done')];
 
-//figure out the SQL required from the inputs available
+					while ($MyRow = DB_fetch_array($ContractsResult)) {
+						$color = $stCfg[$MyRow['status']] ?? 'secondary';
+						$label = $stLabels[$MyRow['status']] ?? __('Unknown');
 
-if (isset($_POST['ContractRef']) AND $_POST['ContractRef'] !='') {
-		$SQL = "SELECT contractref,
-					   contractdescription,
-					   categoryid,
-					   contracts.debtorno,
-					   debtorsmaster.name AS customername,
-					   branchcode,
-					   status,
-					   orderno,
-					   wo,
-					   customerref,
-					   requireddate
-				FROM contracts INNER JOIN debtorsmaster
-				ON contracts.debtorno = debtorsmaster.debtorno
-				INNER JOIN locationusers ON locationusers.loccode=contracts.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
-				WHERE contractref " . LIKE . " '%" .  $_POST['ContractRef'] ."%'";
+						echo '<tr>
+								<td>
+									<div class="db-font-bold text-primary">' . $MyRow['contractref'] . '</div>
+									<small class="text-muted">' . $MyRow['contractdescription'] . '</small>
+								</td>
+								<td>
+									<div class="db-font-bold">' . $MyRow['customername'] . '</div>
+									<small class="text-muted">' . $MyRow['branchcode'] . '</small>
+								</td>
+								<td><span class="db-badge db-badge-' . $color . '">' . $label . '</span></td>
+								<td>' . ConvertSQLDate($MyRow['requireddate']) . '</td>
+								<td class="text-right db-action-btn-row">
+									' . ($MyRow['status'] <= 1 ? '<a href="' . $RootPath . '/Contracts.php?ModifyContractRef=' . $MyRow['contractref'] . '" class="db-btn db-btn-outline-primary db-btn-sm" title="' . __('Modify Header') . '"><i class="fas fa-edit"></i></a>' : '') . '
+									' . ($MyRow['status'] >= 1 ? '<a href="' . $RootPath . '/SelectOrderItems.php?ModifyOrderNumber=' . $MyRow['orderno'] . '" class="db-btn db-btn-outline-primary db-btn-sm" title="' . __('View Order') . '"><i class="fas fa-shopping-cart"></i></a>' : '') . '
+									' . ($MyRow['status'] == 2 ? '<a href="' . $RootPath . '/WorkOrderIssue.php?WO=' . $MyRow['wo'] . '&StockID=' . $MyRow['contractref'] . '" class="db-btn db-btn-outline-primary db-btn-sm" title="' . __('Issue Materials') . '"><i class="fas fa-box"></i></a>' : '') . '
+									' . ($MyRow['status'] >= 2 ? '<a href="' . $RootPath . '/ContractCosting.php?SelectedContract=' . $MyRow['contractref'] . '" class="db-btn db-btn-outline-primary db-btn-sm" title="' . __('Full Costing Analysis') . '"><i class="fas fa-chart-line"></i></a>' : '') . '
+								</td>
+							</tr>';
+					}
+					
+	echo '				</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+				</main>
+			</div>
+		</form>
+	</div>';
 
-} else { //contractref not selected
-	if (isset($_POST['SelectedCustomer'])) {
-
-		$SQL = "SELECT contractref,
-					   contractdescription,
-					   categoryid,
-					   contracts.debtorno,
-					   debtorsmaster.name AS customername,
-					   branchcode,
-					   status,
-					   orderno,
-					   wo,
-					   customerref,
-					   requireddate
-				FROM contracts INNER JOIN debtorsmaster
-				ON contracts.debtorno = debtorsmaster.debtorno
-				INNER JOIN locationusers ON locationusers.loccode=contracts.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
-				WHERE debtorno='". $_POST['SelectedCustomer'] ."'";
-		if ($_POST['Status']!=4){
-			$SQL .= " AND status='" . $_POST['Status'] . "'";
-		}
-	} else { //no customer selected
-		$SQL = "SELECT contractref,
-					   contractdescription,
-					   categoryid,
-					   contracts.debtorno,
-					   debtorsmaster.name AS customername,
-					   branchcode,
-					   status,
-					   orderno,
-					   wo,
-					   customerref,
-					   requireddate
-				FROM contracts INNER JOIN debtorsmaster
-				ON contracts.debtorno = debtorsmaster.debtorno
-				INNER JOIN locationusers ON locationusers.loccode=contracts.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1";
-		if ($_POST['Status']!=4){
-			$SQL .= " AND status='" . $_POST['Status'] . "'";
-		}
-	}
-} //end not contract ref selected
-
-$ErrMsg = __('No contracts were returned by the SQL because');
-$ContractsResult = DB_query($SQL, $ErrMsg);
-
-/*show a table of the contracts returned by the SQL */
-
-echo '<table cellpadding="2" width="98%" class="selection">';
-
-$TableHeader = '<tr>
-					<th>' . __('Modify') . '</th>
-					<th>' . __('Order') . '</th>
-					<th>' . __('Issue To WO') . '</th>
-					<th>' . __('Costing') . '</th>
-					<th>' . __('Contract Ref') . '</th>
-					<th>' . __('Description') . '</th>
-					<th>' . __('Customer') . '</th>
-					<th>' . __('Required Date') . '</th>
-				</tr>';
-
-echo $TableHeader;
-
-$j = 1;
-
-while ($MyRow=DB_fetch_array($ContractsResult)) {
-	echo '<tr class="striped_row">';
-
-	$ModifyPage = $RootPath . '/Contracts.php?ModifyContractRef=' . $MyRow['contractref'];
-	$OrderModifyPage = $RootPath . '/SelectOrderItems.php?ModifyOrderNumber=' . $MyRow['orderno'];
-	$IssueToWOPage = $RootPath . '/WorkOrderIssue.php?WO=' . $MyRow['wo'] . '&amp;StockID=' . $MyRow['contractref'];
-	$CostingPage = $RootPath . '/ContractCosting.php?SelectedContract=' . $MyRow['contractref'];
-	$FormatedRequiredDate = ConvertSQLDate($MyRow['requireddate']);
-
-	if ($MyRow['status']==0 OR $MyRow['status']==1){ //still setting up the contract
-		echo '<td><a href="' . $ModifyPage . '">' . __('Modify') . '</a></td>';
-	} else {
-		echo '<td>' . __('n/a') . '</td>';
-	}
-	if ($MyRow['status']==1 OR $MyRow['status']==2){ // quoted or ordered
-		echo '<td><a href="' . $OrderModifyPage . '">' . $MyRow['orderno'] . '</a></td>';
-	} else {
-		echo '<td>' . __('n/a') . '</td>';
-	}
-	if ($MyRow['status']==2){ //the customer has accepted the quote but not completed contract yet
-		echo '<td><a href="' . $IssueToWOPage . '">' . $MyRow['wo'] . '</a></td>';
-	} else {
-		echo '<td>' . __('n/a') . '</td>';
-	}
-	if ($MyRow['status']==2 OR $MyRow['status']==3){
-			echo '<td><a href="' . $CostingPage . '">' . __('View') . '</a></td>';
-		} else {
-			echo '<td>' . __('n/a') . '</td>';
-	}
-	echo '<td>' . $MyRow['contractref'] . '</td>
-		  <td>' . $MyRow['contractdescription'] . '</td>
-		  <td>' . $MyRow['customername'] . '</td>
-		  <td>' . $FormatedRequiredDate . '</td></tr>';
-
-	$j++;
-	if ($j == 12){
-		$j=1;
-		echo $TableHeader;
-	}
-//end of page full new headings if
-}
-//end of while loop
-
-echo '</table>
-      </div>
-      </form>
-      <br />';
 include(__DIR__ . '/includes/footer.php');
