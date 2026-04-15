@@ -2,554 +2,272 @@
 
 require(__DIR__ . '/includes/session.php');
 
-$Title = __('Sales Report');
+$Title = __('Analytical Intelligence Dashboard');
 $ViewTopic = 'Sales';
 $BookMark = '';
+
+// Parameter Initialization
+if (!isset($_POST['DateRange'])) { $_POST['DateRange'] = 'ThisMonth'; }
+if (!isset($_POST['DisplayData'])) { $_POST['DisplayData'] = 'Weekly'; }
+if (isset($_POST['FromDate'])) { $_POST['FromDate'] = ConvertSQLDate($_POST['FromDate']); }
+if (isset($_POST['ToDate'])) { $_POST['ToDate'] = ConvertSQLDate($_POST['ToDate']); }
+
+$ShowResults = (isset($_POST['ShowSales']));
+
+if ($ShowResults || true) { // Always calculate dates for sidebar
+    switch ($_POST['DateRange']) {
+        case 'ThisWeek':
+            $FromDate = date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') - date('w') + 1, date('Y')));
+            $ToDate = date('Y-m-d');
+            break;
+        case 'ThisMonth':
+            $FromDate = date('Y-m-d', mktime(0, 0, 0, date('m'), 1, date('Y')));
+            $ToDate = date('Y-m-d');
+            break;
+        case 'ThisQuarter':
+            $qStart = match (date('m')) { 1, 2, 3 => 1, 4, 5, 6 => 4, 7, 8, 9 => 7, default => 10 };
+            $FromDate = date('Y-m-d', mktime(0, 0, 0, $qStart, 1, date('Y')));
+            $ToDate = date('Y-m-d');
+            break;
+        case 'Custom':
+            $FromDate = isset($_POST['FromDate']) ? FormatDateForSQL($_POST['FromDate']) : date('Y-m-d', mktime(0,0,0, date('m')-1, date('d'), date('Y')));
+            $ToDate = isset($_POST['ToDate']) ? FormatDateForSQL($_POST['ToDate']) : date('Y-m-d');
+            break;
+    }
+}
+
 include(__DIR__ . '/includes/header.php');
 
-if (isset($_POST['FromDate'])){$_POST['FromDate'] = ConvertSQLDate($_POST['FromDate']);}
-if (isset($_POST['ToDate'])){$_POST['ToDate'] = ConvertSQLDate($_POST['ToDate']);}
+echo '<div class="db-page">
+        <div class="db-page-header">
+            <div class="db-page-title">
+                <i class="fas fa-chart-area"></i> ' . $Title . '
+            </div>
+            <div class="db-page-subtitle">' . __('Comparative segment analysis and time-based revenue auditing') . '</div>
+        </div>
 
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/transactions.png" title="' . __('Sales Report') . '" alt="" />' . ' ' . __('Sales Report') . '</p>';
-echo '<div class="page_help_text">' . __('Select the parameters for the report') . '</div><br />';
+        <form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" id="AuditForm">
+            <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+            
+            <div class="db-bottom-layout">
+                <!-- Sidebar Discovery Panel -->
+                <aside class="db-col-aside">
+                    <div class="db-card" style="margin-bottom: var(--space-4);">
+                        <div class="db-card-header"><div class="db-card-title"><i class="fas fa-layer-group"></i> ' . __('Comparative Horizon') . '</div></div>
+                        <div class="db-card-body">
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Time Segment') . '</label>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">';
+                                    $ranges = ['ThisWeek' => __('This Week'), 'ThisMonth' => __('This Month'), 'ThisQuarter' => __('This Quarter'), 'Custom' => __('Custom Period')];
+                                    foreach ($ranges as $val => $lbl) {
+                                        echo '<label class="db-label-sm" style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px; border: 1px solid var(--border-color); border-radius: var(--radius-md); transition: var(--transition-base);">
+                                                <input type="radio" name="DateRange" value="' . $val . '" ' . (($_POST['DateRange'] == $val) ? 'checked' : '') . ' onchange="this.form.submit()" />
+                                                <span>' . $lbl . '</span>
+                                              </label>';
+                                    }
+    echo '                      </div>
+                            </div>';
+                            
+                            if ($_POST['DateRange'] == 'Custom') {
+                                echo '<div class="db-form-group">
+                                        <label class="db-label">' . __('Period From') . '</label>
+                                        <input type="date" name="FromDate" class="db-input" value="' . $FromDate . '" />
+                                      </div>
+                                      <div class="db-form-group">
+                                        <label class="db-label">' . __('Period To') . '</label>
+                                        <input type="date" name="ToDate" class="db-input" value="' . $ToDate . '" />
+                                      </div>';
+                            }
+    echo '              </div>
+                    </div>
 
-if (!isset($_POST['DisplayData'])){
-	/* then assume to display daily - maybe wrong to do this but hey better than reporting an error?*/
-	$_POST['DisplayData']='Weekly';
-}
-if (!isset($_POST['DateRange'])){
-	/* then assume report is for This Month - maybe wrong to do this but hey better than reporting an error?*/
-	$_POST['DateRange']='ThisMonth';
-}
+                    <div class="db-card">
+                        <div class="db-card-header"><div class="db-card-title"><i class="fas fa-microchip"></i> ' . __('Resolution Architecture') . '</div></div>
+                        <div class="db-card-body">
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Analytical Resolution') . '</label>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">';
+                                    $resolutions = ['Daily' => __('Daily Resolution'), 'Weekly' => __('Weekly Resolution'), 'Monthly' => __('Monthly Resolution'), 'Quarterly' => __('Quarterly Resolution')];
+                                    foreach ($resolutions as $val => $lbl) {
+                                        echo '<label class="db-label-sm" style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                                                <input type="radio" name="DisplayData" value="' . $val . '" ' . (($_POST['DisplayData'] == $val) ? 'checked' : '') . ' onchange="this.form.submit()" />
+                                                <span>' . $lbl . '</span>
+                                              </label>';
+                                    }
+    echo '                      </div>
+                            </div>
+                            
+                            <div style="margin-top: 30px;">
+                                <button type="submit" name="ShowSales" class="db-btn db-btn-primary" style="width: 100%; justify-content: center;">
+                                    <i class="fas fa-search-plus"></i> ' . __('Audit Segments') . '
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
 
-echo '<form id="Form1" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+                <!-- Intelligence Content Body -->
+                <main class="db-col-main">';
 
-echo '<fieldset>';
+                    if ($ShowResults) {
+                        // Master SQL Construction
+                        $groupFields = match($_POST['DisplayData']) {
+                            'Daily' => "debtortrans.trandate as period_key",
+                            'Weekly' => "CONCAT('Wk-', WEEKOFYEAR(debtortrans.trandate), ' ', YEAR(debtortrans.trandate)) as period_key",
+                            'Monthly' => "CONCAT(MONTHNAME(debtortrans.trandate), ' ', YEAR(debtortrans.trandate)) as period_key",
+                            'Quarterly' => "CONCAT('Qtr-', QUARTER(debtortrans.trandate), ' ', YEAR(debtortrans.trandate)) as period_key",
+                        };
+                        $orderFields = match($_POST['DisplayData']) {
+                            'Daily' => "debtortrans.trandate",
+                            'Weekly' => "YEAR(debtortrans.trandate), WEEKOFYEAR(debtortrans.trandate)",
+                            'Monthly' => "YEAR(debtortrans.trandate), MONTH(debtortrans.trandate)",
+                            'Quarterly' => "YEAR(debtortrans.trandate), QUARTER(debtortrans.trandate)",
+                        };
 
-echo '<legend>' . __('Date Selection') . '</legend>';
+                        $SQL = "SELECT " . $groupFields . ", debtortrans.tpe,
+                                       SUM(CASE WHEN stockmoves.type=10 THEN price*(1-discountpercent)* -qty ELSE 0 END) as salesvalue,
+                                       SUM(CASE WHEN stockmoves.type=10 THEN 1 ELSE 0 END) as nooforders,
+                                       SUM(CASE WHEN stockmoves.type=11 THEN price*(1-discountpercent)* (-qty) ELSE 0 END) as returnvalue,
+                                       SUM((standardcost * -qty)) as cost
+                                FROM stockmoves
+                                INNER JOIN custbranch ON stockmoves.debtorno=custbranch.debtorno AND stockmoves.branchcode=custbranch.branchcode
+                                INNER JOIN debtortrans ON stockmoves.type=debtortrans.type AND stockmoves.transno=debtortrans.transno
+                                WHERE (stockmoves.type=10 or stockmoves.type=11) AND show_on_inv_crds =1
+                                AND debtortrans.trandate>='" . $FromDate . "' AND debtortrans.trandate<='" . $ToDate . "'";
 
-echo '<field>
-		<label for="DateRange">' . __('Custom Range') . ':</label>
-		<input type="radio" name="DateRange" value="Custom" ';
-if ($_POST['DateRange']=='Custom'){
-	echo 'checked="checked"';
-}
-echo	' onchange="ReloadForm(Form1.ShowSales)"/>
-		</field>';
+                        if ($_SESSION['SalesmanLogin'] != '') { $SQL .= " AND debtortrans.salesperson='" . $_SESSION['SalesmanLogin'] . "'"; }
+                        $SQL .= " GROUP BY period_key, tpe ORDER BY " . $orderFields . ", tpe";
 
-echo '<field>
-		<label for="DateRange">' . __('This Week') . ':</label>
-		<input type="radio" name="DateRange" value="ThisWeek" ';
-if ($_POST['DateRange']=='ThisWeek'){
-	echo 'checked="checked"';
-}
-echo	' onchange="ReloadForm(Form1.ShowSales)" />
-		</field>';
+                        $SalesResult = DB_query($SQL);
 
-echo '<field>
-		<label for="DateRange">' . __('This Month') . ':</label>
-		<input type="radio" name="DateRange" value="ThisMonth" ';
-if ($_POST['DateRange']=='ThisMonth'){
-	echo 'checked="checked"';
-}
-echo ' onchange="ReloadForm(Form1.ShowSales)" />
-		</field>';
+                        $data = []; $cumSales = 0; $cumRefunds = 0; $cumCost = 0; $cumOrders = 0;
+                        while ($r = DB_fetch_array($SalesResult)) {
+                            $data[] = $r;
+                            $cumSales += $r['salesvalue'];
+                            $cumRefunds += $r['returnvalue'];
+                            $cumCost += $r['cost'];
+                            $cumOrders += $r['nooforders'];
+                        }
+                        $cumNet = $cumSales + $cumRefunds;
+                        $cumGP = ($cumNet != 0) ? ($cumNet - $cumCost) * 100 / $cumNet : 0;
 
-echo '<field>
-		<label for="ThisQuarter">' . __('This Quarter') . ':</label>
-		<input type="radio" name="DateRange" value="ThisQuarter" ';
-if ($_POST['DateRange']=='ThisQuarter'){
-	echo 'checked="checked"';
-}
-echo ' onchange="ReloadForm(Form1.ShowSales)" />
-	</field>';
+                        echo '<div class="kpi-grid" style="margin-bottom: var(--space-6);">
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--primary-soft); color: var(--primary);"><i class="fas fa-shopping-cart"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Gross Portfolio Sales') . '</span><span class="value">' . locale_number_format($cumSales, 0) . '</span></div>
+                                </div>
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--info-soft); color: var(--info);"><i class="fas fa-file-invoice-dollar"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Net Realized Revenue') . '</span><span class="value">' . locale_number_format($cumNet, 0) . '</span></div>
+                                </div>
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--success-soft); color: var(--success);"><i class="fas fa-percentage"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Weighted GP %') . '</span><span class="value">' . locale_number_format($cumGP, 1) . '%</span></div>
+                                </div>
+                              </div>';
 
-if ($_POST['DateRange']=='Custom'){
-	if (!isset($_POST['ToDate'])){
-		$_POST['FromDate'] = date($_SESSION['DefaultDateFormat'],mktime(1,1,1,date('m')-12,date('d')+1,date('Y')));
-		$_POST['ToDate'] = date($_SESSION['DefaultDateFormat']);
-	}
-	echo '<field>
-			<label for="FromDate">' . __('Date From') . ':</label>
-			<input type="date" name="FromDate" maxlength="10" size="11" value="' . FormatDateForSQL($_POST['FromDate']) . '" />
-		</field>';
-	echo '<field>
-			<label for="ToDate">' . __('Date To') . ':</label>
-			<input type="date" name="ToDate" maxlength="10" size="11" value="' . FormatDateForSQL($_POST['ToDate']) . '" />
-		</field>';
-}
-echo '</fieldset>';
+                        if (count($data) > 0) {
+                            echo '<div class="db-card">
+                                    <div class="db-card-header"><div class="db-card-title"><i class="fas fa-table"></i> ' . __('Period Performance Registry') . '</div></div>
+                                    <div class="db-card-body p-0">
+                                        <div class="db-table-wrapper">
+                                            <table class="db-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>' . __('Period Identity') . '</th>
+                                                        <th>' . __('Sales Segment') . '</th>
+                                                        <th class="text-right">' . __('Orders') . '</th>
+                                                        <th class="text-right">' . __('Sales Vol.') . '</th>
+                                                        <th class="text-right">' . __('Refunds') . '</th>
+                                                        <th class="text-right text-primary">' . __('Net Realized') . '</th>
+                                                        <th class="text-right">' . __('GP %') . '</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>';
+                                                
+                                                $lastPeriod = ''; 
+                                                $pOrders = 0; $pSales = 0; $pRefunds = 0; $pNet = 0; $pCost = 0;
+                                                
+                                                foreach ($data as $idx => $r) {
+                                                    $pKey = ($_POST['DisplayData'] == 'Daily') ? ConvertSQLDate($r['period_key']) : $r['period_key'];
+                                                    
+                                                    if ($pKey != $lastPeriod && $lastPeriod != '') {
+                                                        // Period Footer
+                                                        $pGP = ($pNet != 0) ? ($pNet - $pCost) * 100 / $pNet : 0;
+                                                        echo '<tr style="background: var(--surface-alt); font-weight: 700; border-bottom: 2px solid var(--border-color);">
+                                                                <td colspan="2" class="text-right">' . __('Total') . ' ' . $lastPeriod . '</td>
+                                                                <td class="text-right">' . $pOrders . '</td>
+                                                                <td class="text-right">' . locale_number_format($pSales, 0) . '</td>
+                                                                <td class="text-right">' . locale_number_format($pRefunds, 0) . '</td>
+                                                                <td class="text-right text-primary">' . locale_number_format($pNet, 0) . '</td>
+                                                                <td class="text-right">' . locale_number_format($pGP, 1) . '%</td>
+                                                              </tr>';
+                                                        $pOrders = 0; $pSales = 0; $pRefunds = 0; $pNet = 0; $pCost = 0;
+                                                    }
+                                                    
+                                                    if ($pKey != $lastPeriod) {
+                                                        echo '<tr style="background: rgba(0,0,0,0.02);"><td colspan="7" class="db-font-bold text-muted" style="padding: 12px 20px;">' . $pKey . '</td></tr>';
+                                                        $lastPeriod = $pKey;
+                                                    }
 
-echo '<fieldset>
-		<legend>' . __('Display Data') . '</legend>';
+                                                    $net = $r['salesvalue'] + $r['returnvalue'];
+                                                    $gp = ($net != 0) ? ($net - $r['cost']) * 100 / $net : 0;
+                                                    $gpSev = ($gp < 20) ? 'danger' : (($gp < 35) ? 'warning' : 'success');
 
-echo '<field>
-		<label for="DisplayData">' . __('Daily') . ':</label>
-		<input type="radio" name="DisplayData" value="Daily" ';
-if ($_POST['DisplayData']=='Daily'){
-	echo 'checked="checked"';
-}
-echo ' onchange="ReloadForm(Form1.ShowSales)" />
-		</field>';
+                                                    echo '<tr>
+                                                            <td></td>
+                                                            <td><span class="db-badge db-badge-outline">' . $r['tpe'] . '</span></td>
+                                                            <td class="text-right">' . $r['nooforders'] . '</td>
+                                                            <td class="text-right">' . locale_number_format($r['salesvalue'], 0) . '</td>
+                                                            <td class="text-right">' . locale_number_format($r['returnvalue'], 0) . '</td>
+                                                            <td class="text-right text-primary db-font-semibold">' . locale_number_format($net, 0) . '</td>
+                                                            <td class="text-right"><span class="db-badge db-badge-' . gpSev . '" style="min-width: 60px; justify-content: center;">' . locale_number_format($gp, 1) . '%</span></td>
+                                                          </tr>';
+                                                    
+                                                    $pOrders += $r['nooforders']; $pSales += $r['salesvalue']; $pRefunds += $r['returnvalue']; $pNet += $net; $pCost += $r['cost'];
+                                                    
+                                                    // Final Footer for last period
+                                                    if ($idx == count($data) - 1) {
+                                                        $pGP = ($pNet != 0) ? ($pNet - $pCost) * 100 / $pNet : 0;
+                                                        echo '<tr style="background: var(--surface-alt); font-weight: 700; border-bottom: 1px solid var(--border-color);">
+                                                                <td colspan="2" class="text-right">' . __('Total') . ' ' . $lastPeriod . '</td>
+                                                                <td class="text-right">' . $pOrders . '</td>
+                                                                <td class="text-right">' . locale_number_format($pSales, 0) . '</td>
+                                                                <td class="text-right">' . locale_number_format($pRefunds, 0) . '</td>
+                                                                <td class="text-right text-primary">' . locale_number_format($pNet, 0) . '</td>
+                                                                <td class="text-right">' . locale_number_format($pGP, 1) . '%</td>
+                                                              </tr>';
+                                                    }
+                                                }
+                            echo '              </tbody>
+                                                <tfoot>
+                                                    <tr style="background: var(--primary-soft); font-size: 1.1rem; font-weight: 800;">
+                                                        <td colspan="2" class="text-right">' . __('GRAND TOTAL PORTFOLIO') . '</td>
+                                                        <td class="text-right">' . $cumOrders . '</td>
+                                                        <td class="text-right">' . locale_number_format($cumSales, 0) . '</td>
+                                                        <td class="text-right">' . locale_number_format($cumRefunds, 0) . '</td>
+                                                        <td class="text-right text-primary">' . locale_number_format($cumNet, 0) . '</td>
+                                                        <td class="text-right">' . locale_number_format($cumGP, 1) . '%</td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+                                  </div>';
+                        }
+                    } else {
+                        echo '<div class="db-card" style="min-height: 500px; display: flex; align-items: center; justify-content: center; text-align: center; background: var(--surface-alt);">
+                                <div class="db-card-body">
+                                    <i class="fas fa-chart-line" style="font-size: 5rem; color: var(--border-color); margin-bottom: 25px;"></i>
+                                    <h2 class="text-muted">' . __('Analytical Intelligence Hub') . '</h2>
+                                    <p>' . __('Audit segment performance, revenue recognition, and time-based margin patterns. Define your analytical horizon on the left.') . '</p>
+                                </div>
+                              </div>';
+                    }
 
-echo '<field>
-		<label for="DisplayData">' . __('Weekly') . ':</label>
-		<input type="radio" name="DisplayData" value="Weekly" ';
-if ($_POST['DisplayData']=='Weekly'){
-	echo 'checked="checked"';
-}
-echo ' onchange="ReloadForm(Form1.ShowSales)" />
-	</field>';
+    echo '      </main>
+            </div>
+        </form>
+    </div>';
 
-echo '<field>
-		<label for="DisplayData">' . __('Monthly') . ':</label>
-		<input type="radio" name="DisplayData" value="Monthly" ';
-if ($_POST['DisplayData']=='Monthly'){
-	echo 'checked="checked"';
-}
-echo ' onchange="ReloadForm(Form1.ShowSales)" />
-	</field>';
-
-echo '<field>
-		<label for="DisplayData">' . __('Quarterly') . ':</label>
-		<input type="radio" name="DisplayData" value="Quarterly" ';
-if ($_POST['DisplayData']=='Quarterly'){
-	echo 'checked="checked"';
-}
-echo	' onchange="ReloadForm(Form1.ShowSales)" />
-		</field>';
-echo '</fieldset>';
-
-echo '<div class="centre">
-		<input tabindex="4" type="submit" name="ShowSales" value="' . __('Show Sales') . '" />
-	</div>
-</form>';
-
-if ($_POST['DateRange']=='Custom' AND !isset($_POST['FromDate']) AND !isset($_POST['ToDate'])){
-	//Don't run the report until custom dates entered
-	unset($_POST['ShowSales']);
-}
-
-if (isset($_POST['ShowSales'])){
-	$InputError=0; //assume no input errors now test for errors
-	if ($_POST['DateRange']=='Custom'){
-		if (!Is_Date($_POST['FromDate'])){
-			$InputError = 1;
-			prnMsg(__('The date entered for the from date is not in the appropriate format. Dates must be entered in the format') . ' ' . $_SESSION['DefaultDateFormat'], 'error');
-		}
-		if (!Is_Date($_POST['ToDate'])){
-			$InputError = 1;
-			prnMsg(__('The date entered for the to date is not in the appropriate format. Dates must be entered in the format') . ' ' . $_SESSION['DefaultDateFormat'], 'error');
-		}
-		if (Date1GreaterThanDate2($_POST['FromDate'],$_POST['ToDate'])){
-			$InputError = 1;
-			prnMsg(__('The from date is expected to be a date prior to the to date. Please review the selected date range'),'error');
-		}
-	}
-	switch ($_POST['DateRange']) {
-		case 'ThisWeek':
-			$FromDate = date('Y-m-d',mktime(0,0,0,date('m'),date('d')-date('w')+1,date('Y')));
-			$ToDate = date('Y-m-d');
-			break;
-		case 'ThisMonth':
-			$FromDate = date('Y-m-d',mktime(0,0,0,date('m'),1,date('Y')));
-			$ToDate = date('Y-m-d');
-			break;
-		case 'ThisQuarter':
-			$QuarterStartMonth = match (date('m')) {
-				1, 2, 3 => 1,
-				4, 5, 6 => 4,
-				7, 8, 9 => 7,
-				default => 10,
-			};
-			$FromDate = date('Y-m-d',mktime(0,0,0,$QuarterStartMonth,1,date('Y')));
-			$ToDate = date('Y-m-d');
-			break;
-		case 'Custom':
-			$FromDate = FormatDateForSQL($_POST['FromDate']);
-			$ToDate = FormatDateForSQL($_POST['ToDate']);
-	}
-	switch ($_POST['DisplayData']) {
-		case 'Daily':
-			$SQL = "SELECT debtortrans.trandate,
-							debtortrans.tpe,
-						SUM(CASE WHEN stockmoves.type=10 THEN
-							price*(1-discountpercent)* -qty
-							ELSE 0 END)
-						 as salesvalue,
-						 SUM(CASE WHEN stockmoves.type=10 THEN
-							1 ELSE 0 END)
-						 as nooforders,
-						 SUM(CASE WHEN stockmoves.type=11 THEN
-							price*(1-discountpercent)* (-qty)
-							ELSE 0 END)
-						 as returnvalue,
-						SUM((standardcost * -qty)) as cost
-					FROM stockmoves
-					INNER JOIN custbranch
-					ON stockmoves.debtorno=custbranch.debtorno
-					AND stockmoves.branchcode=custbranch.branchcode
-					INNER JOIN debtortrans
-					ON stockmoves.type=debtortrans.type
-					AND stockmoves.transno=debtortrans.transno
-					WHERE (stockmoves.type=10 or stockmoves.type=11)
-					AND show_on_inv_crds =1
-					AND debtortrans.trandate>='" . $FromDate . "'
-					AND debtortrans.trandate<='" . $ToDate . "'";
-
-			if ($_SESSION['SalesmanLogin'] != '') {
-				$SQL .= " AND debtortrans.salesperson='" . $_SESSION['SalesmanLogin'] . "'";
-			}
-
-			$SQL .= " GROUP BY debtortrans.trandate,
-							tpe
-					ORDER BY debtortrans.trandate,
-							tpe";
-
-			break;
-		case 'Weekly':
-			$SQL = "SELECT WEEKOFYEAR(debtortrans.trandate) as week_no,
-							YEAR(debtortrans.trandate) as transyear,
-							debtortrans.tpe,
-						SUM(CASE WHEN stockmoves.type=10 THEN
-							price*(1-discountpercent)* -qty
-							ELSE 0 END)
-						 as salesvalue,
-						 SUM(CASE WHEN stockmoves.type=10 THEN
-							1 ELSE 0 END)
-						 as nooforders,
-						 SUM(CASE WHEN stockmoves.type=11 THEN
-							price*(1-discountpercent)* (-qty)
-							ELSE 0 END)
-						as returnvalue,
-						SUM((standardcost * -qty)) as cost
-					FROM stockmoves
-					INNER JOIN custbranch
-					ON stockmoves.debtorno=custbranch.debtorno
-					AND stockmoves.branchcode=custbranch.branchcode
-					INNER JOIN debtortrans
-					ON stockmoves.type=debtortrans.type
-					AND stockmoves.transno=debtortrans.transno
-					WHERE (stockmoves.type=10 or stockmoves.type=11)
-					AND show_on_inv_crds =1
-					AND debtortrans.trandate>='" . $FromDate . "'
-					AND debtortrans.trandate<='" . $ToDate . "'";
-
-			if ($_SESSION['SalesmanLogin'] != '') {
-				$SQL .= " AND debtortrans.salesperson='" . $_SESSION['SalesmanLogin'] . "'";
-			}
-
-			$SQL .= " GROUP BY week_no,
-							transyear,
-							tpe
-					ORDER BY transyear,
-							week_no,
-							tpe";
-
-			break;
-		case 'Monthly':
-			$SQL = "SELECT MONTH(debtortrans.trandate) as month_no,
-							MONTHNAME(debtortrans.trandate) as month_name,
-							YEAR(debtortrans.trandate) as transyear,
-							debtortrans.tpe,
-						SUM(CASE WHEN stockmoves.type=10 THEN
-							price*(1-discountpercent)* -qty
-							ELSE 0 END)
-						 as salesvalue,
-						 SUM(CASE WHEN stockmoves.type=10 THEN
-							1 ELSE 0 END)
-						 as nooforders,
-						 SUM(CASE WHEN stockmoves.type=11 THEN
-							price*(1-discountpercent)* (-qty)
-							ELSE 0 END)
-						as returnvalue,
-						SUM((standardcost * -qty)) as cost
-					FROM stockmoves
-					INNER JOIN custbranch
-					ON stockmoves.debtorno=custbranch.debtorno
-					AND stockmoves.branchcode=custbranch.branchcode
-					INNER JOIN debtortrans
-					ON stockmoves.type=debtortrans.type
-					AND stockmoves.transno=debtortrans.transno
-					WHERE (stockmoves.type=10 or stockmoves.type=11)
-					AND show_on_inv_crds =1
-					AND debtortrans.trandate>='" . $FromDate . "'
-					AND debtortrans.trandate<='" . $ToDate . "'";
-
-			if ($_SESSION['SalesmanLogin'] != '') {
-				$SQL .= " AND debtortrans.salesperson='" . $_SESSION['SalesmanLogin'] . "'";
-			}
-
-			$SQL .= " GROUP BY month_no,
-							month_name,
-							transyear,
-							debtortrans.tpe
-					ORDER BY transyear,
-							month_no,
-							tpe";
-
-			break;
-		case 'Quarterly':
-			$SQL = "SELECT QUARTER(debtortrans.trandate) as quarter_no,
-							YEAR(debtortrans.trandate) as transyear,
-							debtortrans.tpe,
-						SUM(CASE WHEN stockmoves.type=10 THEN
-							price*(1-discountpercent)* -qty
-							ELSE 0 END)
-						 as salesvalue,
-						 SUM(CASE WHEN stockmoves.type=10 THEN
-							1 ELSE 0 END)
-						 as nooforders,
-						 SUM(CASE WHEN stockmoves.type=11 THEN
-							price*(1-discountpercent)* (-qty)
-							ELSE 0 END)
-						as returnvalue,
-						SUM((standardcost * -qty)) as cost
-					FROM stockmoves
-					INNER JOIN custbranch
-					ON stockmoves.debtorno=custbranch.debtorno
-					AND stockmoves.branchcode=custbranch.branchcode
-					INNER JOIN debtortrans
-					ON stockmoves.type=debtortrans.type
-					AND stockmoves.transno=debtortrans.transno
-					WHERE (stockmoves.type=10 or stockmoves.type=11)
-					AND show_on_inv_crds =1
-					AND debtortrans.trandate>='" . $FromDate . "'
-					AND debtortrans.trandate<='" . $ToDate . "'";
-
-			if ($_SESSION['SalesmanLogin'] != '') {
-				$SQL .= " AND debtortrans.salesperson='" . $_SESSION['SalesmanLogin'] . "'";
-			}
-
-			$SQL .= " GROUP BY quarter_no,
-							transyear,
-							tpe
-					ORDER BY transyear,
-							quarter_no,
-							tpe";
-
-			break;
-		}
-
-	$ErrMsg = __('The sales data could not be retrieved because') . ' - ' . DB_error_msg();
-	$SalesResult = DB_query($SQL, $ErrMsg);
-
-
-	echo '<table cellpadding="2" class="selection">';
-
-	echo'<tr>
-		<th>' . __('Period') . '</th>
-		<th>' . __('Sales') . '<br />' . __('Type') . '</th>
-		<th>' . __('No Orders') . '</th>
-		<th>' . __('Total Sales') . '</th>
-		<th>' . __('Refunds') . '</th>
-		<th>' . __('Net Sales') . '</th>
-		<th>' . __('Cost of Sales') . '</th>
-		<th>' . __('Gross Profit') . '</th>
-		</tr>';
-
-	$CumulativeTotalSales = 0;
-	$CumulativeTotalOrders = 0;
-	$CumulativeTotalRefunds = 0;
-	$CumulativeTotalNetSales = 0;
-	$CumulativeTotalCost = 0;
-	$CumulativeTotalGP = 0;
-
-	$PrdTotalOrders =0;
-	$PrdTotalSales=0;
-	$PrdTotalRefunds=0;
-	$PrdTotalNetSales=0;
-	$PrdTotalCost=0;
-	$PrdTotalGP=0;
-
-	$PeriodHeadingDone = false;
-	$LastPeriodHeading = 'First Run Through';
-
-	while ($SalesRow=DB_fetch_array($SalesResult)) {
-		echo '<tr class="striped_row">';
-
-		switch ($_POST['DisplayData']){
-			case 'Daily':
-				if ($LastPeriodHeading != ConvertSQLDate($SalesRow['trandate'])) {
-					$PeriodHeadingDone=false;
-					if ($LastPeriodHeading != 'First Run Through'){ //print the footer for the period
-						echo '<td colspan="2" class="number">' . __('Total') . '-' . $LastPeriodHeading . '</td>
-							<td class="number">' . $PrdTotalOrders . '</td>
-							<td class="number">' . locale_number_format($PrdTotalSales,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalRefunds,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalNetSales,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalCost,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalGP,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-
-						echo '<tr class="striped_row"><td colspan="8"><hr /></td></tr>';
-						echo '<tr class="striped_row">';
-
-						$PrdTotalOrders =0;
-						$PrdTotalSales=0;
-						$PrdTotalRefunds=0;
-						$PrdTotalNetSales=0;
-						$PrdTotalCost=0;
-						$PrdTotalGP=0;
-					}
-				}
-				if (! $PeriodHeadingDone){
-					echo '<td>' . ConvertSQLDate($SalesRow['trandate']) . '</td>';
-					$LastPeriodHeading = ConvertSQLDate($SalesRow['trandate']);
-					$PeriodHeadingDone = true;
-				} else {
-					echo '<td></td>';
-				}
-				break;
-			case 'Weekly':
-				if ($LastPeriodHeading != __('wk'). '-' . $SalesRow['week_no'] . ' ' . $SalesRow['transyear']) {
-					$PeriodHeadingDone=false;
-					if ($LastPeriodHeading != 'First Run Through'){
-						echo '<td colspan="2" class="number">' . __('Total') . '-' . $LastPeriodHeading . '</td>
-							<td class="number">' . $PrdTotalOrders . '</td>
-							<td class="number">' . locale_number_format($PrdTotalSales,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalRefunds,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalNetSales,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalCost,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalGP,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-
-						echo '<tr class="striped_row"><td colspan="8"><hr /></td></tr>';
-						echo '<tr class="striped_row">';
-
-						$PrdTotalOrders =0;
-						$PrdTotalSales=0;
-						$PrdTotalRefunds=0;
-						$PrdTotalNetSales=0;
-						$PrdTotalCost=0;
-						$PrdTotalGP=0;
-					}
-				}
-				if (! $PeriodHeadingDone){
-					echo '<td>' . __('wk'). '-' . $SalesRow['week_no'] . ' ' . $SalesRow['transyear'] . '</td>';
-					$LastPeriodHeading = __('wk'). '-' . $SalesRow['week_no'] . ' ' . $SalesRow['transyear'];
-					$PeriodHeadingDone = true;
-				} else {
-					echo '<td></td>';
-				}
-				break;
-			case 'Monthly':
-				if ($LastPeriodHeading != $SalesRow['month_name'] . ' ' . $SalesRow['transyear']) {
-					$PeriodHeadingDone=false;
-					if ($LastPeriodHeading != 'First Run Through'){
-						echo '<td colspan="2" class="number">' . __('Total') . '-' . $LastPeriodHeading . '</td>
-							<td class="number">' . $PrdTotalOrders . '</td>
-							<td class="number">' . locale_number_format($PrdTotalSales,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalRefunds,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalNetSales,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalCost,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalGP,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-
-						echo '<tr class="striped_row"><td colspan="8"><hr /></td></tr>';
-						echo '<tr class="striped_row">';
-
-						$PrdTotalOrders =0;
-						$PrdTotalSales=0;
-						$PrdTotalRefunds=0;
-						$PrdTotalNetSales=0;
-						$PrdTotalCost=0;
-						$PrdTotalGP=0;
-					}
-				}
-				if (! $PeriodHeadingDone){
-					echo '<td>' . $SalesRow['month_name'] . ' ' . $SalesRow['transyear'] . '</td>';
-					$LastPeriodHeading = $SalesRow['month_name'] . ' ' . $SalesRow['transyear'];
-					$PeriodHeadingDone = true;
-				} else {
-					echo '<td></td>';
-				}
-				break;
-			case 'Quarterly':
-				if ($LastPeriodHeading != __('Qtr'). '-' . $SalesRow['quarter_no'] . ' ' . $SalesRow['transyear']) {
-					$PeriodHeadingDone=false;
-					if ($LastPeriodHeading != 'First Run Through'){
-						echo '<td colspan="2" class="number">' . __('Total') . '-'. $LastPeriodHeading . '</td>
-							<td class="number">' . $PrdTotalOrders . '</td>
-							<td class="number">' . locale_number_format($PrdTotalSales,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalRefunds,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalNetSales,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalCost,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td class="number">' . locale_number_format($PrdTotalGP,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-
-						echo '<tr class="striped_row"><td colspan="8"><hr /></td></tr>';
-						echo '<tr class="striped_row">';
-
-						$PrdTotalOrders =0;
-						$PrdTotalSales=0;
-						$PrdTotalRefunds=0;
-						$PrdTotalNetSales=0;
-						$PrdTotalCost=0;
-						$PrdTotalGP=0;
-					}
-				}
-				if (! $PeriodHeadingDone){
-					echo '<td>' . __('Qtr'). '-' . $SalesRow['quarter_no'] . ' ' . $SalesRow['transyear'] . '</td>';
-					$LastPeriodHeading = __('Qtr'). '-' . $SalesRow['quarter_no'] . ' ' . $SalesRow['transyear'];
-					$PeriodHeadingDone = true;
-				} else {
-					echo '<td></td>';
-				}
-				break;
-		} // end switch
-
-		// This apparently completes the "double-row" that appears within each
-		// case. The last portion of each case does a PeriodHeadingDone check.
-		// The output from the PeriodHeadingDone area is the first column to go
-		// with these below to make 8 columns.
-		echo '<td>' . $SalesRow['tpe'] . '</td>
-				<td class="number">' . $SalesRow['nooforders'] . '</td>
-				<td class="number">' . locale_number_format($SalesRow['salesvalue'],$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-				<td class="number">' . locale_number_format($SalesRow['returnvalue'],$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-				<td class="number">' . locale_number_format($SalesRow['salesvalue']+$SalesRow['returnvalue'],$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-				<td class="number">' . locale_number_format($SalesRow['cost'],$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-				<td class="number">' . locale_number_format(($SalesRow['salesvalue']+$SalesRow['returnvalue']-$SalesRow['cost']),$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-			</tr>';
-		$PrdTotalOrders +=$SalesRow['nooforders'];
-		$PrdTotalSales += $SalesRow['salesvalue'];
-		$PrdTotalRefunds += $SalesRow['returnvalue'];
-		$PrdTotalNetSales += ($SalesRow['salesvalue']+$SalesRow['returnvalue']);
-		$PrdTotalCost += $SalesRow['cost'];
-		$PrdTotalGP += ($SalesRow['salesvalue']+$SalesRow['returnvalue']-$SalesRow['cost']);
-
-		$CumulativeTotalSales += $SalesRow['salesvalue'];
-		$CumulativeTotalOrders += $SalesRow['nooforders'];
-		$CumulativeTotalRefunds += $SalesRow['returnvalue'];
-		$CumulativeTotalNetSales += ($SalesRow['salesvalue']+$SalesRow['returnvalue']);
-		$CumulativeTotalCost += $SalesRow['cost'];
-		$CumulativeTotalGP += ($SalesRow['salesvalue']+$SalesRow['returnvalue']-$SalesRow['cost']);
-	} // end loop
-
-	echo '<tr class="striped_row">
-		<td colspan="2" class="number">' . __('Total') . ' ' . $LastPeriodHeading . '</td>
-		<td class="number">' . $PrdTotalOrders . '</td>
-		<td class="number">' . locale_number_format($PrdTotalSales,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		<td class="number">' . locale_number_format($PrdTotalRefunds,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		<td class="number">' . locale_number_format($PrdTotalNetSales,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		<td class="number">' . locale_number_format($PrdTotalCost,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		<td class="number">' . locale_number_format($PrdTotalGP,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-	</tr>';
-
-	echo '<tr class="striped_row"><td colspan="8"><hr /></td></tr>';
-	echo '<tr class="striped_row">';
-
-	echo '<td colspan="2" class="number">' . __('GRAND Total') . '</td>
-		<td class="number">' . $CumulativeTotalOrders . '</td>
-		<td class="number">' . locale_number_format($CumulativeTotalSales,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		<td class="number">' . locale_number_format($CumulativeTotalRefunds,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		<td class="number">' . locale_number_format($CumulativeTotalNetSales,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		<td class="number">' . locale_number_format($CumulativeTotalCost,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		<td class="number">' . locale_number_format($CumulativeTotalGP,$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		</tr>';
-
-	echo '</table>';
-
-} //end of if user hit show sales
 include(__DIR__ . '/includes/footer.php');
