@@ -1,305 +1,225 @@
 <?php
 
 require(__DIR__ . '/includes/session.php');
-
 use Dompdf\Dompdf;
 
-include(__DIR__ . '/includes/SetDomPDFOptions.php');
+$Title = __('Dormant Stock Analysis');
 
-$Title = __('No Sales Items Searching');
+// Parameter Initialization
+if (!isset($_POST['NumberOfDays'])) { $_POST['NumberOfDays'] = 30; }
+if (!isset($_POST['Location'])) { $_POST['Location'] = array('All'); }
+if (!isset($_POST['Customers'])) { $_POST['Customers'] = 'All'; }
+if (!isset($_POST['StockCat'])) { $_POST['StockCat'] = 'All'; }
 
-if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
-	// everything below here to view NumberOfNoSalesItems on selected location
-	$FromDate = FormatDateForSQL(DateAdd(date($_SESSION['DefaultDateFormat']),'d', -filter_number_format($_POST['NumberOfDays'])));
-	if ($_POST['StockCat']=='All'){
-		$WhereStockCat = "";
-	} else {
-		$WhereStockCat = " AND stockmaster.categoryid = '" . $_POST['StockCat'] ."'";
-	}
+$ShowResults = isset($_POST['View']) || isset($_POST['PrintPDF']);
 
-	if ($_POST['Location'][0] == 'All') {
-		$SQL = "SELECT 	stockmaster.stockid,
-					stockmaster.description,
-					stockmaster.units
-				FROM 	stockmaster,locstock
-				INNER JOIN locationusers ON locationusers.loccode=locstock.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
-				WHERE 	stockmaster.stockid = locstock.stockid ".
-						$WhereStockCat . "
-					AND (locstock.quantity > 0)
-					AND NOT EXISTS (
-							SELECT *
-							FROM 	salesorderdetails, salesorders
-							INNER JOIN locationusers ON locationusers.loccode=salesorders.fromstkloc AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
-							WHERE 	stockmaster.stockid = salesorderdetails.stkcode
-									AND (salesorderdetails.orderno = salesorders.orderno)
-									AND salesorderdetails.actualdispatchdate > '" . $FromDate . "')
-					AND NOT EXISTS (
-							SELECT *
-							FROM 	stockmoves
-							INNER JOIN locationusers ON locationusers.loccode=stockmoves.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
-							WHERE 	stockmoves.stockid = stockmaster.stockid
-									AND stockmoves.trandate >= '" . $FromDate . "')
-					AND EXISTS (
-							SELECT *
-							FROM 	stockmoves
-							INNER JOIN locationusers ON locationusers.loccode=stockmoves.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
-							WHERE 	stockmoves.stockid = stockmaster.stockid
-									AND stockmoves.trandate < '" . $FromDate . "'
-									AND stockmoves.qty >0)
-				GROUP BY stockmaster.stockid
-				ORDER BY stockmaster.stockid";
-	} else {
-		$WhereLocation = '';
-		if (sizeof($_POST['Location']) == 1) {
-			$WhereLocation = " AND locstock.loccode ='" . $_POST['Location'][0] . "' ";
-		} else {
-			$WhereLocation = " AND locstock.loccode IN(";
-			$commactr = 0;
-			foreach ($_POST['Location'] as $key => $Value) {
-				$WhereLocation .= "'" . $Value . "'";
-				$commactr++;
-				if ($commactr < sizeof($_POST['Location'])) {
-					$WhereLocation .= ",";
-				} // End of if
-			} // End of foreach
-			$WhereLocation .= ')';
-		}
-		$SQL = "SELECT 	stockmaster.stockid,
-						stockmaster.description,
-						stockmaster.units,
-						locstock.quantity,
-						locations.locationname
-				FROM 	stockmaster,locstock,locations
-				INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
-				WHERE 	stockmaster.stockid = locstock.stockid
-						AND (locstock.loccode = locations.loccode)".
-						$WhereLocation .
-						$WhereStockCat . "
-						AND (locstock.quantity > 0)
-						AND NOT EXISTS (
-								SELECT *
-								FROM 	salesorderdetails, salesorders
-								WHERE 	stockmaster.stockid = salesorderdetails.stkcode
-										AND (salesorders.fromstkloc = locstock.loccode)
-										AND (salesorderdetails.orderno = salesorders.orderno)
-										AND salesorderdetails.actualdispatchdate > '" . $FromDate . "')
-						AND NOT EXISTS (
-								SELECT *
-								FROM 	stockmoves
-								WHERE 	stockmoves.loccode = locstock.loccode
-										AND stockmoves.stockid = stockmaster.stockid
-										AND stockmoves.trandate >= '" . $FromDate . "')
-						AND EXISTS (
-								SELECT *
-								FROM 	stockmoves
-								WHERE 	stockmoves.loccode = locstock.loccode
-										AND stockmoves.stockid = stockmaster.stockid
-										AND stockmoves.trandate < '" . $FromDate . "'
-										AND stockmoves.qty >0)
-				ORDER BY stockmaster.stockid";
-	}
-	$Result = DB_query($SQL);
+// Query Construction Logic
+$FromDate = FormatDateForSQL(DateAdd(date($_SESSION['DefaultDateFormat']),'d', -filter_number_format($_POST['NumberOfDays'])));
+$WhereStockCat = ($_POST['StockCat'] == 'All') ? "" : " AND stockmaster.categoryid = '" . $_POST['StockCat'] ."'";
 
-	$HTML = '';
-
-	$Locations = '';
-	foreach ($_POST['Location'] as $Location) {
-		$Locations .= $Location . '<br />';
-	}
-
-	if (isset($_POST['PrintPDF'])) {
-		$HTML .= '<html>
-					<head>';
-		$HTML .= '<link href="css/reports.css" rel="stylesheet" type="text/css" />';
-	}
-
-	$HTML .= '<meta name="author" content="WebERP " . $Version">
-				<meta name="Creator" content="webERP https://www.weberp.org">
-				</head>
-				<body>
-				<div class="centre" id="ReportHeader">
-					' . $_SESSION['CompanyRecord']['coyname'] . '<br />
-					' . __('No Sales Report') . '<br />
-					' . __('Printed') . ': ' . date($_SESSION['DefaultDateFormat']) . '<br />
-					' . __('Location') . ' - ' . $Locations . '
-					' . __('Customer Type') . ' - ' . $_POST['Customers'] . '<br />
-					' . __('Stock Category') . ' - ' . $_POST['StockCat'] . '<br />
-				</div>';
-
-	$HTML .= '<table class="selection">';
-
-	$HTML .= '<tr>
-				<th>' . __('No') . '</th>
-				<th>' . __('Location') . '</th>
-				<th>' . __('Code') . '</th>
-				<th>' . __('Description') . '</th>
-				<th>' . __('Location QOH') . '</th>
-				<th>' . __('Total QOH') . '</th>
-				<th>' . __('Units') . '</th>
-			</tr>';
-
-	$i = 1;
-	while ($MyRow = DB_fetch_array($Result)) {
-		$QOHResult = DB_query("SELECT sum(quantity)
-				FROM locstock
-				INNER JOIN locationusers ON locationusers.loccode=locstock.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
-				WHERE stockid = '" . $MyRow['stockid'] . "'" .
-				$WhereLocation);
-		$QOHRow = DB_fetch_row($QOHResult);
-		$QOH = $QOHRow[0];
-
-		$CodeLink = '<a href="' . $RootPath . '/SelectProduct.php?StockID=' . $MyRow['stockid'] . '">' . $MyRow['stockid'] . '</a>';
-		if ($_POST['Location'][0] == 'All') {
-			$HTML .= '<tr class="striped_row">
-						<td class="number">' . $i . '</td>
-						<td>' . __('All') . '</td>
-						<td>' . $CodeLink . '</td>
-						<td>' . $MyRow['description'] . '</td>
-						<td class="number">' . $QOH . '</td>
-						<td class="number">' . $QOH . '</td>
-						<td>' . $MyRow['units'] . '</td>
-					</tr>';
-		} else {
-			$HTML .= '<tr class="striped_row">
-						<td class="number">' . $i . '</td>
-						<td>' . $MyRow['locationname'] . '</td>
-						<td>' . $CodeLink . '</td>
-						<td>' . $MyRow['description'] . '</td>
-						<td class="number">' . $MyRow['quantity'] . '</td>
-						<td class="number">' . $QOH . '</td>
-						<td>' . $MyRow['units'] . '</td>
-					</tr>';
-		}
-		$i++;
-	}
-	$HTML .= '</table>';
-
-	if (isset($_POST['PrintPDF'])) {
-		$HTML .= '</tbody>
-			</table>';
-	} else {
-		$HTML .= '</tbody>
-				</table>
-				<div class="centre">
-					<form><input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" /></form>
-				</div>';
-	}
-	$HTML .= '</body>
-		</html>';
-
-	if (isset($_POST['PrintPDF'])) {
-		$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
-		$DomPDF->loadHtml($HTML);
-
-		// (Optional) Setup the paper size and orientation
-		$DomPDF->setPaper($_SESSION['PageSize'], 'landscape');
-
-		// Render the HTML as PDF
-		$DomPDF->render();
-
-		// Output the generated PDF to Browser
-		$DomPDF->stream($_SESSION['DatabaseName'] . '_NoSalesItems_' . date('Y-m-d') . '.pdf', array(
-			"Attachment" => false
-		));
-	} else {
-		$Title = __('No Sales Items');
-		include(__DIR__ . '/includes/header.php');
-		echo '<p class="page_title_text">
-				<img src="' . $RootPath . '/css/' . $Theme . '/images/sales.png" title="' . __('No Sales Items List') . '" alt="" />' . ' ' . __('Top Sales Items List') . '
-			</p>';
-		echo $HTML;
-		include(__DIR__ . '/includes/footer.php');
-	}
-
+if ($_POST['Location'][0] == 'All') {
+    $WhereLocation = "";
+    $SQL = "SELECT stockmaster.stockid, stockmaster.description, stockmaster.units, stockmaster.actualcost, stockmaster.categoryid, SUM(locstock.quantity) as total_qty
+            FROM stockmaster INNER JOIN locstock ON stockmaster.stockid = locstock.stockid
+            INNER JOIN locationusers ON locationusers.loccode=locstock.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
+            WHERE 1=1 " . $WhereStockCat . "
+            AND (locstock.quantity > 0)
+            AND NOT EXISTS (SELECT * FROM salesorderdetails, salesorders WHERE stockmaster.stockid = salesorderdetails.stkcode AND (salesorderdetails.orderno = salesorders.orderno) AND salesorderdetails.actualdispatchdate > '" . $FromDate . "')
+            AND NOT EXISTS (SELECT * FROM stockmoves WHERE stockmoves.stockid = stockmaster.stockid AND stockmoves.trandate >= '" . $FromDate . "')
+            GROUP BY stockmaster.stockid ORDER BY stockmaster.stockid";
 } else {
-	$ViewTopic = 'Sales';
-	$BookMark = '';
-	include(__DIR__ . '/includes/header.php');
-
-	echo '<div class="centre"><p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/sales.png" title="' . __('No Sales Items') . '" alt="" />' . ' ' . __('No Sales Items') . '</p></div>';
-	echo '<div class="page_help_text">'
-	. __('List of items with stock available during the last X days at the selected locations but did not sell any quantity during these X days.'). '<br />' .  __('This list gets the no selling items, items at the location just wasting space, or need a price reduction, etc.') . '<br />' .  __('Stock available during the last X days means there was a stock movement that produced that item into that location before that day, and no other positive stock movement has been created afterwards.  No sell any quantity means, there is no sales order for that item from that location.')  . '</div>';
-	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?name="SelectCustomer" method="post" target="_blank">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	echo '<fieldset>
-			<legend>', __('Inquiry Criteria'), '</legend>';
-
-	//select location
-	echo '<field>
-			 <label for="Location">' . __('Select Location') . ':</label>
-			<select name="Location[]" multiple="multiple">
-				<option value="All" selected="selected">' . __('All') . '</option>';
-	$SQL = "SELECT 	locations.loccode,locationname
-			FROM 	locations
-			INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
-			ORDER BY locationname";
-	$LocationResult = DB_query($SQL);
-	$i=0;
-	while ($MyRow = DB_fetch_array($LocationResult)) {
-		if (isset($_POST['Location'][$i]) AND $MyRow['loccode'] == $_POST['Location'][$i]){
-		echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		$i++;
-		} else {
-			echo '<option value="' . $MyRow['loccode'] . '">'  . $MyRow['locationname']  . '</option>';
-		}
-	}
-	echo '</select>
-		</field>';
-
-	//to view list of customer
-	echo '<field>
-			<label for="Customers">' . __('Select Customer Type') . ':</label>
-			<select name="Customers">';
-
-	$SQL = "SELECT typename,
-					typeid
-				FROM debtortype";
-	$Result = DB_query($SQL);
-	echo '<option value="All">' . __('All') . '</option>';
-	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<option value="' . $MyRow['typeid'] . '">' . $MyRow['typename'] . '</option>';
-	}
-	echo '</select>
-		</field>';
-
-	// stock category selection
-	$SQL="SELECT categoryid,categorydescription
-			FROM stockcategory
-			ORDER BY categorydescription";
-	$Result1 = DB_query($SQL);
-	echo '<field>
-			<label for="StockCat">' . __('In Stock Category') . ':</label>
-			<select name="StockCat">';
-	if (!isset($_POST['StockCat'])){
-		$_POST['StockCat']='All';
-	}
-	if ($_POST['StockCat']=='All'){
-		echo '<option selected="selected" value="All">' . __('All') . '</option>';
-	} else {
-		echo '<option value="All">' . __('All') . '</option>';
-	}
-	while ($MyRow1 = DB_fetch_array($Result1)) {
-		if ($MyRow1['categoryid']==$_POST['StockCat']){
-			echo '<option selected="selected" value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
-		} else {
-			echo '<option value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
-		}
-	}
-	echo '</select>
-		</field>';
-
-	//View number of days
-	echo '<field>
-			<label for="NumberOfDays">' . __('Number Of Days') . ':</label>
-			<input class="integer" tabindex="3" type="text" required="required" title="" name="NumberOfDays" size="8" maxlength="8" value="30" />
-			<fieldhelp>' . __('Enter the number of days to examine the sales for') . '</fieldhelp>
-		 </field>
-	</fieldset>
-	<div class="centre">
-		<input type="submit" name="PrintPDF" title="PDF" value="' . __('Print PDF') . '" />
-		<input type="submit" name="View" title="View" value="' . __('View') . '" />
-	</div>
-	</form>';
-	include(__DIR__ . '/includes/footer.php');
-
+    $locList = "'" . implode("','", $_POST['Location']) . "'";
+    $WhereLocation = " AND locstock.loccode IN (" . $locList . ") ";
+    $SQL = "SELECT stockmaster.stockid, stockmaster.description, stockmaster.units, stockmaster.actualcost, stockmaster.categoryid, locstock.quantity as item_qty, locations.locationname
+            FROM stockmaster INNER JOIN locstock ON stockmaster.stockid = locstock.stockid
+            INNER JOIN locations ON locstock.loccode = locations.loccode
+            INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
+            WHERE 1=1 " . $WhereLocation . $WhereStockCat . "
+            AND (locstock.quantity > 0)
+            AND NOT EXISTS (SELECT * FROM salesorderdetails, salesorders WHERE stockmaster.stockid = salesorderdetails.stkcode AND (salesorders.fromstkloc = locstock.loccode) AND (salesorderdetails.orderno = salesorders.orderno) AND salesorderdetails.actualdispatchdate > '" . $FromDate . "')
+            AND NOT EXISTS (SELECT * FROM stockmoves WHERE stockmoves.loccode = locstock.loccode AND stockmoves.stockid = stockmaster.stockid AND stockmoves.trandate >= '" . $FromDate . "')
+            ORDER BY stockmaster.stockid";
 }
+
+// PDF Generation Branch
+if (isset($_POST['PrintPDF'])) {
+    include(__DIR__ . '/includes/SetDomPDFOptions.php');
+    $Result = DB_query($SQL);
+    $HTML = '<html><head><link href="css/reports.css" rel="stylesheet" type="text/css" /></head><body>';
+    $HTML .= '<div class="centre" id="ReportHeader">' . $_SESSION['CompanyRecord']['coyname'] . '<br />' . __('Dormant Stock Report') . '<br />' . __('Inactivity Period') . ': ' . $_POST['NumberOfDays'] . ' ' . __('Days') . '</div>';
+    $HTML .= '<table class="db-table"><thead><tr><th>Item</th><th>Loc</th><th>QOH</th><th>Units</th><th>Cost</th></tr></thead><tbody>';
+    while ($Row = DB_fetch_array($Result)) {
+        $loc = $Row['locationname'] ?? __('All');
+        $qty = $Row['item_qty'] ?? $Row['total_qty'];
+        $HTML .= '<tr><td>' . $Row['stockid'] . ' - ' . $Row['description'] . '</td><td>' . $loc . '</td><td class="number">' . $qty . '</td><td>' . $Row['units'] . '</td><td class="number">' . locale_number_format($Row['actualcost'], 2) . '</td></tr>';
+    }
+    $HTML .= '</tbody></table></body></html>';
+    $DomPDF = new Dompdf($DomPDFOptions);
+    $DomPDF->loadHtml($HTML);
+    $DomPDF->setPaper($_SESSION['PageSize'], 'landscape');
+    $DomPDF->render();
+    $DomPDF->stream($_SESSION['DatabaseName'] . '_DormantStock_' . date('Y-m-d') . '.pdf', array("Attachment" => false));
+    exit;
+}
+
+include(__DIR__ . '/includes/header.php');
+
+echo '<div class="db-page">
+        <div class="db-page-header">
+            <div class="db-page-title">
+                <i class="fas fa-snowflake"></i> ' . $Title . '
+            </div>
+        </div>
+
+        <form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
+            <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+            
+            <div class="db-bottom-layout">
+                <!-- Sidebar Parameters Panel -->
+                <aside class="db-col-aside">
+                    <div class="db-card">
+                        <div class="db-card-header">
+                            <div class="db-card-title"><i class="fas fa-search"></i> ' . __('Inquiry Criteria') . '</div>
+                        </div>
+                        <div class="db-card-body">
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Days of Inactivity') . '</label>
+                                <input type="number" name="NumberOfDays" class="db-input" value="' . (int)$_POST['NumberOfDays'] . '" min="1" required />
+                                <small class="text-muted">' . __('Examine stock with zero movements for these days') . '</small>
+                            </div>
+
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Stock Category') . '</label>
+                                <select name="StockCat" class="db-select">
+                                    <option value="All">' . __('All Categories') . '</option>';
+                                    $catRes = DB_query("SELECT categoryid, categorydescription FROM stockcategory ORDER BY categorydescription");
+                                    while ($cat = DB_fetch_array($catRes)) {
+                                        $sel = ($_POST['StockCat'] == $cat['categoryid']) ? 'selected' : '';
+                                        echo '<option ' . $sel . ' value="' . $cat['categoryid'] . '">' . $cat['categorydescription'] . '</option>';
+                                    }
+    echo '                      </select>
+                            </div>
+
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Locations') . '</label>
+                                <select name="Location[]" class="db-select" multiple style="min-height: 120px;">
+                                    <option value="All" ' . (in_array('All', $_POST['Location']) ? 'selected' : '') . '>' . __('All Locations') . '</option>';
+                                    $locRes = DB_query("SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1 ORDER BY locationname");
+                                    while ($loc = DB_fetch_array($locRes)) {
+                                        $sel = (in_array($loc['loccode'], $_POST['Location'])) ? 'selected' : '';
+                                        echo '<option ' . $sel . ' value="' . $loc['loccode'] . '">' . $loc['locationname'] . '</option>';
+                                    }
+    echo '                      </select>
+                                <small class="text-muted">' . __('Hold Ctrl to select multiple') . '</small>
+                            </div>
+
+                            <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px;">
+                                <button type="submit" name="View" class="db-btn db-btn-primary" style="justify-content: center;">
+                                    <i class="fas fa-microscope"></i> ' . __('Analyze Hub') . '
+                                </button>
+                                <button type="submit" name="PrintPDF" class="db-btn db-btn-outline-primary" style="justify-content: center;">
+                                    <i class="fas fa-file-pdf"></i> ' . __('Export PDF') . '
+                                </button>
+                                ' . ($ShowResults ? '<a href="' . htmlspecialchars($_SERVER['PHP_SELF']) . '" class="db-btn db-btn-outline" style="justify-content: center;">' . __('Reset') . '</a>' : '') . '
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Intelligence Content Body -->
+                <main class="db-col-main">';
+
+                    if ($ShowResults) {
+                        $Result = DB_query($SQL);
+                        $ProbCount = 0; $TotalValueAtRisk = 0; $Categories = [];
+                        $data = [];
+                        
+                        while ($Row = DB_fetch_array($Result)) {
+                            // Secondary query for Network QOH
+                            $QOHRes = DB_query("SELECT SUM(quantity) FROM locstock INNER JOIN locationusers ON locationusers.loccode=locstock.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1 WHERE stockid = '" . $Row['stockid'] . "'");
+                            $QOHRow = DB_fetch_row($QOHRes);
+                            $Row['network_qoh'] = $QOHRow[0];
+                            $Row['target_qty'] = $Row['item_qty'] ?? $Row['total_qty'];
+                            
+                            $TotalValueAtRisk += $Row['actualcost'] * $Row['target_qty'];
+                            $Categories[$Row['categoryid']] = ($Categories[$Row['categoryid']] ?? 0) + 1;
+                            $ProbCount++;
+                            $data[] = $Row;
+                        }
+                        
+                        arsort($Categories);
+                        $topCat = count($Categories) > 0 ? key($Categories) : 'N/A';
+
+                        echo '<div class="kpi-grid" style="margin-bottom: var(--space-6);">
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--info-soft); color: var(--info);"><i class="fas fa-box-open"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Dormant Items') . '</span><span class="value">' . $ProbCount . '</span></div>
+                                </div>
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--danger-soft); color: var(--danger);"><i class="fas fa-money-bill-wave"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Value at Risk') . '</span><span class="value">' . locale_number_format($TotalValueAtRisk, 0) . '</span></div>
+                                </div>
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--warning-soft); color: var(--warning);"><i class="fas fa-tags"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Top Category') . '</span><span class="value">' . $topCat . '</span></div>
+                                </div>
+                              </div>';
+
+                        if ($ProbCount > 0) {
+                            echo '<div class="db-card">
+                                    <div class="db-card-header"><div class="db-card-title"><i class="fas fa-warehouse"></i> ' . __('Inventory Optimization List') . '</div></div>
+                                    <div class="db-card-body p-0">
+                                        <div class="db-table-wrapper">
+                                            <table class="db-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>' . __('Item Detail') . '</th>
+                                                        <th>' . __('Location') . '</th>
+                                                        <th class="text-right">' . __('Loc QOH') . '</th>
+                                                        <th class="text-right">' . __('Network QOH') . '</th>
+                                                        <th class="text-right">' . __('Unit Cost') . '</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>';
+                                                foreach ($data as $Row) {
+                                                    $locName = $Row['locationname'] ?? __('All (Visible)');
+                                                    echo '<tr>
+                                                            <td>
+                                                                <a href="' . $RootPath . '/SelectProduct.php?StockID=' . $Row['stockid'] . '" class="db-font-bold text-primary">' . $Row['stockid'] . '</a>
+                                                                <div class="db-font-sm text-muted">' . $Row['description'] . '</div>
+                                                            </td>
+                                                            <td><span class="db-badge db-badge-secondary">' . $locName . '</span></td>
+                                                            <td class="text-right db-font-semibold">' . locale_number_format($Row['target_qty'], 1) . ' </td>
+                                                            <td class="text-right">' . locale_number_format($Row['network_qoh'], 1) . '</td>
+                                                            <td class="text-right db-font-mono">' . locale_number_format($Row['actualcost'], 2) . '</td>
+                                                          </tr>';
+                                                }
+                            echo '              </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                  </div>';
+                        } else {
+                            echo '<div class="db-card" style="text-align: center; padding: 80px; background: var(--surface-alt);">
+                                    <i class="fas fa-smile" style="font-size: 5rem; color: var(--success); margin-bottom: 25px;"></i>
+                                    <h3>' . __('Clean Inventory!') . '</h3>
+                                    <p class="text-muted">' . __('No items have been sitting dormant for over ' . (int)$_POST['NumberOfDays'] . ' days.') . '</p>
+                                </div>';
+                        }
+
+                    } else {
+                        echo '<div class="db-card" style="min-height: 500px; display: flex; align-items: center; justify-content: center; text-align: center; background: var(--surface-alt);">
+                                <div class="db-card-body">
+                                    <i class="fas fa-archive" style="font-size: 5rem; color: var(--border-color); margin-bottom: 20px;"></i>
+                                    <h2 class="text-muted">' . __('Dormant Stock Intelligence') . '</h2>
+                                    <p>' . __('Specify your inactivity threshold on the left to identify dead stock and free up warehouse space.') . '</p>
+                                </div>
+                              </div>';
+                    }
+
+    echo '      </main>
+            </div>
+        </form>
+    </div>';
+
+include(__DIR__ . '/includes/footer.php');
