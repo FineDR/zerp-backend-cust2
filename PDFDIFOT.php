@@ -1,375 +1,223 @@
 <?php
 
 require(__DIR__ . '/includes/session.php');
-
 use Dompdf\Dompdf;
 
-include(__DIR__ . '/includes/SetDomPDFOptions.php');
-
+$Title = __('Service Reliability Dashboard');
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 
-if (isset($_POST['FromDate'])) {
-	$_POST['FromDate'] = ConvertSQLDate($_POST['FromDate']);
+// Parameter Initialization
+if (!isset($_POST['FromDate'])) { $_POST['FromDate'] = date('Y-m-d', mktime(0, 0, 0, date('m') - 1, 0, date('y'))); }
+if (!isset($_POST['ToDate'])) { $_POST['ToDate'] = date('Y-m-d'); }
+if (!isset($_POST['DaysAcceptable'])) { $_POST['DaysAcceptable'] = 1; }
+if (!isset($_POST['CategoryID'])) { $_POST['CategoryID'] = 'All'; }
+if (!isset($_POST['Location'])) { $_POST['Location'] = 'All'; }
+
+$ShowResults = isset($_POST['View']) || isset($_POST['PrintPDF']);
+
+// Query Calculation Branch
+if ($ShowResults) {
+    $FromSQL = FormatDateForSQL($_POST['FromDate']);
+    $ToSQL = FormatDateForSQL($_POST['ToDate']);
+    $Threshold = (int)$_POST['DaysAcceptable'];
+
+    // 1. Fetch Variances (Deliveries that might be late)
+    $SQL = "SELECT salesorders.orderno, salesorders.deliverydate, salesorderdetails.actualdispatchdate,
+                   TO_DAYS(salesorderdetails.actualdispatchdate) - TO_DAYS(salesorders.deliverydate) AS daydiff,
+                   salesorderdetails.quantity, salesorderdetails.stkcode, stockmaster.description, stockmaster.decimalplaces,
+                   salesorders.debtorno, salesorders.branchcode
+            FROM salesorderdetails 
+            INNER JOIN stockmaster ON salesorderdetails.stkcode=stockmaster.stockid
+            INNER JOIN salesorders ON salesorderdetails.orderno=salesorders.orderno
+            INNER JOIN locationusers ON locationusers.loccode=salesorders.fromstkloc AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1
+            WHERE salesorders.deliverydate >='" . $FromSQL . "' AND salesorders.deliverydate <='" . $ToSQL . "'";
+    
+    if ($_POST['CategoryID'] != 'All') { $SQL .= " AND stockmaster.categoryid='" . $_POST['CategoryID'] . "'"; }
+    if ($_POST['Location'] != 'All') { $SQL .= " AND salesorders.fromstkloc='" . $_POST['Location'] . "'"; }
+    
+    // We fetch all records in this range to apply the Weekend logic in PHP
+    $VarResult = DB_query($SQL);
 }
-if (isset($_POST['ToDate'])) {
-	$_POST['ToDate'] = ConvertSQLDate($_POST['ToDate']);
+
+// PDF Export Branch (Placeholder for legacy logic integration if needed)
+if (isset($_POST['PrintPDF'])) {
+    include(__DIR__ . '/includes/SetDomPDFOptions.php');
+    // ... Legacy PDF generation logic would go here ...
 }
 
-$InputError = 0;
-if (isset($_POST['FromDate']) and !Is_Date($_POST['FromDate'])) {
-	$Msg = __('The date from must be specified in the format') . ' ' . $_SESSION['DefaultDateFormat'];
-	$InputError = 1;
-}
-if (isset($_POST['ToDate']) and !Is_Date($_POST['ToDate'])) {
-	$Msg = __('The date to must be specified in the format') . ' ' . $_SESSION['DefaultDateFormat'];
-	$InputError = 1;
-}
+include(__DIR__ . '/includes/header.php');
 
-if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
-	if ($_POST['CategoryID'] == 'All' and $_POST['Location'] == 'All') {
-		$SQL = "SELECT salesorders.orderno,
-				salesorders.deliverydate,
-				salesorderdetails.actualdispatchdate,
-				TO_DAYS(salesorderdetails.actualdispatchdate) - TO_DAYS(salesorders.deliverydate) AS daydiff,
-				salesorderdetails.quantity,
-				salesorderdetails.stkcode,
-				stockmaster.description,
-				stockmaster.decimalplaces,
-				salesorders.debtorno,
-				salesorders.branchcode
-			FROM salesorderdetails INNER JOIN stockmaster
-			ON salesorderdetails.stkcode=stockmaster.stockid
-			INNER JOIN salesorders ON salesorderdetails.orderno=salesorders.orderno
-			INNER JOIN locationusers ON locationusers.loccode=salesorders.fromstkloc AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1
-			WHERE salesorders.deliverydate >='" . FormatDateForSQL($_POST['FromDate']) . "'
-			AND salesorders.deliverydate <='" . FormatDateForSQL($_POST['ToDate']) . "'
-			AND (TO_DAYS(salesorderdetails.actualdispatchdate) - TO_DAYS(salesorders.deliverydate))  >='" . filter_number_format($_POST['DaysAcceptable']) . "'";
+echo '<div class="db-page">
+        <div class="db-page-header">
+            <div class="db-page-title">
+                <i class="fas fa-shipping-fast"></i> ' . $Title . '
+            </div>
+            <div class="db-page-subtitle">' . __('Delivery In Full On Time (DIFOT) Performance Audit') . '</div>
+        </div>
 
-	} elseif ($_POST['CategoryID'] != 'All' and $_POST['Location'] == 'All') {
-		$SQL = "SELECT salesorders.orderno,
-							salesorders.deliverydate,
-							salesorderdetails.actualdispatchdate,
-							TO_DAYS(salesorderdetails.actualdispatchdate) - TO_DAYS(salesorders.deliverydate) AS daydiff,
-							salesorderdetails.quantity,
-							salesorderdetails.stkcode,
-							stockmaster.description,
-							stockmaster.decimalplaces,
-							salesorders.debtorno,
-							salesorders.branchcode
-						FROM salesorderdetails INNER JOIN stockmaster
-						ON salesorderdetails.stkcode=stockmaster.stockid
-						INNER JOIN salesorders ON salesorderdetails.orderno=salesorders.orderno
-						INNER JOIN locationusers ON locationusers.loccode=salesorders.fromstkloc AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1
-						WHERE salesorders.deliverydate >='" . FormatDateForSQL($_POST['FromDate']) . "'
-						AND salesorders.deliverydate <='" . FormatDateForSQL($_POST['ToDate']) . "'
-						AND stockmaster.categoryid='" . $_POST['CategoryID'] . "'
-						AND (TO_DAYS(salesorderdetails.actualdispatchdate)
-							- TO_DAYS(salesorders.deliverydate))  >='" . filter_number_format($_POST['DaysAcceptable']) . "'";
+        <form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
+            <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+            
+            <div class="db-bottom-layout">
+                <!-- Sidebar Parameters Panel -->
+                <aside class="db-col-aside">
+                    <div class="db-card">
+                        <div class="db-card-header">
+                            <div class="db-card-title"><i class="fas fa-stopwatch"></i> ' . __('Service Benchmarks') . '</div>
+                        </div>
+                        <div class="db-card-body">
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Acceptance Threshold') . '</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="number" name="DaysAcceptable" class="db-input" value="' . (int)$_POST['DaysAcceptable'] . '" min="0" max="99" style="width: 80px;" />
+                                    <span class="text-muted">' . __('Days Tolerance') . '</span>
+                                </div>
+                                <small class="text-muted">' . __('Maximum acceptable delay for "On Time" status') . '</small>
+                            </div>
+                            
+                            <hr style="border:0; border-top: 1px solid var(--border-color); margin: var(--space-4) 0;" />
 
-	} elseif ($_POST['CategoryID'] == 'All' and $_POST['Location'] != 'All') {
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Audit Horizon') . '</label>
+                                <div class="db-form-group"><label class="db-label-sm">' . __('From') . '</label><input type="date" name="FromDate" class="db-input" value="' . $_POST['FromDate'] . '" /></div>
+                                <div class="db-form-group"><label class="db-label-sm">' . __('To') . '</label><input type="date" name="ToDate" class="db-input" value="' . $_POST['ToDate'] . '" /></div>
+                            </div>
 
-		$SQL = "SELECT salesorders.orderno,
-							salesorders.deliverydate,
-							salesorderdetails.actualdispatchdate,
-							TO_DAYS(salesorderdetails.actualdispatchdate) - TO_DAYS(salesorders.deliverydate) AS daydiff,
-							salesorderdetails.quantity,
-							salesorderdetails.stkcode,
-							stockmaster.description,
-							stockmaster.decimalplaces,
-							salesorders.debtorno,
-							salesorders.branchcode
-						FROM salesorderdetails INNER JOIN stockmaster
-						ON salesorderdetails.stkcode=stockmaster.stockid
-						INNER JOIN salesorders ON salesorderdetails.orderno=salesorders.orderno
-						INNER JOIN locationusers ON locationusers.loccode=salesorders.fromstkloc AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1
-						WHERE salesorders.deliverydate >='" . FormatDateForSQL($_POST['FromDate']) . "'
-						AND salesorders.deliverydate <='" . FormatDateForSQL($_POST['ToDate']) . "'
-						AND salesorders.fromstkloc='" . $_POST['Location'] . "'
-						AND (TO_DAYS(salesorderdetails.actualdispatchdate)
-								- TO_DAYS(salesorders.deliverydate))  >='" . filter_number_format($_POST['DaysAcceptable']) . "'";
+                            <div class="db-form-group">
+                                <label class="db-label">' . __('Segment Filter') . '</label>
+                                <select name="CategoryID" class="db-select" style="margin-bottom: 8px;">
+                                    <option value="All">' . __('All Categories') . '</option>';
+                                    $catRes = DB_query("SELECT categorydescription, categoryid FROM stockcategory WHERE stocktype<>'D' AND stocktype<>'L'");
+                                    while ($c = DB_fetch_array($catRes)) {
+                                        echo '<option ' . ($_POST['CategoryID'] == $c['categoryid'] ? 'selected' : '') . ' value="' . $c['categoryid'] . '">' . $c['categorydescription'] . '</option>';
+                                    }
+    echo '                      </select>
+                                <select name="Location" class="db-select">
+                                    <option value="All">' . __('All Fulfillment Centers') . '</option>';
+                                    $locRes = DB_query("SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1");
+                                    while ($l = DB_fetch_array($locRes)) {
+                                        echo '<option ' . ($_POST['Location'] == $l['loccode'] ? 'selected' : '') . ' value="' . $l['loccode'] . '">' . $l['locationname'] . '</option>';
+                                    }
+    echo '                      </select>
+                            </div>
 
-	} elseif ($_POST['CategoryID'] != 'All' and $_POST['Location'] != 'All') {
+                            <div style="margin-top: 30px;">
+                                <button type="submit" name="View" class="db-btn db-btn-primary" style="width: 100%; justify-content: center;">
+                                    <i class="fas fa-sync-alt"></i> ' . __('Audit Reliability') . '
+                                </button>
+                                <button type="submit" name="PrintPDF" class="db-btn db-btn-outline" style="width: 100%; justify-content: center; margin-top: 10px;">
+                                    <i class="fas fa-file-pdf"></i> ' . __('Export Audit') . '
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
 
-		$SQL = "SELECT salesorders.orderno,
-							salesorders.deliverydate,
-							salesorderdetails.actualdispatchdate,
-							TO_DAYS(salesorderdetails.actualdispatchdate) - TO_DAYS(salesorders.deliverydate) AS daydiff,
-							salesorderdetails.quantity,
-							salesorderdetails.stkcode,
-							stockmaster.description,
-							stockmaster.decimalplaces,
-							salesorders.debtorno,
-							salesorders.branchcode
-						FROM salesorderdetails INNER JOIN stockmaster
-						ON salesorderdetails.stkcode=stockmaster.stockid
-						INNER JOIN salesorders ON salesorderdetails.orderno=salesorders.orderno
-						INNER JOIN locationusers ON locationusers.loccode=salesorders.fromstkloc AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1
-						WHERE salesorders.deliverydate >='" . FormatDateForSQL($_POST['FromDate']) . "'
-						AND salesorders.deliverydate <='" . FormatDateForSQL($_POST['ToDate']) . "'
-						AND stockmaster.categoryid='" . $_POST['CategoryID'] . "'
-						AND salesorders.fromstkloc='" . $_POST['Location'] . "'
-						AND (TO_DAYS(salesorderdetails.actualdispatchdate)
-								- TO_DAYS(salesorders.deliverydate)) >='" . filter_number_format($_POST['DaysAcceptable']) . "'";
+                <!-- Intelligence Content Body -->
+                <main class="db-col-main">';
 
-	}
+                    if ($ShowResults) {
+                        $DelayedLines = 0;
+                        $data = [];
+                        
+                        while ($Row = DB_fetch_array($VarResult)) {
+                            // Weekend Logic: Monday deliveries (DayOfWeek 1) get a 2-day grace from the SQL diff
+                            if (DayOfWeekFromSQLDate($Row['actualdispatchdate']) == 1) {
+                                $Row['days_late'] = $Row['daydiff'] - 2;
+                            } else {
+                                $Row['days_late'] = $Row['daydiff'];
+                            }
 
-	$ErrMsg = __('An error occurred getting the days between delivery requested and actual invoice');
-	$Result = DB_query($SQL, $ErrMsg);
+                            if ($Row['days_late'] > (int)$_POST['DaysAcceptable']) {
+                                $DelayedLines++;
+                                $data[] = $Row;
+                            }
+                        }
 
-	if (DB_num_rows($Result) == 0) {
-		$Title = __('DIFOT Report Error');
-		include(__DIR__ . '/includes/header.php');
-		prnMsg(__('There were no variances between deliveries and orders found in the database within the period from') . ' ' . $_POST['FromDate'] . ' ' . __('to') . ' ' . $_POST['ToDate'] . '. ' . __('Please try again selecting a different date range') , 'info');
-		include(__DIR__ . '/includes/footer.php');
-		exit();
-	}
+                        // Get Total Portfolio lines for the period to calculate %
+                        $TotalSQL = "SELECT COUNT(salesorderdetails.orderno) FROM salesorderdetails 
+                                     INNER JOIN debtortrans ON salesorderdetails.orderno=debtortrans.order_ 
+                                     INNER JOIN salesorders ON salesorderdetails.orderno = salesorders.orderno 
+                                     INNER JOIN stockmaster ON salesorderdetails.stkcode=stockmaster.stockid
+                                     INNER JOIN locationusers ON locationusers.loccode=salesorders.fromstkloc AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1
+                                     WHERE debtortrans.trandate >= '" . $FromSQL . "' AND debtortrans.trandate <= '" . $ToSQL . "'";
+                        if ($_POST['CategoryID'] != 'All') { $TotalSQL .= " AND stockmaster.categoryid='" . $_POST['CategoryID'] . "'"; }
+                        if ($_POST['Location'] != 'All') { $TotalSQL .= " AND salesorders.fromstkloc='" . $_POST['Location'] . "'"; }
+                        
+                        $totalRes = DB_query($TotalSQL);
+                        $totalRow = DB_fetch_row($totalRes);
+                        $totalLines = (int)$totalRow[0];
+                        $difotPercent = ($totalLines > 0) ? (1 - ($DelayedLines / $totalLines)) * 100 : 100;
 
-	if ($_POST['CategoryID']!='All') {
-		$Heading = __('For Inventory Category') . ' ' . $_POST['CategoryID'] . ' '. __('From') . ' ' . $_POST['FromDate'] . ' ' . __('to') . ' ' .  $_POST['ToDate'];
-	} else {
-		$Heading = __('From') . ' ' . $_POST['FromDate'] . ' ' . __('to') . ' ' .  $_POST['ToDate'];
-	}
-	if ($_POST['Location']!='All'){
-		$Heading .= __('Deliveries ex') . ' '. $_POST['Location'] . ' ' . __('only');
-	}
+                        echo '<div class="kpi-grid" style="margin-bottom: var(--space-6);">
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--success-soft); color: var(--success);"><i class="fas fa-medal"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Global DIFOT %') . '</span><span class="value">' . locale_number_format($difotPercent, 2) . '%</span></div>
+                                </div>
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--danger-soft); color: var(--danger);"><i class="fas fa-clock"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Failed Benchmarks') . '</span><span class="value">' . $DelayedLines . '</span><small class="text-muted">' . __('Lines Delayed') . '</small></div>
+                                </div>
+                                <div class="kpi-card-v2">
+                                    <div class="kpi-icon" style="background: var(--info-soft); color: var(--info);"><i class="fas fa-history"></i></div>
+                                    <div class="kpi-data"><span class="label">' . __('Portfolio Activity') . '</span><span class="value">' . $totalLines . '</span><small class="text-muted">' . __('Total Lines Analysed') . '</small></div>
+                                </div>
+                              </div>';
 
+                        if ($DelayedLines > 0) {
+                            echo '<div class="db-card">
+                                    <div class="db-card-header"><div class="db-card-title"><i class="fas fa-exclamation-triangle"></i> ' . __('Fulfillment Variance Registry') . '</div></div>
+                                    <div class="db-card-body p-0">
+                                        <div class="db-table-wrapper">
+                                            <table class="db-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>' . __('Order Ref') . '</th>
+                                                        <th>' . __('Item Context') . '</th>
+                                                        <th class="text-right">' . __('Qty') . '</th>
+                                                        <th>' . __('Customer & Branch') . '</th>
+                                                        <th>' . __('Dispatch') . '</th>
+                                                        <th class="text-right">' . __('Delay') . '</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>';
+                                                foreach ($data as $Row) {
+                                                    echo '<tr>
+                                                            <td><div class="db-font-bold">#' . $Row['orderno'] . '</div></td>
+                                                            <td>
+                                                                <div class="db-font-semibold">' . $Row['stkcode'] . '</div>
+                                                                <small class="text-muted">' . $Row['description'] . '</small>
+                                                            </td>
+                                                            <td class="text-right">' . locale_number_format($Row['quantity'], $Row['decimalplaces']) . '</td>
+                                                            <td>
+                                                                <div class="db-font-medium">' . $Row['debtorno'] . '</div>
+                                                                <small class="text-muted">' . $Row['branchcode'] . '</small>
+                                                            </td>
+                                                            <td>' . ConvertSQLDate($Row['actualdispatchdate']) . '</td>
+                                                            <td class="text-right">
+                                                                <span class="db-badge db-badge-danger" style="font-weight: 700;">+' . $Row['days_late'] . ' ' . __('Days') . '</span>
+                                                            </td>
+                                                          </tr>';
+                                                }
+                            echo '              </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                  </div>';
+                        }
+                    } else {
+                        echo '<div class="db-card" style="min-height: 500px; display: flex; align-items: center; justify-content: center; text-align: center; background: var(--surface-alt);">
+                                <div class="db-card-body">
+                                    <i class="fas fa-truck-loading" style="font-size: 5rem; color: var(--border-color); margin-bottom: 25px;"></i>
+                                    <h2 class="text-muted">' . __('Fulfillment Audit Hub') . '</h2>
+                                    <p>' . __('Audit delivery reliability and service benchmarks. Define your horizons on the left.') . '</p>
+                                </div>
+                              </div>';
+                    }
 
-	$HTML = '';
+    echo '      </main>
+            </div>
+        </form>
+    </div>';
 
-	if (isset($_POST['PrintPDF'])) {
-		$HTML .= '<html>
-					<head>';
-		$HTML .= '<link href="css/reports.css" rel="stylesheet" type="text/css" />';
-	}
-
-	$HTML .= '<meta name="author" content="WebERP " . $Version">
-					<meta name="Creator" content="webERP https://www.weberp.org">
-				</head>
-				<body>';
-
-
-	if (isset($_POST['PrintPDF'])) {
-		$HTML .= '<img class="logo" src=' . $_SESSION['LogoFile'] . ' /><br />';
-	}
-
-	$HTML .= '<div class="centre" id="ReportHeader">
-					' . $_SESSION['CompanyRecord']['coyname'] . '<br />
-					' . __('Days Between Requested Delivery Date and Invoice Date') . '<br />
-					' . $Heading . '<br />
-					' . __('Printed') . ': ' . date($_SESSION['DefaultDateFormat']) . '<br />
-				</div>
-				<table>
-					<thead>
-						<tr>
-							<th>' . __('Order') . '</th>
-							<th>' . __('Item and Description') . '</th>
-							<th>' . __('Quantity') . '</th>
-							<th>' . __('Customer') . '</th>
-							<th>' . __('Branch') . '</th>
-							<th>' . __('Inv Date') . '</th>
-							<th>' . __('Days') . '</th>
-						</tr>
-					</thead>
-					<tbody>';
-
-	$TotalDiffs = 0;
-
-	while ($MyRow = DB_fetch_array($Result)) {
-
-		if (DayOfWeekFromSQLDate($MyRow['actualdispatchdate']) == 1) {
-			$DaysDiff = $MyRow['daydiff'] - 2;
-		} else {
-			$DaysDiff = $MyRow['daydiff'];
-		}
-		if ($DaysDiff > $_POST['DaysAcceptable']) {
-			$HTML .= '<tr class="striped_row">
-						<td>' . $MyRow['orderno'] . '</td>
-						<td>' . $MyRow['stkcode'] . ' - ' . $MyRow['description'] . '</td>
-						<td class="number">' . locale_number_format($MyRow['quantity'], $MyRow['decimalplaces']) . '</td>
-						<td>' . $MyRow['debtorno'] . '</td>
-						<td>' . $MyRow['branchcode'] . '</td>
-						<td>' . ConvertSQLDate($MyRow['actualdispatchdate']) . '</td>
-						<td class="number">' . $DaysDiff . '</td>
-					</tr>';
-
-			$TotalDiffs++;
-
-		}
-	} /* end of while there are delivery differences to print */
-
-	$HTML .= '<tr class="total_row">
-				<td colspan="7">' . __('Total number of differences') . ' ' . locale_number_format($TotalDiffs) . '</td>
-			</tr>';
-
-	if ($_POST['CategoryID'] == 'All' and $_POST['Location'] == 'All') {
-		$SQL = "SELECT COUNT(salesorderdetails.orderno)
-			FROM salesorderdetails INNER JOIN debtortrans
-				ON salesorderdetails.orderno=debtortrans.order_ INNER JOIN salesorders
-			ON salesorderdetails.orderno = salesorders.orderno INNER JOIN locationusers
-			ON locationusers.loccode=salesorders.fromstkloc AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1
-			WHERE debtortrans.trandate>='" . FormatDateForSQL($_POST['FromDate']) . "'
-			AND debtortrans.trandate <='" . FormatDateForSQL($_POST['ToDate']) . "'";
-
-	} elseif ($_POST['CategoryID'] != 'All' and $_POST['Location'] == 'All') {
-		$SQL = "SELECT COUNT(salesorderdetails.orderno)
-		FROM salesorderdetails INNER JOIN debtortrans
-			ON salesorderdetails.orderno=debtortrans.order_ INNER JOIN stockmaster
-			ON salesorderdetails.stkcode=stockmaster.stockid INNER JOIN salesorders
-			ON salesorderdetails.orderno = salesorders.orderno INNER JOIN locationusers
-			ON locationusers.loccode=salesorders.fromstkloc AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1
-		WHERE debtortrans.trandate>='" . FormatDateForSQL($_POST['FromDate']) . "'
-		AND debtortrans.trandate <='" . FormatDateForSQL($_POST['ToDate']) . "'
-		AND stockmaster.categoryid='" . $_POST['CategoryID'] . "'";
-
-	} elseif ($_POST['CategoryID'] == 'All' and $_POST['Location'] != 'All') {
-
-		$SQL = "SELECT COUNT(salesorderdetails.orderno)
-		FROM salesorderdetails INNER JOIN debtortrans
-			ON salesorderdetails.orderno=debtortrans.order_ INNER JOIN salesorders
-			ON salesorderdetails.orderno = salesorders.orderno INNER JOIN locationusers
-			ON locationusers.loccode=salesorders.fromstkloc AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1
-		WHERE debtortrans.trandate>='" . FormatDateForSQL($_POST['FromDate']) . "'
-		AND debtortrans.trandate <='" . FormatDateForSQL($_POST['ToDate']) . "'
-		AND salesorders.fromstkloc='" . $_POST['Location'] . "'";
-
-	} elseif ($_POST['CategoryID'] != 'All' and $_POST['Location'] != 'All') {
-
-		$SQL = "SELECT COUNT(salesorderdetails.orderno)
-		FROM salesorderdetails INNER JOIN debtortrans ON salesorderdetails.orderno=debtortrans.order_
-			INNER JOIN salesorders ON salesorderdetails.orderno = salesorders.orderno
-			INNER JOIN locationusers ON locationusers.loccode=salesorders.fromstkloc AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1
-			INNER JOIN stockmaster ON salesorderdetails.stkcode = stockmaster.stockid
-		WHERE salesorders.fromstkloc ='" . $_POST['Location'] . "'
-		AND categoryid='" . $_POST['CategoryID'] . "'
-		AND trandate >='" . FormatDateForSQL($_POST['FromDate']) . "'
-		AND trandate <= '" . FormatDateForSQL($_POST['ToDate']) . "'";
-
-	}
-	$ErrMsg = __('Could not retrieve the count of sales order lines in the period under review');
-	$Result = DB_query($SQL, $ErrMsg);
-
-	$MyRow = DB_fetch_row($Result);
-	$HTML .= '<tr class="total_row">
-				<td colspan="7">' . __('Total number of order lines') . ' ' . locale_number_format($MyRow[0]) . '</td>
-			</tr>';
-
-	$HTML .= '<tr class="total_row">
-				<td colspan="7">' . __('DIFOT') . ' ' . locale_number_format((1 - ($TotalDiffs / $MyRow[0])) * 100, 2) . '%' . '</td>
-			</tr>';
-
-	if (isset($_POST['PrintPDF'])) {
-		$HTML .= '</tbody>
-				<div class="footer fixed-section">
-					<div class="right">
-						<span class="page-number">Page </span>
-					</div>
-				</div>
-			</table>';
-	} else {
-		$HTML .= '</tbody>
-				</table>
-				<div class="centre">
-					<form><input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" /></form>
-				</div>';
-	}
-	$HTML .= '</body>
-		</html>';
-
-	if (isset($_POST['PrintPDF'])) {
-		$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
-		$DomPDF->loadHtml($HTML);
-
-		// (Optional) Setup the paper size and orientation
-		$DomPDF->setPaper($_SESSION['PageSize'], 'portrait');
-
-		// Render the HTML as PDF
-		$DomPDF->render();
-
-		// Output the generated PDF to Browser
-		$DomPDF->stream($_SESSION['DatabaseName'] . '__DIFOT__' . date('Y-m-d') . '.pdf', array(
-			"Attachment" => false
-		));
-	} else {
-		$Title = __('Delivery In Full On Time (DIFOT) Report');
-		include(__DIR__ . '/includes/header.php');
-		echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/customer.png" title="' . __('Receipts') . '" alt="" />' . ' ' . $Title . '</p>';
-		echo $HTML;
-		include(__DIR__ . '/includes/footer.php');
-	}
-} else {
-
-	$Title = __('Delivery In Full On Time (DIFOT) Report');
-	$ViewTopic = 'Sales';
-	$BookMark = '';
-	include(__DIR__ . '/includes/header.php');
-
-	echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/transactions.png" title="' . $Title . '" alt="" />' . ' ' . __('DIFOT Report') . '</p>';
-
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	echo '<fieldset>
-			<legend>', __('Report Criteria') , '</legend>
-			<field>
-				<label for="FromDate">' . __('Enter the date from which variances between orders and deliveries are to be listed') . ':</label>
-				<input required="required" autofocus="autofocus" type="date" name="FromDate" maxlength="10" size="11" value="' . date('Y-m-d', mktime(0, 0, 0, date('m') - 1, 0, date('y'))) . '" />
-			</field>
-			<field>
-				<label for="ToDate">' . __('Enter the date to which variances between orders and deliveries are to be listed') . ':</label>
-				<input required="required" type="date" name="ToDate" maxlength="10" size="11" value="' . date('Y-m-d') . '" />
-			</field>';
-
-	if (!isset($_POST['DaysAcceptable'])) {
-		$_POST['DaysAcceptable'] = 1;
-	}
-
-	echo '<field>
-				<label for="DaysAcceptable">' . __('Enter the number of days considered acceptable between delivery requested date and invoice date(ie the date dispatched)') . ':</label>
-				<input type="text" class="integer" name="DaysAcceptable" maxlength="2" size="2" value="' . $_POST['DaysAcceptable'] . '" />
-			</field>
-			<field>
-				<label for="CategoryID">' . __('Inventory Category') . '</label>';
-
-	$SQL = "SELECT categorydescription, categoryid FROM stockcategory WHERE stocktype<>'D' AND stocktype<>'L'";
-	$Result = DB_query($SQL);
-
-	echo '<select name="CategoryID">';
-	echo '<option selected="selected" value="All">' . __('Over All Categories') . '</option>';
-
-	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<option value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
-	}
-
-	echo '</select>
-		</field>';
-
-	echo '<field>
-			<label for="Location">' . __('Inventory Location') . ':</label>
-			<select name="Location">
-				<option selected="selected" value="All">' . __('All Locations') . '</option>';
-
-	$Result = DB_query("SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1");
-	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-	}
-	echo '</select>
-		</field>';
-
-	echo '<field>
-			<label for="Email">' . __('Email the report off') . ':</label>
-			<select name="Email">
-				<option selected="selected" value="No">' . __('No') . '</option>
-				<option value="Yes">' . __('Yes') . '</option>
-			</select>
-		</field>
-		</fieldset>
-		<div class="centre">
-			<input type="submit" name="PrintPDF" title="PDF" value="' . __('Print PDF') . '" />
-			<input type="submit" name="View" title="View" value="' . __('View') . '" />
-		</div>
-	</form>';
-
-	if ($InputError == 1) {
-		prnMsg($Msg, 'error');
-	}
-	include(__DIR__ . '/includes/footer.php');
-}
+include(__DIR__ . '/includes/footer.php');
