@@ -9,13 +9,6 @@ $ViewTopic = 'PurchaseOrdering';
 $BookMark = '';
 include(__DIR__ . '/includes/header.php');
 
-echo '<div class="db-page">
-		<div class="db-page-header">
-			<div class="db-page-title">
-				<i class="fas fa-shopping-basket"></i> ' . $Title . '
-			</div>
-			<div class="db-page-actions">';
-
 include(__DIR__ . '/includes/DefinePOClass.php');
 
 if (isset($_POST['FromDate'])){$_POST['FromDate'] = ConvertSQLDate($_POST['FromDate']);}
@@ -45,36 +38,8 @@ if (empty($_GET['identifier'])) {
 	$identifier = $_GET['identifier'];
 }
 
-	$AddPOUrl = $RootPath . '/PO_Header.php?NewOrder=Yes' . (isset($SelectedSupplier) ? '&amp;SupplierID=' . $SelectedSupplier : '');
-	echo '		<a href="' . $AddPOUrl . '" class="db-btn db-btn-primary">
-					<i class="fas fa-plus"></i> ' . __('Add Purchase Order') . '
-				</a>
-			</div>
-		</div>';
-
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
-	<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-
 if (isset($_POST['ResetPart'])) {
 	unset($SelectedStockItem);
-}
-
-if (isset($OrderNumber) AND $OrderNumber != '') {
-	if (!is_numeric($OrderNumber)) {
-		prnMsg( __('The Order Number entered MUST be numeric'), 'error' );
-		unset($OrderNumber);
-	} else {
-		echo '<div class="db-alert db-alert-info" style="margin-bottom: var(--space-4);">' . __('Order Number') . ' - ' . $OrderNumber . '</div>';
-	}
-} else {
-	if (isset($SelectedSupplier)) {
-		echo '<div class="db-alert db-alert-info" style="margin-bottom: var(--space-4);">' . __('For supplier') . ': ' . $SelectedSupplier . '</div>';
-		echo '<input type="hidden" name="SelectedSupplier" value="' . $SelectedSupplier . '" />';
-	}
-	if (isset($SelectedStockItem)) {
-		echo '<input type="hidden" name="SelectedStockItem" value="' . $SelectedStockItem . '" />';
-	}
 }
 
 if (isset($_POST['SearchParts'])) {
@@ -149,25 +114,56 @@ if (isset($_POST['SearchParts'])) {
 	$StockItemsResult = DB_query($SQL, $ErrMsg);
 } //isset($_POST['SearchParts'])
 
+$AddPOUrl = $RootPath . '/PO_Header.php?NewOrder=Yes' . (isset($SelectedSupplier) ? '&amp;SupplierID=' . $SelectedSupplier : '');
 
-/* Not appropriate really to restrict search by date since user may miss older ouststanding orders
-$OrdersAfterDate = date("d/m/Y",mktime(0,0,0,date("m")-2,date("d"),date("Y")));
-*/
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div class="db-page-title">
+				<i class="fas fa-shopping-basket"></i> ' . $Title . '
+			</div>
+			<div class="db-header-actions">
+				<a href="' . $AddPOUrl . '" class="db-btn db-btn-primary">
+					<i class="fas fa-plus"></i> ' . __('Add Purchase Order') . '
+				</a>
+			</div>
+		</div>
+
+		<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
+			<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+
+if (isset($OrderNumber) AND $OrderNumber != '') {
+	if (!is_numeric($OrderNumber)) {
+		prnMsg( __('The Order Number entered MUST be numeric'), 'error' );
+		unset($OrderNumber);
+	} else {
+		echo '<div class="db-alert db-alert-info" style="margin-bottom: var(--space-4);">' . __('Order Number') . ' - ' . $OrderNumber . '</div>';
+	}
+} else {
+	if (isset($SelectedSupplier)) {
+		echo '<div class="db-alert db-alert-info" style="margin-bottom: var(--space-4);">' . __('For supplier') . ': ' . $SelectedSupplier . '</div>';
+		echo '<input type="hidden" name="SelectedSupplier" value="' . $SelectedSupplier . '" />';
+	}
+	if (isset($SelectedStockItem)) {
+		echo '<input type="hidden" name="SelectedStockItem" value="' . $SelectedStockItem . '" />';
+	}
+}
+
+echo '		<div class="db-bottom-layout">
+				<aside class="db-col-aside">';
 
 if (!isset($OrderNumber) or $OrderNumber == '') {
-	echo '<div class="db-grid db-grid-2">
-			<div class="db-card">
-				<div class="db-card-header">
-					<div class="db-card-title"><i class="fas fa-filter"></i> ' . __('Order Search Filters') . '</div>
-				</div>
-				<div class="db-card-body">
-					<div class="db-form-group">
-						<label class="db-label">' . __('Order Number') . ':</label>
-						<input type="text" name="OrderNumber" class="db-input" autofocus="autofocus" maxlength="8" placeholder="' . __('Enter order #...') . '" />
-					</div>
-					<div class="db-form-group">
-						<label class="db-label">' . __('Into Stock Location') . ':</label>
-						<select name="StockLocation" class="db-select">';
+	echo '			<div class="db-card">
+						<div class="db-card-header">
+							<div class="db-card-title"><i class="fas fa-filter"></i> ' . __('Order Filters') . '</div>
+						</div>
+						<div class="db-card-body">
+							<div class="db-form-group">
+								<label class="db-label">' . __('Order Number') . ':</label>
+								<input type="text" name="OrderNumber" class="db-input" autofocus="autofocus" maxlength="8" placeholder="' . __('Enter order #...') . '" />
+							</div>
+							<div class="db-form-group">
+								<label class="db-label">' . __('Location') . ':</label>
+								<select name="StockLocation" class="db-select">';
 
 	if (!isset($_POST['DateFrom'])) {
 		$DateSQL = "SELECT min(orddate) as fromdate,
@@ -197,19 +193,18 @@ if (!isset($OrderNumber) or $OrderNumber == '') {
 		if (!isset($LocQty)){
 			$LocQty = $MyRow['total'];
 		}
-		if (isset($_POST['StockLocation'])) {//The user has selected location
-			if ($_POST['StockLocation'] == 'ALLLOC'){//user have selected all locations
-				if ($AllListed === false) {//it's the first loop
+		if (isset($_POST['StockLocation'])) {
+			if ($_POST['StockLocation'] == 'ALLLOC'){
+				if ($AllListed === false) {
 					echo '<option selected="selected" value="ALLLOC">' . __('All') . '</option>';
 					echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 					$AllListed = true;
-				} else { //it's not the first loop
+				} else {
 					echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 				}
-
-			} else {//user have not selected all locations; There are two possibilities that users have right, but not choose all; or vice visa
-				if ($MyRow['total'] == $UserLocations) { //user have allloc right
-					if ($AllListed === false){//first loop
+			} else {
+				if ($MyRow['total'] == $UserLocations) {
+					if ($AllListed === false){
 						echo '<option value="ALLLOC">' . __('All') . '</option>';
 						$AllListed = true;
 					}
@@ -220,34 +215,33 @@ if (!isset($OrderNumber) or $OrderNumber == '') {
 					echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 				}
 			}
-		} else {//users have not selected locations
-			if ($MyRow['total'] == $UserLocations){//users have right to submit All locations
-				if ($AllListed === false){//first loop
-					echo '<option selected="selected" value="ALLLOC">' . __('All') . '</option>';//default value is all
+		} else {
+			if ($MyRow['total'] == $UserLocations){
+				if ($AllListed === false){
+					echo '<option selected="selected" value="ALLLOC">' . __('All') . '</option>';
 					echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 					$AllListed = true;
-				} else {//not first loop
+				} else {
 					echo '<option value="' . $MyRow['loccode'] . '" >' . $MyRow['locationname'] . '</option>';
 				}
-			} else {//no right to submit all locations
+			} else {
 				if ($MyRow['loccode'] == $_SESSION['UserStockLocation']) {
 					echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 				} else {
 					echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 				}
 			}
-
 		}
 	}
-	echo '      </select>
-					</div>
-					<div class="db-form-group">
-						<label class="db-label">' . __('Order Status') . ':</label>
-						<select name="Status" class="db-select">';
+	echo '				</select>
+							</div>
+							<div class="db-form-group">
+								<label class="db-label">' . __('Status') . ':</label>
+								<select name="Status" class="db-select">';
 	if (!isset($_POST['Status']) OR $_POST['Status'] == 'Pending_Authorised') {
-		echo '<option selected="selected" value="Pending_Authorised">' . __('Pending and Authorised') . '</option>';
+		echo '<option selected="selected" value="Pending_Authorised">' . __('Pending & Authorised') . '</option>';
 	} else {
-		echo '<option value="Pending_Authorised">' . __('Pending and Authorised') . '</option>';
+		echo '<option value="Pending_Authorised">' . __('Pending & Authorised') . '</option>';
 	}
 	if (isset($_POST['Status'])){
 		if ($_POST['Status'] == 'Pending') {
@@ -272,42 +266,43 @@ if (!isset($OrderNumber) or $OrderNumber == '') {
 		}
 	}
 	$Checked = (isset($_POST['PODetails']))?'checked="checked"':'';
-	echo '      </select>
-					</div>
-					<div class="db-form-group">
-						<label class="db-label">' . __('Orders Between') . ':</label>
-						<div class="db-input-group">
-							<input name="DateFrom" value="' . date('Y-m-d',strtotime($DateFrom)) . '" class="db-input" type="date" />
-							<span style="display: flex; align-items: center; padding: 0 10px; color: var(--db-text-muted);">' . __('to') . '</span>
-							<input name="DateTo" value="' . date('Y-m-d',strtotime($DateTo)) . '" class="db-input" type="date" />
+	echo '				</select>
+							</div>
+							<div class="db-form-group">
+								<label class="db-label">' . __('Dates') . ':</label>
+								<div style="display: flex; flex-direction: column; gap: 8px;">
+									<input name="DateFrom" value="' . date('Y-m-d',strtotime($DateFrom)) . '" class="db-input" type="date" />
+									<input name="DateTo" value="' . date('Y-m-d',strtotime($DateTo)) . '" class="db-input" type="date" />
+								</div>
+							</div>
+							<div class="db-form-group">
+								<label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+									<input type="checkbox" name="PODetails" ' . $Checked . ' />
+									<span style="font-size: 0.85rem;">' . __('Show Details') . '</span>
+								</label>
+							</div>
+							<div style="margin-top: 10px;">
+								<button type="submit" name="SearchOrders" class="db-btn db-btn-primary" style="width: 100%; justify-content: center;">
+									<i class="fas fa-search"></i> ' . __('Search Orders') . '
+								</button>
+							</div>
 						</div>
-					</div>
-					<div class="db-form-group" style="margin-bottom: 25px;">
-						<label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-							<input type="checkbox" name="PODetails" ' . $Checked . ' />
-							<span style="font-size: 0.95rem; color: var(--db-text-primary);">' . __('Show PO Details') . '</span>
-						</label>
-					</div>
-					<div style="text-align: right;">
-						<button type="submit" name="SearchOrders" class="db-btn db-btn-primary"><i class="fas fa-search"></i> ' . __('Search Orders') . '</button>
-					</div>
-				</div>
-			</div>';
+					</div>';
 }
 
 $SQL = "SELECT categoryid, categorydescription FROM stockcategory ORDER BY categorydescription";
 $Result1 = DB_query($SQL);
 
-echo '		<div class="db-card">
-				<div class="db-card-header">
-					<div class="db-card-title"><i class="fas fa-boxes"></i> ' . __('Search By Stock Item') . '</div>
-				</div>
-				<div class="db-card-body">
-					<div class="db-form-group">
-						<label class="db-label">' . __('Select a stock category') . ':</label>
-						<select name="StockCat" class="db-select">';
+echo '				<div class="db-card">
+						<div class="db-card-header">
+							<div class="db-card-title"><i class="fas fa-boxes"></i> ' . __('Item Search') . '</div>
+						</div>
+						<div class="db-card-body">
+							<div class="db-form-group">
+								<label class="db-label">' . __('Category') . ':</label>
+								<select name="StockCat" class="db-select">';
 if (DB_num_rows($Result1)>0){
-	echo '<option value="All">' . __('All') . '</option>';
+	echo '<option value="All">' . __('All Categories') . '</option>';
 }
 while ($MyRow1 = DB_fetch_array($Result1)) {
 	if (isset($_POST['StockCat']) and $MyRow1['categoryid'] == $_POST['StockCat']) {
@@ -315,43 +310,57 @@ while ($MyRow1 = DB_fetch_array($Result1)) {
 	} else {
 		echo '<option value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
 	}
-} //end loop through categories
+}
 echo '						</select>
+							</div>
+							<div class="db-form-group">
+								<label class="db-label">' . __('Keywords') . ':</label>
+								<input type="text" name="Keywords" class="db-input" placeholder="' . __('e.g. Widget...') . '" />
+							</div>
+							<div class="db-form-group">
+								<label class="db-label">' . __('Stock Code') . ':</label>
+								<input type="text" name="StockCode" class="db-input" placeholder="' . __('Code extract...') . '" />
+							</div>
+							<div style="display: flex; gap: 10px; margin-top: 10px;">
+								<button type="submit" name="ResetPart" class="db-btn db-btn-secondary" style="flex: 1; justify-content: center;">
+									<i class="fas fa-sync"></i>
+								</button>
+								<button type="submit" name="SearchParts" class="db-btn db-btn-primary" style="flex: 2; justify-content: center;">
+									<i class="fas fa-search"></i> ' . __('Search') . '
+								</button>
+							</div>
+						</div>
 					</div>
-					<div class="db-form-group">
-						<label class="db-label">' . __('Description Keywords') . ':</label>
-						<input type="text" name="Keywords" class="db-input" placeholder="' . __('Enter text extracts...') . '" />
-					</div>
-					<div class="db-form-group">
-						<label class="db-label">' . __('OR Stock Code Extract') . ':</label>
-						<input type="text" name="StockCode" class="db-input" placeholder="' . __('Enter code extract...') . '" />
-					</div>
-					<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-						<button type="submit" name="ResetPart" class="db-btn db-btn-secondary"><i class="fas fa-sync"></i> ' . __('Show All') . '</button>
-						<button type="submit" name="SearchParts" class="db-btn db-btn-primary"><i class="fas fa-search"></i> ' . __('Search Parts Now') . '</button>
+				</aside> <!-- End Sidebar -->
+
+				<main class="db-col-main">';
+
+
+	if (isset($StockItemsResult)) {
+		echo '<div class="db-card">
+				<div class="db-card-header">
+					<div class="db-card-title">
+						<div style="display: flex; align-items: center; gap: 10px;">
+							<i class="fas fa-list"></i> ' . __('Stock Item Results') . '
+						</div>
+						<span class="db-badge db-badge-info">' . DB_num_rows($StockItemsResult) . ' ' . __('Found') . '</span>
 					</div>
 				</div>
-			</div>
-		</div> <!-- End Grid -->';
+				<div class="db-card-body">
+					<div class="table-responsive">
+						<table class="db-table">
+							<thead>
+								<tr>
+									<th>' . __('Item Code') . '</th>
+									<th>' . __('Description') . '</th>
+									<th class="text-right">' . __('On Hand') . '</th>
+									<th class="text-right">' . __('Outstanding') . '</th>
+									<th>' . __('Units') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
 
-if (isset($StockItemsResult)) {
-	echo '<div class="db-card" style="margin-top: 20px;">
-			<div class="db-card-header">
-				<div class="db-card-title"><i class="fas fa-list"></i> ' . __('Stock Item Results') . '</div>
-			</div>
-			<div class="db-card-body">
-				<div class="table-responsive">
-					<table class="db-table">
-						<thead>
-							<tr>
-								<th>' . __('Code') . '</th>
-								<th>' . __('Description') . '</th>
-								<th class="text-right">' . __('On Hand') . '</th>
-								<th class="text-right">' . __('Outstanding') . '</th>
-								<th>' . __('Units') . '</th>
-							</tr>
-						</thead>
-						<tbody>';
+
 
 	$StockStr = '(';
 	$q = 0;
@@ -371,22 +380,31 @@ if (isset($StockItemsResult)) {
 	}
 	DB_data_seek($StockItemsResult,0);
 
-	while ($MyRow = DB_fetch_array($StockItemsResult)) {
-		$MyRow['qoh'] = isset($QOH[$MyRow['stockid']]) ? $QOH[$MyRow['stockid']] : 0;
-		echo '<tr>
-				<td><button type="submit" name="SelectedStockItem" value="' . $MyRow['stockid'] . '" class="db-btn db-btn-outline db-btn-sm">' . $MyRow['stockid'] . '</button></td>
-				<td>' . $MyRow['description'] . '</td>
-				<td class="text-right">' . locale_number_format($MyRow['qoh'], $MyRow['decimalplaces']) . '</td>
-				<td class="text-right">' . locale_number_format($MyRow['qord'], $MyRow['decimalplaces']) . '</td>
-				<td>' . $MyRow['units'] . '</td>
-			</tr>';
-	}
-	echo '      </tbody>
-					</table>
+		while ($MyRow = DB_fetch_array($StockItemsResult)) {
+			$MyRow['qoh'] = isset($QOH[$MyRow['stockid']]) ? $QOH[$MyRow['stockid']] : 0;
+			echo '<tr>
+					<td><button type="submit" name="SelectedStockItem" value="' . $MyRow['stockid'] . '" class="db-btn db-btn-outline db-btn-sm" style="font-family: monospace;">' . $MyRow['stockid'] . '</button></td>
+					<td class="db-font-semibold">' . $MyRow['description'] . '</td>
+					<td class="text-right">' . locale_number_format($MyRow['qoh'], $MyRow['decimalplaces']) . '</td>
+					<td class="text-right db-font-bold text-primary">' . locale_number_format($MyRow['qord'], $MyRow['decimalplaces']) . '</td>
+					<td><span class="db-badge">' . $MyRow['units'] . '</span></td>
+				</tr>';
+		}
+
+		echo '      </tbody>
+						</table>
+					</div>
 				</div>
-			</div>
-		</div>';
-}
+			</div>';
+	} elseif (isset($_POST['SearchParts'])) {
+		echo '<div class="db-card">
+				<div class="db-card-body" style="text-align: center; padding: 40px;">
+					<i class="fas fa-search" style="font-size: 3rem; color: var(--db-border); margin-bottom: 20px;"></i>
+					<div class="db-font-bold" style="font-size: 1.1rem; color: var(--db-text-muted);">' . __('No items found matching your criteria') . '</div>
+				</div>
+			</div>';
+	}
+
 else {
 	//figure out the SQL required from the inputs available
 
@@ -631,9 +649,14 @@ else {
 	$PurchOrdersResult = DB_query($SQL, $ErrMsg);
 
 	if (DB_num_rows($PurchOrdersResult) > 0) {
-		echo '<div class="db-card" style="margin-top: 20px;">
+		echo '<div class="db-card">
 				<div class="db-card-header">
-					<div class="db-card-title"><i class="fas fa-clipboard-list"></i> ' . __('Purchase Order Results') . '</div>
+					<div class="db-card-title">
+						<div style="display: flex; align-items: center; gap: 10px;">
+							<i class="fas fa-clipboard-list"></i> ' . __('Purchase Order Results') . '
+						</div>
+						<span class="db-badge db-badge-success">' . DB_num_rows($PurchOrdersResult) . ' ' . __('Orders') . '</span>
+					</div>
 				</div>
 				<div class="db-card-body">
 					<div class="table-responsive">
@@ -641,10 +664,11 @@ else {
 							<thead>
 								<tr>
 									<th>' . __('Order #') . '</th>
-									<th>' . __('Order Date') . '</th>
-									<th>' . __('Delivery Date') . '</th>
+									<th>' . __('Date Info') . '</th>
 									<th>' . __('Initiator') . '</th>
-									<th>' . __('Supplier') . '</th>';
+									<th>' . __('Supplier Details') . '</th>';
+
+
 	
 	if (isset($_POST['PODetails'])) {
 		echo '<th>' . __('PO Details') . '</th>';
@@ -707,16 +731,36 @@ else {
 		$InitiatorName = $MyUserRow['realname'] ?? '';
 
 		echo '<tr>
-				<td><a href="' . $ModifyPage . '" class="db-font-bold text-primary">' . $MyRow['orderno'] . '</a></td>
-				<td class="text-nowrap">' . $FormatedOrderDate . '</td>
-				<td class="text-nowrap">' . $FormatedDeliveryDate . '</td>
-				<td class="db-text-muted">' . $InitiatorName . '</td>
-				<td class="db-font-semibold">' . $MyRow['suppname'] . '</td>
-				' . (isset($_POST['PODetails']) ? '<td>' . $Bal . '</td>' : '') . '
-				<td><span class="db-badge db-badge-info">' . $MyRow['currcode'] . '</span></td>';
+				<td>
+					<a href="' . $ModifyPage . '" class="db-font-bold text-primary" style="font-size: 1.1rem;">#' . $MyRow['orderno'] . '</a>
+					<div style="font-size: 0.75rem; color: var(--db-text-muted); margin-top: 4px;">
+						<i class="fas fa-hashtag"></i> ' . $MyRow['realorderno'] . '
+					</div>
+				</td>
+				<td>
+					<div class="db-font-semibold">' . $FormatedOrderDate . '</div>
+					<div style="font-size: 0.75rem; color: var(--db-text-muted);">
+						<i class="fas fa-truck"></i> ' . $FormatedDeliveryDate . '
+					</div>
+				</td>
+				<td>
+					<div class="db-font-medium">' . $InitiatorName . '</div>
+					<div style="font-size: 0.7rem; color: var(--db-text-muted); text-transform: uppercase;">' . $MyRow['initiator'] . '</div>
+				</td>
+				<td>
+					<div class="db-font-bold" style="color: var(--db-text-main);">' . $MyRow['suppname'] . '</div>
+					<div style="display: flex; gap: 5px; margin-top: 4px;">
+						<span class="db-badge db-badge-info">' . $MyRow['currcode'] . '</span>
+						' . (isset($_POST['PODetails']) ? '<span class="db-badge db-badge-secondary">' . __('Details Enabled') . '</span>' : '') . '
+					</div>
+				</td>
+				' . (isset($_POST['PODetails']) ? '<td><div style="font-size: 0.8rem; border-left: 2px solid var(--db-border); padding-left: 8px;">' . $Bal . '</div></td>' : '');
 		
 		if (in_array($PricesSecurity, $_SESSION['AllowedPageSecurityTokens']) OR !isset($PricesSecurity)) {
-			echo '<td class="text-right db-font-bold">' . $FormatedOrderValue . '</td>';
+			echo '<td class="text-right">
+					<div class="db-font-bold text-main" style="font-size: 1rem;">' . $FormatedOrderValue . '</div>
+					<div style="font-size: 0.7rem; color: var(--db-text-muted); text-align: right;">' . __('Total Value') . '</div>
+				  </td>';
 		}
 
 		$StatusClass = 'db-badge-info';
@@ -725,9 +769,10 @@ else {
 		if ($MyRow['status'] == 'Rejected') $StatusClass = 'db-badge-warning';
 		if ($MyRow['status'] == 'Printed') $StatusClass = 'db-badge-info';
 
-		echo '<td class="text-center"><span class="db-badge ' . $StatusClass . '">' . __($MyRow['status']) . '</span></td>
+		echo '<td class="text-center"><span class="db-badge ' . $StatusClass . '" style="padding: 4px 12px; font-size: 0.75rem;">' . strtolower(__($MyRow['status'])) . '</span></td>
 				<td class="text-right">
-					<div style="display: flex; justify-content: flex-end; gap: 5px;">';
+					<div style="display: flex; justify-content: flex-end; gap: 8px;">';
+
 		
 		if ($PrintPurchOrder != __('N/A') && $PrintPurchOrder != __('Printed')) {
 			echo preg_replace('/<a /', '<a class="db-btn db-btn-outline db-btn-sm" ', $PrintPurchOrder);
@@ -740,14 +785,28 @@ else {
 		echo '		</div>
 				</td>
 			</tr>';
-	} 
+		}
 
-	echo '			</tbody>
+					echo '</tbody>
 						</table>
 					</div>
 				</div>
 			</div>';
+	} else {
+		echo '<div class="db-card">
+				<div class="db-card-body" style="text-align: center; padding: 60px;">
+					<div style="width: 80px; height: 80px; background: var(--db-bg-workspace); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+						<i class="fas fa-clipboard-list" style="font-size: 2rem; color: var(--db-text-muted);"></i>
+					</div>
+					<h3 class="db-font-bold" style="color: var(--db-text-main); font-size: 1.25rem;">' . __('No orders found') . '</h3>
+					<p style="color: var(--db-text-muted); max-width: 300px; margin: 10px auto;">' . __('Adjust your filters or try searching for a different order number.') . '</p>
+				</div>
+			</div>';
 	}
 }
-echo '</div> <!-- End db-page -->';
+echo '					</main>
+				</div> <!-- End db-bottom-layout -->
+			</form>
+		</div> <!-- End db-page -->';
+
 include(__DIR__ . '/includes/footer.php');
