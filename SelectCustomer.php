@@ -11,18 +11,85 @@ include(__DIR__ . '/includes/header.php');
 
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 
+	.ScriptTitle { display: none !important; }
+	.MainBody { padding: 0 !important; gap: 0 !important; background: transparent !important; }
+	.db-page { padding: var(--space-8) var(--space-6); background: var(--bg-main); min-height: 100vh; font-family: "Inter", sans-serif; }
+	
+	.premium-header { margin-bottom: 32px; position: relative; }
+	.architect-btn {
+		display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+		padding: 12px 24px; border-radius: 12px;
+		background: #059669; color: #ffffff !important; border: none;
+		font-weight: 700; font-size: 0.85rem; text-decoration: none;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+		cursor: pointer;
+	}
+	.architect-btn:hover { background: #065f46; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3); }
+	.architect-btn.secondary { background: #f1f5f9; color: #475569 !important; box-shadow: none; }
+	.architect-btn.secondary:hover { background: #e2e8f0; color: #1e293b !important; }
+
+	.custom-bottom-layout { display: grid; grid-template-columns: 380px 1fr; gap: 32px; align-items: start; }
+	.db-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 24px; }
+	.db-card-header { background: #f9fafb; border-bottom: 1px solid #f3f4f6; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; }
+	.db-card-title { font-size: 0.9rem; font-weight: 850; color: #064e3b; margin: 0; display: flex; align-items: center; gap: 12px; text-transform: uppercase; letter-spacing: 1px; }
+	.db-card-body { padding: 24px; }
+
+	.registry-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+	.registry-table th { background: #f9fafb; padding: 16px 20px; text-align: left; font-size: 0.72rem; text-transform: uppercase; font-weight: 900; color: #064e3b; letter-spacing: 1.2px; border-bottom: 1px solid #f3f4f6; }
+	.registry-table td { padding: 16px 20px; font-size: 0.88rem; color: #374151; border-bottom: 1px solid #f3f4f6; transition: all 0.2s; }
+	.registry-table tr:hover td { background: #f0fdf4; }
+
+	.breadcrumb-item { display: flex; align-items: center; gap: 8px; color: #64748b; text-decoration: none; font-size: 0.85rem; font-weight: 500; }
+	.breadcrumb-item:hover { color: #059669; }
+	.breadcrumb-separator { font-size: 0.6rem; opacity: 0.4; margin: 0 4px; }
+	
+	.db-input { width: 100%; border-radius: 12px; height: 44px; font-weight: 600; border: 1px solid #e2e8f0; padding: 0 16px; box-sizing: border-box; background: #fff; transition: all 0.2s; font-size: 0.9rem; margin-bottom: 12px; }
+	.db-label { font-size: 0.7rem; text-transform: uppercase; font-weight: 850; letter-spacing: 1px; color: #64748b; display: block; margin-bottom: 6px; }
+
+	.db-tab-bar { display: flex; gap: 8px; margin-bottom: 24px; background: #f1f5f9; padding: 6px; border-radius: 16px; border: 1px solid #e2e8f0; }
+	.db-tab { padding: 10px 20px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+	.db-tab:hover { background: #fff; color: #059669; }
+	.db-tab.active { background: #fff; color: #059669; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+	.db-tab-panel { display: none; }
+	.db-tab-panel.active { display: block; animation: slideIn 0.3s ease-out; }
+
+	.action-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 16px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; transition: all 0.3s; text-decoration: none; gap: 12px; }
+	.action-tile:hover { transform: translateY(-3px); border-color: #059669; box-shadow: 0 10px 25px rgba(5, 150, 105, 0.1); }
+	.action-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+	.action-icon.green { background: #f0fdf4; color: #059669; }
+	.action-icon.blue { background: #eff6ff; color: #2563eb; }
+	.action-icon.neutral { background: #f8fafc; color: #64748b; }
+	.action-text { font-size: 0.8rem; font-weight: 700; color: #1e293b; text-align: center; }
+
+	@keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+	@media (max-width: 1024px) { .custom-bottom-layout { grid-template-columns: 1fr; } .db-tab-bar { overflow-x: auto; white-space: nowrap; } }
+</style>
+<script>
+	function switchTab(tabId) {
+		document.querySelectorAll(".db-tab").forEach(t => t.classList.remove("active"));
+		document.querySelectorAll(".db-tab-panel").forEach(p => p.classList.remove("active"));
+		document.querySelector(`[onclick=\"switchTab(\'${tabId}\')\"]`).classList.add("active");
+		document.getElementById(tabId).classList.add("active");
+	}
+</script>';
+
 echo '<div class="db-page">
-		<div class="db-page-header">
-			<div>
-				<h2 class="db-page-title">' . $Title . '</h2>
-				<p class="db-page-subtitle">' . __('Identify and manage customer accounts') . '</p>
-			</div>
-			<div class="db-header-actions">
-				<a href="' . $RootPath . '/Customers.php" class="db-btn db-btn-primary">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-					' . __('Add New Customer') . '
+		<div class="premium-header">
+			<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+				<div style="display: flex; align-items: center; gap: 8px;">
+					<a href="' . $RootPath . '/index.php" class="breadcrumb-item">' . __('home') . '</a>
+					<span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
+					<a href="' . $RootPath . '/index.php?Application=AR" class="breadcrumb-item">' . __('receivables') . '</a>
+					<span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
+					<span class="breadcrumb-item" style="color: #064e3b; font-weight: 700;">' . __('select customer') . '</span>
+				</div>
+				<a href="' . $RootPath . '/Customers.php" class="architect-btn">
+					<i class="fas fa-user-plus"></i> ' . __('Add New Customer') . '
 				</a>
 			</div>
+			<h1 style="font-size: 2rem; font-weight: 900; color: #064e3b; margin-bottom: 4px; letter-spacing: -1px;">' . $Title . '</h1>
+			<p style="color: #64748b; font-size: 0.95rem; font-weight: 500;">' . __('Identify and manage customer accounts from a centralized dashboard.') . '</p>
 		</div>';
 
 if (isset($_GET['Select'])) {
@@ -136,6 +203,80 @@ if (isset($_POST['Search']) or isset($_POST['CSV']) or isset($_POST['Go']) or is
 	}
 }
 
+echo '<div class="custom-bottom-layout">
+		<aside class="db-sidebar">
+			<div class="db-card">
+				<div class="db-card-header">
+					<h3 class="db-card-title">
+						<i class="fas fa-search"></i> ' . __('Find Customer') . '
+					</h3>
+				</div>
+				<div class="db-card-body">
+					<form action="', htmlspecialchars(basename(__FILE__), ENT_QUOTES, 'UTF-8'), '" method="post">
+						<input type="hidden" name="FormID" value="', $_SESSION['FormID'], '" />
+						
+						<div class="db-field">
+							<label class="db-label">' . __('Smart Search') . '</label>
+							<input type="text" name="SmartSearch" class="db-input" placeholder="' . __('Name, Code, Phone...') . '" ', (isset($_POST['SmartSearch']) ? 'value="' . $_POST['SmartSearch'] . '"' : ''), ' autofocus />
+						</div>
+
+						<details id="advanced-filters" style="margin-top: 16px; border-radius: 12px; border: 1px solid #f1f5f9; background: #f8fafc; overflow: hidden;">
+							<summary style="font-size: 0.72rem; font-weight: 850; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #fff; border-bottom: 1px solid #f1f5f9; text-transform: uppercase; letter-spacing: 0.5px;">
+								<span><i class="fas fa-sliders-h" style="margin-right: 8px;"></i> ' . __('Advanced Identification') . '</span>
+								<i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
+							</summary>
+							<div style="padding: 16px; display: flex; flex-direction: column; gap: 4px;">
+								<div class="db-field">
+									<label class="db-label">' . __('Keywords') . '</label>
+									<input type="text" name="Keywords" class="db-input" value="' . (isset($_POST['Keywords']) ? $_POST['Keywords'] : '') . '" placeholder="..." />
+								</div>
+								<div class="db-field">
+									<label class="db-label">' . __('Account Code') . '</label>
+									<input type="text" name="CustCode" class="db-input" value="' . (isset($_POST['CustCode']) ? $_POST['CustCode'] : '') . '" placeholder="..." />
+								</div>
+								<div class="db-field">
+									<label class="db-label">' . __('Phone') . '</label>
+									<input type="text" name="CustPhone" class="db-input" value="' . (isset($_POST['CustPhone']) ? $_POST['CustPhone'] : '') . '" placeholder="..." />
+								</div>
+								<div class="db-field">
+									<label class="db-label">' . __('Address') . '</label>
+									<input type="text" name="CustAdd" class="db-input" value="' . (isset($_POST['CustAdd']) ? $_POST['CustAdd'] : '') . '" placeholder="..." />
+								</div>
+								<div class="db-field">
+									<label class="db-label">' . __('Type') . '</label>';
+$Result2 = DB_query("SELECT typeid, typename FROM debtortype ORDER BY typename");
+echo '<select name="CustType" class="db-input">
+			<option value="ALL">' . __('Any Type') . '</option>';
+while ($MyRow = DB_fetch_array($Result2)) {
+	$selected = (isset($_POST['CustType']) AND $_POST['CustType'] == $MyRow['typename']) ? 'selected="selected"' : '';
+	echo '<option ' . $selected . ' value="' . $MyRow['typename'] . '">' . $MyRow['typename'] . '</option>';
+}
+echo '</select>
+								</div>
+								<div class="db-field">
+									<label class="db-label">' . __('Sales Area') . '</label>';
+$Result2 = DB_query("SELECT areacode, areadescription FROM areas");
+echo '<select name="Area" class="db-input">
+			<option value="ALL">' . __('Any Area') . '</option>';
+while ($MyRow = DB_fetch_array($Result2)) {
+	$selected = (isset($_POST['Area']) AND $_POST['Area'] == $MyRow['areacode']) ? 'selected="selected"' : '';
+	echo '<option ' . $selected . ' value="' . $MyRow['areacode'] . '">' . $MyRow['areadescription'] . '</option>';
+}
+echo '</select>
+								</div>
+							</div>
+						</details>
+
+						<button type="submit" name="Search" class="architect-btn" style="width: 100%; margin-top: 24px;">
+							<i class="fas fa-search-dollar"></i> ' . __('Search Now') . '
+						</button>
+					</form>
+				</div>
+			</div>
+		</aside>
+
+		<main class="db-main">';
+
 if (isset($_SESSION['CustomerID']) and $_SESSION['CustomerID'] != '' and !isset($_POST['Search']) and !isset($_POST['CSV'])) {
 	$SQL = "SELECT debtorsmaster.name,
 					custbranch.brname,
@@ -151,136 +292,54 @@ if (isset($_SESSION['CustomerID']) and $_SESSION['CustomerID'] != '' and !isset(
 	$BranchName = $MyRow['brname'];
 	$PhoneNo = $MyRow['phoneno'];
 
-	echo '<div class="card-v2" style="margin-bottom: var(--space-6);">
-			<div class="card-header-v2">
-				<div style="display: flex; align-items: center; gap: var(--space-4);">
-					<div style="width: 48px; height: 48px; border-radius: 12px; background: var(--primary-soft); color: var(--primary); display: flex; align-items: center; justify-content: center;">
-						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+	echo '<div class="db-card" style="margin-bottom: 32px; border: 2px solid #bbf7d0; box-shadow: 0 10px 30px rgba(5, 150, 105, 0.05);">
+			<div class="db-card-header" style="background: #f0fdf4; border-bottom: 1px solid #bbf7d0; padding: 24px 30px;">
+				<div style="display: flex; align-items: center; gap: 20px;">
+					<div style="width: 56px; height: 56px; border-radius: 16px; background: #ffffff; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+						<i class="fas fa-user-check"></i>
 					</div>
 					<div>
-						<h3 style="margin: 0; font-size: 1.1rem;">' . $CustomerName . '</h3>
-						<span style="font-size: 0.85rem; color: var(--text-muted);">' . __('Account') . ': <span class="db-ref">#' . stripslashes($_SESSION['CustomerID']) . '</span> &bull; ' . $BranchName . '</span>
+						<h3 style="margin: 0; font-size: 1.25rem; font-weight: 900; color: #064e3b;">' . $CustomerName . '</h3>
+						<div style="font-size: 0.85rem; color: #059669; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+							<span style="background: #059669; color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem;">#' . stripslashes($_SESSION['CustomerID']) . '</span>
+							<i class="fas fa-circle" style="font-size: 0.4rem; opacity: 0.5;"></i>
+							' . $BranchName . '
+						</div>
 					</div>
 				</div>
-				<div class="db-header-actions">
-					<span class="db-badge db-badge-success">' . __('Active Selection') . '</span>
-				</div>
+				<span style="background: #064e3b; color: #fff; padding: 6px 14px; border-radius: 10px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">' . __('Active Selection') . '</span>
 			</div>
 			
-			<div class="db-card-body">
-				<div class="db-grid db-grid-6">
-					<a href="' . $RootPath . '/SelectOrderItems.php?NewOrder=Yes&SelectedCustomer=' . urlencode($_SESSION['CustomerID']) . '" class="db-action-tile">
-						<div class="db-action-icon db-icon-blue">
-							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-						</div>
-						<span class="db-action-text">' . __('New Order') . '</span>
+			<div class="db-card-body" style="padding: 30px;">
+				<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px;">
+					<a href="' . $RootPath . '/SelectOrderItems.php?NewOrder=Yes&SelectedCustomer=' . urlencode($_SESSION['CustomerID']) . '" class="action-tile">
+						<div class="action-icon blue"><i class="fas fa-shopping-cart"></i></div>
+						<span class="action-text">' . __('New Order') . '</span>
 					</a>
-
-					<a href="' . $RootPath . '/CustomerReceipt.php?CustomerID=' . urlencode($_SESSION['CustomerID']) . '&NewReceipt=Yes&Type=Customer" class="db-action-tile">
-						<div class="db-action-icon db-icon-green">
-							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-						</div>
-						<span class="db-action-text">' . __('Receipt') . '</span>
+					<a href="' . $RootPath . '/CustomerReceipt.php?CustomerID=' . urlencode($_SESSION['CustomerID']) . '&NewReceipt=Yes&Type=Customer" class="action-tile">
+						<div class="action-icon green"><i class="fas fa-cash-register"></i></div>
+						<span class="action-text">' . __('Receipt') . '</span>
 					</a>
-					<a href="' . $RootPath . '/CustomerInquiry.php?CustomerID=' . urlencode($_SESSION['CustomerID']) . '" class="db-action-tile">
-						<div class="db-action-icon db-icon-neutral">
-							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-						</div>
-						<span class="db-action-text">' . __('Inquiry') . '</span>
+					<a href="' . $RootPath . '/CustomerInquiry.php?CustomerID=' . urlencode($_SESSION['CustomerID']) . '" class="action-tile">
+						<div class="action-icon neutral"><i class="fas fa-search-location"></i></div>
+						<span class="action-text">' . __('Inquiry') . '</span>
 					</a>
-					<a href="' . $RootPath . '/Customers.php?DebtorNo=' . urlencode($_SESSION['CustomerID']) . '" class="db-action-tile">
-						<div class="db-action-icon db-icon-neutral">
-							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-						</div>
-						<span class="db-action-text">' . __('Edit Profile') . '</span>
+					<a href="' . $RootPath . '/Customers.php?DebtorNo=' . urlencode($_SESSION['CustomerID']) . '" class="action-tile">
+						<div class="action-icon neutral"><i class="fas fa-user-edit"></i></div>
+						<span class="action-text">' . __('Edit Profile') . '</span>
 					</a>
-					<a href="' . $RootPath . '/CustomerAccount.php?CustomerID=' . urlencode($_SESSION['CustomerID']) . '" class="db-action-tile">
-						<div class="db-action-icon db-icon-neutral">
-							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-						</div>
-						<span class="db-action-text">' . __('Statement') . '</span>
+					<a href="' . $RootPath . '/CustomerAccount.php?CustomerID=' . urlencode($_SESSION['CustomerID']) . '" class="action-tile">
+						<div class="action-icon neutral"><i class="fas fa-file-invoice-dollar"></i></div>
+						<span class="action-text">' . __('Statement') . '</span>
 					</a>
-					<a href="' . $RootPath . '/CounterSales.php?DebtorNo=' . urlencode($_SESSION['CustomerID']) . '&amp;BranchNo=' . $_SESSION['BranchCode'] . '" class="db-action-tile">
-						<div class="db-action-icon db-icon-red">
-							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect></svg>
-						</div>
-						<span class="db-action-text">' . __('POS') . '</span>
+					<a href="' . $RootPath . '/CounterSales.php?DebtorNo=' . urlencode($_SESSION['CustomerID']) . '&amp;BranchNo=' . $_SESSION['BranchCode'] . '" class="action-tile">
+						<div class="action-icon neutral" style="background: #fff1f2; color: #e11d48;"><i class="fas fa-store"></i></div>
+						<span class="action-text">' . __('Counter Sales') . '</span>
 					</a>
 				</div>
 			</div>
 		</div>';
 }
-
-// Search Card
-echo '<div class="card-v2" style="background: var(--surface-alt); border: 1px solid var(--border-soft);">
-		<div class="card-header-v2">
-			<h3>
-				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-				' . __('Find Customer') . '
-			</h3>
-		</div>
-		<div class="db-card-body">
-			<form action="', htmlspecialchars(basename(__FILE__), ENT_QUOTES, 'UTF-8'), '" method="post">
-				<input type="hidden" name="FormID" value="', $_SESSION['FormID'], '" />
-				
-				<div style="display: flex; gap: var(--space-3); margin-bottom: var(--space-4);">
-					<div style="flex: 1; position: relative;">
-						<input type="text" name="SmartSearch" style="height: 44px; padding-left: var(--space-3); font-size: 1rem;" placeholder="' . __('Search by Name, Code, Phone, or Address...') . '" ', (isset($_POST['SmartSearch']) ? 'value="' . $_POST['SmartSearch'] . '"' : ''), ' autofocus />
-					</div>
-					<button type="submit" name="Search" class="db-btn db-btn-primary" style="height: 44px; min-width: 140px;">
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-						' . __('Search Now') . '
-					</button>
-				</div>
-
-				<details class="db-accordion" style="margin-top: var(--space-4);">
-					<summary style="font-size: 0.85rem; color: var(--text-muted);">' . __('Advanced Filtering Options') . '</summary>
-					<div class="db-grid db-grid-4" style="margin-top: var(--space-4);">
-						<div class="db-field">
-							<label class="db-label">' . __('Description Keywords') . '</label>
-							<input type="text" name="Keywords" value="' . (isset($_POST['Keywords']) ? $_POST['Keywords'] : '') . '" />
-						</div>
-						<div class="db-field">
-							<label class="db-label">' . __('Customer Code') . '</label>
-							<input type="text" name="CustCode" value="' . (isset($_POST['CustCode']) ? $_POST['CustCode'] : '') . '" />
-						</div>
-						<div class="db-field">
-							<label class="db-label">' . __('Phone Number') . '</label>
-							<input type="text" name="CustPhone" value="' . (isset($_POST['CustPhone']) ? $_POST['CustPhone'] : '') . '" />
-						</div>
-						<div class="db-field">
-							<label class="db-label">' . __('Address Extract') . '</label>
-							<input type="text" name="CustAdd" value="' . (isset($_POST['CustAdd']) ? $_POST['CustAdd'] : '') . '" />
-						</div>
-					</div>
-					<div class="db-grid db-grid-2" style="margin-top: var(--space-3);">
-						<div class="db-field">
-							<label class="db-label">' . __('Customer Type') . '</label>';
-$Result2 = DB_query("SELECT typeid, typename FROM debtortype ORDER BY typename");
-echo '<select name="CustType">
-			<option value="ALL">' . __('Any Type') . '</option>';
-while ($MyRow = DB_fetch_array($Result2)) {
-	$selected = (isset($_POST['CustType']) AND $_POST['CustType'] == $MyRow['typename']) ? 'selected="selected"' : '';
-	echo '<option ' . $selected . ' value="' . $MyRow['typename'] . '">' . $MyRow['typename'] . '</option>';
-}
-echo '</select>
-						</div>
-						<div class="db-field">
-							<label class="db-label">' . __('Sales Area') . '</label>';
-$Result2 = DB_query("SELECT areacode, areadescription FROM areas");
-echo '<select name="Area">
-			<option value="ALL">' . __('Any Area') . '</option>';
-while ($MyRow = DB_fetch_array($Result2)) {
-	$selected = (isset($_POST['Area']) AND $_POST['Area'] == $MyRow['areacode']) ? 'selected="selected"' : '';
-	echo '<option ' . $selected . ' value="' . $MyRow['areacode'] . '">' . $MyRow['areadescription'] . '</option>';
-}
-echo '</select>
-						</div>
-					</div>
-				</details>
-			</form>
-		</div>
-	</div>';
 
 if (isset($SearchResult)) {
 	$ListCount = DB_num_rows($SearchResult);
@@ -292,164 +351,228 @@ if (isset($SearchResult)) {
 		if (isset($_POST['Previous']) && $_POST['PageOffset'] > 1)
 			$_POST['PageOffset']--;
 
-		echo '<form action="' . htmlspecialchars(basename(__FILE__), ENT_QUOTES, 'UTF-8') . '" method="post">
-				<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-				<input type="hidden" name="PageOffset" value="' . $_POST['PageOffset'] . '" />';
-
-		if ($ListPageMax > 1) {
-			echo '<div class="db-pagination" style="margin-top: var(--space-6); margin-bottom: var(--space-4);">
-					<span class="db-pagination-info">' . __('Page') . ' ' . $_POST['PageOffset'] . ' ' . __('of') . ' ' . $ListPageMax . '</span>
-					<div class="db-pagination-controls">
-						<select name="PageOffset1" style="width: auto;">';
-			for ($i = 1; $i <= $ListPageMax; $i++) {
-				echo '<option value="' . $i . '" ' . ($i == $_POST['PageOffset'] ? 'selected' : '') . '>' . $i . '</option>';
-			}
-			echo '</select>
-						<button type="submit" name="Go1" class="db-btn db-btn-secondary">' . __('Go') . '</button>
-						<button type="submit" name="Previous" class="db-btn db-btn-secondary" ' . ($_POST['PageOffset'] == 1 ? 'disabled' : '') . '>' . __('Previous') . '</button>
-						<button type="submit" name="Next" class="db-btn db-btn-secondary" ' . ($_POST['PageOffset'] == $ListPageMax ? 'disabled' : '') . '>' . __('Next') . '</button>
+		echo '<div class="db-card">
+				<div class="db-card-header">
+					<h3 class="db-card-title"><i class="fas fa-list"></i> ' . __('Search Results') . '</h3>
+					<div style="font-size: 0.8rem; font-weight: 700; color: #64748b;">
+						' . __('Page') . ' ' . $_POST['PageOffset'] . ' ' . __('of') . ' ' . $ListPageMax . ' (' . $ListCount . ' ' . __('results') . ')
 					</div>
-				</div>';
-		}
-
-		echo '<div class="db-grid db-grid-3" style="margin-top: var(--space-4);">';
+				</div>
+				<div style="overflow-x: auto;">
+					<form action="' . htmlspecialchars(basename(__FILE__), ENT_QUOTES, 'UTF-8') . '" method="post">
+						<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+						<input type="hidden" name="PageOffset" value="' . $_POST['PageOffset'] . '" />
+						<table class="registry-table">
+							<thead>
+								<tr>
+									<th>' . __('Customer') . '</th>
+									<th>' . __('Branch / Contact') . '</th>
+									<th>' . __('Category') . '</th>
+									<th>' . __('Phone') . '</th>
+									<th style="text-align: right;">' . __('Action') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
+		
 		DB_data_seek($SearchResult, ($_POST['PageOffset'] - 1) * $_SESSION['DisplayRecordsMax']);
 		$RowIndex = 0;
 		while (($MyRow = DB_fetch_array($SearchResult)) and ($RowIndex <> $_SESSION['DisplayRecordsMax'])) {
-			echo '<div class="card-v2" style="display: flex; flex-direction: column;">
-					<div style="flex: 1; padding: var(--space-4); border-bottom: 1px solid var(--border-soft);">
-						<div style="display: flex; align-items: flex-start; gap: var(--space-3); margin-bottom: var(--space-4);">
-							<div style="width: 40px; height: 40px; border-radius: 8px; background: var(--surface-alt); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">
+			echo '<tr>
+					<td>
+						<div style="display: flex; align-items: center; gap: 12px;">
+							<div style="width: 32px; height: 32px; border-radius: 8px; background: #f1f5f9; color: #059669; display: flex; align-items: center; justify-content: center; font-weight: 850; font-size: 0.75rem; flex-shrink: 0;">
 								' . mb_substr($MyRow['name'] ?? 'C', 0, 1) . '
 							</div>
-							<div style="overflow: hidden;">
-								<div style="font-weight: 700; color: var(--text-main); line-height: 1.2; margin-bottom: 2px;">' . htmlspecialchars($MyRow['name'], ENT_QUOTES, 'UTF-8') . '</div>
-								<div class="db-ref" style="font-size: 0.75rem;">#' . $MyRow['debtorno'] . '</div>
+							<div>
+								<div style="font-weight: 700; color: #1e293b; font-size: 0.85rem;">' . htmlspecialchars($MyRow['name'], ENT_QUOTES, 'UTF-8') . '</div>
+								<div style="font-size: 0.7rem; color: #64748b; font-weight: 600;">#' . $MyRow['debtorno'] . '</div>
 							</div>
 						</div>
-						<div class="db-info-list" style="font-size: 0.85rem;">
-							<div class="db-info-item"><span class="db-muted" style="width: 20px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></span> ' . $MyRow['phoneno'] . '</div>
-							<div class="db-info-item"><span class="db-muted" style="width: 20px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></span> ' . htmlspecialchars($MyRow['brname'], ENT_QUOTES, 'UTF-8') . '</div>
-							<div class="db-info-item" style="margin-top: var(--space-2);"><span class="db-badge db-badge-info">' . $MyRow['typename'] . '</span></div>
-						</div>
-					</div>
-					<div style="padding: var(--space-4); background: var(--surface-alt); border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg);">
-						<button type="submit" name="SubmitCustomerSelection[' . htmlspecialchars($MyRow['debtorno'], ENT_QUOTES, 'UTF-8') . ']" value="' . htmlspecialchars($MyRow['branchcode'], ENT_QUOTES, 'UTF-8') . '" class="db-btn db-btn-primary" style="width: 100%;">
+					</td>
+					<td>
+						<div style="font-weight: 600; color: #334155; font-size: 0.85rem;">' . htmlspecialchars($MyRow['brname'], ENT_QUOTES, 'UTF-8') . '</div>
+						<div style="font-size: 0.7rem; color: #64748b; opacity: 0.8;">' . htmlspecialchars($MyRow['contactname'], ENT_QUOTES, 'UTF-8') . '</div>
+					</td>
+					<td><span style="background: #eff6ff; color: #2563eb; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">' . $MyRow['typename'] . '</span></td>
+					<td style="font-weight: 600; color: #475569; font-size: 0.85rem;">' . $MyRow['phoneno'] . '</td>
+					<td style="text-align: right;">
+						<button type="submit" name="SubmitCustomerSelection[' . htmlspecialchars($MyRow['debtorno'], ENT_QUOTES, 'UTF-8') . ']" value="' . htmlspecialchars($MyRow['branchcode'], ENT_QUOTES, 'UTF-8') . '" style="background: #059669; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
 							' . __('Select Account') . '
 						</button>
-					</div>
-				</div>';
+					</td>
+				</tr>';
 			$RowIndex++;
 		}
-		echo '</div>
-				<input type="hidden" name="JustSelectedACustomer" value="Yes" />
-			  </form>';
+		echo '		</tbody>
+						</table>
+						<input type="hidden" name="JustSelectedACustomer" value="Yes" />
+					</form>
+				</div>
+				<div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+					<div style="display: flex; gap: 8px;">
+						<form action="' . htmlspecialchars(basename(__FILE__), ENT_QUOTES, 'UTF-8') . '" method="post" style="display: flex; gap: 8px; align-items: center;">
+							<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+							<input type="hidden" name="PageOffset" value="' . $_POST['PageOffset'] . '" />
+							<button type="submit" name="Previous" class="architect-btn secondary" ' . ($_POST['PageOffset'] == 1 ? 'disabled' : '') . ' style="padding: 8px 16px; font-size: 0.75rem;">
+								<i class="fas fa-arrow-left"></i> ' . __('Previous') . '
+							</button>
+							<button type="submit" name="Next" class="architect-btn secondary" ' . ($_POST['PageOffset'] == $ListPageMax ? 'disabled' : '') . ' style="padding: 8px 16px; font-size: 0.75rem;">
+								' . __('Next') . ' <i class="fas fa-arrow-right"></i>
+							</button>
+						</form>
+					</div>
+					<div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">' . __('Total Identification Success') . '</div>
+				</div>
+			</div>';
 	}
 }
 
-// Geocode Mapping
-if (isset($_SESSION['CustomerID']) and $_SESSION['CustomerID'] != '' && $_SESSION['geocode_integration'] == 1) {
-	$SQL = "SELECT * FROM geocode_param";
-	$ResMap = DB_query($SQL);
-	if (DB_num_rows($ResMap) > 0) {
-		$MapRow = DB_fetch_array($ResMap);
-		$SQL = "SELECT lat, lng, brname, braddress1, braddress2, braddress3, braddress4 
-				FROM custbranch 
-				WHERE debtorno = '" . $_SESSION['CustomerID'] . "' AND branchcode = '" . $_SESSION['BranchCode'] . "'";
-		$ResBranch = DB_query($SQL);
-		$BRow = DB_fetch_array($ResBranch);
+// Geocode Mapping and Intelligence Hub Tabs
+if (isset($_SESSION['CustomerID']) and $_SESSION['CustomerID'] != '') {
+	echo '<!-- Intelligence Hub Tabs -->
+		<div class="db-tab-bar" style="margin-top: 32px;">
+			<div class="db-tab active" onclick="switchTab(\'tab-overview\')">
+				<i class="fas fa-chart-pie"></i> ' . __('Account Overview') . '
+			</div>
+			<div class="db-tab" onclick="switchTab(\'tab-contacts\')">
+				<i class="fas fa-address-book"></i> ' . __('Contact Registry') . '
+			</div>
+			<div class="db-tab" onclick="switchTab(\'tab-notes\')">
+				<i class="fas fa-sticky-note"></i> ' . __('Customer Notes') . '
+			</div>
+		</div>
 
-		if ($BRow && $BRow['lat'] != 0) {
-			echo '<div class="card-v2" style="margin-top: var(--space-6);">
-					<div class="card-header-v2">
-						<h3>
-							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-							' . __('Visual Location') . '
-						</h3>
+		<!-- Tab 1: Overview -->
+		<div id="tab-overview" class="db-tab-panel active">';
+	
+	// KPI Row and Map Row
+	if ($_SESSION['Extended_CustomerInfo'] == 1) {
+		$SQL = "SELECT clientsince, lastpaid, lastpaiddate, currencies.decimalplaces, currencies.currency
+				FROM debtorsmaster INNER JOIN currencies ON debtorsmaster.currcode=currencies.currabrev
+				WHERE debtorsmaster.debtorno ='" . $_SESSION['CustomerID'] . "'";
+		$DataRes = DB_query($SQL);
+		$MyRow = DB_fetch_array($DataRes);
+
+		$SQL = "SELECT SUM(ovamount+ovgst) as total FROM debtortrans WHERE debtorno = '" . $_SESSION['CustomerID'] . "' AND type != 12";
+		$TotalRes = DB_query($SQL);
+		$TRow = DB_fetch_array($TotalRes);
+
+		echo '
+			<div class="db-card" style="margin-bottom: 24px;">
+				<div class="db-card-header">
+					<h3 class="db-card-title"><i class="fas fa-chart-line"></i> ' . __('Financial Insights') . '</h3>
+				</div>
+				<div class="db-card-body" style="padding: 24px 30px;">
+					<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 32px;">
+						<div class="kpi-mini">
+							<div style="font-size: 0.7rem; font-weight: 850; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">' . __('Lifetime Value') . '</div>
+							<div style="font-size: 1.25rem; font-weight: 950; color: #059669; margin-top: 4px;">' . $MyRow['currency'] . ' ' . locale_number_format($TRow['total'], $MyRow['decimalplaces']) . '</div>
+						</div>
+						<div class="kpi-mini">
+							<div style="font-size: 0.7rem; font-weight: 850; color: #64748b; text-transform: uppercase;">' . __('Last Payment') . '</div>
+							<div style="font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-top: 4px;">' . ConvertSQLDate($MyRow['lastpaiddate']) . '</div>
+							<div style="font-size: 0.75rem; color: #059669; font-weight: 700;">' . $MyRow['currency'] . ' ' . locale_number_format($MyRow['lastpaid'], $MyRow['decimalplaces']) . '</div>
+						</div>
+						<div class="kpi-mini">
+							<div style="font-size: 0.7rem; font-weight: 850; color: #64748b; text-transform: uppercase;">' . __('Customer Tenure') . '</div>
+							<div style="font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-top: 4px;">' . ConvertSQLDate($MyRow['clientsince']) . '</div>
+						</div>
 					</div>
-					<div class="db-card-body">
-						<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-						<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-						<div id="map" style="height:' . $MapRow['map_height'] . 'px; width: 100%; border-radius: var(--radius-md);"></div>
-						<script>
-							var map = L.map(\'map\').setView([' . $BRow['lat'] . ', ' . $BRow['lng'] . '], 14);
-							L.tileLayer(\'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png\').addTo(map);
-							L.marker([' . $BRow['lat'] . ', ' . $BRow['lng'] . ']).addTo(map).bindPopup(\'<b>' . htmlspecialchars($BRow['brname'], ENT_QUOTES, 'UTF-8') . '</b>\').openPopup();
-						</script>
-					</div>
-				</div>';
+				</div>
+			</div>';
+	}
+
+	if ($_SESSION['geocode_integration'] == 1) {
+		$SQL = "SELECT * FROM geocode_param";
+		$ResMap = DB_query($SQL);
+		if (DB_num_rows($ResMap) > 0) {
+			$MapRow = DB_fetch_array($ResMap);
+			$SQL = "SELECT lat, lng, brname FROM custbranch WHERE debtorno = '" . $_SESSION['CustomerID'] . "' AND branchcode = '" . $_SESSION['BranchCode'] . "'";
+			$ResBranch = DB_query($SQL);
+			$BRow = DB_fetch_array($ResBranch);
+			if ($BRow && $BRow['lat'] != 0) {
+				echo '<div class="db-card">
+						<div class="db-card-header">
+							<h3 class="db-card-title"><i class="fas fa-map-marked-alt"></i> ' . __('Regional Branch Positioning') . '</h3>
+						</div>
+						<div class="db-card-body" style="padding: 0;">
+							<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+							<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+							<div id="map" style="height:280px; width: 100%;"></div>
+							<script>
+								var map = L.map(\'map\', { zoomControl: false }).setView([' . $BRow['lat'] . ', ' . $BRow['lng'] . '], 14);
+								L.tileLayer(\'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png\').addTo(map);
+								L.marker([' . $BRow['lat'] . ', ' . $BRow['lng'] . ']).addTo(map).bindPopup(\'<b>' . htmlspecialchars($BRow['brname'], ENT_QUOTES, 'UTF-8') . '</b>\').openPopup();
+							</script>
+						</div>
+					</div>';
+			}
 		}
 	}
-}
+	echo '</div>
 
-// Extended Customer Info
-if (isset($_SESSION['CustomerID']) and $_SESSION['CustomerID'] != '' && $_SESSION['Extended_CustomerInfo'] == 1) {
-	$SQL = "SELECT clientsince, lastpaid, lastpaiddate, currencies.decimalplaces, currencies.currency
-			FROM debtorsmaster INNER JOIN currencies ON debtorsmaster.currcode=currencies.currabrev
-			WHERE debtorsmaster.debtorno ='" . $_SESSION['CustomerID'] . "'";
-	$DataRes = DB_query($SQL);
-	$MyRow = DB_fetch_array($DataRes);
-
-	$SQL = "SELECT SUM(ovamount+ovgst) as total FROM debtortrans WHERE debtorno = '" . $_SESSION['CustomerID'] . "' AND type != 12";
-	$TotalRes = DB_query($SQL);
-	$TRow = DB_fetch_array($TotalRes);
-
-	echo '<div class="db-grid db-grid-2" style="margin-top: var(--space-6);">
-			<div class="card-v2">
-				<div class="card-header-v2">
-					<h3>' . __('Account Insights') . '</h3>
+		<!-- Tab 2: Contacts -->
+		<div id="tab-contacts" class="db-tab-panel">
+			<div class="db-card">
+				<div class="db-card-header">
+					<h3 class="db-card-title"><i class="fas fa-users"></i> ' . __('Authorized Personnel') . '</h3>
+					<a href="' . $RootPath . '/AddCustomerContacts.php?DebtorNo=' . urlencode($_SESSION['CustomerID']) . '" class="architect-btn secondary" style="padding: 6px 14px; font-size: 0.75rem;">
+						<i class="fas fa-plus-circle"></i> ' . __('Add New') . '
+					</a>
 				</div>
-				<div class="db-card-body">
-					<div class="db-info-list">';
-	if ($MyRow['lastpaiddate'] != 0) {
-		echo '<div class="db-info-item"><span>' . __('Last Payment') . ':</span> <b>' . ConvertSQLDate($MyRow['lastpaiddate']) . '</b></div>';
-		echo '<div class="db-info-item"><span>' . __('Amount') . ':</span> <b>' . $MyRow['currency'] . ' ' . locale_number_format($MyRow['lastpaid'], $MyRow['decimalplaces']) . '</b></div>';
-	}
-	echo '<div class="db-info-item"><span>' . __('Member Since') . ':</span> <b>' . ConvertSQLDate($MyRow['clientsince']) . '</b></div>';
-	echo '<div class="db-info-item"><span>' . __('Lifetime Value') . ':</span> <b style="color: var(--success);">' . $MyRow['currency'] . ' ' . locale_number_format($TRow['total'], $MyRow['decimalplaces']) . '</b></div>';
-	echo '</div></div></div>';
-
-	// Customer Contacts Card
+				<div style="background: #fff; overflow-x: auto;">';
 	$SQL = "SELECT * FROM custcontacts WHERE debtorno='" . $_SESSION['CustomerID'] . "' ORDER BY contid";
 	$ConRes = DB_query($SQL);
-	echo '<div class="card-v2">
-			<div class="card-header-v2">
-				<h3>' . __('Key Contacts') . '</h3>
-				<a href="' . $RootPath . '/AddCustomerContacts.php?DebtorNo=' . urlencode($_SESSION['CustomerID']) . '" class="db-btn db-btn-outline db-btn-small">' . __('Manage') . '</a>
-			</div>
-			<div class="db-card-body">';
 	if (DB_num_rows($ConRes) > 0) {
-		echo '<div class="db-table-wrapper"><table class="db-table"><thead><tr><th>' . __('Name') . '</th><th>' . __('Role') . '</th><th>' . __('Email') . '</th></tr></thead><tbody>';
+		echo '<table class="registry-table">
+				<thead>
+					<tr><th>' . __('Contact Name') . '</th><th>' . __('Role/Designation') . '</th><th>' . __('Actions') . '</th></tr>
+				</thead>
+				<tbody>';
 		while ($CR = DB_fetch_array($ConRes)) {
-			echo '<tr><td>' . $CR[2] . '</td><td>' . $CR[3] . '</td><td><a href="mailto:' . $CR[6] . '" class="db-link">' . $CR[6] . '</a></td></tr>';
+			echo '<tr>
+					<td style="font-weight: 700; color: #1e293b;">' . $CR[2] . '</td>
+					<td><span style="background: #f0fdf4; color: #059669; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 850;">' . $CR[3] . '</span></td>
+					<td><a href="mailto:' . $CR[6] . '" class="architect-btn secondary" style="padding: 6px 12px; font-size: 0.7rem;"><i class="fas fa-envelope"></i></a></td>
+				  </tr>';
 		}
-		echo '</tbody></table></div>';
+		echo '</tbody></table>';
 	} else {
-		echo '<p class="db-muted" style="text-align:center;">' . __('No contacts listed') . '</p>';
+		echo '<div style="padding: 40px; text-align:center; color: #94a3b8; font-weight: 600;">' . __('No authorized contacts registered') . '</div>';
+	}
+	echo '</div></div></div>
+
+		<!-- Tab 3: Notes -->
+		<div id="tab-notes" class="db-tab-panel">
+			<div class="db-card">
+				<div class="db-card-header">
+					<h3 class="db-card-title"><i class="fas fa-sticky-note"></i> ' . __('Account Engagement History') . '</h3>
+					<a href="' . $RootPath . '/AddCustomerNotes.php?DebtorNo=' . urlencode($_SESSION['CustomerID']) . '" class="architect-btn secondary" style="padding: 6px 14px; font-size: 0.75rem;">
+						<i class="fas fa-pen"></i> ' . __('Write Note') . '
+					</a>
+				</div>
+				<div style="background: #fff; overflow-x: auto;">';
+	$SQL = "SELECT * FROM custnotes WHERE debtorno='" . $_SESSION['CustomerID'] . "' ORDER BY date DESC LIMIT 8";
+	$NoteRes = DB_query($SQL);
+	if (DB_num_rows($NoteRes) > 0) {
+		echo '<table class="registry-table">
+				<thead>
+					<tr><th>' . __('Date') . '</th><th>' . __('Status') . '</th><th>' . __('Engagement Log') . '</th></tr>
+				</thead>
+				<tbody>';
+		while ($NR = DB_fetch_array($NoteRes)) {
+			echo '<tr>
+					<td style="font-weight: 700; color: #1e293b; white-space: nowrap;">' . ConvertSQLDate($NR['date']) . '</td>
+					<td><span style="background: #fff1f2; color: #e11d48; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 850;">' . $NR['priority'] . '</span></td>
+					<td style="color: #475569; font-size: 0.85rem; line-height: 1.4;">' . $NR['note'] . '</td>
+				  </tr>';
+		}
+		echo '</tbody></table>';
+	} else {
+		echo '<div style="padding: 40px; text-align:center; color: #94a3b8; font-weight: 600;">' . __('No engagement history available') . '</div>';
 	}
 	echo '</div></div></div>';
-
-	// Notes Section
-	$SQL = "SELECT * FROM custnotes WHERE debtorno='" . $_SESSION['CustomerID'] . "' ORDER BY date DESC LIMIT 5";
-	$NoteRes = DB_query($SQL);
-	echo '<div class="card-v2" style="margin-top: var(--space-6);">
-			<div class="card-header-v2">
-				<h3>' . __('Customer Notes') . '</h3>
-				<a href="' . $RootPath . '/AddCustomerNotes.php?DebtorNo=' . urlencode($_SESSION['CustomerID']) . '" class="db-btn db-btn-outline db-btn-small">' . __('Add Note') . '</a>
-			</div>
-			<div class="db-card-body">';
-	if (DB_num_rows($NoteRes) > 0) {
-		echo '<div class="db-table-wrapper"><table class="db-table"><thead><tr><th>' . __('Date') . '</th><th>' . __('Priority') . '</th><th>' . __('Note') . '</th></tr></thead><tbody>';
-		while ($NR = DB_fetch_array($NoteRes)) {
-			echo '<tr><td>' . ConvertSQLDate($NR['date']) . '</td><td>' . $NR['priority'] . '</td><td>' . $NR['note'] . '</td></tr>';
-		}
-		echo '</tbody></table></div>';
-	} else {
-		echo '<p class="db-muted" style="text-align:center;">' . __('No recent notes') . '</p>';
-	}
-	echo '</div></div>';
 }
 
-echo '</div>'; // Close .db-page
+echo '</main></div></div>'; // Close .db-main, .custom-bottom-layout, and .db-page
 include(__DIR__ . '/includes/footer.php');
-?>
