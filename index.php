@@ -62,7 +62,8 @@ if (isset($_GET['Application']) && ($_GET['Application'] == 'Sales' || $_GET['Ap
 } elseif (isset($_GET['Application']) && $_GET['Application'] == 'Utilities') {
     $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/utilities.css?v=' . time() . '">';
 }
-
+echo 'coming soon! ';
+exit;
 include(__DIR__ . '/includes/header.php');
 
 if (isset($SupplierLogin) AND $SupplierLogin==1){
@@ -120,8 +121,7 @@ if (isset($SupplierLogin) AND $SupplierLogin==1){
 	include(__DIR__ . '/includes/footer.php');
 	exit;
 }
-echo 'coming soon! ';
-exit;
+
 //=== Dashboard Logic ============================================================
 $isDashboard = (!isset($_GET['Application']) || $_GET['Application'] == 'Dashboard' || $_GET['Application'] == '');
 if ($isDashboard) {
