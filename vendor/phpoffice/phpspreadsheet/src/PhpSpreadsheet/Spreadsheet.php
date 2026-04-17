@@ -735,8 +735,9 @@ class Spreadsheet implements JsonSerializable
      */
     public function getIndex(Worksheet $worksheet, bool $noThrow = false): int
     {
+        $wsHash = $worksheet->getHashInt();
         foreach ($this->workSheetCollection as $key => $value) {
-            if ($value === $worksheet) {
+            if ($value->getHashInt() === $wsHash) {
                 return $key;
             }
         }
@@ -1467,10 +1468,6 @@ class Spreadsheet implements JsonSerializable
 
     /**
      * Return the unique ID value assigned to this spreadsheet workbook.
-     *
-     * @deprecated 5.2.0 Serves no useful purpose. No replacement.
-     *
-     * @codeCoverageIgnore
      */
     public function getID(): string
     {

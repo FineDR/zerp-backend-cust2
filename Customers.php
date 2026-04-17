@@ -3,7 +3,9 @@
 require(__DIR__ . '/includes/session.php');
 
 include(__DIR__ . '/includes/CurrenciesArray.php'); // To get the currency name from the currency code.
-if (isset($_POST['ClientSince'])){$_POST['ClientSince'] = ConvertSQLDate($_POST['ClientSince']);}
+if (isset($_POST['ClientSince'])) {
+	$_POST['ClientSince'] = ConvertSQLDate($_POST['ClientSince']);
+}
 
 if (isset($_POST['Edit']) or isset($_GET['Edit']) or isset($_GET['DebtorNo'])) {
 	$ViewTopic = 'AccountsReceivable';
@@ -167,7 +169,7 @@ if (isset($_POST['submit'])) {
 
 	//initialise no input errors assumed initially before we test
 	$InputError = 0;
-	$i=1;
+	$i = 1;
 
 	/* actions to take once the user has clicked the submit button
 	ie the page has called itself with some user input */
@@ -176,92 +178,92 @@ if (isset($_POST['submit'])) {
 
 	$_POST['DebtorNo'] = mb_strtoupper($_POST['DebtorNo']);
 
-	$SQL="SELECT COUNT(debtorno) FROM debtorsmaster WHERE debtorno='".$_POST['DebtorNo']."'";
+	$SQL = "SELECT COUNT(debtorno) FROM debtorsmaster WHERE debtorno='" . $_POST['DebtorNo'] . "'";
 	$Result = DB_query($SQL);
-	$MyRow=DB_fetch_row($Result);
-	if ($MyRow[0]>0 AND isset($_POST['New'])) {
+	$MyRow = DB_fetch_row($Result);
+	if ($MyRow[0] > 0 AND isset($_POST['New'])) {
 		$InputError = 1;
-		prnMsg( __('The customer number already exists in the database'),'error');
+		prnMsg(__('The customer number already exists in the database'), 'error');
 		$Errors[$i] = 'DebtorNo';
 		$i++;
-	} elseif (mb_strlen($_POST['CustName']) > 40 OR mb_strlen($_POST['CustName'])==0) {
+	} elseif (mb_strlen($_POST['CustName']) > 40 OR mb_strlen($_POST['CustName']) == 0) {
 		$InputError = 1;
-		prnMsg( __('The customer name must be entered and be forty characters or less long'),'error');
+		prnMsg(__('The customer name must be entered and be forty characters or less long'), 'error');
 		$Errors[$i] = 'CustName';
 		$i++;
-	} elseif ($_SESSION['AutoDebtorNo']==0 AND mb_strlen($_POST['DebtorNo']) ==0) {
+	} elseif ($_SESSION['AutoDebtorNo'] == 0 AND mb_strlen($_POST['DebtorNo']) == 0) {
 		$InputError = 1;
-		prnMsg( __('The debtor code cannot be empty'),'error');
+		prnMsg(__('The debtor code cannot be empty'), 'error');
 		$Errors[$i] = 'DebtorNo';
 		$i++;
-	} elseif ($_SESSION['AutoDebtorNo']==0 AND (ContainsIllegalCharacters($_POST['DebtorNo']) OR mb_strpos($_POST['DebtorNo'], ' '))) {
+	} elseif ($_SESSION['AutoDebtorNo'] == 0 AND (ContainsIllegalCharacters($_POST['DebtorNo']) OR mb_strpos($_POST['DebtorNo'], ' '))) {
 		$InputError = 1;
-		prnMsg( __('The customer code cannot contain any of the following characters') . " . - ' &amp; + \" " . __('or a space'),'error');
+		prnMsg(__('The customer code cannot contain any of the following characters') . " . - ' &amp; + \" " . __('or a space'), 'error');
 		$Errors[$i] = 'DebtorNo';
 		$i++;
-	} elseif (mb_strlen($_POST['Address1']) >40) {
+	} elseif (mb_strlen($_POST['Address1']) > 40) {
 		$InputError = 1;
-		prnMsg( __('The Line 1 of the address must be forty characters or less long'),'error');
+		prnMsg(__('The Line 1 of the address must be forty characters or less long'), 'error');
 		$Errors[$i] = 'Address1';
 		$i++;
-	} elseif (mb_strlen($_POST['Address2']) >40) {
+	} elseif (mb_strlen($_POST['Address2']) > 40) {
 		$InputError = 1;
-		prnMsg( __('The Line 2 of the address must be forty characters or less long'),'error');
+		prnMsg(__('The Line 2 of the address must be forty characters or less long'), 'error');
 		$Errors[$i] = 'Address2';
 		$i++;
-	} elseif (mb_strlen($_POST['Address3']) >40) {
+	} elseif (mb_strlen($_POST['Address3']) > 40) {
 		$InputError = 1;
-		prnMsg( __('The Line 3 of the address must be forty characters or less long'),'error');
+		prnMsg(__('The Line 3 of the address must be forty characters or less long'), 'error');
 		$Errors[$i] = 'Address3';
 		$i++;
-	} elseif (mb_strlen($_POST['Address4']) >50) {
+	} elseif (mb_strlen($_POST['Address4']) > 50) {
 		$InputError = 1;
-		prnMsg( __('The Line 4 of the address must be fifty characters or less long'),'error');
+		prnMsg(__('The Line 4 of the address must be fifty characters or less long'), 'error');
 		$Errors[$i] = 'Address4';
 		$i++;
-	} elseif (mb_strlen($_POST['Address5']) >20) {
+	} elseif (mb_strlen($_POST['Address5']) > 20) {
 		$InputError = 1;
-		prnMsg( __('The Line 5 of the address must be twenty characters or less long'),'error');
+		prnMsg(__('The Line 5 of the address must be twenty characters or less long'), 'error');
 		$Errors[$i] = 'Address5';
 		$i++;
 	} elseif (!is_numeric(filter_number_format($_POST['CreditLimit']))) {
 		$InputError = 1;
-		prnMsg( __('The credit limit must be numeric'),'error');
+		prnMsg(__('The credit limit must be numeric'), 'error');
 		$Errors[$i] = 'CreditLimit';
 		$i++;
 	} elseif (!is_numeric(filter_number_format($_POST['PymtDiscount']))) {
 		$InputError = 1;
-		prnMsg( __('The payment discount must be numeric'),'error');
+		prnMsg(__('The payment discount must be numeric'), 'error');
 		$Errors[$i] = 'PymtDiscount';
 		$i++;
 	} elseif (!Is_Date($_POST['ClientSince'])) {
 		$InputError = 1;
-		prnMsg( __('The customer since field must be a date in the format') . ' ' . $_SESSION['DefaultDateFormat'],'error');
+		prnMsg(__('The customer since field must be a date in the format') . ' ' . $_SESSION['DefaultDateFormat'], 'error');
 		$Errors[$i] = 'ClientSince';
 		$i++;
 	} elseif (!is_numeric(filter_number_format($_POST['Discount']))) {
 		$InputError = 1;
-		prnMsg( __('The discount percentage must be numeric'),'error');
+		prnMsg(__('The discount percentage must be numeric'), 'error');
 		$Errors[$i] = 'Discount';
 		$i++;
-	} elseif (filter_number_format($_POST['CreditLimit']) <0) {
+	} elseif (filter_number_format($_POST['CreditLimit']) < 0) {
 		$InputError = 1;
-		prnMsg( __('The credit limit must be a positive number'),'error');
+		prnMsg(__('The credit limit must be a positive number'), 'error');
 		$Errors[$i] = 'CreditLimit';
 		$i++;
-	} elseif ((filter_number_format($_POST['PymtDiscount'])> 10) OR (filter_number_format($_POST['PymtDiscount']) <0)) {
+	} elseif ((filter_number_format($_POST['PymtDiscount']) > 10) OR (filter_number_format($_POST['PymtDiscount']) < 0)) {
 		$InputError = 1;
-		prnMsg( __('The payment discount is expected to be less than 10% and greater than or equal to 0'),'error');
+		prnMsg(__('The payment discount is expected to be less than 10% and greater than or equal to 0'), 'error');
 		$Errors[$i] = 'PymtDiscount';
 		$i++;
-	} elseif ((filter_number_format($_POST['Discount'])> 100) OR (filter_number_format($_POST['Discount']) <0)) {
+	} elseif ((filter_number_format($_POST['Discount']) > 100) OR (filter_number_format($_POST['Discount']) < 0)) {
 		$InputError = 1;
-		prnMsg( __('The discount is expected to be less than 100% and greater than or equal to 0'),'error');
+		prnMsg(__('The discount is expected to be less than 100% and greater than or equal to 0'), 'error');
 		$Errors[$i] = 'Discount';
 		$i++;
 	}
 
-	if ($InputError != 1){
+	if ($InputError != 1) {
 
 		$SQL_ClientSince = FormatDateForSQL($_POST['ClientSince']);
 
@@ -277,17 +279,17 @@ if (isset($_POST['submit'])) {
 				$SQL = "UPDATE debtorsmaster SET name='" . $_POST['CustName'] . "',
 												address1='" . $_POST['Address1'] . "',
 												address2='" . $_POST['Address2'] . "',
-												address3='" . $_POST['Address3'] ."',
+												address3='" . $_POST['Address3'] . "',
 												address4='" . $_POST['Address4'] . "',
 												address5='" . $_POST['Address5'] . "',
 												address6='" . $_POST['Address6'] . "',
 												currcode='" . $_POST['CurrCode'] . "',
-												clientsince='" . $SQL_ClientSince. "',
+												clientsince='" . $SQL_ClientSince . "',
 												holdreason='" . $_POST['HoldReason'] . "',
 												paymentterms='" . $_POST['PaymentTerms'] . "',
-												discount='" . filter_number_format($_POST['Discount'])/100 . "',
+												discount='" . filter_number_format($_POST['Discount']) / 100 . "',
 												discountcode='" . $_POST['DiscountCode'] . "',
-												pymtdiscount='" . filter_number_format($_POST['PymtDiscount'])/100 . "',
+												pymtdiscount='" . filter_number_format($_POST['PymtDiscount']) / 100 . "',
 												creditlimit='" . filter_number_format($_POST['CreditLimit']) . "',
 												salestype = '" . $_POST['SalesType'] . "',
 												invaddrbranch='" . $_POST['AddrInvBranch'] . "',
@@ -308,16 +310,16 @@ if (isset($_POST['submit'])) {
 				$SQL = "UPDATE debtorsmaster SET	name='" . $_POST['CustName'] . "',
 												address1='" . $_POST['Address1'] . "',
 												address2='" . $_POST['Address2'] . "',
-												address3='" . $_POST['Address3'] ."',
+												address3='" . $_POST['Address3'] . "',
 												address4='" . $_POST['Address4'] . "',
 												address5='" . $_POST['Address5'] . "',
 												address6='" . $_POST['Address6'] . "',
 												clientsince='" . $SQL_ClientSince . "',
 												holdreason='" . $_POST['HoldReason'] . "',
 												paymentterms='" . $_POST['PaymentTerms'] . "',
-												discount='" . filter_number_format($_POST['Discount'])/100 . "',
+												discount='" . filter_number_format($_POST['Discount']) / 100 . "',
 												discountcode='" . $_POST['DiscountCode'] . "',
-												pymtdiscount='" . filter_number_format($_POST['PymtDiscount'])/100 . "',
+												pymtdiscount='" . filter_number_format($_POST['PymtDiscount']) / 100 . "',
 												creditlimit='" . filter_number_format($_POST['CreditLimit']) . "',
 												salestype = '" . $_POST['SalesType'] . "',
 												invaddrbranch='" . $_POST['AddrInvBranch'] . "',
@@ -327,14 +329,14 @@ if (isset($_POST['submit'])) {
 												language_id='" . $_POST['LanguageID'] . "'
 						WHERE debtorno = '" . $_POST['DebtorNo'] . "'";
 
-				if ($OldCurrency !=  $_POST['CurrCode']) {
-					prnMsg( __('The currency code cannot be updated as there are already transactions for this customer'),'info');
+				if ($OldCurrency != $_POST['CurrCode']) {
+					prnMsg(__('The currency code cannot be updated as there are already transactions for this customer'), 'info');
 				}
 			}
 
 			$ErrMsg = __('The customer could not be updated because');
 			$Result = DB_query($SQL, $ErrMsg);
-			prnMsg( __('Customer updated'),'success');
+			prnMsg(__('Customer updated'), 'success');
 			echo '<br />';
 
 		} else { //it is a new customer
@@ -342,7 +344,7 @@ if (isset($_POST['submit'])) {
 			something greater 0 */
 			if ($_SESSION['AutoDebtorNo'] > 0) {
 				/* system assigned, sequential, numeric */
-				if ($_SESSION['AutoDebtorNo']== 1) {
+				if ($_SESSION['AutoDebtorNo'] == 1) {
 					$_POST['DebtorNo'] = GetNextTransNo(500);
 				}
 			}
@@ -370,10 +372,10 @@ if (isset($_POST['submit'])) {
 							customerpoline,
 							typeid,
 							language_id)
-				VALUES ('" . $_POST['DebtorNo'] ."',
-						'" . $_POST['CustName'] ."',
-						'" . $_POST['Address1'] ."',
-						'" . $_POST['Address2'] ."',
+				VALUES ('" . $_POST['DebtorNo'] . "',
+						'" . $_POST['CustName'] . "',
+						'" . $_POST['Address1'] . "',
+						'" . $_POST['Address2'] . "',
 						'" . $_POST['Address3'] . "',
 						'" . $_POST['Address4'] . "',
 						'" . $_POST['Address5'] . "',
@@ -382,9 +384,9 @@ if (isset($_POST['submit'])) {
 						'" . $SQL_ClientSince . "',
 						'" . $_POST['HoldReason'] . "',
 						'" . $_POST['PaymentTerms'] . "',
-						'" . filter_number_format($_POST['Discount'])/100 . "',
+						'" . filter_number_format($_POST['Discount']) / 100 . "',
 						'" . $_POST['DiscountCode'] . "',
-						'" . filter_number_format($_POST['PymtDiscount'])/100 . "',
+						'" . filter_number_format($_POST['PymtDiscount']) / 100 . "',
 						'" . filter_number_format($_POST['CreditLimit']) . "',
 						'" . $_POST['SalesType'] . "',
 						'" . $_POST['AddrInvBranch'] . "',
@@ -396,93 +398,93 @@ if (isset($_POST['submit'])) {
 			$ErrMsg = __('This customer could not be added because');
 			$Result = DB_query($SQL, $ErrMsg);
 
-			echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath .'/CustomerBranches.php?DebtorNo=' . $_POST['DebtorNo'] . '">';
+			echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath . '/CustomerBranches.php?DebtorNo=' . $_POST['DebtorNo'] . '">';
 
 			echo '<div class="centre">' . __('You should automatically be forwarded to the entry of a new Customer Branch page') .
-			'. ' . __('If this does not happen') .' (' . __('if the browser does not support META Refresh') . ') ' .
-			'<a href="' . $RootPath . '/CustomerBranches.php?DebtorNo=' . $_POST['DebtorNo']  . '"></a></div>';
+				'. ' . __('If this does not happen') . ' (' . __('if the browser does not support META Refresh') . ') ' .
+				'<a href="' . $RootPath . '/CustomerBranches.php?DebtorNo=' . $_POST['DebtorNo'] . '"></a></div>';
 
 			include(__DIR__ . '/includes/footer.php');
 			exit();
 		}
 	} else {
-		prnMsg( __('Validation failed') . '. ' . __('No updates or deletes took place'),'error');
+		prnMsg(__('Validation failed') . '. ' . __('No updates or deletes took place'), 'error');
 	}
 
 } elseif (isset($_POST['delete'])) {
 
-//the link to delete a selected record was clicked instead of the submit button
+	//the link to delete a selected record was clicked instead of the submit button
 
 	$CancelDelete = 0;
 
-// PREVENT DELETES IF DEPENDENT RECORDS IN 'DebtorTrans'
+	// PREVENT DELETES IF DEPENDENT RECORDS IN 'DebtorTrans'
 
-	$SQL= "SELECT COUNT(*) FROM debtortrans WHERE debtorno='" . $_POST['DebtorNo'] . "'";
+	$SQL = "SELECT COUNT(*) FROM debtortrans WHERE debtorno='" . $_POST['DebtorNo'] . "'";
 	$Result = DB_query($SQL);
 	$MyRow = DB_fetch_row($Result);
-	if ($MyRow[0]>0) {
+	if ($MyRow[0] > 0) {
 		$CancelDelete = 1;
-		prnMsg( __('This customer cannot be deleted because there are transactions that refer to it'),'warn');
+		prnMsg(__('This customer cannot be deleted because there are transactions that refer to it'), 'warn');
 		echo '<br /> ' . __('There are') . ' ' . $MyRow[0] . ' ' . __('transactions against this customer');
 
 	} else {
-		$SQL= "SELECT COUNT(*) FROM salesorders WHERE debtorno='" . $_POST['DebtorNo'] . "'";
+		$SQL = "SELECT COUNT(*) FROM salesorders WHERE debtorno='" . $_POST['DebtorNo'] . "'";
 		$Result = DB_query($SQL);
 		$MyRow = DB_fetch_row($Result);
-		if ($MyRow[0]>0) {
+		if ($MyRow[0] > 0) {
 			$CancelDelete = 1;
-			prnMsg( __('Cannot delete the customer record because orders have been created against it'),'warn');
+			prnMsg(__('Cannot delete the customer record because orders have been created against it'), 'warn');
 			echo '<br /> ' . __('There are') . ' ' . $MyRow[0] . ' ' . __('orders against this customer');
 		} else {
-			$SQL= "SELECT COUNT(*) FROM salesanalysis WHERE cust='" . $_POST['DebtorNo'] . "'";
+			$SQL = "SELECT COUNT(*) FROM salesanalysis WHERE cust='" . $_POST['DebtorNo'] . "'";
 			$Result = DB_query($SQL);
 			$MyRow = DB_fetch_row($Result);
-			if ($MyRow[0]>0) {
+			if ($MyRow[0] > 0) {
 				$CancelDelete = 1;
-				prnMsg( __('Cannot delete this customer record because sales analysis records exist for it'),'warn');
+				prnMsg(__('Cannot delete this customer record because sales analysis records exist for it'), 'warn');
 				echo '<br /> ' . __('There are') . ' ' . $MyRow[0] . ' ' . __('sales analysis records against this customer');
 			} else {
 
 				// Check if there are any users that refer to this CUSTOMER code
-				$SQL= "SELECT COUNT(*) FROM www_users WHERE www_users.customerid = '" . $_POST['DebtorNo'] . "'";
+				$SQL = "SELECT COUNT(*) FROM www_users WHERE www_users.customerid = '" . $_POST['DebtorNo'] . "'";
 
 				$Result = DB_query($SQL);
 				$MyRow = DB_fetch_row($Result);
 
-				if ($MyRow[0]>0) {
-					prnMsg(__('Cannot delete this customer because users exist that refer to it') . '. ' . __('Purge old users first'),'warn');
-					echo '<br />' . __('There are') . ' ' . $MyRow[0] . ' '.__('users referring to this Branch/customer');
+				if ($MyRow[0] > 0) {
+					prnMsg(__('Cannot delete this customer because users exist that refer to it') . '. ' . __('Purge old users first'), 'warn');
+					echo '<br />' . __('There are') . ' ' . $MyRow[0] . ' ' . __('users referring to this Branch/customer');
 				} else {
-						// Check if there are any contract that refer to this branch code
+					// Check if there are any contract that refer to this branch code
 					$SQL = "SELECT COUNT(*) FROM contracts WHERE contracts.debtorno = '" . $_POST['DebtorNo'] . "'";
 
 					$Result = DB_query($SQL);
 					$MyRow = DB_fetch_row($Result);
 
-					if ($MyRow[0]>0) {
-						prnMsg(__('Cannot delete this customer because contracts have been created that refer to it') . '. ' . __('Purge old contracts first'),'warn');
-						echo '<br />' . __('There are') . ' ' . $MyRow[0] . ' '.__('contracts referring to this customer');
+					if ($MyRow[0] > 0) {
+						prnMsg(__('Cannot delete this customer because contracts have been created that refer to it') . '. ' . __('Purge old contracts first'), 'warn');
+						echo '<br />' . __('There are') . ' ' . $MyRow[0] . ' ' . __('contracts referring to this customer');
 					}
 				}
 			}
 		}
 
 	}
-	if ($CancelDelete==0) { //ie not cancelled the delete as a result of above tests
-		$SQL="DELETE FROM custbranch WHERE debtorno='" . $_POST['DebtorNo'] . "'";
+	if ($CancelDelete == 0) { //ie not cancelled the delete as a result of above tests
+		$SQL = "DELETE FROM custbranch WHERE debtorno='" . $_POST['DebtorNo'] . "'";
 		$Result = DB_query($SQL, $ErrMsg);
-		$SQL="DELETE FROM custcontacts WHERE debtorno='" . $_POST['DebtorNo'] . "'";
+		$SQL = "DELETE FROM custcontacts WHERE debtorno='" . $_POST['DebtorNo'] . "'";
 		$Result = DB_query($SQL);
-		$SQL="DELETE FROM debtorsmaster WHERE debtorno='" . $_POST['DebtorNo'] . "'";
+		$SQL = "DELETE FROM debtorsmaster WHERE debtorno='" . $_POST['DebtorNo'] . "'";
 		$Result = DB_query($SQL);
-		prnMsg( __('Customer') . ' ' . $_POST['DebtorNo'] . ' ' . __('has been deleted - together with all the associated branches and contacts'),'success');
+		prnMsg(__('Customer') . ' ' . $_POST['DebtorNo'] . ' ' . __('has been deleted - together with all the associated branches and contacts'), 'success');
 		unset($_SESSION['CustomerID']);
 		include(__DIR__ . '/includes/footer.php');
 		exit();
 	} //end if Delete Customer
 }
 
-if (isset($_POST['Reset'])){
+if (isset($_POST['Reset'])) {
 	unset($_POST['CustName']);
 	unset($_POST['Address1']);
 	unset($_POST['Address2']);
@@ -505,41 +507,41 @@ if (isset($_POST['Reset'])){
 
 /*DebtorNo could be set from a post or a get when passed as a parameter to this page */
 
-if (isset($_POST['DebtorNo'])){
+if (isset($_POST['DebtorNo'])) {
 	$DebtorNo = $_POST['DebtorNo'];
-} elseif (isset($_GET['DebtorNo'])){
+} elseif (isset($_GET['DebtorNo'])) {
 	$DebtorNo = $_GET['DebtorNo'];
 }
 
-if (isset($_POST['AddContact']) AND (isset($_POST['AddContact'])!= '')){
-	echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath . '/AddCustomerContacts.php?DebtorNo=' .$DebtorNo.'">';
+if (isset($_POST['AddContact']) AND (isset($_POST['AddContact']) != '')) {
+	echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath . '/AddCustomerContacts.php?DebtorNo=' . $DebtorNo . '">';
 }
 
 if (!isset($DebtorNo)) {
 
-	$SetupErrors=0; //Count errors
-	$SQL="SELECT COUNT(typeabbrev) FROM salestypes";
+	$SetupErrors = 0; //Count errors
+	$SQL = "SELECT COUNT(typeabbrev) FROM salestypes";
 	$Result = DB_query($SQL);
-	$MyRow=DB_fetch_row($Result);
-	if ($MyRow[0]==0) {
-		prnMsg( __('In order to create a new customer you must first set up at least one sales type/price list'),'warning');
+	$MyRow = DB_fetch_row($Result);
+	if ($MyRow[0] == 0) {
+		prnMsg(__('In order to create a new customer you must first set up at least one sales type/price list'), 'warning');
 		$SetupErrors += 1;
 	}
-	$SQL="SELECT COUNT(typeid) FROM debtortype";
+	$SQL = "SELECT COUNT(typeid) FROM debtortype";
 	$Result = DB_query($SQL);
-	$MyRow=DB_fetch_row($Result);
-	if ($MyRow[0]==0) {
-		prnMsg( __('In order to create a new customer you must first set up at least one customer type'),'warning');
+	$MyRow = DB_fetch_row($Result);
+	if ($MyRow[0] == 0) {
+		prnMsg(__('In order to create a new customer you must first set up at least one customer type'), 'warning');
 		$SetupErrors += 1;
 	}
 
-	if ($SetupErrors>0) {
-		echo '<br /><div class="centre"><a href="'.htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') .'" >' . __('Click here to continue') . '</a></div>';
+	if ($SetupErrors > 0) {
+		echo '<br /><div class="centre"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" >' . __('Click here to continue') . '</a></div>';
 		include(__DIR__ . '/includes/footer.php');
 		exit();
 	}
-	
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" style="display: contents;">
+
+	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" style="display: contents;">
 		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
 		<input type="hidden" name="New" value="Yes" />
 		
@@ -593,8 +595,8 @@ if (!isset($DebtorNo)) {
 						</div>
 						<div class="db-card-body" style="background: #fff;">
 							<div class="db-grid-2">';
-	
-	if ($_SESSION['AutoDebtorNo']==0)  {
+
+	if ($_SESSION['AutoDebtorNo'] == 0) {
 		echo '<div class="db-form-group">
 				<label class="db-label">' . __('Customer Code') . '</label>
 				<input type="text" name="DebtorNo" required="required" autofocus="autofocus" class="db-input" maxlength="10" placeholder="' . __('e.g. CUST001') . '" />
@@ -611,7 +613,7 @@ if (!isset($DebtorNo)) {
 			<label class="db-label">' . __('Sales Type / Price List') . '</label>
 			<select name="SalesType" required="required" class="db-input">';
 	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<option value="'. $MyRow['typeabbrev'] . '">' . $MyRow['sales_type'] . '</option>';
+		echo '<option value="' . $MyRow['typeabbrev'] . '">' . $MyRow['sales_type'] . '</option>';
 	}
 	echo '</select>
 		</div>';
@@ -621,7 +623,7 @@ if (!isset($DebtorNo)) {
 			<label class="db-label">' . __('Customer Category') . '</label>
 			<select name="typeid" required="required" class="db-input">';
 	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<option value="'. $MyRow['typeid'] . '">' . $MyRow['typename'] . '</option>';
+		echo '<option value="' . $MyRow['typeid'] . '">' . $MyRow['typename'] . '</option>';
 	}
 	echo '</select>
 		</div>
@@ -658,8 +660,8 @@ if (!isset($DebtorNo)) {
 								<div class="db-form-group">
 									<label class="db-label">' . __('Country') . '</label>
 									<select name="Address6" class="db-input">';
-	foreach ($CountriesArray as $CountryName){
-		echo '<option value="' . $CountryName . '">' . $CountryName  . '</option>';
+	foreach ($CountriesArray as $CountryName) {
+		echo '<option value="' . $CountryName . '">' . $CountryName . '</option>';
 	}
 	echo '				</select>
 								</div>
@@ -678,7 +680,7 @@ if (!isset($DebtorNo)) {
 							<div class="db-grid-3">
 								<div class="db-form-group">
 									<label class="db-label">' . __('Credit Limit') . '</label>
-									<input type="text" name="CreditLimit" required="required" value="' . locale_number_format($_SESSION['DefaultCreditLimit'],0) . '" class="db-input" maxlength="14" />
+									<input type="text" name="CreditLimit" required="required" value="' . locale_number_format($_SESSION['DefaultCreditLimit'], 0) . '" class="db-input" maxlength="14" />
 								</div>
 								<div class="db-form-group">
 									<label class="db-label">' . __('Base Discount %') . '</label>
@@ -693,7 +695,7 @@ if (!isset($DebtorNo)) {
 									<select name="CurrCode" required="required" class="db-input">';
 	$Result = DB_query("SELECT currency, currabrev FROM currencies");
 	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<option value="'. $MyRow['currabrev'] . '">' . $MyRow['currency'] . '</option>';
+		echo '<option value="' . $MyRow['currabrev'] . '">' . $MyRow['currency'] . '</option>';
 	}
 	echo '				</select>
 								</div>
@@ -702,7 +704,7 @@ if (!isset($DebtorNo)) {
 									<select name="PaymentTerms" required="required" class="db-input">';
 	$Result = DB_query("SELECT terms, termsindicator FROM paymentterms");
 	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<option value="'. $MyRow['termsindicator'] . '">' . $MyRow['terms'] . '</option>';
+		echo '<option value="' . $MyRow['termsindicator'] . '">' . $MyRow['terms'] . '</option>';
 	}
 	echo '				</select>
 								</div>
@@ -720,9 +722,9 @@ if (!isset($DebtorNo)) {
 								<div class="db-form-group">
 									<label class="db-label">' . __('Preferred Language') . '</label>
 									<select name="LanguageID" required="required" class="db-input">';
-	foreach ($LanguagesArray as $LanguageCode => $LanguageName){
+	foreach ($LanguagesArray as $LanguageCode => $LanguageName) {
 		$selected = ($_SESSION['Language'] == $LanguageCode) ? 'selected="selected"' : '';
-		echo '<option ' . $selected . ' value="' . $LanguageCode . '">' . $LanguageName['LanguageName']  . '</option>';
+		echo '<option ' . $selected . ' value="' . $LanguageCode . '">' . $LanguageName['LanguageName'] . '</option>';
 	}
 	echo '				</select>
 								</div>
@@ -734,7 +736,7 @@ if (!isset($DebtorNo)) {
 									<select name="HoldReason" required="required" class="db-input">';
 	$Result = DB_query("SELECT reasoncode, reasondescription FROM holdreasons");
 	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<option value="'. $MyRow['reasoncode'] . '">' . $MyRow['reasondescription'] . '</option>';
+		echo '<option value="' . $MyRow['reasoncode'] . '">' . $MyRow['reasondescription'] . '</option>';
 	}
 	echo '				</select>
 								</div>
@@ -749,14 +751,14 @@ if (!isset($DebtorNo)) {
 
 } else {
 	// EDIT MODE
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" style="display: contents;">
+	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" style="display: contents;">
 		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
 	if (!isset($_POST['New'])) {
 		$SQL = "SELECT * FROM debtorsmaster WHERE debtorno = '" . $DebtorNo . "'";
 		$Result = DB_query($SQL);
 		$MyRow = DB_fetch_array($Result);
-		
+
 		$_POST['CustName'] = $MyRow['name'];
 		$_POST['Address1'] = $MyRow['address1'];
 		$_POST['Address2'] = $MyRow['address2'];
@@ -769,10 +771,10 @@ if (!isset($DebtorNo)) {
 		$_POST['ClientSince'] = ConvertSQLDate($MyRow['clientsince']);
 		$_POST['HoldReason'] = $MyRow['holdreason'];
 		$_POST['PaymentTerms'] = $MyRow['paymentterms'];
-		$_POST['Discount'] = locale_number_format($MyRow['discount'] * 100,2);
+		$_POST['Discount'] = locale_number_format($MyRow['discount'] * 100, 2);
 		$_POST['DiscountCode'] = $MyRow['discountcode'];
-		$_POST['PymtDiscount'] = locale_number_format($MyRow['pymtdiscount'] * 100,2);
-		$_POST['CreditLimit'] = locale_number_format($MyRow['creditlimit'],0);
+		$_POST['PymtDiscount'] = locale_number_format($MyRow['pymtdiscount'] * 100, 2);
+		$_POST['CreditLimit'] = locale_number_format($MyRow['creditlimit'], 0);
 		$_POST['InvAddrBranch'] = $MyRow['invaddrbranch'];
 		$_POST['TaxRef'] = $MyRow['taxref'];
 		$_POST['CustomerPOLine'] = $MyRow['customerpoline'];
@@ -852,14 +854,14 @@ if (!isset($DebtorNo)) {
 									<label class="db-label">' . __('Customer Name') . '</label>
 									<input type="text" name="CustName" class="db-input" required value="' . $_POST['CustName'] . '" maxlength="40" />
 								</div>';
-	
+
 	$Result = DB_query("SELECT typeabbrev, sales_type FROM salestypes ORDER BY sales_type");
 	echo '<div class="db-form-group">
 			<label class="db-label">' . __('Sales Type / Price List') . '</label>
 			<select name="SalesType" class="db-input">';
 	while ($myr = DB_fetch_array($Result)) {
-		$sel = ($_POST['SalesType']==$myr['typeabbrev']) ? 'selected="selected"' : '';
-		echo '<option ' . $sel . ' value="'. $myr['typeabbrev'] . '">' . $myr['sales_type'] . '</option>';
+		$sel = ($_POST['SalesType'] == $myr['typeabbrev']) ? 'selected="selected"' : '';
+		echo '<option ' . $sel . ' value="' . $myr['typeabbrev'] . '">' . $myr['sales_type'] . '</option>';
 	}
 	echo '</select></div>';
 
@@ -868,11 +870,11 @@ if (!isset($DebtorNo)) {
 			<label class="db-label">' . __('Customer Category') . '</label>
 			<select name="typeid" class="db-input">';
 	while ($myr = DB_fetch_array($Result)) {
-		$sel = ($_POST['typeid']==$myr['typeid']) ? 'selected="selected"' : '';
-		echo '<option ' . $sel . ' value="'. $myr['typeid'] . '">' . $myr['typename'] . '</option>';
+		$sel = ($_POST['typeid'] == $myr['typeid']) ? 'selected="selected"' : '';
+		echo '<option ' . $sel . ' value="' . $myr['typeid'] . '">' . $myr['typename'] . '</option>';
 	}
 	echo '</select></div>';
-	
+
 	echo '		</div>
 						</div>
 					</div>
@@ -906,9 +908,9 @@ if (!isset($DebtorNo)) {
 								<div class="db-form-group">
 									<label class="db-label">' . __('Country') . '</label>
 									<select name="Address6" class="db-input">';
-	foreach ($CountriesArray as $cn){
+	foreach ($CountriesArray as $cn) {
 		$sel = (strtoupper($_POST['Address6']) == strtoupper($cn)) ? 'selected="selected"' : '';
-		echo '<option ' . $sel . ' value="' . $cn . '">' . $cn  . '</option>';
+		echo '<option ' . $sel . ' value="' . $cn . '">' . $cn . '</option>';
 	}
 	echo '				</select>
 								</div>
@@ -942,8 +944,8 @@ if (!isset($DebtorNo)) {
 									<select name="CurrCode" class="db-input">';
 	$Result = DB_query("SELECT currency, currabrev FROM currencies");
 	while ($myr = DB_fetch_array($Result)) {
-		$sel = ($_POST['CurrCode']==$myr['currabrev']) ? 'selected="selected"' : '';
-		echo '<option ' . $sel . ' value="'. $myr['currabrev'] . '">' . $myr['currency'] . '</option>';
+		$sel = ($_POST['CurrCode'] == $myr['currabrev']) ? 'selected="selected"' : '';
+		echo '<option ' . $sel . ' value="' . $myr['currabrev'] . '">' . $myr['currency'] . '</option>';
 	}
 	echo '				</select>
 								</div>
@@ -952,8 +954,8 @@ if (!isset($DebtorNo)) {
 									<select name="PaymentTerms" class="db-input">';
 	$Result = DB_query("SELECT terms, termsindicator FROM paymentterms");
 	while ($myr = DB_fetch_array($Result)) {
-		$sel = ($_POST['PaymentTerms']==$myr['termsindicator']) ? 'selected="selected"' : '';
-		echo '<option ' . $sel . ' value="'. $myr['termsindicator'] . '">' . $myr['terms'] . '</option>';
+		$sel = ($_POST['PaymentTerms'] == $myr['termsindicator']) ? 'selected="selected"' : '';
+		echo '<option ' . $sel . ' value="' . $myr['termsindicator'] . '">' . $myr['terms'] . '</option>';
 	}
 	echo '				</select>
 								</div>
@@ -981,9 +983,9 @@ if (!isset($DebtorNo)) {
 								<div class="db-form-group">
 									<label class="db-label">' . __('Language') . '</label>
 									<select name="LanguageID" class="db-input">';
-	foreach ($LanguagesArray as $lc => $ln){
+	foreach ($LanguagesArray as $lc => $ln) {
 		$sel = ($_POST['LanguageID'] == $lc) ? 'selected="selected"' : '';
-		echo '<option ' . $sel . ' value="' . $lc . '">' . $ln['LanguageName']  . '</option>';
+		echo '<option ' . $sel . ' value="' . $lc . '">' . $ln['LanguageName'] . '</option>';
 	}
 	echo '				</select>
 								</div>
@@ -992,8 +994,8 @@ if (!isset($DebtorNo)) {
 									<select name="HoldReason" class="db-input">';
 	$Result = DB_query("SELECT reasoncode, reasondescription FROM holdreasons");
 	while ($myr = DB_fetch_array($Result)) {
-		$sel = ($_POST['HoldReason']==$myr['reasoncode']) ? 'selected="selected"' : '';
-		echo '<option ' . $sel . ' value="'. $myr['reasoncode'] . '">' . $myr['reasondescription'] . '</option>';
+		$sel = ($_POST['HoldReason'] == $myr['reasoncode']) ? 'selected="selected"' : '';
+		echo '<option ' . $sel . ' value="' . $myr['reasoncode'] . '">' . $myr['reasondescription'] . '</option>';
 	}
 	echo '				</select>
 								</div>
@@ -1034,7 +1036,7 @@ if (!isset($DebtorNo)) {
 				</td>
 				<td style="text-align: right;">
 					<a href="' . $RootPath . '/AddCustomerContacts.php?Id=' . $myr['contid'] . '&DebtorNo=' . $DebtorNo . '" style="color: #059669; margin-right: 16px;"><i class="fas fa-edit"></i></a>
-					<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?ID=' . $myr['contid'] . '&DebtorNo=' . $DebtorNo . '&delete=1" style="color: #dc2626;" onclick="return confirm(\'' . __('Are you sure you wish to delete this contact?') . '\');"><i class="fas fa-trash-alt"></i></a>
+					<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?ID=' . $myr['contid'] . '&DebtorNo=' . $DebtorNo . '&delete=1" style="color: #dc2626;" onclick="return confirm(\'' . __('Are you sure you wish to delete this contact?') . '\');"><i class="fas fa-trash-alt"></i></a>
 				</td>
 			</tr>';
 	}

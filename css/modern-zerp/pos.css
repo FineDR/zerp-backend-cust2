@@ -23,8 +23,8 @@
     padding: var(--space-4);
     height: calc(100vh - var(--header-height) - 10px);
     background: radial-gradient(at 0% 0%, hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.05) 0, transparent 50%),
-                radial-gradient(at 100% 100%, hsla(210, 80%, 50%, 0.03) 0, transparent 50%),
-                var(--bg-main);
+        radial-gradient(at 100% 100%, hsla(210, 80%, 50%, 0.03) 0, transparent 50%),
+        var(--bg-main);
     background-attachment: fixed;
     overflow: hidden;
 }
@@ -75,7 +75,10 @@
     padding: var(--space-1) 0;
     scrollbar-width: none;
 }
-.pos-categories::-webkit-scrollbar { display: none; }
+
+.pos-categories::-webkit-scrollbar {
+    display: none;
+}
 
 .pos-category-pill {
     white-space: nowrap;
@@ -90,10 +93,12 @@
     transition: var(--transition-base);
     box-shadow: var(--shadow-xs);
 }
+
 .pos-category-pill:hover {
     border-color: var(--primary-light);
     color: var(--primary);
 }
+
 .pos-category-pill.active {
     background: var(--primary);
     color: white;
@@ -108,11 +113,15 @@
     overflow-y: auto;
     padding: var(--space-4);
     margin-bottom: var(--space-4);
-    align-items: start; /* CRITICAL: Prevents cards from stretching vertically */
+    align-items: start;
+    /* CRITICAL: Prevents cards from stretching vertically */
     flex: 1;
 }
 
-.pos-product-grid::-webkit-scrollbar { width: 5px; }
+.pos-product-grid::-webkit-scrollbar {
+    width: 5px;
+}
+
 .pos-product-grid::-webkit-scrollbar-thumb {
     background: var(--border);
     border-radius: 10px;
@@ -123,7 +132,8 @@
     background: white;
     border: 1px solid var(--border-soft);
     border-radius: var(--radius-md);
-    padding: var(--space-3); /* Reduced from space-4 */
+    padding: var(--space-3);
+    /* Reduced from space-4 */
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
@@ -132,11 +142,13 @@
     position: relative;
     overflow: hidden;
     height: auto !important;
-    min-height: 120px !important; /* Even more compact */
+    min-height: 120px !important;
+    /* Even more compact */
 }
 
 .pos-product-card * {
-    pointer-events: none; /* Ensure the card's onclick captures everything */
+    pointer-events: none;
+    /* Ensure the card's onclick captures everything */
 }
 
 .pos-product-card:hover {
@@ -232,7 +244,8 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 0; /* Important for flex-grow with overflow */
+    min-height: 0;
+    /* Important for flex-grow with overflow */
 }
 
 .pos-cart-header {
@@ -254,7 +267,8 @@
     display: grid;
     grid-template-columns: 1fr auto;
     gap: var(--space-3);
-    padding: var(--space-4); /* Increased padding for clarity */
+    padding: var(--space-4);
+    /* Increased padding for clarity */
     background: white;
     border: 1px solid var(--border-soft);
     border-radius: var(--radius-md);
@@ -265,11 +279,13 @@
 .pos-cart-item:hover {
     border-color: var(--primary);
     background: var(--primary-soft);
-    transform: translateX(4px); /* Subtle slide effect */
+    transform: translateX(4px);
+    /* Subtle slide effect */
 }
 
 .pos-cart-item-info h4 {
-    font-size: 0.95rem; /* Larger font */
+    font-size: 0.95rem;
+    /* Larger font */
     font-weight: 700;
     color: var(--text-dark);
     margin: 0 0 6px 0;
@@ -308,7 +324,8 @@
 }
 
 .pos-product-img {
-    height: 120px !important; /* Slightly smaller image area to save space */
+    height: 120px !important;
+    /* Slightly smaller image area to save space */
 }
 
 /* Payment Section Refinement - CRITICAL PINNING */
@@ -316,10 +333,12 @@
     padding: var(--space-4) !important;
     background: white;
     border-top: 2px solid var(--primary-soft);
-    box-shadow: 0 -10px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.05);
     z-index: 10;
-    flex-shrink: 0; /* CRITICAL: Prevent shrinking */
-    position: relative; /* Base for layering */
+    flex-shrink: 0;
+    /* CRITICAL: Prevent shrinking */
+    position: relative;
+    /* Base for layering */
 }
 
 
@@ -327,7 +346,8 @@
     background: #ffffff !important;
     border: 1px solid var(--border) !important;
     border-radius: var(--radius-lg) !important;
-    padding: var(--space-5) var(--space-6) !important; /* Force 24px horizontal padding */
+    padding: var(--space-5) var(--space-6) !important;
+    /* Force 24px horizontal padding */
     box-shadow: var(--shadow-md) !important;
     display: flex;
     flex-direction: column;
@@ -449,19 +469,22 @@
     color: white;
 }
 
-.pos-tool-btn i, 
-.pos-tool-btn .fas, 
+.pos-tool-btn i,
+.pos-tool-btn .fas,
 .pos-tool-btn .fa {
     font-family: "Font Awesome 5 Free", sans-serif !important;
     font-weight: 900 !important;
-    color: #00a859 !important; /* Extremely specific green */
+    color: #00a859 !important;
+    /* Extremely specific green */
     font-style: normal !important;
-    pointer-events: none !important; /* CRITICAL: Ensure button gets the click */
+    pointer-events: none !important;
+    /* CRITICAL: Ensure button gets the click */
 }
 
 .pos-tool-btn.delete i,
 .pos-tool-btn.delete .fas {
-    color: #00a859 !important; /* Even the remove button icon should be green as per user request */
+    color: #00a859 !important;
+    /* Even the remove button icon should be green as per user request */
 }
 
 .pos-tool-btn:hover {
@@ -532,9 +555,18 @@
 
 /* Animations */
 @keyframes pulse-update {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.01); border-color: var(--primary); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.01);
+        border-color: var(--primary);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 
@@ -633,7 +665,8 @@
 }
 
 .pos-cart-items {
-    flex: 1; /* Expand to fill all available room */
+    flex: 1;
+    /* Expand to fill all available room */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -672,7 +705,8 @@
     }
 
     .pos-cart-items {
-        max-height: 400px; /* Increased height as requested */
+        max-height: 400px;
+        /* Increased height as requested */
     }
 }
 
@@ -804,13 +838,25 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 /* Refined Payment Row */
@@ -887,8 +933,15 @@
 }
 
 @keyframes popIn {
-    0% { transform: scale(0.9); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .pos-pay-btn:disabled {

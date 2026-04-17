@@ -484,47 +484,165 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 	$ViewTopic = 'ARReports';
 	$BookMark = 'AgedDebtors';
 
+	$ExtraHeadContent = '
+<style>
+	.ScriptTitle { display: none !important; }
+	.MainBody { padding: 0 !important; gap: 0 !important; background: transparent !important; }
+	.db-page { padding: var(--space-8) var(--space-6); background: var(--bg-main); min-height: 100vh; font-family: "Inter", sans-serif; }
+	
+	.premium-header { margin-bottom: 40px; position: relative; }
+	.premium-header::before { display: none !important; }
+	
+	/* Architect Workspace Overrides */
+	.db-card-header { 
+		background: #f9fafb; 
+		border-bottom: 1px solid #f3f4f6; 
+		padding: 20px 30px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.db-card-title {
+		font-size: 1.1rem;
+		font-weight: 850;
+		color: #064e3b;
+		margin: 0;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+	}
+	
+	.architect-btn {
+		display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+		padding: 12px 28px; border-radius: 50px;
+		background: #059669; color: #ffffff; border: none;
+		font-weight: 700; font-size: 0.85rem; text-decoration: none;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+		cursor: pointer; width: 100%;
+	}
+	.architect-btn:hover { background: #065f46; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3); }
+	.architect-btn i { color: #ffffff !important; }
+	.architect-btn.secondary { background: #e5e7eb; color: #374151; box-shadow: none; }
+	.architect-btn.secondary:hover { background: #d1d5db; color: #111827; }
+	.architect-btn.secondary i { color: #374151 !important; }
+	
+	.custom-bottom-layout { 
+		display: grid; 
+		grid-template-columns: 380px 1fr; 
+		gap: 32px; 
+		align-items: start; 
+	}
+	.custom-range-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 20px;
+		margin-bottom: 24px;
+	}
+	
+	.breadcrumb-item { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; }
+	.breadcrumb-item:hover { color: #059669; }
+	.breadcrumb-separator { font-size: 0.6rem; opacity: 0.4; margin: 0 4px; }
+</style>';
+
 	include(__DIR__ . '/includes/header.php');
 
 		echo '<div class="db-page">
-				<div class="db-page-header">
-					<div>
-						<h2 class="db-page-title">' . $Title . '</h2>
-						<p class="db-page-subtitle">' . __('Analyze aged customer balances and credit status') . '</p>
+		<div class="premium-header">
+			<div style="display: flex; justify-content: space-between; align-items: flex-end;">
+				<div>
+					<div style="font-size: 0.72rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; text-transform: lowercase; letter-spacing: 1px;">
+						<a href="index.php" class="breadcrumb-item"><i class="fas fa-home"></i> ' . __('Home') . '</a>
+						<i class="fas fa-chevron-right breadcrumb-separator"></i>
+						<a href="index.php?Application=AR" class="breadcrumb-item">' . __('Receivables') . '</a>
+						<i class="fas fa-chevron-right breadcrumb-separator"></i>
+						<span style="color: #064e3b; opacity: 0.9;">' . __('Aging Analysis') . '</span>
+					</div>
+					<div style="display: flex; align-items: center; gap: 24px;">
+						<div>
+							<h1 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px; color: #064e3b; margin: 0; line-height: 1;">' . $Title . '</h1>
+							<p style="font-size: 1.1rem; margin-top: 8px; color: #065f46; font-weight: 500; opacity: 0.8;">' . __('Analyze aged customer balances and credit status') . '</p>
+						</div>
 					</div>
 				</div>
+			</div>
+		</div>';
 
-				<div class="card-v2">
-					<div class="card-header-v2">
-						<h3>' . __('Report Criteria') . '</h3>
+		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') .  '" method="post" target="_blank" style="display: contents;">';
+		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+
+		echo '<div class="custom-bottom-layout">
+				<aside class="db-sidebar">';
+
+		echo '<div class="db-card" style="border-radius: 20px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden;">
+				<div class="db-card-header">
+					<h3 class="db-card-title">
+						<i class="fas fa-sliders-h" style="font-size: 0.9rem; opacity: 0.7;"></i>' . __('Report Parameters') . '
+					</h3>
+				</div>
+				<div style="padding: 24px;">
+
+					<div class="db-form-group" style="margin-bottom: 24px;">
+						<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('Report Type') . '</label>
+						<select tabindex="3" name="All_Or_Overdues" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5;">
+							<option selected="selected" value="All">' . __('All customers with balances') . '</option>
+							<option value="OverduesOnly">' . __('Overdue accounts only') . '</option>
+							<option value="HeldOnly">' . __('Held accounts only') . '</option>
+						</select>
 					</div>
-					<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" target="_blank">
-						<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+
+					<div class="db-form-group" style="margin-bottom: 24px;">
+						<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('Detail Level') . '</label>
+						<select tabindex="6" name="DetailedReport" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5;">
+							<option selected="selected" value="No">' . __('Summary Report') . '</option>
+							<option value="Yes">' . __('Detailed Report') . '</option>
+						</select>
+					</div>
+
+					<div style="display: flex; flex-direction: column; gap: 12px;">
+						<button type="submit" name="PrintPDF" class="architect-btn">
+							<i class="fas fa-file-pdf"></i> ' . __('Generate PDF') . '
+						</button>
+						<button type="submit" name="View" class="architect-btn secondary">
+							<i class="fas fa-eye"></i> ' . __('View Online') . '
+						</button>
+					</div>
+
+				</div>
+			</div>
+			</aside>';
+
+		echo '<main class="db-main" style="display: flex; flex-direction: column; gap: 32px;">
+				<div class="db-card" style="border-radius: 20px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden;">
+					<div class="db-card-header">
+						<h3 class="db-card-title">
+							<i class="fas fa-filter" style="font-size: 0.9rem; opacity: 0.7;"></i>' . __('Data Filters') . '
+						</h3>
+					</div>
+					<div style="padding: 30px;">
 						
-						<div class="db-grid db-grid-3">
-							<div class="db-field">
-								<label class="db-label" for="FromCriteria">' . __('From Customer Code') . '</label>
-								<input tabindex="1" autofocus="autofocus" required="required" type="text" maxlength="6" name="FromCriteria" value="0" />
+						<div class="custom-range-grid">
+							<div class="db-form-group">
+								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('From Customer Code') . '</label>
+								<input tabindex="1" autofocus="autofocus" required="required" type="text" maxlength="6" name="FromCriteria" value="0" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5; padding: 0 16px; box-sizing: border-box;" />
 							</div>
-							<div class="db-field">
-								<label class="db-label" for="ToCriteria">' . __('To Customer Code') . '</label>
-								<input tabindex="2" type="text" required="required" maxlength="6" name="ToCriteria" value="zzzzzz" />
+
+							<div class="db-form-group">
+								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('To Customer Code') . '</label>
+								<input tabindex="2" type="text" required="required" maxlength="6" name="ToCriteria" value="zzzzzz" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5; padding: 0 16px; box-sizing: border-box;" />
 							</div>
-							<div class="db-field">
-								<label class="db-label" for="All_Or_Overdues">' . __('Report Type') . '</label>
-								<select tabindex="3" name="All_Or_Overdues">
-									<option selected="selected" value="All">' . __('All customers with balances') . '</option>
-									<option value="OverduesOnly">' . __('Overdue accounts only') . '</option>
-									<option value="HeldOnly">' . __('Held accounts only') . '</option>
-								</select>
-							</div>
-							<div class="db-field">
-								<label class="db-label" for="Salesman">' . __('Salesperson') . '</label>';
+						</div>
+						
+						<div class="custom-range-grid">
+							<div class="db-form-group">
+								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('Salesperson') . '</label>';
 		if ($_SESSION['SalesmanLogin'] !=  '') {
-			echo '<input type="text" readonly value="' . $_SESSION['UsersRealName'] . '" />
+			echo '<input type="text" readonly value="' . $_SESSION['UsersRealName'] . '" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; padding: 0 16px; box-sizing: border-box;" />
 				  <input type="hidden" name="Salesman" value="' . $_SESSION['SalesmanLogin'] . '" />';
 		} else {
-			echo '<select tabindex="4" name="Salesman">';
+			echo '<select tabindex="4" name="Salesman" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5;">';
 			$SQL = "SELECT salesmancode, salesmanname FROM salesman";
 			$Result = DB_query($SQL);
 			echo '<option value="">' . __('All Salespeople') . '</option>';
@@ -533,10 +651,11 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 			}
 			echo '</select>';
 		}
-		echo '			</div>
-							<div class="db-field">
-								<label class="db-label" for="Currency">' . __('Currency') . '</label>
-								<select tabindex="5" name="Currency">';
+		echo '				</div>
+
+							<div class="db-form-group">
+								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('Currency') . '</label>
+								<select tabindex="5" name="Currency" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5;">';
 		$SQL = "SELECT currency, currabrev FROM currencies";
 		$Result = DB_query($SQL);
 		while ($MyRow=DB_fetch_array($Result)) {
@@ -548,27 +667,13 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 		}
 		echo '					</select>
 							</div>
-							<div class="db-field">
-								<label class="db-label" for="DetailedReport">' . __('Detail Level') . '</label>
-								<select tabindex="6" name="DetailedReport">
-									<option selected="selected" value="No">' . __('Summary Report') . '</option>
-									<option value="Yes">' . __('Detailed Report') . '</option>
-								</select>
-							</div>
 						</div>
-
-						<div class="form-footer-actions">
-							<button type="submit" name="PrintPDF" class="db-btn db-btn-secondary">
-								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-								' . __('Print PDF') . '
-							</button>
-							<button type="submit" name="View" class="db-btn db-btn-primary">
-								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-								' . __('View Online') . '
-							</button>
-						</div>
-					</form>
+					</div>
 				</div>
-			</div>';
+			</main>
+		</div>'; // End custom-bottom-layout
+		
+		echo '</form>
+		</div>'; // End db-page
 	include(__DIR__ . '/includes/footer.php');
 } /*end of else not PrintPDF */

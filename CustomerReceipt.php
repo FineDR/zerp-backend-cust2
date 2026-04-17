@@ -13,19 +13,22 @@ if (isset($_POST['DateBanked'])) {
 
 include(__DIR__ . '/includes/GetPaymentMethods.php');
 
-$Title = __('Receipt Entry');
-
-if ($_GET['Type']=='GL') {
-	$ViewTopic = 'GeneralLedger';
-	$BookMark = 'GLReceipts';
-} else {
-	$ViewTopic = 'ARTransactions';
-	$BookMark = 'CustomerReceipts';
-}
-
 include(__DIR__ . '/includes/header.php');
 
-echo '<div class="db-page">';
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div class="db-header-row">
+				<div class="db-header-main">
+					<h1 class="db-page-title">' . $Title . '</h1>
+					<p class="db-page-subtitle">' . (isset($_GET['Type']) && $_GET['Type']=='GL' ? __('Process general ledger receipt entries') : __('Process customer payment receipts')) . '</p>
+				</div>
+				<div class="db-header-actions">';
+if (isset($_SESSION['ReceiptBatch' . $identifier]) && count($_SESSION['ReceiptBatch' . $identifier]->Items) > 0) {
+	echo '			<span class="db-badge db-badge-success" style="padding: 8px 16px; font-weight: 800;">' . count($_SESSION['ReceiptBatch' . $identifier]->Items) . ' ' . __('Items in Batch') . '</span>';
+}
+echo '				</div>
+			</div>
+		</div>';
 
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/GLFunctions.php');
@@ -795,8 +798,10 @@ customer record returned by the search - this record is then auto selected */
 echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?Type=' . urlencode($_GET['Type']) . '&amp;identifier=' . urlencode($identifier) . '" method="post" id="form1">';
 echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-/*show the batch header details and the entries in the batch so far */
+echo '<div class="db-bottom-layout">
+		<aside class="db-col-aside">';
 
+/* 1. Batch Control (Always in Sidebar) */
 $SQL = "SELECT bankaccountname,
 				bankaccounts.accountcode,
 				bankaccounts.currcode
@@ -811,17 +816,10 @@ $SQL = "SELECT bankaccountname,
 $ErrMsg = __('The bank accounts could not be retrieved because');
 $AccountsResults = DB_query($SQL, $ErrMsg);
 
-	echo '<div class="db-page-header">
-			<div>
-				<h2 class="db-page-title">' . $Title . '</h2>
-				<p class="db-page-subtitle">' . __('Gather receipts into a batch and process them') . '</p>
-			</div>
-		</div>';
-
 	echo '<div class="card-v2">
 			<div class="card-header-v2">
 				<h3>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M3 3h18v18H3z"></path><path d="M21 9H3"></path><path d="M9 21V9"></path></svg>
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
 					' . __('Batch Control') . '
 				</h3>
 			</div>
@@ -896,71 +894,100 @@ $AccountsResults = DB_query($SQL, $ErrMsg);
 		echo '	</div>
 				<div style="margin-top: var(--space-4); display: flex; justify-content: flex-end; gap: var(--space-3);">
 					<input name="PreviousCurrency" type="hidden" value="' . ($_POST['Currency'] ?? $_SESSION['ReceiptBatch' . $identifier]->Currency) . '" />
-					<button type="submit" name="BatchInput" class="db-btn db-btn-secondary">' . __('Accept Batch Changes') . '</button>
+					<button type="submit" name="BatchInput" class="db-btn db-btn-success" style="width: 100%;">' . __('Accept Batch Changes') . '</button>
 				</div>
 			</div>
 		</div>';
 	}
 
-	if (isset($_SESSION['ReceiptBatch' . $identifier]) AND count($_SESSION['ReceiptBatch' . $identifier]->Items) > 0) {
-		echo '<div class="card-v2" style="margin-top: var(--space-6);">
+	/* 2. Selection or Entry Form (Also in Sidebar) */
+	if (isset($_SESSION['ReceiptBatch' . $identifier]) AND ((isset($_POST['CustomerID']) && $_POST['CustomerID'] != '') || isset($_POST['GLEntry']))) {
+		echo '<div class="card-v2" style="margin-top: var(--space-4);">
 				<div class="card-header-v2">
-					<h3>
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 2v20M2 12h20"></path></svg>
-						' . __('Entries in Current Batch') . '
+					<h3 style="font-size: 0.95rem;">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 2v20M2 12h20"></path></svg>
+						' . (isset($_POST['GLEntry']) ? __('GL Entry Details') : __('Receipt Details')) . '
 					</h3>
 				</div>
 				<div class="db-card-body">
-					<div class="db-table-wrapper">
-						<table class="db-table">
-							<thead>
-								<tr>
-									<th>' . __('Received') . '</th>
-									<th>' . ($_GET['Type'] == 'Customer' ? __('Customer') : __('GL Code')) . '</th>
-									<th>' . __('Narrative') . '</th>
-									<th class="number">' . __('Actions') . '</th>
-								</tr>
-							</thead>
-							<tbody>';
-		$BatchTotal = 0;
-		foreach ($_SESSION['ReceiptBatch' . $identifier]->Items as $ReceiptItem) {
-			echo '<tr>
-					<td>' . locale_number_format($ReceiptItem->Amount, $_SESSION['ReceiptBatch' . $identifier]->CurrDecimalPlaces) . '</td>
-					<td>';
-			if ($_GET['Type'] == 'Customer') {
-				echo stripslashes($ReceiptItem->CustomerName);
-			} else {
-				$SQL = "SELECT accountname FROM chartmaster WHERE accountcode='" . $ReceiptItem->GLCode . "'";
-				$Result = DB_query($SQL);
-				$MyRow = DB_fetch_array($Result);
-				echo $ReceiptItem->GLCode . ' - ' . $MyRow['accountname'];
+					<input type="hidden" name="CustomerID" value="' . ($_POST['CustomerID'] ?? '') . '" />
+					<input type="hidden" name="CustomerName" value="' . ($_SESSION['CustomerRecord' . $identifier]['name'] ?? '') . '" />';
+
+		if (isset($_POST['GLEntry'])) {
+			echo '	<div class="db-field" style="margin-bottom: var(--space-3);">
+						<label class="db-label">' . __('GL Account') . '</label>
+						<select name="GLCode" style="font-size: 0.85rem;">';
+			$SQL = "SELECT chartmaster.accountcode, chartmaster.accountname FROM chartmaster INNER JOIN glaccountusers ON glaccountusers.accountcode=chartmaster.accountcode AND glaccountusers.userid='" . $_SESSION['UserID'] . "' AND glaccountusers.canupd=1 ORDER BY chartmaster.accountcode";
+			$Result = DB_query($SQL);
+			while ($MyRow = DB_fetch_array($Result)) {
+				echo '<option ' . (isset($_POST['GLCode']) && $_POST['GLCode'] == $MyRow['accountcode'] ? 'selected="selected"' : '') . ' value="' . $MyRow['accountcode'] . '">' . $MyRow['accountcode'] . ' - ' . $MyRow['accountname'] . '</option>';
 			}
-			echo '	</td>
-					<td>' . stripslashes($ReceiptItem->Narrative) . '</td>
-					<td class="number">
-						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?Delete=' . urlencode($ReceiptItem->ID) . '&Type=' . urlencode($_GET['Type']) . '&identifier=' . urlencode($identifier) . '" class="db-btn db-btn-danger" style="padding: 4px 8px;">
-							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-						</a>
-					</td>
-				</tr>';
-			$BatchTotal += $ReceiptItem->Amount;
+			echo '			</select>
+					</div>';
 		}
-		echo '		</tbody>
-					<tfoot>
-						<tr>
-							<td colspan="4" class="number" style="font-weight: 700; font-size: 1.1rem; background: var(--surface-alt);">' . __('Batch Total') . ': ' . locale_number_format($BatchTotal, $_SESSION['ReceiptBatch' . $identifier]->CurrDecimalPlaces) . '</td>
-						</tr>
-					</tfoot>
-				</table>
-			</div>
-			<div style="margin-top: var(--space-4); display: flex; justify-content: center;">
-				<button type="submit" name="CommitBatch" class="db-btn db-btn-primary">' . __('Process & Commit Entire Batch') . '</button>
-			</div>
-		</div>';
+
+		echo '		<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+						<div class="db-field">
+							<label class="db-label">' . __('Amount') . '</label>
+							<input type="text" name="Amount" class="number" required="required" style="padding: 4px 8px;" value="' . ($_POST['Amount'] ?? 0) . '" />
+						</div>';
+		if (!isset($_POST['GLEntry'])) {
+			echo '		<div class="db-field">
+							<label class="db-label">' . __('Discount') . '</label>
+							<input type="text" name="Discount" class="number" style="padding: 4px 8px;" value="' . ($_POST['Discount'] ?? 0) . '" />
+						</div>';
+		}
+		echo '		</div>
+					<div class="db-field" style="margin-top: 8px;">
+						<label class="db-label">' . __('Bank Details / Payee') . '</label>
+						<input type="text" name="PayeeBankDetail" maxlength="22" style="padding: 4px 8px;" value="' . ($_POST['PayeeBankDetail'] ?? '') . '" />
+					</div>
+					<div class="db-field" style="margin-top: 8px;">
+						<label class="db-label">' . __('Narrative') . '</label>
+						<textarea name="Narrative" rows="2" style="padding: 4px 8px; font-size: 0.85rem;">' . ($_POST['Narrative'] ?? '') . '</textarea>
+					</div>
+					<div style="margin-top: var(--space-4); display: flex; gap: var(--space-2);">
+						<button type="submit" name="Process" class="db-btn db-btn-success" style="flex: 2;">' . __('Add to Batch') . '</button>
+						<button type="submit" name="Cancel" class="db-btn db-btn-secondary" style="flex: 1;">' . __('Cancel') . '</button>
+					</div>
+				</div>
+			</div>';
+	} elseif (isset($_SESSION['ReceiptBatch' . $identifier]) AND !isset($_POST['GLEntry'])) {
+		echo '<div class="card-v2" style="margin-top: var(--space-4);">
+				<div class="card-header-v2">
+					<h3 style="font-size: 0.95rem;">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+						' . __('Discovery') . '
+					</h3>
+					<div class="db-header-actions">
+						<button type="submit" name="GLEntry" class="db-btn db-btn-secondary" style="font-size: 0.75rem; padding: 4px 8px;">' . __('GL Mode') . '</button>
+					</div>
+				</div>
+				<div class="db-card-body">
+					<div class="db-field" style="margin-bottom: 8px;">
+						<label class="db-label">' . __('Name Extract') . '</label>
+						<input type="text" name="Keywords" placeholder="' . __('e.g. Acme') . '" style="padding: 4px 8px;" />
+					</div>
+					<div class="db-field" style="margin-bottom: 8px;">
+						<label class="db-label">' . __('OR Code') . '</label>
+						<input type="text" name="CustCode" style="padding: 4px 8px;" />
+					</div>
+					<div class="db-field">
+						<label class="db-label">' . __('OR Invoice #') . '</label>
+						<input type="text" name="CustInvNo" class="integer" style="padding: 4px 8px;" />
+					</div>
+					<button type="submit" name="Search" class="db-btn db-btn-primary" style="width: 100%; margin-top: var(--space-4);">' . __('Search Customers') . '</button>
+				</div>
+			</div>';
 	}
 
+	echo '	</aside>
+			<main class="db-col-main">';
+
+	/* 3. Main Data Area (Basket & KPIs) */
+
 	if (isset($_SESSION['CustomerRecord' . $identifier])) {
-		echo '<div class="card-v2" style="margin-top: var(--space-6);">
+		echo '<div class="card-v2" style="margin-bottom: var(--space-6);">
 				<div class="card-header-v2">
 					<h3>
 						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -987,11 +1014,11 @@ $AccountsResults = DB_query($SQL, $ErrMsg);
 							</thead>
 							<tbody>
 								<tr>
-									<td>' . locale_number_format($_SESSION['CustomerRecord' . $identifier]['balance'], $_SESSION['CustomerRecord' . $identifier]['currdecimalplaces']) . '</td>
+									<td style="font-weight: 700;">' . locale_number_format($_SESSION['CustomerRecord' . $identifier]['balance'], $_SESSION['CustomerRecord' . $identifier]['currdecimalplaces']) . '</td>
 									<td>' . locale_number_format(($_SESSION['CustomerRecord' . $identifier]['balance'] - $_SESSION['CustomerRecord' . $identifier]['due']), $_SESSION['CustomerRecord' . $identifier]['currdecimalplaces']) . '</td>
-									<td>' . locale_number_format(($_SESSION['CustomerRecord' . $identifier]['due'] - $_SESSION['CustomerRecord' . $identifier]['overdue1']), $_SESSION['CustomerRecord' . $identifier]['currdecimalplaces']) . '</td>
+									<td style="color: var(--primary); font-weight: 600;">' . locale_number_format(($_SESSION['CustomerRecord' . $identifier]['due'] - $_SESSION['CustomerRecord' . $identifier]['overdue1']), $_SESSION['CustomerRecord' . $identifier]['currdecimalplaces']) . '</td>
 									<td>' . locale_number_format(($_SESSION['CustomerRecord' . $identifier]['overdue1'] - $_SESSION['CustomerRecord' . $identifier]['overdue2']), $_SESSION['CustomerRecord' . $identifier]['currdecimalplaces']) . '</td>
-									<td class="text-danger">' . locale_number_format($_SESSION['CustomerRecord' . $identifier]['overdue2'], $_SESSION['CustomerRecord' . $identifier]['currdecimalplaces']) . '</td>
+									<td class="text-danger" style="font-weight: 700;">' . locale_number_format($_SESSION['CustomerRecord' . $identifier]['overdue2'], $_SESSION['CustomerRecord' . $identifier]['currdecimalplaces']) . '</td>
 								</tr>
 							</tbody>
 						</table>
@@ -1000,134 +1027,110 @@ $AccountsResults = DB_query($SQL, $ErrMsg);
 			</div>';
 	}
 
-	if (isset($_SESSION['ReceiptBatch' . $identifier]) AND ((isset($_POST['CustomerID']) && $_POST['CustomerID'] != '') || isset($_POST['GLEntry']))) {
-		echo '<div class="card-v2" style="margin-top: var(--space-6);">
+
+	if (isset($_SESSION['ReceiptBatch' . $identifier]) AND count($_SESSION['ReceiptBatch' . $identifier]->Items) > 0) {
+		echo '<div class="card-v2">
 				<div class="card-header-v2">
 					<h3>
 						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 2v20M2 12h20"></path></svg>
-						' . (isset($_POST['GLEntry']) ? __('GL Receipt Entry') : __('Receipt Details')) . '
+						' . __('Entries in Current Batch') . '
 					</h3>
+					<div class="db-header-actions">
+						<button type="submit" name="CommitBatch" class="db-btn db-btn-success" style="padding: 6px 14px; font-weight: 700;">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+							' . __('Process Entire Batch') . '
+						</button>
+					</div>
 				</div>
 				<div class="db-card-body">
-					<input type="hidden" name="CustomerID" value="' . ($_POST['CustomerID'] ?? '') . '" />
-					<input type="hidden" name="CustomerName" value="' . ($_SESSION['CustomerRecord' . $identifier]['name'] ?? '') . '" />';
-
-		if (isset($_POST['GLEntry'])) {
-			echo '	<div class="db-field-group">
-						<div class="db-field">
-							<label class="db-label">' . __('GL Account') . '</label>
-							<select name="GLCode">';
-			$SQL = "SELECT chartmaster.accountcode, chartmaster.accountname FROM chartmaster INNER JOIN glaccountusers ON glaccountusers.accountcode=chartmaster.accountcode AND glaccountusers.userid='" . $_SESSION['UserID'] . "' AND glaccountusers.canupd=1 ORDER BY chartmaster.accountcode";
-			$Result = DB_query($SQL);
-			while ($MyRow = DB_fetch_array($Result)) {
-				echo '<option ' . (isset($_POST['GLCode']) && $_POST['GLCode'] == $MyRow['accountcode'] ? 'selected="selected"' : '') . ' value="' . $MyRow['accountcode'] . '">' . $MyRow['accountcode'] . ' - ' . $MyRow['accountname'] . '</option>';
+					<div class="db-table-wrapper">
+						<table class="db-table">
+							<thead>
+								<tr>
+									<th>' . __('Received') . '</th>
+									<th>' . ($_GET['Type'] == 'Customer' ? __('Customer') : __('GL Code')) . '</th>
+									<th>' . __('Narrative') . '</th>
+									<th class="number">' . __('Actions') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
+		$BatchTotal = 0;
+		foreach ($_SESSION['ReceiptBatch' . $identifier]->Items as $ReceiptItem) {
+			echo '<tr>
+					<td style="font-weight: 600;">' . locale_number_format($ReceiptItem->Amount, $_SESSION['ReceiptBatch' . $identifier]->CurrDecimalPlaces) . '</td>
+					<td>';
+			if ($_GET['Type'] == 'Customer') {
+				echo '<div style="font-weight: 700;">' . stripslashes($ReceiptItem->CustomerName) . '</div>';
+				echo '<div style="font-size: 0.75rem; color: var(--text-muted);">' . $ReceiptItem->Customer . '</div>';
+			} else {
+				$SQL = "SELECT accountname FROM chartmaster WHERE accountcode='" . $ReceiptItem->GLCode . "'";
+				$Result = DB_query($SQL);
+				$MyRow = DB_fetch_array($Result);
+				echo '<div style="font-weight: 700;">' . $ReceiptItem->GLCode . '</div>';
+				echo '<div style="font-size: 0.75rem; color: var(--text-muted);">' . $MyRow['accountname'] . '</div>';
 			}
-			echo '			</select>
-						</div>
-						<div class="db-field">
-							<label class="db-label">' . __('Tags') . '</label>
-							<select multiple="multiple" name="tag[]">';
-			$SQL = "SELECT tagref, tagdescription FROM tags ORDER BY tagref";
-			$Result = DB_query($SQL);
-			while ($MyRow = DB_fetch_array($Result)) {
-				echo '<option value="' . $MyRow['tagref'] . '">' . $MyRow['tagref'] . ' - ' . $MyRow['tagdescription'] . '</option>';
-			}
-			echo '			</select>
-						</div>
-					</div>';
+			echo '	</td>
+					<td>' . stripslashes($ReceiptItem->Narrative) . '</td>
+					<td class="number">
+						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?Delete=' . urlencode($ReceiptItem->ID) . '&Type=' . urlencode($_GET['Type']) . '&identifier=' . urlencode($identifier) . '" class="db-btn db-btn-danger" style="padding: 6px; min-width: auto;" onclick="return confirm(\'' . __('Remove this item from the batch?') . '\');">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+						</a>
+					</td>
+				</tr>';
+			$BatchTotal += $ReceiptItem->Amount;
 		}
+		echo '		</tbody>
+					<tfoot>
+						<tr style="background: var(--surface-alt);">
+							<td colspan="4" class="number" style="font-weight: 800; font-size: 1.25rem; color: var(--primary); padding: var(--space-4);">' . __('Batch Total') . ': ' . locale_number_format($BatchTotal, $_SESSION['ReceiptBatch' . $identifier]->CurrDecimalPlaces) . ' ' . $_SESSION['ReceiptBatch' . $identifier]->Currency . '</td>
+						</tr>
+					</tfoot>
+				</table>
+			</div>
+		</div>';
+	}
 
-		echo '		<div class="db-field-group" style="margin-top: var(--space-4);">
-						<div class="db-field">
-							<label class="db-label">' . __('Amount') . '</label>
-							<input type="text" name="Amount" class="number" required="required" value="' . ($_POST['Amount'] ?? 0) . '" />
-						</div>';
-		if (!isset($_POST['GLEntry'])) {
-			echo '		<div class="db-field">
-							<label class="db-label">' . __('Discount') . '</label>
-							<input type="text" name="Discount" class="number" value="' . ($_POST['Discount'] ?? 0) . '" />
-						</div>';
-		}
-		echo '			<div class="db-field">
-							<label class="db-label">' . __('Bank Details') . '</label>
-							<input type="text" name="PayeeBankDetail" maxlength="22" value="' . ($_POST['PayeeBankDetail'] ?? '') . '" />
-						</div>
-					</div>
-					<div class="db-field" style="margin-top: var(--space-4);">
-						<label class="db-label">' . __('Narrative') . '</label>
-						<textarea name="Narrative" rows="1">' . ($_POST['Narrative'] ?? '') . '</textarea>
-					</div>
-					<div style="margin-top: var(--space-4); display: flex; justify-content: center; gap: var(--space-3);">
-						<button type="submit" name="Process" class="db-btn db-btn-primary">' . __('Accept Entry') . '</button>
-						<button type="submit" name="Cancel" class="db-btn db-btn-danger">' . __('Cancel') . '</button>
-					</div>
-				</div>
-			</div>';
-	} elseif (isset($_SESSION['ReceiptBatch' . $identifier]) AND !isset($_POST['GLEntry'])) {
+	if (isset($CustomerSearchResult)) {
 		echo '<div class="card-v2" style="margin-top: var(--space-6);">
 				<div class="card-header-v2">
 					<h3>
 						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-						' . __('Select Customer') . '
+						' . __('Discovery Results') . '
 					</h3>
-					<div class="db-header-actions">
-						<button type="submit" name="GLEntry" class="db-btn db-btn-secondary" style="font-size: 0.8rem; padding: 4px 12px;">' . __('Enter GL Receipt') . '</button>
-					</div>
 				</div>
 				<div class="db-card-body">
-					<div class="db-field-group">
-						<div class="db-field">
-							<label class="db-label">' . __('Name Keywords') . '</label>
-							<input type="text" name="Keywords" placeholder="' . __('e.g. Acme') . '" />
-						</div>
-						<div class="db-field">
-							<label class="db-label">' . __('OR Customer Code') . '</label>
-							<input type="text" name="CustCode" placeholder="' . __('e.g. ACME-01') . '" />
-						</div>
-						<div class="db-field">
-							<label class="db-label">' . __('OR Invoice No') . '</label>
-							<input type="text" name="CustInvNo" class="integer" placeholder="' . __('e.g. 1001') . '" />
-						</div>
-					</div>
-					<div style="margin-top: var(--space-4); display: flex; justify-content: center;">
-						<button type="submit" name="Search" class="db-btn db-btn-primary">' . __('Search Now') . '</button>
-					</div>';
-
-		if (isset($CustomerSearchResult)) {
-			echo '<div class="db-table-wrapper" style="margin-top: var(--space-6);">
-					<table class="db-table">
-						<thead>
-							<tr>
-								<th>' . __('Code') . '</th>
-								<th>' . __('Customer Name') . '</th>
-							</tr>
-						</thead>
-						<tbody>';
-			while ($MyRow = DB_fetch_array($CustomerSearchResult)) {
-				echo '<tr>
-						<td>
-							<button type="submit" name="Select" value="' . $MyRow['debtorno'] . '" class="db-btn db-btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;">
-								' . $MyRow['debtorno'] . '
-							</button>
-						</td>
-						<td>' . $MyRow['name'] . '</td>
-					</tr>';
-			}
-			echo '		</tbody>
-					</table>
-				</div>';
+					<div class="db-table-wrapper">
+						<table class="db-table">
+							<thead>
+								<tr>
+									<th style="width: 150px;">' . __('Action') . '</th>
+									<th>' . __('Code') . '</th>
+									<th>' . __('Customer Name') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
+		while ($MyRow = DB_fetch_array($CustomerSearchResult)) {
+			echo '<tr>
+					<td>
+						<button type="submit" name="Select" value="' . $MyRow['debtorno'] . '" class="db-btn db-btn-secondary" style="padding: 6px 12px; font-size: 0.85rem; width: 100%;">
+							' . __('Select Customer') . '
+						</button>
+					</td>
+					<td style="font-weight: 700;">' . $MyRow['debtorno'] . '</td>
+					<td>' . $MyRow['name'] . '</td>
+				</tr>';
 		}
-		echo '	</div>
-			</div>';
+		echo '		</tbody>
+					</table>
+				</div>
+			</div>
+		</div>';
 	}
 
-	if (isset($_SESSION['ReceiptBatch' . $identifier]->Items) AND count($_SESSION['ReceiptBatch' . $identifier]->Items) > 0 AND !isset($_POST['Process']) AND !isset($_POST['CustomerID'])){
-		echo '<div style="margin-top: var(--space-4); display: flex; justify-content: center;">
-				<button type="submit" name="CommitBatch" class="db-btn db-btn-primary">' . __('Accept and Process Batch') . '</button>
-			</div>';
-	}
-
-	echo '</div>'; // Close db-page
+	echo '	</main>
+		</div>'; // Close db-bottom-layout
 	echo '</form>';
+	echo '</div>'; // Close db-page
+
 
 include(__DIR__ . '/includes/footer.php');

@@ -1,2 +1,41 @@
-PING: 2026-04-06 19:30:31
-PING: 2026-04-06 19:33:09
+START PROCESS SALE - identifier: 1775812699
+Calculated Totals - Paid: 50, Expected: 50, CartTotal: 50
+ALL GOOD - Proceeding to database updates
+TRANSACTION STARTED
+DebtorNo: CASH Branch: CASH Location: MAIN
+Generated OrderNo: 1, InvoiceNo: 1
+PeriodNo: 0
+INSERT INTO salesorders EXECUTED
+INSERT INTO salesorderdetails EXECUTED for FOOD-0020
+ABOUT TO INSERT debtortrans
+INSERT INTO debtortrans EXECUTED
+PROCESSING OrderLine for FOOD-0020
+MBFlag: B
+INSERT INTO stockmoves EXECUTED
+COGS GL posting EXECUTED
+SQL for stock side COGS: INSERT INTO gltrans (type,
+											typeno,
+											trandate,
+											periodno,
+											account,
+											narrative,
+											amount )
+										VALUES ( 10,
+											'1',
+											'2026-04-10',
+											'0',
+											'1430',
+											'CASH - FOOD-0020 x 1 @ 326.4923',
+											'-326.4923')
+Stock side of COGS GL posting EXECUTED
+Starting Sales GL search for FOOD-0020
+FINISHED processing all OrderLines
+Debtors GL posting EXECUTED
+Processing payments: TotalPaid = 50
+Processing payment 0: Amount = 50
+ReceiptNumber: 1
+Bank GL insertion EXECUTED
+Debtors Credit GL insertion EXECUTED
+banktrans insertion EXECUTED
+ABOUT TO COMMIT TRANSACTION
+TRANSACTION COMMITTED SUCCESSFULLY

@@ -618,6 +618,68 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 } else {
 	// --- HTML output for preview form ---
 	$Title=__('Select Invoices/Credit Notes To Print');
+
+	// Inject premium styles for the Architect workspace
+	$ExtraHeadContent = '
+<style>
+	.ScriptTitle { display: none !important; }
+	.MainBody { padding: 0 !important; gap: 0 !important; background: transparent !important; }
+	.db-page { padding: var(--space-8) var(--space-6); background: var(--bg-main); min-height: 100vh; font-family: "Inter", sans-serif; }
+	
+	.premium-header { margin-bottom: 40px; position: relative; }
+	.premium-header::before { display: none !important; }
+	
+	/* Architect Workspace Overrides */
+	.db-card-header { 
+		background: #f9fafb; 
+		border-bottom: 1px solid #f3f4f6; 
+		padding: 20px 30px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.db-card-title {
+		font-size: 1.1rem;
+		font-weight: 850;
+		color: #064e3b;
+		margin: 0;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+	}
+	
+	.architect-btn {
+		display: inline-flex; align-items: center; gap: 10px;
+		padding: 12px 28px; border-radius: 50px;
+		background: #059669; color: #ffffff; border: none;
+		font-weight: 700; font-size: 0.85rem; text-decoration: none;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+		cursor: pointer;
+	}
+	.architect-btn:hover { background: #065f46; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3); }
+	.architect-btn i { color: #ffffff !important; }
+	
+	.custom-bottom-layout { 
+		display: grid; 
+		grid-template-columns: 380px 1fr; 
+		gap: 32px; 
+		align-items: start; 
+	}
+	.custom-range-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 20px;
+		margin-bottom: 24px;
+	}
+	
+	.breadcrumb-item { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; }
+	.breadcrumb-item:hover { color: #059669; }
+	.breadcrumb-separator { font-size: 0.6rem; opacity: 0.4; margin: 0 4px; }
+</style>';
+
 	include(__DIR__ . '/includes/header.php');
 
 	if (!isset($FromTransNo) OR $FromTransNo=='') {
@@ -641,51 +703,97 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 			$TransactionOptions[$MyRow['transno']] = $MyRow['transno'] . ' - ' . $MyRow['name'] . ' - ' . $MyRow['currabrev'] . ' ' . $DisplayTotal;
 		}
 
-		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') .  '" method="post" target="_blank">';
+		echo '<div class="db-page">
+		<div class="premium-header">
+			<div style="display: flex; justify-content: space-between; align-items: flex-end;">
+				<div>
+					<div style="font-size: 0.72rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; text-transform: lowercase; letter-spacing: 1px;">
+						<a href="index.php" class="breadcrumb-item"><i class="fas fa-home"></i> ' . __('Home') . '</a>
+						<i class="fas fa-chevron-right breadcrumb-separator"></i>
+						<a href="index.php?Application=AR" class="breadcrumb-item">' . __('Receivables') . '</a>
+						<i class="fas fa-chevron-right breadcrumb-separator"></i>
+						<span style="color: #064e3b; opacity: 0.9;">' . __('Document Generation') . '</span>
+					</div>
+					<div style="display: flex; align-items: center; gap: 24px;">
+						<div>
+							<h1 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px; color: #064e3b; margin: 0; line-height: 1;">' . $Title . '</h1>
+							<p style="font-size: 1.1rem; margin-top: 8px; color: #065f46; font-weight: 500; opacity: 0.8;">' . __('Generate pixel-perfect PDF documents and previews') . '</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>';
+
+		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') .  '" method="post" target="_blank" style="display: contents;">';
 		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-		echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/printer.png" title="' . __('Print') . '" alt="" />' . ' ' . __('Print Invoices or Credit Notes (Landscape Mode)') . '</p>';
+		echo '<div class="custom-bottom-layout">
+				<aside class="db-sidebar">';
 
-		echo '<fieldset>
-				<legend>', __('Print Criteria'), '</legend>
-				<field>
-					<label for="InvOrCredit">' . __('Print Invoices or Credit Notes') . '</label>
-					<select name="InvOrCredit">';
+		echo '<div class="db-card" style="border-radius: 20px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden;">
+				<div class="db-card-header">
+					<h3 class="db-card-title">
+						<i class="fas fa-sliders-h" style="font-size: 0.9rem; opacity: 0.7;"></i>' . __('Print Configuration') . '
+					</h3>
+				</div>
+				<div style="padding: 24px;">
 
+					<div class="db-form-group" style="margin-bottom: 24px;">
+						<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('Document Type') . '</label>
+						<select name="InvOrCredit" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5;">';
 		if ($InvOrCredit=='Invoice' OR !isset($InvOrCredit)) {
-
 			echo '<option selected="selected" value="Invoice">' . __('Invoices') . '</option>';
 			echo '<option value="Credit">' . __('Credit Notes') . '</option>';
 		} else {
 			echo '<option selected="selected" value="Credit">' . __('Credit Notes') . '</option>';
 			echo '<option value="Invoice">' . __('Invoices') . '</option>';
 		}
+		echo '			</select>
+					</div>
 
-		echo '</select>
-			</field>';
-
-		echo '<field>
-				<label for="PrintEDI">', __('Print EDI Transactions'), '</label>
-				<select name="PrintEDI">';
-
+					<div class="db-form-group" style="margin-bottom: 24px;">
+						<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('EDI Inclusion') . '</label>
+						<select name="PrintEDI" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5;">';
 		if ($InvOrCredit=='Invoice' OR !isset($InvOrCredit)) {
-
-			echo '<option selected="selected" value="No">' . __('Do not Print PDF EDI Transactions') . '</option>';
-			echo '<option value="Yes">' . __('Print PDF EDI Transactions Too') . '</option>';
-
+			echo '<option selected="selected" value="No">' . __('Skip EDI Customers') . '</option>';
+			echo '<option value="Yes">' . __('Include EDI Customers') . '</option>';
 		} else {
-
-			echo '<option value="No">' . __('Do not Print PDF EDI Transactions') . '</option>';
-			echo '<option selected="selected" value="Yes">' . __('Print PDF EDI Transactions Too') . '</option>';
+			echo '<option value="No">' . __('Skip EDI Customers') . '</option>';
+			echo '<option selected="selected" value="Yes">' . __('Include EDI Customers') . '</option>';
 		}
+		echo '			</select>
+					</div>
 
-		echo '</select>
-			</field>';
+					<div style="display: flex; flex-direction: column; gap: 12px;">
+						<button type="submit" name="RefreshList" class="db-btn" style="width: 100%; justify-content: center; font-weight: 700; padding: 14px; border-radius: 14px; background: #e5e7eb; color: #374151; border: none; cursor: pointer;" formtarget="_self">
+							<i class="fas fa-sync" style="margin-right: 8px;"></i> ' . __('Refresh List') . '
+						</button>
+						<button type="submit" name="Print" class="db-btn" style="width: 100%; justify-content: center; font-weight: 700; padding: 14px; border-radius: 14px; background: #10b981; color: white; border: none; cursor: pointer;">
+							<i class="fas fa-eye" style="margin-right: 8px;"></i> ' . __('HTML Preview') . '
+						</button>
+						<button type="submit" name="PrintPDF" class="db-btn" style="width: 100%; justify-content: center; font-weight: 700; padding: 18px; border-radius: 14px; background: #059669; color: white; border: none; box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.3); cursor: pointer;">
+							<i class="fas fa-file-pdf" style="margin-right: 8px;"></i> ' . __('Generate PDF') . '
+						</button>
+					</div>
 
-		echo '<field>
-				<label for="FromTransNo">' . __('Start invoice/credit note number to print') . '</label>
-				<select name="FromTransNo" required="required">';
-		echo '<option value="">' . __('Select a transaction') . '</option>';
+				</div>
+			</div>
+			</aside>';
+
+		echo '<main class="db-main" style="display: flex; flex-direction: column; gap: 32px;">
+				<div class="db-card" style="border-radius: 20px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden;">
+					<div class="db-card-header">
+						<h3 class="db-card-title">
+							<i class="fas fa-list-ol" style="font-size: 0.9rem; opacity: 0.7;"></i>' . __('Document Range Selection') . '
+						</h3>
+					</div>
+					<div style="padding: 30px;">
+						
+						<div class="custom-range-grid">
+							<div class="db-form-group">
+								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('Start Range') . '</label>
+								<select name="FromTransNo" class="db-input" required="required" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5;">
+									<option value="">' . __('Select a transaction') . '</option>';
 		foreach ($TransactionOptions as $TransactionNo => $TransactionLabel) {
 			if ((string)$FromTransNo === (string)$TransactionNo) {
 				echo '<option selected="selected" value="' . $TransactionNo . '">' . htmlspecialchars($TransactionLabel, ENT_QUOTES, 'UTF-8') . '</option>';
@@ -693,13 +801,13 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 				echo '<option value="' . $TransactionNo . '">' . htmlspecialchars($TransactionLabel, ENT_QUOTES, 'UTF-8') . '</option>';
 			}
 		}
-		echo '</select>
-			</field>';
+		echo '					</select>
+							</div>
 
-		echo '<field>
-				<label for="ToTransNo">' . __('End invoice/credit note number to print') . '</label>
-				<select name="ToTransNo">';
-		echo '<option value="">' . __('Select a transaction') . '</option>';
+							<div class="db-form-group">
+								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('End Range') . '</label>
+								<select name="ToTransNo" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5;">
+									<option value="">' . __('Select a transaction') . '</option>';
 		foreach ($TransactionOptions as $TransactionNo => $TransactionLabel) {
 			if (isset($_POST['ToTransNo']) && (string)filter_number_format($_POST['ToTransNo']) === (string)$TransactionNo) {
 				echo '<option selected="selected" value="' . $TransactionNo . '">' . htmlspecialchars($TransactionLabel, ENT_QUOTES, 'UTF-8') . '</option>';
@@ -707,31 +815,40 @@ if (isset($_GET['View']) and $_GET['View'] == 'Yes') {
 				echo '<option value="' . $TransactionNo . '">' . htmlspecialchars($TransactionLabel, ENT_QUOTES, 'UTF-8') . '</option>';
 			}
 		}
-		echo '</select>
-			</field>
-		</fieldset>';
-		echo '<div class="centre">
-				<input type="submit" name="RefreshList" value="' . __('Refresh Transaction List') . '" formtarget="_self" />
-				<input type="submit" name="Print" value="' . __('Print Preview') . '" />
-				<input type="submit" name="PrintPDF" value="' . __('Print PDF') . '" />
-			</div>';
+		echo '					</select>
+							</div>
+						</div>';
 
 		$SQL = "SELECT typeno FROM systypes WHERE typeid=10";
-		//$SQL = "SELECT max(transno) FROM debtortrans WHERE type=10";
-
 		$Result = DB_query($SQL);
 		$MyRow = DB_fetch_row($Result);
+		$LastInv = $MyRow[0];
 
-	    //	echo '<div class="page_help_text"><b>' . __('The last invoice created was number') . ' ' . $MyRow[0] . '</b><br />' . __('If only a single invoice is required') . ', ' . __('enter the invoice number') . ' ' . __('as both the start and end numbers') . '.</div>';
-        echo 'The last invoice created was number: '.$MyRow[0] ;
 		$SQL = "SELECT typeno FROM systypes WHERE typeid=11";
-		
 		$Result = DB_query($SQL);
 		$MyRow = DB_fetch_row($Result);
+		$LastCr = $MyRow[0];
 
-		echo '<div class="page_help_text"><b>' . __('The last credit note created was number') . ' ' . $MyRow[0] . '</b><br />' . __('A sequential range can be printed using the same method as for invoices above') . '. ' . __('A range is printed from the start to the end number inclusive') . '.</div>';
+		echo '			<div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+							<div style="display: flex; justify-content: space-between; align-items: center;">
+								<span style="color: #064e3b; font-weight: 700; font-size: 0.9rem;">' . __('Last Invoice Number') . '</span>
+								<span style="background: #ffffff; padding: 4px 12px; border-radius: 8px; font-weight: 900; color: #059669; border: 1px solid #d1fae5; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">' . $LastInv . '</span>
+							</div>
+							<div style="display: flex; justify-content: space-between; align-items: center;">
+								<span style="color: #064e3b; font-weight: 700; font-size: 0.9rem;">' . __('Last Credit Note Number') . '</span>
+								<span style="background: #ffffff; padding: 4px 12px; border-radius: 8px; font-weight: 900; color: #059669; border: 1px solid #d1fae5; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">' . $LastCr . '</span>
+							</div>
+							<div style="margin-top: 10px; font-size: 0.85rem; color: #047857; opacity: 0.8;">
+								<i class="fas fa-info-circle"></i> ' . __('To print a single document, select the same number for both Start and End range.') . '
+							</div>
+						</div>
+					</div>
+				</div>
+			</main>
+		</div>'; // End db-bottom-layout
 
-		echo '</form>';
+		echo '</form>
+		</div>'; // End db-page
 
 	} else {
 		// --- Output HTML preview for selected invoice(s) (similar to above, but just echo) ---

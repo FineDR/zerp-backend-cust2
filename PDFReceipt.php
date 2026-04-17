@@ -143,4 +143,5 @@ $DomPDF->setPaper($_SESSION['PageSize'], 'portrait');
 $DomPDF->render();
 
 // Output the generated PDF to Browser
-$DomPDF->stream($PdfFileName, array("Attachment" => false));
+$Attachment = (isset($_GET['Download']) && $_GET['Download'] == 'True') ? true : false;
+$DomPDF->stream($PdfFileName, array("Attachment" => $Attachment));

@@ -135,14 +135,14 @@ class Matrix
             return self::extractRowValue($matrix, $rowKeys, $rowNum);
         }
 
-        $columnNum = $columnKeys[--$columnNum]; //* @phpstan-ignore-line
+        $columnNum = $columnKeys[--$columnNum];
         if ($rowNum === 0) {
             return array_map(
                 fn ($value): array => [$value],
                 array_column($matrix, $columnNum)
             );
         }
-        $rowNum = $rowKeys[--$rowNum]; //* @phpstan-ignore-line
+        $rowNum = $rowKeys[--$rowNum];
         /** @var mixed[][] $matrix */
 
         return $matrix[$rowNum][$columnNum];
@@ -159,7 +159,7 @@ class Matrix
         }
 
         $rowNum = $rowKeys[--$rowNum];
-        $row = $matrix[$rowNum]; //* @phpstan-ignore-line
+        $row = $matrix[$rowNum];
         if (is_array($row)) {
             return [$rowNum => $row];
         }

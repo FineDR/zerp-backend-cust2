@@ -23,7 +23,7 @@ class Arabic
     /**
      * Recursively calculate the arabic value of a roman numeral.
      *
-     * @param string[] $roman
+     * @param mixed[] $roman
      */
     private static function calculateArabic(array $roman, int &$sum = 0, int $subtract = 0): int
     {

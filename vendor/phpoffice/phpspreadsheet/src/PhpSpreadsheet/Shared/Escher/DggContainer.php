@@ -2,8 +2,6 @@
 
 namespace PhpOffice\PhpSpreadsheet\Shared\Escher;
 
-use PhpOffice\PhpSpreadsheet\Exception as SpreadsheetException;
-
 class DggContainer
 {
     /**
@@ -94,14 +92,6 @@ class DggContainer
     public function getBstoreContainer(): ?DggContainer\BstoreContainer
     {
         return $this->bstoreContainer;
-    }
-
-    /**
-     * Get BLIP Store Container.
-     */
-    public function getBstoreContainerOrThrow(): DggContainer\BstoreContainer
-    {
-        return $this->bstoreContainer ?? throw new SpreadsheetException('bstoreContainer is unexpectedly null');
     }
 
     /**

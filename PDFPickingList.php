@@ -16,10 +16,16 @@ if (isset($_POST['Process'])) {
 	if ($_SESSION['RequirePickingNote'] == 0) {
 		$Title = __('Picking Lists Not Enabled');
 		include ('includes/header.php');
-		echo '<div class="dashboard-shell-container">
-				<div class="MainBody">';
-		prnMsg(__('The system is not configured for picking lists. A configuration parameter is required where picking slips are required. Please consult your system administrator.'), 'info');
-		echo '	</div>
+		echo '<div class="db-page">
+				<div class="db-card">
+					<div class="db-card-body centre" style="padding: 60px;">
+						<div class="db-icon-circle" style="background: var(--warning-light-color); color: var(--warning-color); margin: 0 auto 20px;">
+							<i class="fas fa-exclamation-triangle fa-2x"></i>
+						</div>
+						<h2 style="margin-bottom: 10px;">' . __('Picking Lists Not Enabled') . '</h2>
+						<p style="color: var(--text-muted);">' . __('The system is not configured for picking lists. Please consult your system administrator.') . '</p>
+					</div>
+				</div>
 			  </div>';
 		include ('includes/footer.php');
 		exit();
@@ -113,12 +119,16 @@ if (isset($_POST['Process'])) {
 		if (DB_num_rows($Result) == 0) {
 			$Title = __('Print Picking List Error');
 			include ('includes/header.php');
-			echo '<div class="dashboard-shell-container">
-					<div class="MainBody">';
-			prnMsg(__('Unable to Locate any orders for this criteria '), 'info');
-			echo '		<div class="card-v2" style="margin-top: var(--space-4);">
-							<div class="card-footer-v2">
-								<a href="' . $RootPath . '/PDFPickingList.php" class="btn-secondary">' . __('Enter Another Date') . '</a>
+			echo '<div class="db-page">
+					<div class="db-card">
+						<div class="db-card-body centre" style="padding: 60px;">
+							<div class="db-icon-circle" style="background: var(--danger-light-color); color: var(--danger-color); margin: 0 auto 20px;">
+								<i class="fas fa-search"></i>
+							</div>
+							<h2 style="margin-bottom: 10px;">' . __('No Orders Found') . '</h2>
+							<p style="color: var(--text-muted);">' . __('Unable to locate any orders meeting your specified criteria.') . '</p>
+							<div style="margin-top: 30px;">
+								<a href="' . $RootPath . '/PDFPickingList.php" class="db-btn db-btn-secondary">' . __('Return to Selection') . '</a>
 							</div>
 						</div>
 					</div>
@@ -163,91 +173,125 @@ if (isset($_POST['Process'])) {
 	}
 
 	$ListCount = 0;
-	$HTML = '<html>
+	$HTML = '<!DOCTYPE html>
+	<html>
 	<head>
-	<link href="css/reports.css" rel="stylesheet" type="text/css" />
+		<style>
+			@page { margin: 30px; }
+			body { font-family: "Helvetica", "Arial", sans-serif; font-size: 10pt; color: #333; line-height: 1.4; }
+			.report-header { border-bottom: 2px solid #e74c3c; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+			.report-title { font-size: 20pt; font-weight: bold; color: #e74c3c; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+			.order-info { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #fdfdfd; }
+			.order-info td { padding: 8px; vertical-align: top; border: 1px solid #eee; }
+			.label { font-weight: bold; color: #555; font-size: 9pt; text-transform: uppercase; margin-bottom: 3px; display: block; }
+			.value { font-size: 11pt; color: #000; font-weight: 500; }
+			.line-items { width: 100%; border-collapse: collapse; margin-top: 10px; }
+			.line-items th { background: #34495e; color: #fff; padding: 10px 8px; text-align: left; font-size: 9pt; text-transform: uppercase; border: none; }
+			.line-items td { padding: 10px 8px; border-bottom: 1px solid #eee; font-size: 9.5pt; vertical-align: top; }
+			.line-items tr:nth-child(even) { background-color: #f9f9f9; }
+			.stock-code { font-weight: bold; font-family: monospace; font-size: 10.5pt; }
+			.qty { text-align: right; font-weight: bold; }
+			.qty-pick { text-align: right; font-weight: bold; color: #e74c3c; font-size: 11pt; }
+			.footer { position: fixed; bottom: 0; width: 100%; font-size: 8pt; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 5px; }
+			.page-break { page-break-after: always; }
+			.badge { display: inline-block; padding: 3px 6px; background: #eee; border-radius: 3px; font-size: 8pt; font-weight: bold; }
+		</style>
 	</head>
 	<body>';
 
-	for ($i = 0;$i < sizeof($OrdersToPick);$i++) {
+	for ($i = 0; $i < sizeof($OrdersToPick); $i++) {
 		$order = $OrdersToPick[$i];
 		$DeliveryAddress = '';
-		for ($j = 1; $j<5; $j++) {
-			if ($order['deladd' . $j] !=  '') {
+		for ($j = 1; $j < 5; $j++) {
+			if ($order['deladd' . $j] != '') {
 				$DeliveryAddress .= htmlspecialchars($order['deladd' . $j]) . ", ";
 			}
 		}
 		$DeliveryAddress .= htmlspecialchars($order['deladd5']);
-		$HTML .= '<div style="page-break-after: always;">';
-		$HTML .= '<h2>' . __('Picking List') . '</h2>';
-		$HTML .= "<table border='0' style='width:100%;'>";
-		$HTML .= "<tr>
-		<td><b>" . __('Order No') . ":</b> " . htmlspecialchars($order['orderno']) . "</td>
-		<td><b>" . __('Customer') . ":</b> " . htmlspecialchars($order['name']) . "</td>
-	</tr>
-	<tr>
-		<td><b>" . __('Delivery Date') . ":</b> " . htmlspecialchars($order['deliverydate']) . "</td>
-		<td><b>" . __('Warehouse') . ":</b> " . htmlspecialchars($order['locationname']) . "</td>
-	</tr>
-	<tr>
-		<td colspan='2'><b>" . __('Deliver To') . ":</b> " . htmlspecialchars($order['deliverto']) . ", " . $DeliveryAddress . "
-		</td>
-	</tr>
-	<tr>
-		<td colspan='2'><b>" . __('Comments') . ":</b> " . htmlspecialchars($order['comments']) . "</td>
-	</tr>
-	</table>";
+
+		$HTML .= '<div class="' . ($i < count($OrdersToPick) - 1 ? 'page-break' : '') . '">';
+		
+		$HTML .= '<div class="report-header">
+					<h1 class="report-title">' . __('Picking List') . '</h1>
+					<div style="font-size: 8pt; color: #999; text-align: right;">' . __('Printed on') . ': ' . date($_SESSION['DefaultDateFormat'] . ' H:i') . '</div>
+				  </div>';
+
+		$HTML .= '<table class="order-info">
+					<tr>
+						<td width="30%"><span class="label">' . __('Order Number') . '</span><span class="value">#' . htmlspecialchars($order['orderno']) . '</span></td>
+						<td width="40%"><span class="label">' . __('Customer') . '</span><span class="value">' . htmlspecialchars($order['name']) . '</span></td>
+						<td width="30%"><span class="label">' . __('Warehouse') . '</span><span class="value">' . htmlspecialchars($order['locationname']) . '</span></td>
+					</tr>
+					<tr>
+						<td><span class="label">' . __('Delivery Date') . '</span><span class="value">' . htmlspecialchars($order['deliverydate']) . '</span></td>
+						<td colspan="2"><span class="label">' . __('Deliver To') . '</span><span class="value">' . htmlspecialchars($order['deliverTo']) . ', ' . $DeliveryAddress . '</span></td>
+					</tr>';
+		if ($order['comments'] != '') {
+			$HTML .= '<tr><td colspan="3"><span class="label">' . __('Special Instructions / Comments') . '</span><span class="value" style="color: #c0392b;">' . htmlspecialchars($order['comments']) . '</span></td></tr>';
+		}
+		$HTML .= '</table>';
 
 		// Get line items
 		if ($order['orderno'] == 'Preview') {
-			$lineItems = [['stkcode' => str_pad('', 10, 'x'), 'description' => str_pad('', 18, 'x'), 'narrative' => str_pad('', 18, 'x'), 'quantity' => 'XXXX.XX', 'qtyinvoiced' => 'XXXX.XX', 'supplied' => 'XXXX.XX']];
-		}
-		else {
+			$lineItems = [['stkcode' => 'EXAMPLE-01', 'description' => 'Preview Item 1', 'narrative' => '', 'quantity' => '10.00', 'qtyinvoiced' => '0.00', 'supplied' => '10.00']];
+		} else {
 			$SQL = "SELECT salesorderdetails.stkcode,
-					stockmaster.description,
-					salesorderdetails.orderlineno,
-					salesorderdetails.quantity,
-					salesorderdetails.qtyinvoiced,
-					salesorderdetails.unitprice,
-					salesorderdetails.narrative,
-					stockmaster.decimalplaces
-				FROM salesorderdetails
-				INNER JOIN stockmaster
-					ON salesorderdetails.stkcode=stockmaster.stockid
-				WHERE salesorderdetails.orderno='" . $order['orderno'] . "'";
+						stockmaster.description,
+						salesorderdetails.orderlineno,
+						salesorderdetails.quantity,
+						salesorderdetails.qtyinvoiced,
+						salesorderdetails.unitprice,
+						salesorderdetails.narrative,
+						stockmaster.decimalplaces
+					FROM salesorderdetails
+					INNER JOIN stockmaster ON salesorderdetails.stkcode=stockmaster.stockid
+					WHERE salesorderdetails.orderno='" . $order['orderno'] . "'";
 			$LineResult = DB_query($SQL);
 			$lineItems = [];
 			while ($row = DB_fetch_array($LineResult)) {
-				$DisplayQty = locale_number_format($row['quantity'], $row['decimalplaces']);
-				$DisplayPrevDel = locale_number_format($row['qtyinvoiced'], $row['decimalplaces']);
-				$DisplayQtySupplied = locale_number_format($row['quantity'] - $row['qtyinvoiced'], $row['decimalplaces']);
-				$lineItems[] = ['stkcode' => $row['stkcode'], 'description' => $row['description'], 'narrative' => $row['narrative'], 'quantity' => $DisplayQty, 'qtyinvoiced' => $DisplayPrevDel, 'supplied' => $DisplayQtySupplied];
+				$lineItems[] = [
+					'stkcode' => $row['stkcode'],
+					'description' => $row['description'],
+					'narrative' => $row['narrative'],
+					'quantity' => locale_number_format($row['quantity'], $row['decimalplaces']),
+					'qtyinvoiced' => locale_number_format($row['qtyinvoiced'], $row['decimalplaces']),
+					'supplied' => locale_number_format($row['quantity'] - $row['qtyinvoiced'], $row['decimalplaces'])
+				];
 			}
 		}
 
-		// Table header for line items
-		$HTML .= "<table border='1' cellpadding='4' cellspacing='0' style='width:100%;margin-top:15px;'>
-		<tr style='background:#e0e0e0;'>
-			<th>" . __('Stock Code') . "</th>
-			<th>" . __('Description') . "</th>
-			<th>" . __('Quantity Ordered') . "</th>
-			<th>" . __('Quantity To Pick') . "</th>
-			<th>" . __('Previously Delivered') . "</th>
-		</tr>";
+		$HTML .= '<table class="line-items">
+					<thead>
+						<tr>
+							<th width="15%">' . __('Code') . '</th>
+							<th width="40%">' . __('Description') . '</th>
+							<th width="15%" class="qty">' . __('Ordered') . '</th>
+							<th width="15%" class="qty">' . __('To Pick') . '</th>
+							<th width="15%" class="qty">' . __('Delivered') . '</th>
+						</tr>
+					</thead>
+					<tbody>';
 
 		foreach ($lineItems as $item) {
-			$ItemDescription = htmlspecialchars($item['description']);
-			$Narrative = htmlspecialchars($item['narrative']);
-			$HTML .= "<tr>
-			<td>" . htmlspecialchars($item['stkcode']) . "</td>
-			<td>" . $ItemDescription . ($Narrative ? ' - ' . $Narrative : '') . "</td>
-			<td style='text-align:right;'>" . htmlspecialchars($item['quantity']) . "</td>
-			<td style='text-align:right;'>" . htmlspecialchars($item['supplied']) . "</td>
-			<td style='text-align:right;'>" . htmlspecialchars($item['qtyinvoiced']) . "</td>
-		</tr>";
+			$HTML .= '<tr>
+						<td class="stock-code">' . htmlspecialchars($item['stkcode']) . '</td>
+						<td>
+							<div style="font-weight: bold;">' . htmlspecialchars($item['description']) . '</div>' . 
+							($item['narrative'] ? '<div style="font-size: 8pt; color: #666; font-style: italic;">' . htmlspecialchars($item['narrative']) . '</div>' : '') . '
+						</td>
+						<td class="qty">' . htmlspecialchars($item['quantity']) . '</td>
+						<td class="qty-pick">' . htmlspecialchars($item['supplied']) . '</td>
+						<td class="qty">' . htmlspecialchars($item['qtyinvoiced']) . '</td>
+					</tr>';
 		}
-		$HTML .= "</table>";
-		$HTML .= "</div>";
+		$HTML .= '</tbody></table>';
+		
+		$HTML .= '<div style="margin-top: 30px; border-top: 1px dashed #ccc; padding-top: 10px; font-size: 9pt;">
+					<strong>' . __('Warehouse Verification') . ':</strong> _________________________________ 
+					<span style="margin-left: 30px;"><strong>' . __('Date') . ':</strong> ________________</span>
+				  </div>';
+				  
+		$HTML .= '</div>';
 		$ListCount++;
 	}
 
@@ -277,51 +321,57 @@ if (isset($_POST['Process'])) {
 } else {
 	if ((!isset($_GET['TransNo']) or $_GET['TransNo'] == '') and !isset($_POST['TransDate'])) {
 		$Title = __('Select Picking Lists');
-		$ViewTopic = 'Sales';
-		$BookMark = '';
 		include ('includes/header.php');
+		
 		$SQL = "SELECT locations.loccode,
 				locationname
 			FROM locations
 			INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1";
 		$Result = DB_query($SQL);
 		
-		echo '<div class="dashboard-shell-container">
+		echo '<div class="db-page">
 				<div class="db-page-header">
-					<div>
-						<h2 class="db-page-title">' . $Title . '</h2>
-						<p class="db-page-subtitle">' . __('Generate picking lists for warehouse operations') . '</p>
+					<div class="db-page-title">
+						<i class="fas fa-clipboard-list" style="color: var(--primary-color);"></i> ' . $Title . '
 					</div>
 				</div>
-				<div class="MainBody">
-					<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" name="form" target="_blank">
-						<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-						
-						<div class="card-v2">
-							<div class="card-header-v2">
-								<h3>' . __('Selection Criteria') . '</h3>
-							</div>
-							<div class="db-field-group">
-								<div class="form-group">
-									<label for="TransDate">' . __('Deliveries to be made on') . '</label>
-									<input required="required" autofocus="autofocus" type="date" name="TransDate" value="' . date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') + 1, date('Y'))) . '" />
+
+				<div class="db-bottom-layout" style="justify-content: center;">
+					<div style="width: 100%; max-width: 600px;">
+						<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" target="_blank">
+							<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+							
+							<div class="db-card shadow-sm">
+								<div class="db-card-header">
+									<div class="db-card-title"><i class="fas fa-filter"></i> ' . __('Search Criteria') . '</div>
 								</div>
-								<div class="form-group">
-									<label for="loccode">' . __('From Warehouse') . '</label>
-									<select required="required" name="loccode">';
+								<div class="db-card-body">
+									<div class="db-field">
+										<label for="TransDate">' . __('Deliveries to be made on') . '</label>
+										<input type="date" name="TransDate" class="db-input" required="required" autofocus="autofocus" 
+											   value="' . date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') + 1, date('Y'))) . '" />
+									</div>
+
+									<div class="db-field" style="margin-top: 20px;">
+										<label for="loccode">' . __('From Warehouse') . '</label>
+										<select name="loccode" class="db-select" required="required">';
 		while ($MyRow = DB_fetch_array($Result)) {
 			echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 		}
-		echo '				</select>
+		echo '						</select>
+									</div>
+
+									<div class="centre" style="margin-top: 30px;">
+										<button type="submit" name="Process" class="db-btn db-btn-primary" style="width: 100%; padding: 12px; font-weight: 600;">
+											<i class="fas fa-print"></i> ' . __('Print Picking Lists') . '
+										</button>
+									</div>
 								</div>
 							</div>
-							<div class="form-footer-actions">
-								<input type="submit" name="Process" value="' . __('Print Picking Lists') . '" class="primary-btn-modern" />
-							</div>
-						</div>
-					</form>
+						</form>
+					</div>
 				</div>
-			</div>';
+			  </div>';
 
 		include ('includes/footer.php');
 		exit();

@@ -11,22 +11,28 @@ include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 
 $ViewTopic = 'SalesOrders';/* ?????????? */
 $BookMark = 'SpecialOrder';
-$Title = __('Special Order Entry');
+$ExtraHeadContent = '<link rel="stylesheet" href="' . $RootPath . '/css/modern-zerp/special-orders.css">';
 include(__DIR__ . '/includes/header.php');
 
 if (isset($_POST['ReqDelDate'])){$_POST['ReqDelDate'] = ConvertSQLDate($_POST['ReqDelDate']);}
 
 if (empty($_GET['identifier'])) {
-	/*unique session identifier to ensure that there is no conflict with other supplier tender sessions on the same machine  */
 	$identifier=date('U');
 } else {
 	$identifier=$_GET['identifier'];
 }
-echo '<p class="page_title_text">
-		<img src="'.$RootPath.'/css/'.$Theme.'/images/sales.png" title="' . __('Shop Configuration'). '" alt="" />' . $Title. '
-	</p>';
 
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8' ) . '?identifier=' . urlencode($identifier) . '" method="post">';
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div class="db-page-title">
+				<i class="fas fa-magic" style="color: var(--warning-color);"></i> ' . $Title . '
+			</div>
+			<div class="db-page-actions">
+				<a href="SpecialOrder.php?identifier=' . $identifier . '&NewSpecial=yes" class="db-btn db-btn-outline"><i class="fas fa-plus"></i> ' . __('New Special') . '</a>
+			</div>
+		</div>';
+
+echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8' ) . '?identifier=' . urlencode($identifier) . '" method="post" id="SpecialOrderForm">';
 echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
 if (isset($_GET['NewSpecial']) and $_GET['NewSpecial']=='yes'){
@@ -34,18 +40,31 @@ if (isset($_GET['NewSpecial']) and $_GET['NewSpecial']=='yes'){
 }
 
 if (!isset($_SESSION['SupplierID'])){
-	echo '<br /><br />';
-	prnMsg(__('To set up a special') . ', ' . __('the supplier must first be selected from the Select Supplier page'),'info');
-	echo '<br /><a href="' . $RootPath . '/SelectSupplier.php">' . __('Select the supplier now') . '</a>';
+	echo '<div class="db-page-content">
+            <div class="db-card" style="max-width: 600px; margin: 40px auto;">
+                <div class="db-card-body text-center p-8">
+                    <i class="fas fa-truck-loading fa-3x mb-4" style="color: var(--primary);"></i>
+                    <h3>' . __('Supplier Required') . '</h3>
+                    <p class="mb-6">' . __('To set up a special order, you must first select a supplier.') . '</p>
+                    <a href="' . $RootPath . '/SelectSupplier.php" class="db-btn db-btn-primary">' . __('Select Supplier Now') . '</a>
+                </div>
+            </div>
+          </div>';
 	include(__DIR__ . '/includes/footer.php');
 	exit();
 }
 
 if (!isset($_SESSION['CustomerID']) or $_SESSION['CustomerID']==''){
-	echo '<br />
-		<br />' . __('To set up a special') . ', ' . __('the customer must first be selected from the Select Customer page') . '
-		<br />
-		<a href="' . $RootPath . '/SelectCustomer.php">' . __('Select the customer now') . '</a>';
+	echo '<div class="db-page-content">
+            <div class="db-card" style="max-width: 600px; margin: 40px auto;">
+                <div class="db-card-body text-center p-8">
+                    <i class="fas fa-user-tag fa-3x mb-4" style="color: var(--success);"></i>
+                    <h3>' . __('Customer Required') . '</h3>
+                    <p class="mb-6">' . __('To set up a special order, you must first select a customer.') . '</p>
+                    <a href="' . $RootPath . '/SelectCustomer.php" class="db-btn db-btn-primary">' . __('Select Customer Now') . '</a>
+                </div>
+            </div>
+          </div>';
 	include(__DIR__ . '/includes/footer.php');
 	exit();
 }
@@ -132,42 +151,36 @@ if (!isset($_SESSION['SPL'.$identifier]->BranchCode)){
 			WHERE debtorno='" . $_SESSION['CustomerID'] . "'";
 	$BranchResult = DB_query($SQL);
 
-	if (DB_num_rows($BranchResult)>0) {
-
-		echo '<div class="centre">';
-		echo '<br />
-				<br />' . __('Select the customer branch to deliver the special to from the list below');
-
-		echo '</div>
-			<br />
-			<table class="selection">';
-
-		echo '<tr>
-				<th>' .__('Code') . '</th>
-				<th>' . __('Branch Name') . '</th>
-			</tr>';
-
-		$j = 1;
-
+	if (DB_num_rows($BranchResult)>1) {
+		echo '<div class="db-page-content">
+                <div class="db-card" style="max-width: 700px; margin: 0 auto;">
+                    <div class="db-card-header">
+                        <div class="db-card-title"><i class="fas fa-map-marker-alt"></i> ' . __('Select Delivery Branch') . '</div>
+                    </div>
+                    <div class="db-card-body">
+                        <div class="db-grid-2" style="gap: 15px;">';
 		while ($MyRow=DB_fetch_array($BranchResult)) {
-
-			echo '<tr class="striped_row">
-					<td><input type="submit" name="SelectBranch" value="', $MyRow['branchcode'], '" /></td>
-					<td>', htmlspecialchars($MyRow['brname'], ENT_QUOTES, 'UTF-8', false), '</td>
-				</tr>';
-
-//end of page full new headings if
+			echo '<button type="submit" name="SelectBranch" value="' . $MyRow['branchcode'] . '" class="db-btn db-btn-outline" style="justify-content: flex-start; padding: 15px;">
+                    <div class="text-left">
+                        <div style="font-weight: 700;">' . htmlspecialchars($MyRow['brname'], ENT_QUOTES, 'UTF-8') . '</div>
+                        <div style="font-size: 0.75rem; opacity: 0.7;">' . $MyRow['branchcode'] . '</div>
+                    </div>
+                  </button>';
 		}
-//end of while loop
-
-		echo '</table>';
-		echo '</div>
-              </form>';
+		echo '          </div>
+                    </div>
+                </div>
+              </div>';
+		echo '  </form>
+              </div>';
 		include(__DIR__ . '/includes/footer.php');
 		exit();
-
-	} else {
-		prnMsg( __('There are no branches defined for the customer selected') . '. ' . __('Please select a customer that has branches defined'),'info');
+	} elseif (DB_num_rows($BranchResult)==1) {
+        $MyRow = DB_fetch_array($BranchResult);
+        $_SESSION['SPL'.$identifier]->BranchCode = $MyRow['branchcode'];
+        $_SESSION['SPL'.$identifier]->BranchName = $MyRow['brname'];
+    } else {
+		prnMsg( __('There are no branches defined for the customer selected'),'info');
 		include(__DIR__ . '/includes/footer.php');
 		exit();
 	}
@@ -567,184 +580,237 @@ if (isset($_POST['Commit'])){ /*User wishes to commit the order to the database 
 } /* end of the code to do transfer the SPL object to the database  - user hit the place Order*/
 
 
-echo '<fieldset>';
-/*Show the header information for modification */
-if (!isset($_SESSION['SPL'.$identifier]->BranchCode)){
-	echo '<legend>' . htmlspecialchars(__('Purchase from') . ' ' . $_SESSION['SPL'.$identifier]->SupplierName . ' ' . __('in') . ' ' . $_SESSION['SPL'.$identifier]->SuppCurrCode . ' ' . __('for') . ' ' . $_SESSION['SPL'.$identifier]->CustomerName . ' (' . $_SESSION['SPL'.$identifier]->CustCurrCode . ')', ENT_QUOTES, 'UTF-8', false) . '</legend>';
-} else {
-	echo '<legend>' . htmlspecialchars(__('Purchase from') . ' ' . $_SESSION['SPL'.$identifier]->SupplierName . ' ' . __('in') . ' ' . $_SESSION['SPL'.$identifier]->SuppCurrCode . ' ' . __('for') . ' ' . $_SESSION['SPL'.$identifier]->CustomerName . ' (' . $_SESSION['SPL'.$identifier]->CustCurrCode . ') - ' . __('delivered to') . ' ' . $_SESSION['SPL'.$identifier]->BranchName . ' ' . __('branch'), ENT_QUOTES, 'UTF-8', false) . '</legend>';
+echo '<div class="db-page-content">';
+
+// Calculate Totals for KPIs
+$TotalSales = 0;
+$TotalCostSupp = 0;
+foreach ($_SESSION['SPL'.$identifier]->LineItems as $SPLLine) {
+    $TotalSales += ($SPLLine->Price * $SPLLine->Quantity);
+    $TotalCostSupp += ($SPLLine->Cost * $SPLLine->Quantity);
 }
+$MarginAmt = $TotalSales - ($TotalCostSupp * $_SESSION['SPL'.$identifier]->SuppCurrExRate / $_SESSION['SPL'.$identifier]->CustCurrExRate);
+$MarginPct = $TotalSales > 0 ? ($MarginAmt / $TotalSales) * 100 : 0;
 
-echo '<field>
-		<label for="StkLocation">' . __('Receive Purchase Into and Sell From') . ':</label>
-		<select name="StkLocation">';
+echo '<!-- KPI Metrics Row -->
+    <div class="kpi-grid" style="margin-bottom: var(--space-6);">
+        <div class="kpi-card-v2">
+            <div class="kpi-icon" style="background: var(--success-soft); color: var(--success);">
+                <i class="fas fa-hand-holding-usd"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="label">' . __('Total Sales') . ' (' . $_SESSION['SPL'.$identifier]->CustCurrCode . ')</span>
+                <span class="value">' . locale_number_format($TotalSales, $_SESSION['SPL'.$identifier]->CustCurrDecimalPlaces) . '</span>
+            </div>
+        </div>
+        
+        <div class="kpi-card-v2">
+            <div class="kpi-icon" style="background: var(--primary-soft); color: var(--primary);">
+                <i class="fas fa-tags"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="label">' . __('Total Cost') . ' (' . $_SESSION['SPL'.$identifier]->SuppCurrCode . ')</span>
+                <span class="value">' . locale_number_format($TotalCostSupp, $_SESSION['SPL'.$identifier]->SuppCurrDecimalPlaces) . '</span>
+            </div>
+        </div>
 
-$SQL = "SELECT locations.loccode, locationname FROM locations
-		INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canupd=1";
-$LocnResult = DB_query($SQL);
-if (!isset($_SESSION['SPL'.$identifier]->StkLocation) or $_SESSION['SPL'.$identifier]->StkLocation==''){ /*If this is the first time the form loaded set up defaults */
-	$_SESSION['SPL'.$identifier]->StkLocation = $_SESSION['UserStockLocation'];
-}
+        <div class="kpi-card-v2">
+            <div class="kpi-icon" style="background: var(--success-soft); color: var(--success);">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="label">' . __('Margin Amount') . '</span>
+                <span class="value" style="color: ' . ($MarginAmt >= 0 ? 'var(--success-color)' : 'var(--danger-color)') . ';">' . locale_number_format($MarginAmt, $_SESSION['SPL'.$identifier]->CustCurrDecimalPlaces) . '</span>
+            </div>
+        </div>
 
-while ($LocnRow=DB_fetch_array($LocnResult)){
-	if ($_SESSION['SPL'.$identifier]->StkLocation == $LocnRow['loccode']){
-		echo '<option selected="selected" value="' . $LocnRow['loccode'] . '">' . $LocnRow['locationname'] . '</option>';
-	} else {
-		echo '<option value="' . $LocnRow['loccode'] . '">' . $LocnRow['locationname'] . '</option>';
-	}
-}
-echo '</select>
-	</field>';
+        <div class="kpi-card-v2">
+            <div class="kpi-icon" style="background: ' . ($MarginPct >= 15 ? 'var(--success-soft)' : 'var(--warning-soft)') . '; color: ' . ($MarginPct >= 15 ? 'var(--success)' : 'var(--warning)') . ';">
+                <i class="fas fa-percentage"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="label">' . __('Margin %') . '</span>
+                <span class="value">' . locale_number_format($MarginPct, 1) . '%</span>
+            </div>
+        </div>
+    </div>';
 
-echo '<field>
-		<label for="Initiator">' . __('Initiated By') . ':</label>
-		<input type="text" name="Initiator" size="11" maxlength="10" value="' . $_SESSION['SPL'.$identifier]->Initiator . '" />
-	</field>
-	<field>
-		<label for="QuotationRef">' . __('Special Ref') . ':</label>
-		<input type="text" name="QuotationRef" size="16" maxlength="15" value="' . $_SESSION['SPL'.$identifier]->QuotationRef . '" />
-	</field>
-	<field>
-		<label for="CustRef">' . __('Customer Ref') . ':</label>
-		<input type="text" name="CustRef" size="11" maxlength="10" value="' . $_SESSION['SPL'.$identifier]->CustRef . '" />
-	</field>
-	<field>
-		<label for="Comments">' . __('Comments') . ':</label>
-		<textarea name="Comments" cols="70" rows="2">' . $_SESSION['SPL'.$identifier]->Comments . '</textarea>
-	</field>
-</fieldset>'; /* Rule off the header */
+echo '<div class="db-bottom-layout">
+        <aside class="db-col-aside">
+            <div class="db-card aside-info-card supplier">
+                <div class="db-card-header">
+                    <div class="db-card-title"><i class="fas fa-truck"></i> ' . __('Supplier') . '</div>
+                </div>
+                <div class="db-card-body">
+                    <div class="info-label">' . __('Name') . '</div>
+                    <div class="info-value">' . $_SESSION['SPL'.$identifier]->SupplierName . '</div>
+                    <div class="currency-meta">' . __('Currency') . ': ' . $_SESSION['SPL'.$identifier]->SuppCurrCode . '</div>
+                </div>
+            </div>
 
-/*Now show the order so far */
+            <div class="db-card aside-info-card customer" style="margin-top: 20px;">
+                <div class="db-card-header">
+                    <div class="db-card-title"><i class="fas fa-user-tie"></i> ' . __('Customer') . '</div>
+                </div>
+                <div class="db-card-body">
+                    <div class="info-label">' . __('Name') . '</div>
+                    <div class="info-value">' . $_SESSION['SPL'.$identifier]->CustomerName . '</div>
+                    <div class="info-label" style="margin-top: 10px;">' . __('Branch') . '</div>
+                    <div class="info-value">' . $_SESSION['SPL'.$identifier]->BranchName . '</div>
+                </div>
+            </div>
+
+            <div class="db-card" style="margin-top: 20px;">
+                <div class="db-card-header">
+                    <div class="db-card-title"><i class="fas fa-warehouse"></i> ' . __('Fulfillment') . '</div>
+                </div>
+                <div class="db-card-body">
+                    <div class="db-field">
+                        <label>' . __('Stock Location') . '</label>
+                        <select name="StkLocation" class="db-select">';
+                        $SQL = "SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canupd=1";
+                        $LocnResult = DB_query($SQL);
+                        while ($LocnRow=DB_fetch_array($LocnResult)){
+                            $selected = ($_SESSION['SPL'.$identifier]->StkLocation == $LocnRow['loccode']) ? 'selected' : '';
+                            echo '<option ' . $selected . ' value="' . $LocnRow['loccode'] . '">' . $LocnRow['locationname'] . '</option>';
+                        }
+echo '                  </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="db-card" style="margin-top: 20px; background: var(--surface-alt);">
+                <div class="db-card-body" style="display: flex; flex-direction: column; gap: 10px;">
+                    <button type="submit" name="Commit" class="db-btn db-btn-primary" style="width: 100%;">
+                        <i class="fas fa-check-circle"></i> ' . __('Process Order') . '
+                    </button>
+                    <button type="submit" name="Cancel" class="db-btn db-btn-outline-danger" style="width: 100%;">
+                        <i class="fas fa-undo"></i> ' . __('Start Again') . '
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="db-col-main">
+            <div class="db-card">
+                <div class="db-card-header">
+                    <div class="db-card-title"><i class="fas fa-info-circle"></i> ' . __('Order References') . '</div>
+                </div>
+                <div class="db-card-body">
+                    <div class="db-grid-3">
+                        <div class="db-field">
+                            <label>' . __('Initiated By') . '</label>
+                            <input type="text" name="Initiator" class="db-input" value="' . $_SESSION['SPL'.$identifier]->Initiator . '" />
+                        </div>
+                        <div class="db-field">
+                            <label>' . __('Special Ref') . '</label>
+                            <input type="text" name="QuotationRef" class="db-input" value="' . $_SESSION['SPL'.$identifier]->QuotationRef . '" />
+                        </div>
+                        <div class="db-field">
+                            <label>' . __('Customer Ref') . '</label>
+                            <input type="text" name="CustRef" class="db-input" value="' . $_SESSION['SPL'.$identifier]->CustRef . '" />
+                        </div>
+                    </div>
+                    <div class="db-field" style="margin-top: 15px;">
+                        <label>' . __('Comments') . '</label>
+                        <textarea name="Comments" class="db-input" rows="2">' . $_SESSION['SPL'.$identifier]->Comments . '</textarea>
+                    </div>
+                </div>
+            </div>';
 
 if (count($_SESSION['SPL'.$identifier]->LineItems)>0){
+    echo '<div class="db-card" style="margin-top: 20px;">
+            <div class="db-card-header">
+                <div class="db-card-title"><i class="fas fa-list-ul"></i> ' . __('Current Lines') . '</div>
+            </div>
+            <div class="db-card-body p-0">
+                <div class="table-container">
+                    <table class="db-table">';
+    echo '<thead>
+            <tr>
+                <th>' . __('Item Description') . '</th>
+                <th>' . __('Delivery') . '</th>
+                <th class="text-right">' . __('Qty') . '</th>
+                <th class="text-right">' . __('Cost') . ' (' . $_SESSION['SPL'.$identifier]->SuppCurrCode . ')</th>
+                <th class="text-right">' . __('Price') . ' (' . $_SESSION['SPL'.$identifier]->CustCurrCode . ')</th>
+                <th class="text-right">' . __('Actions') . '</th>
+            </tr>
+          </thead>
+          <tbody>';
 
-	echo '<div class="centre"><b>' . __('Special Order Summary') . '</b></div>';
-	echo '<table class="selection" cellpadding="2" border="1">';
-
-	echo '<tr>
-			<th>' . __('Item Description') . '</th>
-			<th>' . __('Delivery') . '</th>
-			<th>' . __('Quantity') . '</th>
-			<th>' . __('Purchase Cost') . '<br />' . $_SESSION['SPL'.$identifier]->SuppCurrCode . '</th>
-			<th>' . __('Sell Price') . '<br />' . $_SESSION['SPL'.$identifier]->CustCurrCode . '</th>
-			<th>' . __('Total Cost') . '<br />' . $_SESSION['SPL'.$identifier]->SuppCurrCode .  '</th>
-			<th>' . __('Total Price') . '<br />' . $_SESSION['SPL'.$identifier]->CustCurrCode .  '</th>
-			<th>' . __('Total Cost') . '<br />' . $_SESSION['CompanyRecord']['currencydefault'] .  '</th>
-			<th>' . __('Total Price') . '<br />' . $_SESSION['CompanyRecord']['currencydefault'] .  '</th>
-		</tr>';
-
-	$_SESSION['SPL'.$identifier]->total = 0;
-
-	foreach ($_SESSION['SPL'.$identifier]->LineItems as $SPLLine) {
-
-		$LineTotal = $SPLLine->Quantity * $SPLLine->Price;
-		$LineCostTotal = $SPLLine->Quantity * $SPLLine->Cost;
-		$DisplayLineTotal = locale_number_format($LineTotal,$_SESSION['SPL'.$identifier]->CustCurrDecimalPlaces);
-		$DisplayLineCostTotal = locale_number_format($LineCostTotal,$_SESSION['SPL'.$identifier]->SuppCurrDecimalPlaces);
-		$DisplayLineTotalCurr = locale_number_format($LineTotal/$_SESSION['SPL'.$identifier]->CustCurrExRate,$_SESSION['CompanyRecord']['decimalplaces']);
-		$DisplayLineCostTotalCurr = locale_number_format($LineCostTotal/$_SESSION['SPL'.$identifier]->SuppCurrExRate,$_SESSION['CompanyRecord']['decimalplaces']);
-		$DisplayCost = locale_number_format($SPLLine->Cost,$_SESSION['SPL'.$identifier]->SuppCurrDecimalPlaces);
-		$DisplayPrice = locale_number_format($SPLLine->Price,$_SESSION['SPL'.$identifier]->CustCurrDecimalPlaces);
-		$DisplayQuantity = locale_number_format($SPLLine->Quantity,'Variable');
-
-		echo '<tr class="striped_row">
-			<td>' . $SPLLine->ItemDescription . '</td>
-			<td>' . $SPLLine->ReqDelDate . '</td>
-			<td class="number">' . $DisplayQuantity . '</td>
-			<td class="number">' . $DisplayCost . '</td>
-			<td class="number">' . $DisplayPrice . '</td>
-			<td class="number">' . $DisplayLineCostTotal . '</td>
-			<td class="number">' . $DisplayLineTotal . '</td>
-			<td class="number">' . $DisplayLineCostTotalCurr . '</td>
-			<td class="number">' . $DisplayLineTotalCurr . '</td>
-			<td><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?identifier=' . $identifier . '&Delete=' . $SPLLine->LineNo . '">' . __('Delete') . '</a></td>
-		</tr>';
-
-		$_SESSION['SPL'.$identifier]->total += ($LineTotal/$_SESSION['SPL'.$identifier]->CustCurrExRate);
-	}
-
-	$DisplayTotal = locale_number_format($_SESSION['SPL'.$identifier]->total,$_SESSION['SPL'.$identifier]->CustCurrDecimalPlaces);
-	echo '<tr>',
-/*		'<td colspan="8" class="number">' . __('TOTAL Excl Tax') . '</td>',*/
-		'<td class="number" colspan="8">', __('Total Excluding Tax'), '</td>',
-		'<td class="number"><b>', $DisplayTotal, '</b></td>
-	</tr>
-	</table>';
-
+    foreach ($_SESSION['SPL'.$identifier]->LineItems as $SPLLine) {
+        echo '<tr>
+                <td><div style="font-weight:600;">' . $SPLLine->ItemDescription . '</div></td>
+                <td>' . $SPLLine->ReqDelDate . '</td>
+                <td class="text-right">' . locale_number_format($SPLLine->Quantity, 'Variable') . '</td>
+                <td class="text-right">' . locale_number_format($SPLLine->Cost, $_SESSION['SPL'.$identifier]->SuppCurrDecimalPlaces) . '</td>
+                <td class="text-right">' . locale_number_format($SPLLine->Price, $_SESSION['SPL'.$identifier]->CustCurrDecimalPlaces) . '</td>
+                <td class="text-right">
+                    <a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . $identifier . '&Delete=' . $SPLLine->LineNo . '" class="db-btn db-btn-outline-danger" style="padding: 4px 10px;">
+                        <i class="fas fa-trash-alt"></i>
+                    </a>
+                </td>
+              </tr>';
+    }
+    echo '</tbody></table></div></div></div>';
 }
 
-/*Set up the form to enter new special items into */
+echo '<div class="db-card" style="margin-top: 20px;">
+        <div class="db-card-header">
+            <div class="db-card-title"><i class="fas fa-plus-circle"></i> ' . __('Add Special Item') . '</div>
+        </div>
+        <div class="db-card-body">
+            <input type="hidden" name="LineNo" value="' . ($_SESSION['SPL'.$identifier]->LinesOnOrder + 1) .'" />';
+            
+            echo '<div class="db-field">
+                    <label>' . __('Item Description') . '</label>
+                    <input type="text" name="ItemDescription" class="db-input" placeholder="' . __('Detailed description of the non-stock item...') . '" value="' . ($_POST['ItemDescription'] ?? '') . '" />
+                  </div>';
 
-echo '<input type="hidden" name="LineNo" value="' . ($_SESSION['SPL'.$identifier]->LinesOnOrder + 1) .'" />';
+            echo '<div class="db-grid-2" style="margin-top: 15px;">
+                    <div class="db-field">
+                        <label>' . __('Stock Category') . '</label>
+                        <select name="StkCat" class="db-select">';
+                        $SQL = "SELECT categoryid, categorydescription FROM stockcategory";
+                        $Result = DB_query($SQL);
+                        while ($MyRow=DB_fetch_array($Result)){
+                            $selected = (isset($_POST['StkCat']) and $MyRow['categoryid']==$_POST['StkCat']) ? 'selected' : '';
+                            echo '<option ' . $selected . ' value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
+                        }
+echo '                  </select>
+                    </div>
+                    <div class="db-field">
+                        <label>' . __('Required Delivery Date') . '</label>
+                        <input type="date" name="ReqDelDate" class="db-input" value="' . FormatDateForSQL($_POST['ReqDelDate'] ?? date($_SESSION['DefaultDateFormat'], strtotime('+1 day'))) . '" />
+                    </div>
+                  </div>';
 
-if (!isset($_POST['ItemDescription'])) {
-	$_POST['ItemDescription']='';
-}
+            echo '<div class="db-grid-3" style="margin-top: 15px;">
+                    <div class="db-field">
+                        <label>' . __('Quantity') . '</label>
+                        <input type="text" name="Qty" class="db-input text-right" value="' . locale_number_format($_POST['Qty'] ?? 1, 'Variable') . '" />
+                    </div>
+                    <div class="db-field">
+                        <label>' . __('Unit Cost') . ' (' . $_SESSION['SPL'.$identifier]->SuppCurrCode . ')</label>
+                        <input type="text" name="Cost" class="db-input text-right" value="' . locale_number_format($_POST['Cost'] ?? 0, $_SESSION['SPL'.$identifier]->SuppCurrDecimalPlaces) . '" />
+                    </div>
+                    <div class="db-field">
+                        <label>' . __('Unit Price') . ' (' . $_SESSION['SPL'.$identifier]->CustCurrCode . ')</label>
+                        <input type="text" name="Price" class="db-input text-right" value="' . locale_number_format($_POST['Price'] ?? 0, $_SESSION['SPL'.$identifier]->CustCurrDecimalPlaces) . '" />
+                    </div>
+                  </div>';
 
-echo '<fieldset>
-		<legend>', __('Order Details'), '</legend>';
-echo '<field>
-		<label for="ItemDescription">' . __('Ordered item Description') . ':</label>
-		<input type="text" name="ItemDescription" size="40" maxlength="40" value="' . $_POST['ItemDescription'] . '" />
-	</field>';
-
-echo '<field>
-		<label for="StkCat">' . __('Category') . ':</label>
-		<select name="StkCat">';
-
-$SQL = "SELECT categoryid, categorydescription FROM stockcategory";
-$ErrMsg = __('The stock categories could not be retrieved because');
-$Result = DB_query($SQL, $ErrMsg);
-
-while ($MyRow=DB_fetch_array($Result)){
-	if (isset($_POST['StkCat']) and $MyRow['categoryid']==$_POST['StkCat']){
-		echo '<option selected="selected" value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
-	} else {
-		echo '<option value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
-	}
-}
-echo '</select>
-	</field>';
-
-/*default the order quantity to 1 unit */
-$_POST['Qty'] = 1;
-
-echo '<field>
-		<label for="Qty">' . __('Order Quantity') . ':</label>
-		<input type="text" class="number" size="7" maxlength="6" name="Qty" value="' . locale_number_format($_POST['Qty'],'Variable') . '" />
-	</field>';
-
-if (!isset($_POST['Cost'])) {
-	$_POST['Cost']=0;
-}
-echo '<field>
-		<label for="Cost">' . __('Unit Cost') . ':</label>
-		<input type="text" class="number" size="15" maxlength="14" name="Cost" value="' . locale_number_format($_POST['Cost'],$_SESSION['SPL'.$identifier]->SuppCurrDecimalPlaces) . '" />
-	</field>';
-
-if (!isset($_POST['Price'])) {
-	$_POST['Price']=0;
-}
-echo '<field>
-		<label for="Price">' . __('Unit Price') . ':</label>
-		<input type="text" class="number" size="15" maxlength="14" name="Price" value="' . locale_number_format($_POST['Price'],$_SESSION['SPL'.$identifier]->CustCurrDecimalPlaces) . '" />
-	</field>';
-
-/*Default the required delivery date to tomorrow as a starting point */
-$_POST['ReqDelDate'] = date($_SESSION['DefaultDateFormat'],mktime(0,0,0,date('m'),date('d')+1,date('y')));
-
-echo '<field>
-		<label for="ReqDelDate">' . __('Required Delivery Date') . ':</label>
-		<input type="date" size="11" maxlength="10" name="ReqDelDate" value="' . FormatDateForSQL($_POST['ReqDelDate']) . '" />
-	</field>';
-
-echo '</fieldset>'; /* end of main table */
-
-echo '<div class="centre">
-		<input type="submit" name="EnterLine" value="' . __('Add Item to Order') . '" />
-		<input type="reset" name="Cancel" value="' . __('Start Again') . '" />
-		<input type="submit" name="Commit" value="' . __('Process This Order') . '" />
-	</div>
-	</form>';
+            echo '<div style="margin-top: 20px; text-align: right;">
+                    <button type="submit" name="EnterLine" class="db-btn db-btn-primary">
+                        <i class="fas fa-cart-plus"></i> ' . __('Add Item to Order') . '
+                    </button>
+                  </div>';
+echo '  </div>
+      </div>
+    </main>
+  </div> <!-- End Layout -->
+</div> <!-- End Content -->
+</div> <!-- End Page -->
+</form>';
 
 include(__DIR__ . '/includes/footer.php');

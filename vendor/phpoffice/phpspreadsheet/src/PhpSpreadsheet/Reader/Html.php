@@ -18,7 +18,6 @@ use PhpOffice\PhpSpreadsheet\Helper\Html as HelperHtml;
 use PhpOffice\PhpSpreadsheet\Reader\Security\XmlScanner;
 use PhpOffice\PhpSpreadsheet\Shared\StringHelper;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -728,13 +727,13 @@ class Html extends BaseReader
         // Reload the HTML file into the DOM object
         try {
             $convert = $this->getSecurityScannerOrThrow()->scanFile($filename);
-            $convert = static::replaceNonAsciiIfNeeded($convert);
+            $convert = self::replaceNonAsciiIfNeeded($convert);
             $loaded = ($convert === null) ? false : $dom->loadHTML($convert);
         } catch (Throwable $e) {
             $loaded = false;
         }
         if ($loaded === false) {
-            throw new Exception('Failed to load file ' . $filename . ' as a DOM Document', 0, $e ?? null);
+            throw new Exception('Failed to load ' . $filename . ' as a DOM Document', 0, $e ?? null);
         }
         self::loadProperties($dom, $spreadsheet);
 
@@ -822,7 +821,7 @@ class Html extends BaseReader
         return '&#' . mb_ord($matches[0], 'UTF-8') . ';';
     }
 
-    protected static function replaceNonAsciiIfNeeded(string $convert): ?string
+    private static function replaceNonAsciiIfNeeded(string $convert): ?string
     {
         if (preg_match(self::STARTS_WITH_BOM, $convert) !== 1 && preg_match(self::DECLARES_CHARSET, $convert) !== 1) {
             $lowend = "\u{80}";
@@ -847,7 +846,7 @@ class Html extends BaseReader
         //    Reload the HTML file into the DOM object
         try {
             $convert = $this->getSecurityScannerOrThrow()->scan($content);
-            $convert = static::replaceNonAsciiIfNeeded($convert);
+            $convert = self::replaceNonAsciiIfNeeded($convert);
             $loaded = ($convert === null) ? false : $dom->loadHTML($convert);
         } catch (Throwable $e) {
             $loaded = false;
@@ -1015,17 +1014,6 @@ class Html extends BaseReader
 
                     break;
 
-                case 'direction':
-                    if ($styleValue === 'rtl') {
-                        $cellStyle->getAlignment()
-                            ->setReadOrder(Alignment::READORDER_RTL);
-                    } elseif ($styleValue === 'ltr') {
-                        $cellStyle->getAlignment()
-                            ->setReadOrder(Alignment::READORDER_LTR);
-                    }
-
-                    break;
-
                 case 'font-weight':
                     if ($styleValue === 'bold' || $styleValue >= 500) {
                         $cellStyle->getFont()->setBold(true);
@@ -1095,11 +1083,8 @@ class Html extends BaseReader
                     break;
 
                 case 'text-indent':
-                    $indentDimension = new CssDimension($styleValueString);
-                    $indent = $indentDimension
-                        ->toUnit(CssDimension::UOM_PIXELS);
                     $cellStyle->getAlignment()->setIndent(
-                        (int) ($indent / Alignment::INDENT_UNITS_TO_PIXELS)
+                        (int) str_replace(['px'], '', $styleValueString)
                     );
 
                     break;
@@ -1198,13 +1183,13 @@ class Html extends BaseReader
                         if (substr($arrayValue, -2) === 'px') {
                             $arrayValue = (string) (((float) substr($arrayValue, 0, -2)));
                         } else {
-                            $arrayValue = (new CssDimension($arrayValue))->toUnit(CssDimension::UOM_PIXELS);
+                            $arrayValue = (new CssDimension($arrayValue))->width();
                         }
                     } elseif ($arrayKey === 'height') {
                         if (substr($arrayValue, -2) === 'px') {
                             $arrayValue = substr($arrayValue, 0, -2);
                         } else {
-                            $arrayValue = (new CssDimension($arrayValue))->toUnit(CssDimension::UOM_PIXELS);
+                            $arrayValue = (new CssDimension($arrayValue))->height();
                         }
                     }
                     $styleArray[$arrayKey] = $arrayValue;

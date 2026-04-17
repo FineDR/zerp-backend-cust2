@@ -382,33 +382,160 @@ if (isset($_POST['PrintPDF']) and isset($_POST['FromCust']) and $_POST['FromCust
 	$LastDebtor = end($DebtorsArray);
 
 	$Title = __('Select Statements to Print');
+
+	// Inject premium styles for the Architect workspace
+	$ExtraHeadContent = '
+<style>
+	.ScriptTitle { display: none !important; }
+	.MainBody { padding: 0 !important; gap: 0 !important; background: transparent !important; }
+	.db-page { padding: var(--space-8) var(--space-6); background: var(--bg-main); min-height: 100vh; font-family: "Inter", sans-serif; }
+	
+	.premium-header { margin-bottom: 40px; position: relative; }
+	.premium-header::before { display: none !important; }
+	
+	/* Architect Workspace Overrides */
+	.db-card-header { 
+		background: #f9fafb; 
+		border-bottom: 1px solid #f3f4f6; 
+		padding: 20px 30px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.db-card-title {
+		font-size: 1.1rem;
+		font-weight: 850;
+		color: #064e3b;
+		margin: 0;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+	}
+	
+	.architect-btn {
+		display: inline-flex; align-items: center; gap: 10px;
+		padding: 12px 28px; border-radius: 50px;
+		background: #059669; color: #ffffff; border: none;
+		font-weight: 700; font-size: 0.85rem; text-decoration: none;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+		cursor: pointer;
+	}
+	.architect-btn:hover { background: #065f46; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3); }
+	.architect-btn i { color: #ffffff !important; }
+	
+	.custom-bottom-layout { 
+		display: grid; 
+		grid-template-columns: 380px 1fr; 
+		gap: 32px; 
+		align-items: start; 
+	}
+	.custom-range-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 20px;
+		margin-bottom: 24px;
+	}
+	
+	.breadcrumb-item { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; }
+	.breadcrumb-item:hover { color: #059669; }
+	.breadcrumb-separator { font-size: 0.6rem; opacity: 0.4; margin: 0 4px; }
+</style>';
+
 	include (__DIR__ . '/includes/header.php');
-	echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/printer.png" title="' . __('Print') . '" alt="" />' . ' ' . __('Print Customer Account Statements') . '</p>';
+	
+	echo '<div class="db-page">
+		<div class="premium-header">
+			<div style="display: flex; justify-content: space-between; align-items: flex-end;">
+				<div>
+					<div style="font-size: 0.72rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; text-transform: lowercase; letter-spacing: 1px;">
+						<a href="index.php" class="breadcrumb-item"><i class="fas fa-home"></i> ' . __('Home') . '</a>
+						<i class="fas fa-chevron-right breadcrumb-separator"></i>
+						<a href="index.php?Application=AR" class="breadcrumb-item">' . __('Receivables') . '</a>
+						<i class="fas fa-chevron-right breadcrumb-separator"></i>
+						<span style="color: #064e3b; opacity: 0.9;">' . __('Statements Generation') . '</span>
+					</div>
+					<div style="display: flex; align-items: center; gap: 24px;">
+						<div>
+							<h1 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px; color: #064e3b; margin: 0; line-height: 1;">' . $Title . '</h1>
+							<p style="font-size: 1.1rem; margin-top: 8px; color: #065f46; font-weight: 500; opacity: 0.8;">' . __('Generate pixel-perfect PDF statements for customer accounts') . '</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>';
+
 	if (!isset($_POST['FromCust']) or $_POST['FromCust'] == '') {
-		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" target="_blank">';
+		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" target="_blank" style="display: contents;">';
 		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-		echo '<fieldset>
-				<legend>', __('Print Criteria'), '</legend>
-			<field>
-				<label for="FromCust">', __('Starting Customer statement to print (Customer code)'), '</label>
-				<input type="text" maxlength="10" size="8" name="FromCust" value="', $FirstDebtor, '" />
-			</field>
-			<field>
-				<label for="ToCust">', __('Ending Customer statement to print (Customer code)'), '</label>
-				<input type="text" maxlength="10" size="8" name="ToCust" value="', $LastDebtor, '" />
-			</field>
-			<field>
-				<label for="EmailOrPrint">', __('Print Or Email to flagged customer contacts'), '</label>
-				<select name="EmailOrPrint">
-					<option selected="selected" value="print">', __('Print'), '</option>
-					<option value="email">', __('Email to flagged customer contacts'), '</option>
-				</select>
-			</field>
-			</fieldset>
-			<div class="centre">
-				<input type="submit" name="PrintPDF" value="' . __('Print (or Email) All Statements in the Range Selected') . '" />
-			</div>';
+		
+		echo '<div class="custom-bottom-layout">
+				<aside class="db-sidebar">';
+
+		echo '<div class="db-card" style="border-radius: 20px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden;">
+				<div class="db-card-header">
+					<h3 class="db-card-title">
+						<i class="fas fa-sliders-h" style="font-size: 0.9rem; opacity: 0.7;"></i>' . __('Delivery Settings') . '
+					</h3>
+				</div>
+				<div style="padding: 24px;">
+
+					<div class="db-form-group" style="margin-bottom: 24px;">
+						<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('Output Method') . '</label>
+						<select name="EmailOrPrint" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5;">
+							<option selected="selected" value="print">' . __('Print to Screen') . '</option>
+							<option value="email">' . __('Email to Contacts') . '</option>
+						</select>
+					</div>
+
+					<div style="display: flex; flex-direction: column; gap: 12px;">
+						<button type="submit" name="PrintPDF" class="db-btn" style="width: 100%; justify-content: center; font-weight: 700; padding: 18px; border-radius: 14px; background: #059669; color: white; border: none; box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.3); cursor: pointer;">
+							<i class="fas fa-paper-plane" style="margin-right: 8px;"></i> ' . __('Execute Delivery') . '
+						</button>
+					</div>
+
+				</div>
+			</div>
+			</aside>';
+
+		echo '<main class="db-main" style="display: flex; flex-direction: column; gap: 32px;">
+				<div class="db-card" style="border-radius: 20px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden;">
+					<div class="db-card-header">
+						<h3 class="db-card-title">
+							<i class="fas fa-users" style="font-size: 0.9rem; opacity: 0.7;"></i>' . __('Account Coverage Selection') . '
+						</h3>
+					</div>
+					<div style="padding: 30px;">
+						
+						<div class="custom-range-grid">
+							<div class="db-form-group">
+								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('Start Customer (Code)') . '</label>
+								<input type="text" class="db-input" maxlength="10" name="FromCust" value="' . $FirstDebtor . '" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5; padding: 0 16px; box-sizing: border-box;" />
+							</div>
+
+							<div class="db-form-group">
+								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('End Customer (Code)') . '</label>
+								<input type="text" class="db-input" maxlength="10" name="ToCust" value="' . $LastDebtor . '" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5; padding: 0 16px; box-sizing: border-box;" />
+							</div>
+						</div>
+						
+						<div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 16px 20px; border-radius: 16px; display: flex; align-items: flex-start; gap: 12px; margin-top: 10px;">
+							<i class="fas fa-info-circle" style="color: #059669; font-size: 1.2rem; margin-top: 2px;"></i>
+							<div style="font-size: 0.85rem; color: #047857; opacity: 0.9; line-height: 1.5;">
+								<strong>' . __('Note on Ranges:') . '</strong> ' . __('Leave the default values to process all customers. To generate a statement for a single customer, place their code in both the start and end fields.') . '
+							</div>
+						</div>
+						
+					</div>
+				</div>
+			</main>
+		</div>'; // End custom-bottom-layout
+		
 		echo '</form>';
 	}
+	
+	echo '</div>'; // End db-page
 	include (__DIR__ . '/includes/footer.php');
 }
