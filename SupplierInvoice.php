@@ -29,15 +29,22 @@ if (empty($_GET['identifier'])) {
 	$identifier = $_GET['identifier'];
 }
 
-if (!isset($_SESSION['SuppTrans']->SupplierName)) {
-	$SQL = "SELECT suppname FROM suppliers WHERE supplierid='" . $_GET['SupplierID'] . "'";
+$SupplierID = '';
+$SupplierName = '';
+
+if (!isset($_SESSION['SuppTrans']->SupplierName) AND isset($_GET['SupplierID']) AND $_GET['SupplierID'] != '') {
+	$SQL = "SELECT suppname FROM suppliers WHERE supplierid='" . DB_escape_string($_GET['SupplierID']) . "'";
 	$Result = DB_query($SQL);
-	$MyRow = DB_fetch_row($Result);
-	$SupplierName = $MyRow[0];
-    $SupplierID = $_GET['SupplierID'];
+	if (DB_num_rows($Result) > 0) {
+		$MyRow = DB_fetch_row($Result);
+		$SupplierName = $MyRow[0];
+		$SupplierID = $_GET['SupplierID'];
+	}
 } else {
-    $SupplierID = $_SESSION['SuppTrans']->SupplierID;
-	$SupplierName = $_SESSION['SuppTrans']->SupplierName;
+	if (isset($_SESSION['SuppTrans'])) {
+		$SupplierID = $_SESSION['SuppTrans']->SupplierID;
+		$SupplierName = $_SESSION['SuppTrans']->SupplierName;
+	}
 }
 
 echo '<div class="db-page">';
@@ -54,6 +61,7 @@ echo '<div class="db-page-header">
 		</div>
 	</div>';
 if (isset($_GET['SupplierID']) AND $_GET['SupplierID'] != '') {
+	$EscapedSupplierID = DB_escape_string($_GET['SupplierID']);
 
 	/*It must be a new invoice entry - clear any existing invoice details from the SuppTrans object and initiate a newy*/
 	if (isset($_SESSION['SuppTrans'])) {
@@ -90,11 +98,17 @@ if (isset($_GET['SupplierID']) AND $_GET['SupplierID'] != '') {
 				WHERE suppliers.taxgroupid=taxgroups.taxgroupid
 				AND suppliers.currcode=currencies.currabrev
 				AND suppliers.paymentterms=paymentterms.termsindicator
-				AND suppliers.supplierid = '" . $_GET['SupplierID'] . "'";
+				AND suppliers.supplierid = '" . $EscapedSupplierID . "'";
 
 	$ErrMsg = __('The supplier record selected') . ': ' . $_GET['SupplierID'] . ' ' . __('cannot be retrieved because');
 
 	$Result = DB_query($SQL, $ErrMsg);
+
+	if (DB_num_rows($Result) == 0) {
+		prnMsg(__('The supplier record selected') . ': ' . $_GET['SupplierID'] . ' ' . __('cannot be found or is missing currency, tax group, or payment terms setup') , 'error');
+		include(__DIR__ . '/includes/footer.php');
+		exit();
+	}
 
 	$MyRow = DB_fetch_array($Result);
 
@@ -983,12 +997,17 @@ if (!isset($_POST['PostInvoice'])) {
 
 	$DisplayTotal = locale_number_format(($_SESSION['SuppTrans']->OvAmount + $TaxTotal) , $_SESSION['SuppTrans']->CurrDecimalPlaces);
 
-	echo '<field>
+		echo '<field>
+				<label>' . __('Invoice Total') . ':</label>
+				<fieldtext>' . $DisplayTotal . '</fieldtext>
+			</field>
+			</fieldset>';
+
 		echo '<div class="db-card" style="margin-top: var(--space-6);">
-			<div class="db-card-header">
-				<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg> ' . __('Invoice Summary & Tax Analysis') . '</h3>
-			</div>
-			<div class="db-card-body">
+				<div class="db-card-header">
+					<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg> ' . __('Invoice Summary & Tax Analysis') . '</h3>
+				</div>
+				<div class="db-card-body">
 				<div class="db-form-grid">';
 
 	echo '<div class="db-form-group">
@@ -1001,14 +1020,24 @@ if (!isset($_POST['PostInvoice'])) {
 			<input type="text" class="number val-bold" size="12" name="OvAmount" value="' . locale_number_format($_SESSION['SuppTrans']->OvAmount, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '" ' . ($_SESSION['SuppTrans']->GLLink_Creditors == 1 ? 'readonly="readonly" style="background: var(--surface-alt);"' : '') . ' />
 		</div>';
 
-	foreach ($_SESSION['SuppTrans']->Taxes as $Tax) {
-		echo '<div class="db-form-group">
-				<label title="' . $Tax->TaxAuthDescription . '">' . $Tax->TaxAuthDescription . '</label>
-				<input type="text" class="number" size="12" name="TaxAmt' . $Tax->TaxAuthID . '" value="' . locale_number_format($Tax->TaxOvAmount, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '" />
-			</div>';
-	}
+		foreach ($_SESSION['SuppTrans']->Taxes as $Tax) {
+			echo '<div class="db-form-group">
+					<label title="' . $Tax->TaxAuthDescription . '">' . $Tax->TaxAuthDescription . '</label>
+					<input type="text" class="number" size="12" name="TaxAmount' . $Tax->TaxCalculationOrder . '" value="' . locale_number_format($Tax->TaxOvAmount, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '" />
+				</div>';
+		}
 
-	echo '</form>';
+		echo '<div class="db-form-group">
+				<label>' . __('Invoice Total') . '</label>
+				<fieldtext class="val-bold">' . $DisplayTotal . '</fieldtext>
+			</div>
+		</div>
+		<div style="margin-top: var(--space-4);">
+			<button type="submit" name="PostInvoice" value="' . __('Enter Invoice') . '" class="db-btn db-btn-primary">' . __('Enter Invoice') . '</button>
+		</div>
+		</div></div>';
+
+		echo '</form>';
 } else { // $_POST['PostInvoice'] is set so do the postings -and dont show the button to process
 	/*First do input reasonableness checks
 	 then do the updates and inserts to process the invoice entered */
