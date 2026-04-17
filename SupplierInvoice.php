@@ -29,15 +29,22 @@ if (empty($_GET['identifier'])) {
 	$identifier = $_GET['identifier'];
 }
 
-if (!isset($_SESSION['SuppTrans']->SupplierName)) {
-	$SQL = "SELECT suppname FROM suppliers WHERE supplierid='" . $_GET['SupplierID'] . "'";
+$SupplierID = '';
+$SupplierName = '';
+
+if (!isset($_SESSION['SuppTrans']->SupplierName) AND isset($_GET['SupplierID']) AND $_GET['SupplierID'] != '') {
+	$SQL = "SELECT suppname FROM suppliers WHERE supplierid='" . DB_escape_string($_GET['SupplierID']) . "'";
 	$Result = DB_query($SQL);
-	$MyRow = DB_fetch_row($Result);
-	$SupplierName = $MyRow[0];
-    $SupplierID = $_GET['SupplierID'];
+	if (DB_num_rows($Result) > 0) {
+		$MyRow = DB_fetch_row($Result);
+		$SupplierName = $MyRow[0];
+		$SupplierID = $_GET['SupplierID'];
+	}
 } else {
-    $SupplierID = $_SESSION['SuppTrans']->SupplierID;
-	$SupplierName = $_SESSION['SuppTrans']->SupplierName;
+	if (isset($_SESSION['SuppTrans'])) {
+		$SupplierID = $_SESSION['SuppTrans']->SupplierID;
+		$SupplierName = $_SESSION['SuppTrans']->SupplierName;
+	}
 }
 
 echo '<div class="db-page">';
@@ -54,6 +61,7 @@ echo '<div class="db-page-header">
 		</div>
 	</div>';
 if (isset($_GET['SupplierID']) AND $_GET['SupplierID'] != '') {
+	$EscapedSupplierID = DB_escape_string($_GET['SupplierID']);
 
 	/*It must be a new invoice entry - clear any existing invoice details from the SuppTrans object and initiate a newy*/
 	if (isset($_SESSION['SuppTrans'])) {
@@ -90,11 +98,17 @@ if (isset($_GET['SupplierID']) AND $_GET['SupplierID'] != '') {
 				WHERE suppliers.taxgroupid=taxgroups.taxgroupid
 				AND suppliers.currcode=currencies.currabrev
 				AND suppliers.paymentterms=paymentterms.termsindicator
-				AND suppliers.supplierid = '" . $_GET['SupplierID'] . "'";
+				AND suppliers.supplierid = '" . $EscapedSupplierID . "'";
 
 	$ErrMsg = __('The supplier record selected') . ': ' . $_GET['SupplierID'] . ' ' . __('cannot be retrieved because');
 
 	$Result = DB_query($SQL, $ErrMsg);
+
+	if (DB_num_rows($Result) == 0) {
+		prnMsg(__('The supplier record selected') . ': ' . $_GET['SupplierID'] . ' ' . __('cannot be found or is missing currency, tax group, or payment terms setup') , 'error');
+		include(__DIR__ . '/includes/footer.php');
+		exit();
+	}
 
 	$MyRow = DB_fetch_array($Result);
 
@@ -675,10 +689,22 @@ if (!isset($_POST['PostInvoice'])) {
 					</div>';
 	
 	foreach ($_SESSION['SuppTrans']->Taxes as $Tax) {
-		echo '<div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
-				<span class="db-muted">' . $Tax->TaxAuthDescription . ':</span>
-				<span>' . locale_number_format($Tax->TaxOvAmount, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '</span>
-			  </div>';
+		echo '<div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; margin-bottom: var(--space-2);">
+				<div style="display: flex; justify-content: space-between;">
+					<span class="db-muted" title="' . __('Tax Rate') . '">' . $Tax->TaxAuthDescription . ':</span>
+					<span>' . locale_number_format($Tax->TaxOvAmount, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '</span>
+				</div>';
+		
+		if (isset($_POST['OverRideTax']) && $_POST['OverRideTax'] == 'Man') {
+			echo '<div style="display: flex; gap: 8px; align-items: center;">
+					<input type="text" class="number db-input-sm" name="TaxRate' . $Tax->TaxCalculationOrder . '" placeholder="' . __('Rate') . '" style="width: 60px;" value="' . locale_number_format($Tax->TaxRate * 100, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '" /> <span class="db-muted">%</span>
+					<input type="text" class="number db-input-sm" name="TaxAmount' . $Tax->TaxCalculationOrder . '" placeholder="' . __('Amount') . '" style="flex: 1;" value="' . locale_number_format($Tax->TaxOvAmount, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '" />
+				  </div>';
+		} else {
+			echo '<input type="hidden" name="TaxRate' . $Tax->TaxCalculationOrder . '" value="' . locale_number_format($Tax->TaxRate * 100, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '" />
+				  <input type="hidden" name="TaxAmount' . $Tax->TaxCalculationOrder . '" value="' . locale_number_format($Tax->TaxOvAmount, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '" />';
+		}
+		echo '</div>';
 	}
 	
 	echo '			<div style="margin: var(--space-2) 0; height: 1px; background: var(--border-soft);"></div>

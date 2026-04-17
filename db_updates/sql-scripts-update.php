@@ -2459,14 +2459,6 @@ user@Users-MacBook-Pro zerp-backend %
 INSERT INTO salesorderdetails (orderno, stkcode, narrative, quantity, unitprice, discountpercent, itemdue, linenetprice, orderlineno) VALUES ('83', 'ZTL001', 'Being charged for ZTL001', '1', '3000', '0', '2026-02-17', '9000', '3');
 
 
-A2awgn0L@2eAi@02?!
-!?20@iAe2@L0ngwa2A
-zalongwa_saris_iae
-iaeuser
-
-user=root
-password=MySQL_sd5od25tkzLlOll3prVxBmWqK5jR1P3y2iwU
-
 select * from student where regno='NS4226/0011/2019'; update student set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
 select * from class where regno = 'NS4226/0011/2019'; update class set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
 select * from examresult where regno = 'NS4226/0011/2019'; update examresult set regno='NP5513/0004/2021' where regno = 'NS4226/0011/2019';
