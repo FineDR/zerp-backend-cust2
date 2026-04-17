@@ -31,6 +31,57 @@ include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/StockFunctions.php');
 include(__DIR__ . '/includes/GLFunctions.php');
 
+echo '<div class="db-page">';
+	echo '<style>
+		.db-aside-btn {
+			width: 100%;
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			padding: 10px 12px;
+			border-radius: var(--radius-md);
+			border: 1px solid transparent;
+			background: transparent;
+			color: var(--text-body);
+			font-size: 0.875rem;
+			font-weight: 500;
+			cursor: pointer;
+			transition: all var(--transition-fast);
+			text-align: left;
+		}
+		.db-aside-btn:hover {
+			background: var(--primary-soft);
+			color: var(--primary);
+			border-color: var(--primary-subtle);
+		}
+		.db-aside-btn i {
+			width: 20px;
+			text-align: center;
+			color: var(--primary);
+			font-size: 1rem;
+		}
+		.registry-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+		.registry-table th { background: #064e3b; padding: 12px 15px; text-align: left; font-size: 0.72rem; text-transform: uppercase; font-weight: 800; color: #fff; letter-spacing: 1px; }
+		.registry-table td { padding: 12px 15px; font-size: 0.88rem; color: var(--text-body); border-bottom: 1px solid var(--border-soft); }
+		.registry-table tr:nth-child(even) td { background: var(--bg-workspace); }
+		.registry-table tr:hover td { background: var(--primary-soft) !important; }
+		.db-field { margin-bottom: var(--space-4); }
+		.db-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+	</style>';
+
+	echo '<div class="db-page-header">
+		<div>
+			<h2 class="db-page-title"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="db-title-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> ' . $Title . '</h2>
+			<p class="db-page-subtitle">' . __('Invoicing') . ' <span class="val-bold">' . (isset($_SESSION['SuppTrans']->SupplierID) ? $_SESSION['SuppTrans']->SupplierID : '') . ' - ' . $SupplierName . '</span></p>
+		</div>
+		<div class="db-header-actions">
+			<a href="' . $RootPath . '/SelectSupplier.php" class="db-btn db-btn-secondary">
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+				' . __('Change Supplier') . '
+			</a>
+		</div>
+	</div>';
+
 if (isset($_POST['TranDate'])){$_POST['TranDate'] = ConvertSQLDate($_POST['TranDate']);}
 
 if (isset($_GET['New'])) {
@@ -46,9 +97,7 @@ if (!isset($_SESSION['SuppTrans']->SupplierName)) {
 	$SupplierName=$_SESSION['SuppTrans']->SupplierName;
 }
 
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/transactions.png" title="' . __('Supplier Credit Note') . '" alt="" />' . ' '
-		. __('Enter Supplier Credit Note:') . ' ' . $SupplierName;
-echo '</p>';
+// Header handled at top
 if (isset($_GET['SupplierID']) and $_GET['SupplierID']!=''){
 
  /*It must be a new credit note entry - clear any existing credit note details from the SuppTrans object and initiate a newy*/
@@ -256,222 +305,271 @@ if (isset($_POST['FixedAssets'])
 		include(__DIR__ . '/includes/footer.php');
 		exit();
 }
-/* everything below here only do if a Supplier is selected
-   fisrt add a header to show who we are making an credit note for */
+/* Everything below here only do if a Supplier is selected */
 
-echo '<table class="selection">
-		<tr><th>' . __('Supplier') . '</th>
-			<th>' . __('Currency') . '</th>
-			<th>' . __('Terms') . '</th>
-			<th>' . __('Tax Group') . '</th>
-		</tr>';
+echo '<div class="db-bottom-layout">';
 
-echo '<tr>
-		<th><b>' . $_SESSION['SuppTrans']->SupplierID . ' - ' . $_SESSION['SuppTrans']->SupplierName . '</b></th>
-		<th><b>' .  $_SESSION['SuppTrans']->CurrCode . '</b></th>
-		<td><b>' . $_SESSION['SuppTrans']->TermsDescription . '</b></td>
-		<td><b>' . $_SESSION['SuppTrans']->TaxGroupDescription . '</b></td>
-	</tr>
-	</table>';
+// SIDEBAR: Credit Note Summary
+echo '<aside class="db-col-aside">';
+	echo '<div class="db-card" style="position: sticky; top: 20px;">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><i class="fas fa-list-alt"></i> ' . __('Credit Summary') . '</h3>
+			</div>
+			<div class="db-card-body" style="padding: var(--space-4);">
+				<div style="display: flex; flex-direction: column; gap: var(--space-3);">';
+				
+				$SummaryItems = [
+					['label' => __('Goods/Assets'), 'val' => (isset($TotalGRNValue)?$TotalGRNValue:0) + (isset($TotalGLValue)?$TotalGLValue:0) + (isset($TotalAssetValue)?$TotalAssetValue:0) + (isset($TotalShiptValue)?$TotalShiptValue:0) + (isset($TotalContractsValue)?$TotalContractsValue:0)],
+					['label' => __('Tax Total'), 'val' => (isset($TaxTotal)?$TaxTotal:0)],
+					['label' => __('Gross Total'), 'val' => $_SESSION['SuppTrans']->OvAmount + (isset($TaxTotal)?$TaxTotal:0), 'bold' => true]
+				];
+
+				foreach ($SummaryItems as $item) {
+					$style = isset($item['bold']) ? 'font-weight: 700; color: var(--primary); border-top: 1px solid var(--border-soft); padding-top: var(--space-2); margin-top: var(--space-1);' : '';
+					echo '<div style="display: flex; justify-content: space-between; font-size: 0.9rem; ' . $style . '">
+							<span style="color: var(--text-muted);">' . $item['label'] . '</span>
+							<span>' . locale_number_format($item['val'], $_SESSION['SuppTrans']->CurrDecimalPlaces) . '</span>
+						  </div>';
+				}
+
+	echo '		</div>
+				<div style="margin-top: var(--space-6); display: flex; flex-direction: column; gap: 8px;">
+					<button type="submit" name="PostCreditNote" class="db-btn db-btn-primary" style="width: 100%;">
+						<i class="fas fa-check-circle" style="margin-right: 8px;"></i> ' . __('Process Credit Note') . '
+					</button>
+					<a href="' . $RootPath . '/SelectSupplier.php" class="db-btn db-btn-secondary" style="width: 100%; text-align: center; text-decoration: none;">' . __('Cancel') . '</a>
+				</div>
+			</div>
+		</div>';
+	
+	// Quick Actions Card
+	echo '<div class="db-card" style="margin-top: 20px;">
+			<div class="db-card-header">
+				<h4 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700;">' . __('Add Charges From') . '</h4>
+			</div>
+			<div class="db-card-body" style="padding: 8px;">
+				<button type="submit" name="GRNS" value="' . __('Purchase Orders') . '" class="db-aside-btn"><i class="fas fa-shopping-cart"></i> ' . __('Purchase Orders') . '</button>
+				<button type="submit" name="Shipts" value="' . __('Shipments') . '" class="db-aside-btn"><i class="fas fa-ship"></i> ' . __('Shipments') . '</button>
+				<button type="submit" name="Contracts" value="' . __('Contracts') . '" class="db-aside-btn"><i class="fas fa-file-contract"></i> ' . __('Contracts') . '</button>';
+				if ($_SESSION['SuppTrans']->GLLink_Creditors == 1) {
+					echo '<button type="submit" name="GL" value="' . __('General Ledger') . '" class="db-aside-btn"><i class="fas fa-book"></i> ' . __('General Ledger') . '</button>';
+				}
+				echo '<button type="submit" name="FixedAssets" value="' . __('Fixed Assets') . '" class="db-aside-btn"><i class="fas fa-monument"></i> ' . __('Fixed Assets') . '</button>
+			</div>
+		</div>';
+echo '</aside>';
+
+// MAIN CONTENT
+echo '<main class="db-col-main" style="flex: 1; min-width: 0;">';
 
 echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post" id="form1">';
 echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-echo '<fieldset>
-		<legend>', __('Credit Note Header'), '</legend>';
-echo '<field>
-		<label style="color:red">' . __('Supplier Credit Note Reference') . ':</label>
-		<input type="text" required="required" size="20" maxlength="20" name="SuppReference" value="' . $_SESSION['SuppTrans']->SuppReference . '" />
-	</field>';
+// HEADER DATA CARD
+echo '<div class="db-card">
+		<div class="db-card-header">
+			<h3 class="db-card-title"><i class="fas fa-id-card"></i> ' . __('Credit Note Header') . '</h3>
+		</div>
+		<div class="db-card-body" style="padding: var(--space-6);">
+			<div class="db-grid db-grid-3">
+				<div class="db-field">
+					<label class="db-label">' . __('Supplier Reference') . '</label>
+					<input type="text" required="required" maxlength="20" name="SuppReference" value="' . $_SESSION['SuppTrans']->SuppReference . '" placeholder="' . __('e.g. CR-12345') . '" />
+				</div>';
 
-if (!isset($_SESSION['SuppTrans']->TranDate)){
-	$_SESSION['SuppTrans']->TranDate= date($_SESSION['DefaultDateFormat'], mktime(0,0,0,date('m'),date('d')-1,date('y')));
-}
-echo '<field>
-		<label style="color:red">' . __('Credit Note Date') . ') :</label>
-		<input type="date" size="11" maxlength="10" name="TranDate" value="' . FormatDateForSQL($_SESSION['SuppTrans']->TranDate) . '" />
-	</field>
-	<field>
-		<label style="color:red">' . __('Exchange Rate') . ':</label>
-		<input type="text" class="number" size="11" maxlength="10" name="ExRate" value="' . locale_number_format($_SESSION['SuppTrans']->ExRate,'Variable') . '" />
-	</field>
-	</fieldset>';
+	if (!isset($_SESSION['SuppTrans']->TranDate)){
+		$_SESSION['SuppTrans']->TranDate= date($_SESSION['DefaultDateFormat'], mktime(0,0,0,date('m'),date('d')-1,date('y')));
+	}
+	echo '		<div class="db-field">
+					<label class="db-label">' . __('Credit Note Date') . '</label>
+					<input type="date" name="TranDate" value="' . FormatDateForSQL($_SESSION['SuppTrans']->TranDate) . '" />
+				</div>
+				<div class="db-field">
+					<label class="db-label">' . __('Exchange Rate') . '</label>
+					<div style="display: flex; align-items: center; gap: 8px;">
+						<input type="text" class="number" name="ExRate" value="' . locale_number_format($_SESSION['SuppTrans']->ExRate,'Variable') . '" />
+						<span class="db-muted">' . $_SESSION['SuppTrans']->CurrCode . '</span>
+					</div>
+				</div>
+			</div>
+			
+			<div class="db-field" style="margin-top: var(--space-4);">
+				<label class="db-label">' . __('Comments / Narrative') . '</label>
+				<textarea name="Comments" rows="2" style="width: 100%; border-radius: var(--radius-md); padding: 8px; border: 1px solid var(--border-soft);">' . $_SESSION['SuppTrans']->Comments . '</textarea>
+			</div>
+		</div>
+	  </div>';
 
-echo '<div class="centre">
-		<input type="submit" name="GRNS" value="' . __('Purchase Orders') . '"/>
-		<input type="submit" name="Shipts" value="' . __('Shipments') . '" />
-		<input type="submit" name="Contracts" value="' . __('Contracts') . '" /> ';
-if ( $_SESSION['SuppTrans']->GLLink_Creditors ==1){
-	echo '<input type="submit" name="GL" value="' . __('General Ledger') . '" /> ';
-}
-echo '<input type="submit" name="FixedAssets" value="' . __('Fixed Assets') . '" />
-	</div>';
-
-if (count($_SESSION['SuppTrans']->GRNs)>0){   /*if there are some GRNs selected for crediting then */
-
-	/*Show all the selected GRNs so far from the SESSION['SuppInv']->GRNs array
-	Note that the class for carrying GRNs refers to quantity invoiced read credited in this context*/
-
-	echo '<table class="selection">
-		<tr><th colspan="6">' . __('Purchase Order Credits') . '</th></tr>';
-	$TableHeader = '<tr><th>' . __('GRN') . '</th>
-					<th>' . __('Item Code') . '</th>
-					<th>' . __('Description') . '</th>
-					<th>' . __('Quantity') . '<br />' . __('Credited') . '</th>
-					<th>' . __('Price Credited') . '<br />' . __('in') . ' ' . $_SESSION['SuppTrans']->CurrCode . '</th>
-					<th>' . __('Line Total') . '<br />' . __('in') . ' ' . $_SESSION['SuppTrans']->CurrCode . '</th>
-				</tr>';
-	echo $TableHeader;
+// DYNAMIC SECTIONS
+if (count($_SESSION['SuppTrans']->GRNs)>0){
+	echo '<div class="db-card" style="margin-top: var(--space-6);">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><i class="fas fa-shopping-cart"></i> ' . __('Purchase Order Credits') . '</h3>
+			</div>
+			<div class="db-card-body" style="padding: 0;">
+				<table class="registry-table">
+					<thead>
+					<tr>
+						<th>' . __('GRN') . '</th>
+						<th>' . __('Item Code') . '</th>
+						<th>' . __('Description') . '</th>
+						<th class="number">' . __('Quantity') . '</th>
+						<th class="number">' . __('Price') . '</th>
+						<th class="number">' . __('Total') . '</th>
+					</tr>
+					</thead>
+					<tbody>';
 	$TotalGRNValue=0;
-
 	foreach ($_SESSION['SuppTrans']->GRNs as $EnteredGRN){
-
-		echo '<tr><td>' . $EnteredGRN->GRNNo . '</td>
+		echo '<tr>
+			<td>' . $EnteredGRN->GRNNo . '</td>
 			<td>' . $EnteredGRN->ItemCode . '</td>
 			<td>' . $EnteredGRN->ItemDescription . '</td>
 			<td class="number">' . locale_number_format($EnteredGRN->This_QuantityInv,2) . '</td>
 			<td class="number">' . locale_number_format($EnteredGRN->ChgPrice,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
 			<td class="number">' . locale_number_format($EnteredGRN->ChgPrice * $EnteredGRN->This_QuantityInv,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
-			<td></tr>';
-
-		$TotalGRNValue = $TotalGRNValue + ($EnteredGRN->ChgPrice * $EnteredGRN->This_QuantityInv);
-
+			</tr>';
+		$TotalGRNValue += ($EnteredGRN->ChgPrice * $EnteredGRN->This_QuantityInv);
 	}
-
-	echo '<tr><td colspan="5" class="number">' . __('Total Value of Goods Credited') . ':</td>
-		<td class="number"><U>' . locale_number_format($TotalGRNValue,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</U></td></tr>';
-	echo '</table>
-		<br />';
+	echo '      </tbody>
+				<tfoot>
+					<tr style="background: var(--bg-workspace); font-weight: 700;">
+						<td colspan="5" class="text-right">' . __('Sub-Total Goods') . ':</td>
+						<td class="number" style="color: var(--primary);">' . locale_number_format($TotalGRNValue,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
+					</tr>
+				</tfoot>
+			</table>
+		  </div>
+		</div>';
 }
 
-if (count($_SESSION['SuppTrans']->Shipts)>0){   /*if there are any Shipment charges on the credit note*/
-
-		echo '<table class="selection">
-				<tr>
-					<th colspan="2">' . __('Shipment Credits') . '</th>
-				</tr>';
-		$TableHeader = '<tr>
+if (count($_SESSION['SuppTrans']->Shipts)>0){
+	echo '<div class="db-card" style="margin-top: var(--space-6);">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><i class="fas fa-ship"></i> ' . __('Shipment Credits') . '</h3>
+			</div>
+			<div class="db-card-body" style="padding: 0;">
+				<table class="registry-table">
+					<thead>
+					<tr>
 						<th>' . __('Shipment') . '</th>
-						<th>' . __('Amount') . '</th>
-					</tr>';
-		echo $TableHeader;
-
+						<th class="number">' . __('Amount') . '</th>
+					</tr>
+					</thead>
+					<tbody>';
 	$TotalShiptValue=0;
-
-	$i=0;
-
 	foreach ($_SESSION['SuppTrans']->Shipts as $EnteredShiptRef){
-
 		echo '<tr>
 				<td>' . $EnteredShiptRef->ShiptRef . '</td>
 				<td class="number">' . locale_number_format($EnteredShiptRef->Amount,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
-			</tr>';
-		$TotalShiptValue +=  $EnteredShiptRef->Amount;
+			  </tr>';
+		$TotalShiptValue += $EnteredShiptRef->Amount;
 	}
-
-	echo '<tr>
-			<td class="number" style="color:red">' . __('Total Credited Against Shipments') .  ':</td>
-			<td class="number" style="color:red">' . locale_number_format($TotalShiptValue,$_SESSION['SuppTrans']->CurrDecimalPlaces) .  '</td>
-		</tr>
-		</table><br />';
+	echo '      </tbody>
+				<tfoot>
+					<tr style="background: var(--bg-workspace); font-weight: 700;">
+						<td class="text-right">' . __('Sub-Total Shipments') . ':</td>
+						<td class="number" style="color: var(--primary);">' . locale_number_format($TotalShiptValue,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
+					</tr>
+				</tfoot>
+			</table>
+		  </div>
+		</div>';
 }
 
-if (count( $_SESSION['SuppTrans']->Assets) > 0){   /*if there are any fixed assets on the invoice*/
-
-	echo '<br />
-		<table class="selection">
-		<tr>
-			<th colspan="3">' . __('Fixed Asset Credits') . '</th>
-		</tr>';
-	$TableHeader = '<tr><th>' . __('Asset ID') . '</th>
+if (count($_SESSION['SuppTrans']->Assets) > 0){
+	echo '<div class="db-card" style="margin-top: var(--space-6);">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><i class="fas fa-monument"></i> ' . __('Fixed Asset Credits') . '</h3>
+			</div>
+			<div class="db-card-body" style="padding: 0;">
+				<table class="registry-table">
+					<thead>
+					<tr>
+						<th>' . __('Asset ID') . '</th>
 						<th>' . __('Description') . '</th>
-						<th>' . __('Amount') . ' ' . $_SESSION['SuppTrans']->CurrCode . '</th></tr>';
-	echo $TableHeader;
-
+						<th class="number">' . __('Amount') . '</th>
+					</tr>
+					</thead>
+					<tbody>';
 	$TotalAssetValue = 0;
-
 	foreach ($_SESSION['SuppTrans']->Assets as $EnteredAsset){
-
-		echo '<tr><td>' . $EnteredAsset->AssetID . '</td>
+		echo '<tr>
+				<td>' . $EnteredAsset->AssetID . '</td>
 				<td>' . $EnteredAsset->Description . '</td>
-				<td class="number">' .	locale_number_format($EnteredAsset->Amount,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td></tr>';
-
+				<td class="number">' . locale_number_format($EnteredAsset->Amount,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
+			  </tr>';
 		$TotalAssetValue += $EnteredAsset->Amount;
-
-		$i++;
-		if ($i > 15){
-			$i = 0;
-			echo $TableHeader;
-		}
 	}
-
-	echo '<tr>
-			<td colspan="2" class="number" style="color:red">' . __('Total') . ':</td>
-			<td class="number" style="color:red">' .  locale_number_format($TotalAssetValue,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
-		</tr>
-		</table>';
-} //end loop around fixed assets
-
-
-if (count( $_SESSION['SuppTrans']->Contracts) > 0){   /*if there are any contract charges on the invoice*/
-
-	echo '<table class="selection">
-			<tr>
-				<th colspan="3">' . __('Contract Charges') . '</th>
-			</tr>';
-	$TableHeader = '<tr><th>' . __('Contract') . '</th>
-						<th>' . __('Narrative') . '</th>
-						<th>' . __('Amount') . '<br />' . __('in') . ' ' . $_SESSION['SuppTrans']->CurrCode . '</th>
-					</tr>';
-	echo $TableHeader;
-
-	$TotalContractsValue = 0;
-	$i=0;
-	foreach ($_SESSION['SuppTrans']->Contracts as $Contract){
-
-		echo '<tr><td>' . $Contract->ContractRef . '</td>
-				<td>' . $Contract->Narrative . '</td>
-				<td class="number">' . 	locale_number_format($Contract->Amount,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
-			</tr>';
-
-		$TotalContractsValue += $Contract->Amount;
-
-		$i++;
-		if ($i == 15){
-			$i = 0;
-			echo $TableHeader;
-		}
-	}
-
-	echo '<tr><td class="number" colspan="2" style="color:red">' . __('Total Credited against Contracts') . ':</td>
-			<td class="number">' .  locale_number_format($TotalContractsValue,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
-			</tr></table><br />';
+	echo '      </tbody>
+				<tfoot>
+					<tr style="background: var(--bg-workspace); font-weight: 700;">
+						<td colspan="2" class="text-right">' . __('Sub-Total Assets') . ':</td>
+						<td class="number" style="color: var(--primary);">' . locale_number_format($TotalAssetValue,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
+					</tr>
+				</tfoot>
+			</table>
+		  </div>
+		</div>';
 }
 
+if (count($_SESSION['SuppTrans']->Contracts) > 0){
+	echo '<div class="db-card" style="margin-top: var(--space-6);">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><i class="fas fa-file-contract"></i> ' . __('Contract Credits') . '</h3>
+			</div>
+			<div class="db-card-body" style="padding: 0;">
+				<table class="registry-table">
+					<thead>
+					<tr>
+						<th>' . __('Contract') . '</th>
+						<th>' . __('Narrative') . '</th>
+						<th class="number">' . __('Amount') . '</th>
+					</tr>
+					</thead>
+					<tbody>';
+	$TotalContractsValue = 0;
+	foreach ($_SESSION['SuppTrans']->Contracts as $Contract){
+		echo '<tr>
+				<td>' . $Contract->ContractRef . '</td>
+				<td>' . $Contract->Narrative . '</td>
+				<td class="number">' . locale_number_format($Contract->Amount,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
+			  </tr>';
+		$TotalContractsValue += $Contract->Amount;
+	}
+	echo '      </tbody>
+				<tfoot>
+					<tr style="background: var(--bg-workspace); font-weight: 700;">
+						<td colspan="2" class="text-right">' . __('Sub-Total Contracts') . ':</td>
+						<td class="number" style="color: var(--primary);">' . locale_number_format($TotalContractsValue,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
+					</tr>
+				</tfoot>
+			</table>
+		  </div>
+		</div>';
+}
 
-if ($_SESSION['SuppTrans']->GLLink_Creditors ==1){
-
+if ($_SESSION['SuppTrans']->GLLink_Creditors == 1){
 	if (count($_SESSION['SuppTrans']->GLCodes)>0){
-		echo '<table class="selection">
-			<tr>
-				<th colspan="3">' . __('General Ledger Analysis') . '</th>
-			</tr>';
-		$TableHeader = '<tr>
+		echo '<div class="db-card" style="margin-top: var(--space-6);">
+				<div class="db-card-header">
+					<h3 class="db-card-title"><i class="fas fa-book"></i> ' . __('General Ledger Analysis') . '</h3>
+				</div>
+				<div class="db-card-body" style="padding: 0;">
+					<table class="registry-table">
+						<thead>
+						<tr>
 							<th>' . __('Account') . '</th>
 							<th>' . __('Account Name') . '</th>
 							<th>' . __('Narrative') . '</th>
 							<th>' . __('Tag') . '</th>
-							<th>' . __('Amount') . '<br />' . __('in') . ' ' . $_SESSION['SuppTrans']->CurrCode . '</th>
-						</tr>';
-		echo $TableHeader;
-
+							<th class="number">' . __('Amount') . '</th>
+						</tr>
+						</thead>
+						<tbody>';
 		$TotalGLValue=0;
-		$i = 0;
-
 		foreach ($_SESSION['SuppTrans']->GLCodes as $EnteredGLCode){
-
 			$DescriptionTag = GetDescriptionsFromTagArray($EnteredGLCode->Tag);
-
 			echo '<tr>
 					<td>' . $EnteredGLCode->GLCode . '</td>
 					<td>' . $EnteredGLCode->GLActName . '</td>
@@ -479,21 +577,18 @@ if ($_SESSION['SuppTrans']->GLLink_Creditors ==1){
 					<td>' . $DescriptionTag . '</td>
 					<td class="number">' . locale_number_format($EnteredGLCode->Amount,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
 					</tr>';
-
 			$TotalGLValue += $EnteredGLCode->Amount;
-
-			$i++;
-			if ($i>15){
-				$i=0;
-				echo $TableHeader;
-			}
 		}
-
-		echo '<tr>
-				<td colspan="4" class="number" style="color:red">' . __('Total GL Analysis') . ':</td>
-				<td class="number" style="color:red">' . locale_number_format($TotalGLValue,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
-			</tr>
-			</table>';
+		echo '      </tbody>
+					<tfoot>
+						<tr style="background: var(--bg-workspace); font-weight: 700;">
+							<td colspan="4" class="text-right">' . __('Sub-Total GL') . ':</td>
+							<td class="number" style="color: var(--primary);">' . locale_number_format($TotalGLValue,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
+						</tr>
+					</tfoot>
+				</table>
+			  </div>
+			</div>';
 	}
 
 	if (!isset($TotalGRNValue)) {
@@ -509,103 +604,58 @@ if ($_SESSION['SuppTrans']->GLLink_Creditors ==1){
 		$TotalContractsValue = 0;
 	}
 	if (!isset($TotalAssetValue)){
-			$TotalAssetValue = 0;
+		$TotalAssetValue = 0;
 	}
-	$_SESSION['SuppTrans']->OvAmount = round($TotalGRNValue + $TotalGLValue + $TotalAssetValue + $TotalShiptValue + $TotalContractsValue,$_SESSION['SuppTrans']->CurrDecimalPlaces);
-
-	echo '<fieldset>
-			<legend>', __('Credit Note Summary'), '</legend>
-			<field>
-				<label style="color:red">' . __('Credit Amount in Supplier Currency') . ':</label>
-				<fieldtext class="number">' . locale_number_format($_SESSION['SuppTrans']->OvAmount,$_SESSION['SuppTrans']->CurrDecimalPlaces), '</fieldtext>
-				<input type="hidden" name="OvAmount" value="' . locale_number_format($_SESSION['SuppTrans']->OvAmount,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '" />
-			</field>';
-} else {
-	echo '<fieldset>
-			<legend>', __('Credit Note Summary'), '</legend>
-			<field>
-				<label style="color:red">' . __('Credit Amount in Supplier Currency') .':</label>
-				<input type="text" size="12" class="number" maxlength="10" name="OvAmount" value="' . locale_number_format($_SESSION['SuppTrans']->OvAmount,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '" />
-			</field>';
+	$_SESSION['SuppTrans']->OvAmount = round($TotalGRNValue + $TotalGLValue + $TotalAssetValue + $TotalShiptValue + $TotalContractsValue, $_SESSION['SuppTrans']->CurrDecimalPlaces);
 }
 
-echo '<field>
-		<label><input type="submit" name="ToggleTaxMethod" value="' . __('Update Tax Calculation') .  '" /></label>
-		<select name="OverRideTax" onchange="ReloadForm(form1.ToggleTaxMethod)">';
-
-if (isset($_POST['OverRideTax']) AND $_POST['OverRideTax']=='Man'){
-	echo '<option value="Auto">' . __('Automatic') . '</option>
-			<option selected="selected" value="Man">' . __('Manual Entry') . '</option>';
-} else {
-	echo '<option selected="selected" value="Auto">' . __('Automatic') . '</option>
-			<option value="Man">' . __('Manual Entry') . '</option>';
-}
-
-echo '</select>
-	</field>';
-$TaxTotal =0; //initialise tax total
-
-foreach ($_SESSION['SuppTrans']->Taxes as $Tax) {
-
-	echo '<field>
-			<label>'  . $Tax->TaxAuthDescription . '</label>';
-
-	/*Set the tax rate to what was entered */
-	if (isset($_POST['TaxRate'  . $Tax->TaxCalculationOrder])){
-		$_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxRate = filter_number_format($_POST['TaxRate'  . $Tax->TaxCalculationOrder])/100;
-	}
-
-	/*If a tax rate is entered that is not the same as it was previously then recalculate automatically the tax amounts */
-
-	if (!isset($_POST['OverRideTax'])
-		OR $_POST['OverRideTax']=='Auto'){
-
-		echo  ' <input type="text" class="number" name="TaxRate' . $Tax->TaxCalculationOrder . '" maxlength="4" size="4" value="' . locale_number_format($_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxRate * 100,2) . '" />%';
-
-		/*Now recaluclate the tax depending on the method */
-		if ($Tax->TaxOnTax ==1){
-
-			$_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxOvAmount = $_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxRate * ($_SESSION['SuppTrans']->OvAmount + $TaxTotal);
-
-		} else { /*Calculate tax without the tax on tax */
-
-			$_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxOvAmount = $_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxRate * $_SESSION['SuppTrans']->OvAmount;
-
+echo '<div class="db-card" style="margin-top: var(--space-6);">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><i class="fas fa-percent"></i> ' . __('Tax Analysis & Adjustments') . '</h3>
+			</div>
+			<div class="db-card-body" style="padding: var(--space-6);">
+				<div class="db-grid db-grid-2">
+					<div class="db-field">
+						<label class="db-label">' . __('Tax Calculation Method') . '</label>
+						<select name="OverRideTax" onchange="ReloadForm(form1.ToggleTaxMethod)">';
+		if (isset($_POST['OverRideTax']) AND $_POST['OverRideTax']=='Man'){
+			echo '<option value="Auto">' . __('Automatic Calculation') . '</option>
+				  <option selected="selected" value="Man">' . __('Manual Entry') . '</option>';
+		} else {
+			echo '<option selected="selected" value="Auto">' . __('Automatic Calculation') . '</option>
+				  <option value="Man">' . __('Manual Entry') . '</option>';
 		}
+		echo '			</select>
+						<input type="submit" name="ToggleTaxMethod" value="' . __('Update') . '" style="display:none;" />
+					</div>
+					<div class="db-field">
+						<label class="db-label">' . __('Net Credit Amount') . '</label>
+						<input type="text" class="number" name="OvAmount" value="' . locale_number_format($_SESSION['SuppTrans']->OvAmount,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '" ' . ($_SESSION['SuppTrans']->GLLink_Creditors == 1 ? 'readonly' : '') . ' />
+					</div>
+				</div>
 
-		echo '<input type="hidden" name="TaxAmount'  . $Tax->TaxCalculationOrder . '"  value="' . round($_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxOvAmount,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '" />';
-
-		echo '</td><td class="number">  =  ' . locale_number_format($_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxOvAmount,$_SESSION['SuppTrans']->CurrDecimalPlaces);
-
-	} else { /*Tax being entered manually accept the taxamount entered as is*/
-		$_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxOvAmount = filter_number_format($_POST['TaxAmount'  . $Tax->TaxCalculationOrder]);
-
-		echo  ' <input type="hidden" name="TaxRate' . $Tax->TaxCalculationOrder . '" value="' . locale_number_format($_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxRate * 100,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '" />';
-
-
-		echo '</td>
-				<td><input type="text" class="number" size="12" maxlength="12" name="TaxAmount'  . $Tax->TaxCalculationOrder . '"  value="' . locale_number_format(round($_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxOvAmount,$_SESSION['SuppTrans']->CurrDecimalPlaces),$_SESSION['SuppTrans']->CurrDecimalPlaces) . '" />';
-
-	}
-
-	$TaxTotal += $_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxOvAmount;
-
-
-	echo '</field>';
-	}
-
-$DisplayTotal = locale_number_format($_SESSION['SuppTrans']->OvAmount + $TaxTotal,$_SESSION['SuppTrans']->CurrDecimalPlaces);
-
-echo '<field>
-		<label style="color:red">' . __('Credit Note Total') . '</label>
-		<fieldtext><b>' . $DisplayTotal. '</b></fieldtext>
-	</field>';
-
-echo '<field>
-		<label style="color:red">' . __('Comments') . '</label>
-		<textarea name="Comments" cols="40" rows="2">' . $_SESSION['SuppTrans']->Comments . '</textarea>
-	</field>
-</fieldset>';
+				<div style="margin-top: var(--space-4); border-top: 1px solid var(--border-soft); padding-top: var(--space-4);">
+					<h4 style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: var(--space-3);">' . __('Tax Breakdown') . '</h4>
+					<div class="db-grid db-grid-2">';
+		foreach ($_SESSION['SuppTrans']->Taxes as $Tax) {
+			echo '<div class="db-field">
+					<label class="db-label">' . $Tax->TaxAuthDescription . '</label>
+					<div style="display: flex; align-items: center; gap: 8px;">';
+			if (!isset($_POST['OverRideTax']) OR $_POST['OverRideTax']=='Auto') {
+				echo '<input type="text" class="number" name="TaxRate' . $Tax->TaxCalculationOrder . '" style="width: 80px;" value="' . locale_number_format($_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxRate * 100,2) . '" /> <span class="db-muted">%</span>';
+				echo '<input type="hidden" name="TaxAmount' . $Tax->TaxCalculationOrder . '" value="' . round($_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxOvAmount,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '" />';
+				echo '<div style="margin-left: auto; font-weight: 600;">' . locale_number_format($_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxOvAmount,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '</div>';
+			} else {
+				echo '<input type="hidden" name="TaxRate' . $Tax->TaxCalculationOrder . '" value="' . locale_number_format($_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxRate * 100,$_SESSION['SuppTrans']->CurrDecimalPlaces) . '" />';
+				echo '<input type="text" class="number" name="TaxAmount' . $Tax->TaxCalculationOrder . '" value="' . locale_number_format(round($_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxOvAmount,$_SESSION['SuppTrans']->CurrDecimalPlaces),$_SESSION['SuppTrans']->CurrDecimalPlaces) . '" />';
+			}
+			echo '	</div>
+				  </div>';
+		}
+		echo '		</div>
+				</div>
+			</div>
+		</div>';
 
 echo '<div class="centre">
 		<input type="submit" name="PostCreditNote" value="' . __('Enter Credit Note') . '" />
@@ -1299,6 +1349,7 @@ then do the updates and inserts to process the credit note entered */
 
 } /*end of process credit note */
 
-echo '</div>
-	  </form>';
+echo '</main></div><!-- .db-bottom-layout -->';
+echo '</form></div><!-- .db-page -->';
+
 include(__DIR__ . '/includes/footer.php');

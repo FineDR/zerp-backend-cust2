@@ -7,6 +7,30 @@ $ViewTopic = 'AccountsPayable';
 $BookMark = '';
 include(__DIR__ . '/includes/header.php');
 
+echo '<div class="db-page">';
+	echo '<style>
+		.registry-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+		.registry-table th { background: #064e3b; padding: 12px 15px; text-align: left; font-size: 0.72rem; text-transform: uppercase; font-weight: 800; color: #fff; letter-spacing: 1px; }
+		.registry-table td { padding: 12px 15px; font-size: 0.88rem; color: var(--text-body); border-bottom: 1px solid var(--border-soft); }
+		.registry-table tr:nth-child(even) td { background: var(--bg-workspace); }
+		.registry-table tr:hover td { background: var(--primary-soft) !important; }
+		.db-field { margin-bottom: var(--space-4); }
+		.db-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+	</style>';
+
+	echo '<div class="db-page-header">
+		<div>
+			<h2 class="db-page-title"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="db-title-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> ' . $Title . '</h2>
+			<p class="db-page-subtitle">' . __('Inquiry for') . ' <span class="val-bold">' . $SupplierID . ' - ' . $SupplierName . '</span></p>
+		</div>
+		<div class="db-header-actions">
+			<a href="' . $RootPath . '/SelectSupplier.php" class="db-btn db-btn-secondary">
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+				' . __('Change Supplier') . '
+			</a>
+		</div>
+	</div>';
+
 if (isset($_GET['SelectedSupplier'])) {
 	$SupplierID= $_GET['SelectedSupplier'];
 } elseif (isset($_POST['SelectedSupplier'])){
@@ -32,30 +56,43 @@ if (!isset($_POST['SupplierRef']) OR trim($_POST['SupplierRef'])=='') {
 	$_POST['GRNBatchNo'] = '';
 	$_POST['InvoiceNo'] = '';
 }
-echo '<p class="page_title_text">' . __('Supplier Invoice and Delivery Note Inquiry') . '<img src="' . $RootPath . '/css/' . $Theme . '/images/transactions.png" alt="" />' . __('Supplier') . ': ' . $SupplierName . '</p>';
-echo '<div class="page_help_text">' . __('The supplier\'s delivery note is prefer to GRN No, and GRN No is preferred to Invoice No').'</div>';
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">
-	<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-	<input type="hidden" name="SelectedSupplier" value="' . $SupplierID . '" />';
+echo '<div class="db-bottom-layout">';
+	echo '<aside class="db-col-aside">';
+	echo '<div class="db-card">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><i class="fas fa-search" style="margin-right: 8px;"></i> ' . __('Inquiry Criteria') . '</h3>
+			</div>
+			<div class="db-card-body">
+				<div class="db-help-text" style="font-size: 0.8rem; margin-bottom: var(--space-4); color: var(--text-muted);">' . __('Search logic: Delivery Note > GRN No > Invoice No') . '</div>
+				<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">
+					<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+					<input type="hidden" name="SelectedSupplier" value="' . $SupplierID . '" />
+					<input type="hidden" name="SupplierName" value="' . $SupplierName . '" />
 
-echo '<fieldset>
-		<legend>', __('Inquiry Criteria'), '</legend>
-		<field>
-			<label>' . __('Part of Supplier\'s Delivery Note') . ':</label>
-			<input type="text" name="SupplierRef" value="' . $_POST['SupplierRef'] . '" size="20" maxlength="30" >
-		</field>
-		<field>
-			<label>' . __('GRN No') . ':</label>
-			<input type="text" name="GRNBatchNo" value="' . $_POST['GRNBatchNo'] . '" size="6" maxlength="6" />
-		</field>
-		<field>
-			<label>' . __('Invoice No') . ':</label>
-			<input type="text" name="InvoiceNo" value="' . $_POST['InvoiceNo'] . '" size="11" maxlength="11" />
-		</field>
-	</fieldset>';
-echo '<div class="centre">
-		<input type="submit" name="Submit" value="' . __('Submit') . '" />
-	</div>';
+					<div class="db-field">
+						<label class="db-label">' . __('Supplier\'s Delivery Note') . '</label>
+						<input type="text" name="SupplierRef" value="' . $_POST['SupplierRef'] . '" maxlength="30" />
+					</div>
+					<div class="db-field">
+						<label class="db-label">' . __('GRN Number') . '</label>
+						<input type="text" name="GRNBatchNo" value="' . $_POST['GRNBatchNo'] . '" maxlength="6" />
+					</div>
+					<div class="db-field">
+						<label class="db-label">' . __('Invoice Number') . '</label>
+						<input type="text" name="InvoiceNo" value="' . $_POST['InvoiceNo'] . '" maxlength="11" />
+					</div>
+
+					<button type="submit" name="Submit" class="db-btn db-btn-primary" style="width: 100%; margin-top: 10px;">
+						' . __('Search Transactions') . '
+					</button>
+				</form>
+			</div>
+		  </div>';
+	echo '</aside>';
+
+	echo '<main class="db-col-main">';
+
+// Hidden forms are handled in sidebar
 if (isset($_POST['Submit'])) {
 	$Where = '';
 	if (isset($_POST['SupplierRef']) AND trim($_POST['SupplierRef']) != '') {
@@ -78,16 +115,21 @@ if (isset($_POST['Submit'])) {
 	$ErrMsg = __('Failed to retrieve supplier invoice and grn data');
 	$Result = DB_query($SQL, $ErrMsg);
 	if (DB_num_rows($Result)>0) {
-		echo '<table class="selection">
-			<thead>
-			<tr>
-					<th class="SortedColumn">' . __('Supplier Delivery Note') . '</th>
-					<th class="SortedColumn">' . __('GRN Batch No') . '</th>
-					<th class="SortedColumn">' . __('PO No') . '</th>
-					<th class="SortedColumn">' . __('Invoice No') . '</th>
-				</tr>
-			</thead>
-			<tbody>';
+		echo '<div class="db-card">
+				<div class="db-card-header">
+					<h3 class="db-card-title"><i class="fas fa-list"></i> ' . __('Inquiry Results') . '</h3>
+				</div>
+				<div class="db-card-body" style="padding: 0;">
+					<table class="registry-table">
+						<thead>
+						<tr>
+							<th>' . __('Delivery Note') . '</th>
+							<th>' . __('GRN Batch') . '</th>
+							<th>' . __('PO No') . '</th>
+							<th>' . __('Invoice No') . '</th>
+						</tr>
+						</thead>
+						<tbody>';
 
 		while ($MyRow = DB_fetch_array($Result)){
 			echo '<tr class="striped_row">
@@ -98,9 +140,27 @@ if (isset($_POST['Submit'])) {
 				</tr>';
 
 		}
-		echo '</tbody></table><br/>';
-
+		echo '</tbody></table></div></div>';
+	} else {
+		echo '<div class="db-card">
+				<div class="db-card-body" style="text-align: center; padding: var(--space-8);">
+					<i class="fas fa-search" style="font-size: 3rem; color: var(--text-muted); opacity: 0.3; margin-bottom: var(--space-4);"></i>
+					<h3 style="color: var(--text-muted);">' . __('No transactions found') . '</h3>
+					<p class="db-muted">' . __('Adjust your criteria and search again.') . '</p>
+				</div>
+			  </div>';
 	}
-
+} else {
+	echo '<div class="db-card">
+			<div class="db-card-body" style="text-align: center; padding: var(--space-8);">
+				<i class="fas fa-arrow-left" style="font-size: 3rem; color: var(--db-primary); opacity: 0.3; margin-bottom: var(--space-4);"></i>
+				<h3>' . __('Ready for Inquiry') . '</h3>
+				<p class="db-muted">' . __('Enter a delivery note, GRN, or invoice number in the sidebar search.') . '</p>
+			</div>
+		  </div>';
 }
+
+echo '</main></div><!-- .db-bottom-layout -->';
+echo '</div><!-- .db-page -->';
+
 include(__DIR__ . '/includes/footer.php');

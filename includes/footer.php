@@ -78,8 +78,6 @@ echo '<footer class="noPrint">
 		<a class="FooterLogo" href="https://www.weberp.org" target="_blank">
 			<div class="logo logo-left">web</div><div class="logo logo-right"><i>ERP</i></div>
 		</a>
-		<div class="FooterVersion">webERP ', __('version'), ' ', $_SESSION['VersionNumber'], '+', $_SESSION['DBVersion'], '</div>
-		<div class="FooterTime">', DisplayDateTime(), '</div>
 	  </footer>'; // FooterDiv
 echo '</body>';
 echo '</html>';

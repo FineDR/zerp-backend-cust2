@@ -1,20 +1,7 @@
 @import url('variables.css');
 
 footer, #Footer {
-    margin-top: 50px !important;
-    padding: 30px 20px !important;
-    text-align: center !important;
-    color: var(--text-muted) !important;
-    font-size: 0.75rem !important;
-    border-top: 1px solid var(--border-soft) !important;
-    width: 100% !important;
-    background: var(--surface-alt) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 10px !important;
-    position: relative !important;
-    clear: both !important;
+    display: none !important;
 }
 
 .FooterLogo {
