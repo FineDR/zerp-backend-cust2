@@ -160,7 +160,9 @@ if (isset($_SESSION['SupplierID'])) {
 	}
 }
 
-echo '<div class="db-bottom-layout">';
+echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
+		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+		<div class="db-bottom-layout">';
 
 // START SIDEBAR
 echo '<aside class="db-col-aside">';
@@ -176,10 +178,7 @@ if (isset($_SESSION['SupplierID'])) {
 		  </div>';
 }
 
-// CARD 2: SEARCH FORM (Moved to Sidebar)
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
-		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-		<div class="db-card">
+	echo '<div class="db-card">
 			<div class="db-card-header">
 				<h3 class="db-card-title"><i class="fas fa-search" style="margin-right: 8px;"></i> ' . __('Find Supplier') . '</h3>
 			</div>
@@ -196,8 +195,7 @@ echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-
 					<i class="fas fa-search" style="margin-right: 8px;"></i> ' . __('Search Now') . '
 				</button>
 			</div>
-		</div>
-	  </form>';
+		</div>';
 
 echo '</aside>';
 // END SIDEBAR
@@ -356,7 +354,6 @@ if (isset($_POST['Search'])) {
 	}
 	echo '</tbody></table></div></div>';
 	}
-	echo '      </form>';
 // Only display the geocode map if the integration is turned on, and there is a latitude/longitude to display
 if (isset($_SESSION['SupplierID']) and $_SESSION['SupplierID'] != '') {
 	if ($_SESSION['geocode_integration'] == 1) {
@@ -438,7 +435,8 @@ if (isset($_SESSION['SupplierID']) and $_SESSION['SupplierID'] != '') {
 	}
 }
 echo '	</main>
-	</div>'; // End db-bottom-layout
+	</div>
+</form>'; // End db-bottom-layout
 echo '</div>'; // End db-page
 
 

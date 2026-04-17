@@ -997,6 +997,7 @@ if (!isset($_POST['PostInvoice'])) {
 
 	$DisplayTotal = locale_number_format(($_SESSION['SuppTrans']->OvAmount + $TaxTotal) , $_SESSION['SuppTrans']->CurrDecimalPlaces);
 
+<<<<<<< HEAD
 		echo '<field>
 				<label>' . __('Invoice Total') . ':</label>
 				<fieldtext>' . $DisplayTotal . '</fieldtext>
@@ -1008,6 +1009,13 @@ if (!isset($_POST['PostInvoice'])) {
 					<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg> ' . __('Invoice Summary & Tax Analysis') . '</h3>
 				</div>
 				<div class="db-card-body">
+=======
+	echo '<div class="db-card" style="margin-top: var(--space-6);">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg> ' . __('Invoice Summary & Tax Analysis') . '</h3>
+			</div>
+			<div class="db-card-body">
+>>>>>>> a50af67fd012919c028b15c214c78050ed7cafcc
 				<div class="db-form-grid">';
 
 	echo '<div class="db-form-group">
