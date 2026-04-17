@@ -138,13 +138,11 @@ if (isset($_POST['Search'])
 		$SingleSupplierReturned = $MyRow[0];
 	}
 	if (isset($SingleSupplierReturned)) { /*there was only one supplier returned */
- 	   $_SESSION['SupplierID'] = $SingleSupplierReturned;
-	   unset($_POST['Keywords']);
-	   unset($_POST['SupplierCode']);
-	   unset($_POST['Search']);
-        } else {
-               unset($_SESSION['SupplierID']);
-        }
+		$_SESSION['SupplierID'] = $SingleSupplierReturned;
+		unset($_POST['Keywords']);
+		unset($_POST['SupplierCode']);
+		unset($_POST['Search']);
+	}
 } //end of if search
 
 if (isset($_SESSION['SupplierID'])) {

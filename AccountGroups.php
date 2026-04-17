@@ -232,7 +232,8 @@ if (isset($_POST['submit'])) {
 		echo '<tr>
 				<td colspan="2"><div class="centre"><input tabindex="6" type="submit" name="MoveGroup" value="' . __('Move Group') . '" /></div></td>
 			</tr>
-			</table>';
+			</table>
+			</form>';
 
 	} else {
 		// Check if this group is a parent to other groups

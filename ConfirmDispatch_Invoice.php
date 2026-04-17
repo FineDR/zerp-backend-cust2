@@ -14,6 +14,7 @@ $Title = __('Confirm Dispatches and Invoice An Order');
 $ViewTopic = 'ARTransactions';
 $BookMark = 'ConfirmInvoice';
 $ExtraHeadContent = '<link rel="stylesheet" href="' . $RootPath . '/css/modern-zerp/styles.css">
+					<link rel="stylesheet" href="' . $RootPath . '/css/modern-zerp/pos.css">
 					<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">';
 include(__DIR__ . '/includes/header.php');
 
@@ -41,7 +42,45 @@ if (!isset($_GET['OrderNumber']) and !isset($_SESSION['ProcessingOrder'])) {
 	prnMsg(__('This page can only be opened if an order has been selected Please select an order first from the delivery details screen click on Confirm for invoicing'), 'error');
 	include(__DIR__ . '/includes/footer.php');
 	exit();
-} elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0) {
+}
+
+if (isset($_GET['SuccessInvoiceNo'])) {
+	$InvoiceNo = $_GET['SuccessInvoiceNo'];
+	if ($_SESSION['InvoicePortraitFormat'] == 0) {
+		$orientation = 'landscape';
+	} else {
+		$orientation = 'portrait';
+	}
+	$PrintURL = $RootPath . '/PrintCustTrans.php?FromTransNo=' . urlencode($InvoiceNo) . '&InvOrCredit=Invoice&PrintPDF=True&orientation=' . $orientation;
+	$DownloadURL = $PrintURL . '&Download=True';
+	
+	echo '<div class="pos-modal-overlay">
+			<div class="pos-modal-content">
+				<div class="pos-modal-icon">
+					<i class="fas fa-check"></i>
+				</div>
+				<h2 class="pos-modal-title">' . __('Invoice Processed Successfully') . '</h2>
+				<p class="pos-modal-subtitle">' . __('Invoice #') . $InvoiceNo . ' ' . __('has been generated and accounts updated.') . '</p>
+				
+				<div class="pos-modal-actions">
+					<a href="' . htmlspecialchars($PrintURL, ENT_QUOTES, 'UTF-8') . '" target="_blank" class="pos-btn-primary">
+						<i class="fas fa-print"></i> ' . __('Print Invoice') . '
+					</a>
+					<a href="' . htmlspecialchars($DownloadURL, ENT_QUOTES, 'UTF-8') . '" class="pos-btn-outline">
+						<i class="fas fa-download"></i> ' . __('Download PDF') . '
+					</a>
+					<a href="' . $RootPath . '/SelectSalesOrder.php" class="pos-btn-outline">
+						' . __('Return to Orders') . '
+					</a>
+					<a href="' . $RootPath . '/SelectOrderItems.php?NewOrder=Yes" class="pos-btn-ghost">
+						' . __('Start New Order') . '
+					</a>
+				</div>
+			</div>
+		  </div>';
+}
+
+elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0) {
 
 	unset($_SESSION['Items' . $identifier]->LineItems);
 	unset($_SESSION['Items' . $identifier]);
@@ -695,7 +734,6 @@ if (isset($_POST['ProcessInvoice']) and $_POST['ProcessInvoice'] != '') {
 		} //end of loop around items on the order for negative check
 		if ($NegativesFound) {
 			echo '</div>';
-			echo '</form>';
 			echo '<div class="centre">
 					<input type="submit" name="Update" value="' . __('Update') . '" /></div>';
 			include(__DIR__ . '/includes/footer.php');
@@ -1746,17 +1784,15 @@ if (isset($_POST['ProcessInvoice']) and $_POST['ProcessInvoice'] != '') {
 
 	prnMsg(__('Invoice number') . ' ' . $InvoiceNo . ' ' . __('processed'), 'success');
 
-	echo '<br /><div class="centre">';
+	$RedirectURL = htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SuccessInvoiceNo=' . $InvoiceNo . '&identifier=' . $identifier;
 
-	if ($_SESSION['InvoicePortraitFormat'] == 0) {
-		echo '<img src="' . $RootPath . '/css/' . $Theme . '/images/printer.png" title="' . __('Print') . '" alt="" />' . ' ' . '<a target="_blank" href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $InvoiceNo . '&amp;InvOrCredit=Invoice&amp;PrintPDF=True&orientation=landscape">' . __('Print this invoice') . ' (' . __('Landscape') . ')</a><br /><br />';
-	} else {
-		echo '<img src="' . $RootPath . '/css/' . $Theme . '/images/printer.png" title="' . __('Print') . '" alt="" />' . ' ' . '<a target="_blank" href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $InvoiceNo . '&amp;InvOrCredit=Invoice&amp;PrintPDF=True&orientation=portrait">' . __('Print this invoice') . ' (' . __('Portrait') . ')</a><br /><br />';
+	if (!headers_sent()) {
+		header('Location: ' . $RedirectURL);
+		exit();
 	}
-	echo '<a href="' . $RootPath . '/SelectSalesOrder.php">' . __('Select another order for invoicing') . '</a><br /><br />';
-	echo '<a href="' . $RootPath . '/SelectOrderItems.php?NewOrder=Yes">' . __('Sales Order Entry') . '</a></div><br />';
-	/*end of process invoice */
 
+	echo '<script>window.location.href="' . $RedirectURL . '";</script>';
+	exit();
 } else { /*Process Invoice not set so allow input of invoice data */
 
 	if (!isset($_POST['Consignment'])) {

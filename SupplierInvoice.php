@@ -596,34 +596,119 @@ if (!isset($_POST['PostInvoice'])) {
 	/* everything below here only do if a Supplier is selected
 	 fisrt add a header to show who we are making an invoice for */
 
-	echo '<div class="db-card" style="margin-top: var(--space-6);">
+	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" id="form1">';
+	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+
+	echo '<div class="db-bottom-layout">';
+
+	// --- SIDEBAR START ---
+	echo '<aside class="db-col-aside">';
+
+	// Card 1: Active Supplier
+	echo '<div class="db-card" style="margin-bottom: var(--space-4);">
 			<div class="db-card-header">
-				<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> ' . __('Supplier Details') . '</h3>
+				<h3 class="db-card-title"><i class="fas fa-user-tag db-icon-green"></i> ' . __('Supplier Details') . '</h3>
 			</div>
-			<div class="db-table-line">
-				<table class="db-table">
-					<thead>
-						<tr>
-							<th>' . __('Supplier') . '</th>
-							<th>' . __('Currency') . '</th>
-							<th>' . __('Terms') . '</th>
-							<th>' . __('Tax Authority') . '</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td><span class="val-bold">' . $_SESSION['SuppTrans']->SupplierID . '</span> - ' . $_SESSION['SuppTrans']->SupplierName . '</td>
-							<td><span class="val-bold">' . $_SESSION['SuppTrans']->CurrCode . '</span></td>
-							<td>' . $_SESSION['SuppTrans']->TermsDescription . '</td>
-							<td>' . $_SESSION['SuppTrans']->TaxGroupDescription . '</td>
-						</tr>
-					</tbody>
-				</table>
+			<div class="db-card-body" style="padding: var(--space-4);">
+				<div style="font-size: 1.1rem; font-weight: 700; color: var(--db-primary);">' . $_SESSION['SuppTrans']->SupplierName . '</div>
+				<div style="font-family: monospace; color: var(--text-muted); margin-bottom: var(--space-3);">[' . $_SESSION['SuppTrans']->SupplierID . ']</div>
+				<div style="font-size: 0.85rem; display: flex; flex-direction: column; gap: 4px;">
+					<div><span class="db-muted">' . __('Currency') . ':</span> <span class="val-bold">' . $_SESSION['SuppTrans']->CurrCode . '</span></div>
+					<div><span class="db-muted">' . __('Terms') . ':</span> ' . $_SESSION['SuppTrans']->TermsDescription . '</div>
+					<div><span class="db-muted">' . __('Tax Group') . ':</span> ' . $_SESSION['SuppTrans']->TaxGroupDescription . '</div>
+				</div>
 			</div>
 		</div>';
 
-	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" id="form1">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+	// Card 2: Invoice Source Actions
+	echo '<div class="db-card" style="margin-bottom: var(--space-4);">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><i class="fas fa-plus-circle"></i> ' . __('Add Charges From') . '</h3>
+			</div>
+			<div class="db-card-body" style="padding: var(--space-2);">';
+	
+	$sourceTypes = [
+		['name' => 'GRNS', 'label' => __('Purchase Orders (GRNs)'), 'icon' => 'shopping-cart'],
+		['name' => 'Shipts', 'label' => __('Shipments'), 'icon' => 'truck'],
+		['name' => 'Contracts', 'label' => __('Contracts'), 'icon' => 'file-text'],
+		['name' => 'FixedAssets', 'label' => __('Fixed Assets'), 'icon' => 'briefcase'],
+		['name' => 'GL', 'label' => __('General Ledger'), 'icon' => 'book', 'condition' => ($_SESSION['SuppTrans']->GLLink_Creditors == 1)]
+	];
+
+	foreach ($sourceTypes as $source) {
+		if (isset($source['condition']) && !$source['condition']) continue;
+		echo '<button type="submit" name="' . $source['name'] . '" value="' . $source['label'] . '" class="db-menu-link" style="width: 100%; border: none; text-align: left; background: transparent; cursor: pointer;">
+				<i class="fas fa-' . $source['icon'] . '" style="width: 20px; color: var(--db-primary);"></i> ' . $source['label'] . '
+			  </button>';
+	}
+	echo '  </div>
+		  </div>';
+
+	// Pre-calculate Summary for Sidebar
+	$TaxTotal = 0;
+	foreach ($_SESSION['SuppTrans']->Taxes as $Tax) {
+		if (isset($_POST['TaxRate' . $Tax->TaxCalculationOrder])) {
+			$_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxRate = filter_number_format($_POST['TaxRate' . $Tax->TaxCalculationOrder]) / 100;
+		}
+		if (!isset($_POST['OverRideTax']) OR $_POST['OverRideTax'] == 'Auto') {
+			if ($Tax->TaxOnTax == 1) {
+				$_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxOvAmount = $_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxRate * ($_SESSION['SuppTrans']->OvAmount + $TaxTotal);
+			} else {
+				$_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxOvAmount = $_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxRate * $_SESSION['SuppTrans']->OvAmount;
+			}
+		} else {
+			$_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxOvAmount = filter_number_format($_POST['TaxAmount' . $Tax->TaxCalculationOrder]);
+		}
+		$TaxTotal += $_SESSION['SuppTrans']->Taxes[$Tax->TaxCalculationOrder]->TaxOvAmount;
+	}
+
+	// Card 3: Live Summary (Sidebar BottomLine)
+	echo '<div class="db-card" style="position: sticky; top: var(--space-4);">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><i class="fas fa-calculator"></i> ' . __('Invoice Summary') . '</h3>
+			</div>
+			<div class="db-card-body" style="padding: var(--space-4);">
+				<div style="display: flex; flex-direction: column; gap: var(--space-3);">
+					<div style="display: flex; justify-content: space-between;">
+						<span class="db-muted">' . __('Manual Amount') . ':</span>
+						<span class="val-bold">' . locale_number_format($_SESSION['SuppTrans']->OvAmount, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '</span>
+					</div>';
+	
+	foreach ($_SESSION['SuppTrans']->Taxes as $Tax) {
+		echo '<div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+				<span class="db-muted">' . $Tax->TaxAuthDescription . ':</span>
+				<span>' . locale_number_format($Tax->TaxOvAmount, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '</span>
+			  </div>';
+	}
+	
+	echo '			<div style="margin: var(--space-2) 0; height: 1px; background: var(--border-soft);"></div>
+					<div style="display: flex; justify-content: space-between; font-size: 1.2rem; color: var(--db-primary);">
+						<span class="val-bold">' . __('Total') . ':</span>
+						<span class="val-bold">' . locale_number_format($_SESSION['SuppTrans']->OvAmount + $TaxTotal, $_SESSION['SuppTrans']->CurrDecimalPlaces) . ' ' . $_SESSION['SuppTrans']->CurrCode . '</span>
+					</div>
+				</div>
+				<div style="margin-top: var(--space-6);">
+					<label class="db-label">' . __('Tax Calculation') . '</label>
+					<div style="display: flex; gap: 8px;">
+						<select name="OverRideTax" class="db-input db-input-sm" onchange="this.form.submit()">
+							<option value="Auto" ' . (!isset($_POST['OverRideTax']) || $_POST['OverRideTax'] == 'Auto' ? 'selected' : '') . '>' . __('Automatic') . '</option>
+							<option value="Man" ' . (isset($_POST['OverRideTax']) && $_POST['OverRideTax'] == 'Man' ? 'selected' : '') . '>' . __('Manual') . '</option>
+						</select>
+					</div>
+				</div>
+				<div style="margin-top: var(--space-6);">
+					<button type="submit" name="PostInvoice" class="db-btn db-btn-primary" style="width: 100%; height: 44px; justify-content: center; font-size: 1rem;">
+						<i class="fas fa-check-double"></i> ' . __('Complete Invoice') . '
+					</button>
+				</div>
+			</div>
+		</div>';
+
+	echo '</aside>';
+	// --- SIDEBAR END ---
+
+	// --- MAIN CONTENT START ---
+	echo '<main class="db-col-main">';
 
 	echo '<div class="db-card" style="margin-top: var(--space-6);">
 			<div class="db-card-header">
@@ -651,35 +736,12 @@ if (!isset($_POST['PostInvoice'])) {
 		</div>
 	</div></div></div>'; // end grid, body, card
 
-	echo '<div class="db-grid db-grid-5" style="margin-top: var(--space-6);">';
-	$sourceTypes = [
-		['name' => 'GRNS', 'label' => __('Purchase Orders'), 'icon' => 'shopping-cart'],
-		['name' => 'Shipts', 'label' => __('Shipments'), 'icon' => 'truck'],
-		['name' => 'Contracts', 'label' => __('Contracts'), 'icon' => 'file-text'],
-		['name' => 'FixedAssets', 'label' => __('Fixed Assets'), 'icon' => 'briefcase']
-	];
-	if ($_SESSION['SuppTrans']->GLLink_Creditors == 1) {
-		$sourceTypes[] = ['name' => 'GL', 'label' => __('General Ledger'), 'icon' => 'book'];
-	}
-
-	foreach ($sourceTypes as $source) {
-		echo '<div class="db-card action-card">
-				<div class="db-card-body" style="padding: var(--space-4); text-align: center;">
-					<button type="submit" name="' . $source['name'] . '" value="' . $source['label'] . '" class="db-btn db-btn-secondary" style="width: 100%; justify-content: center; gap: 8px;">
-						' . $source['label'] . '
-					</button>
-				</div>
-			</div>';
-	}
-	echo '</div>';
 	$CanSubmit = false; //To avoid a empty submit
 	$TotalGRNValue = 0;
 
-	if (count($_SESSION['SuppTrans']->GRNs) > 0) {
-		$CanSubmit = true;
-		echo '<div class="db-card" style="margin-top: var(--space-6);">
+		echo '<div class="db-card" style="margin-bottom: var(--space-6);">
 				<div class="db-card-header">
-					<h3 class="db-card-title">' . __('Purchase Order Charges') . '</h3>
+					<h3 class="db-card-title"><i class="fas fa-shopping-basket db-icon-green"></i> ' . __('Purchase Order Charges (GRNs)') . '</h3>
 				</div>
 				<div class="db-table-wrapper">
 					<table class="db-table">
@@ -689,7 +751,7 @@ if (!isset($_POST['PostInvoice'])) {
 								<th>' . __('Batch') . '</th>
 								<th>' . __('Ref') . '</th>
 								<th>' . __('Item') . '</th>
-								<th>' . __('Quantity') . '</th>
+								<th class="number">' . __('Quantity') . '</th>
 								<th class="number">' . __('Price') . '</th>
 								<th class="number">' . __('Total') . '</th>
 							</tr>
@@ -697,12 +759,12 @@ if (!isset($_POST['PostInvoice'])) {
 						<tbody>';
 
 		foreach ($_SESSION['SuppTrans']->GRNs as $EnteredGRN) {
-			echo '<tr class="striped_row">
+			echo '<tr>
 					<td>' . $EnteredGRN->GRNNo . '</td>
 					<td>' . $EnteredGRN->GRNBatchNo . '</td>
 					<td>' . $EnteredGRN->SupplierRef . '</td>
 					<td><div class="val-bold">' . $EnteredGRN->ItemCode . '</div><div style="font-size:0.75rem; color:var(--text-muted);">' . $EnteredGRN->ItemDescription . '</div></td>
-					<td>' . locale_number_format($EnteredGRN->This_QuantityInv, $EnteredGRN->DecimalPlaces) . '</td>
+					<td class="number">' . locale_number_format($EnteredGRN->This_QuantityInv, $EnteredGRN->DecimalPlaces) . '</td>
 					<td class="number">' . locale_number_format($EnteredGRN->ChgPrice, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
 					<td class="number val-bold">' . locale_number_format($EnteredGRN->ChgPrice * $EnteredGRN->This_QuantityInv, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
 				</tr>';
@@ -712,12 +774,11 @@ if (!isset($_POST['PostInvoice'])) {
 		echo '</tbody>
 				<tfoot>
 					<tr class="db-table-summary">
-						<td colspan="6" style="text-align: right;">' . __('Total Goods Charged') . ':</td>
+						<td colspan="6" style="text-align: right;">' . __('Subtotal Goods Charged') . ':</td>
 						<td class="number">' . locale_number_format($TotalGRNValue, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '</td>
 					</tr>
 				</tfoot>
 			</table></div></div>';
-	}
 
 	$TotalShiptValue = 0;
 
@@ -985,28 +1046,14 @@ if (!isset($_POST['PostInvoice'])) {
 
 	echo '<div class="db-card" style="margin-top: var(--space-6);">
 			<div class="db-card-header">
-				<h3 class="db-card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg> ' . __('Invoice Summary & Tax Analysis') . '</h3>
+				<h3 class="db-card-title"><i class="fas fa-comment-alt"></i> ' . __('Final Comments') . '</h3>
 			</div>
 			<div class="db-card-body">
-				<div class="db-form-grid">';
-
-	echo '<div class="db-form-group">
-			<label for="Comments">' . __('Comments') . '</label>
-			<textarea name="Comments" rows="3" placeholder="' . __('Enter any relevant comments...') . '">' . $_SESSION['SuppTrans']->Comments . '</textarea>
+				<textarea name="Comments" style="width: 100%; min-height: 100px;" placeholder="' . __('Enter any relevant comments...') . '">' . $_SESSION['SuppTrans']->Comments . '</textarea>
+			</div>
 		</div>';
 
-	echo '<div class="db-form-group">
-			<label for="OvAmount">' . __('Invoice Amount') . ' (' . $_SESSION['SuppTrans']->CurrCode . ')</label>
-			<input type="text" class="number val-bold" size="12" name="OvAmount" value="' . locale_number_format($_SESSION['SuppTrans']->OvAmount, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '" ' . ($_SESSION['SuppTrans']->GLLink_Creditors == 1 ? 'readonly="readonly" style="background: var(--surface-alt);"' : '') . ' />
-		</div>';
-
-	foreach ($_SESSION['SuppTrans']->Taxes as $Tax) {
-		echo '<div class="db-form-group">
-				<label title="' . $Tax->TaxAuthDescription . '">' . $Tax->TaxAuthDescription . '</label>
-				<input type="text" class="number" size="12" name="TaxAmt' . $Tax->TaxAuthID . '" value="' . locale_number_format($Tax->TaxOvAmount, $_SESSION['SuppTrans']->CurrDecimalPlaces) . '" />
-			</div>';
-	}
-
+	echo '</main></div><!-- .db-bottom-layout -->';
 	echo '</form>';
 } else { // $_POST['PostInvoice'] is set so do the postings -and dont show the button to process
 	/*First do input reasonableness checks

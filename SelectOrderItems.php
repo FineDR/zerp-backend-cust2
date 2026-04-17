@@ -1685,7 +1685,8 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 	}
 	
 	echo '</div><!-- .db-pos-sidebar -->
-		  </div><!-- .db-pos-wrapper -->';
+		  </div><!-- .db-pos-wrapper -->
+		</form>';
 
 	if ($_SESSION['Items'.$identifier]->ItemsOrdered >=1){
 		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post" name="deleteform">

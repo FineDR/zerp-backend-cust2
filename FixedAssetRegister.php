@@ -208,6 +208,7 @@ if (isset($_POST['submit']) or isset($_POST['PrintPDF']) or isset($_POST['Spread
 				<div class="centre">
 					<form><input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" /></form>
 				</div>';
+	echo '</form>';
 	}
 	$HTML .= '</body>
 		</html>';
