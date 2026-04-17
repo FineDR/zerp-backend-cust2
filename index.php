@@ -19,7 +19,8 @@ if (isset($_SESSION['FirstLogIn']) and $_SESSION['FirstLogIn'] == '1' and isset(
 if (isset($_POST['CompanyNameField'])) {
 	setcookie('Company', $_POST['CompanyNameField'], time() + 3600 * 24 * 30);
 }
-
+echo 'coming soon! ';
+exit;
 $Title = __('Main Menu');
 $SQL = "SELECT value FROM session_data WHERE userid='" . $_SESSION['UserID'] . "' AND field='module'";
 $Result = DB_query($SQL);
@@ -62,8 +63,7 @@ if (isset($_GET['Application']) && ($_GET['Application'] == 'Sales' || $_GET['Ap
 } elseif (isset($_GET['Application']) && $_GET['Application'] == 'Utilities') {
     $ExtraHeadContent = '<link rel="stylesheet" type="text/css" href="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/utilities.css?v=' . time() . '">';
 }
-echo 'coming soon! ';
-exit;
+
 include(__DIR__ . '/includes/header.php');
 
 if (isset($SupplierLogin) AND $SupplierLogin==1){
