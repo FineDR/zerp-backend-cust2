@@ -1,6 +1,5 @@
 <?php
-echo 'coming soon! ';
-exit;
+
 /* webERP Session handling and general bootstrapping.
  *
  * This file is included at the start of every script in webERP.
@@ -16,7 +15,8 @@ if (!isset($PathPrefix)) {
 	/// @todo make it a constant. Also, rename it to ROOT_PATH, ROOT_DIR or similar
 	$PathPrefix = __DIR__ . '/../';
 }
-
+echo 'coming soon! ';
+exit;
 require($PathPrefix . 'vendor/autoload.php');
 
 if (!file_exists($PathPrefix . 'config.php')) {
