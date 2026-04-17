@@ -132,7 +132,11 @@ if ($isDashboard) {
 
 	// Revenue — non-fatal query, fallback to 0
 	$totalSales = '0';
-	$res = DB_query("SELECT COALESCE(SUM(ordervalue),0) FROM salesorders WHERE orddate >= '$date30'", '', '', false, false);
+	$res = DB_query("SELECT COALESCE(SUM(salesorderdetails.quantity * salesorderdetails.unitprice * (1 - salesorderdetails.discountpercent)), 0)
+					FROM salesorders
+					INNER JOIN salesorderdetails
+						ON salesorders.orderno = salesorderdetails.orderno
+					WHERE salesorders.orddate >= '$date30'", '', '', false, false);
 	if (DB_error_no() == 0 && $res) {
 		$row = DB_fetch_row($res);
 		$totalSales = number_format($row[0] ?? 0, 2);
@@ -164,7 +168,15 @@ if ($isDashboard) {
 
 	// Sales trend (last 14 days)
 	$trendData = [];
-	$res = DB_query("SELECT orddate, COALESCE(SUM(ordervalue),0) as dt FROM salesorders WHERE orddate >= '$date14' GROUP BY orddate ORDER BY orddate ASC LIMIT 14", '', '', false, false);
+	$res = DB_query("SELECT salesorders.orddate,
+							COALESCE(SUM(salesorderdetails.quantity * salesorderdetails.unitprice * (1 - salesorderdetails.discountpercent)), 0) as dt
+					FROM salesorders
+					INNER JOIN salesorderdetails
+						ON salesorders.orderno = salesorderdetails.orderno
+					WHERE salesorders.orddate >= '$date14'
+					GROUP BY salesorders.orddate
+					ORDER BY salesorders.orddate ASC
+					LIMIT 14", '', '', false, false);
 	if (DB_error_no() == 0 && $res) {
 		while ($row = DB_fetch_assoc($res)) {
 			$trendData[] = (float)$row['dt'];
@@ -185,7 +197,18 @@ if ($isDashboard) {
 
 	// Recent orders
 	$recentOrders = [];
-	$res = DB_query("SELECT orderno, orddate, debtorsmaster.name, ordervalue FROM salesorders JOIN debtorsmaster ON salesorders.debtorno = debtorsmaster.debtorno ORDER BY orderno DESC LIMIT 6", '', '', false, false);
+	$res = DB_query("SELECT salesorders.orderno,
+							salesorders.orddate,
+							debtorsmaster.name,
+							COALESCE(SUM(salesorderdetails.quantity * salesorderdetails.unitprice * (1 - salesorderdetails.discountpercent)), 0) as ordervalue
+					FROM salesorders
+					INNER JOIN debtorsmaster
+						ON salesorders.debtorno = debtorsmaster.debtorno
+					LEFT JOIN salesorderdetails
+						ON salesorders.orderno = salesorderdetails.orderno
+					GROUP BY salesorders.orderno, salesorders.orddate, debtorsmaster.name
+					ORDER BY salesorders.orderno DESC
+					LIMIT 6", '', '', false, false);
 	if (DB_error_no() == 0 && $res) {
 		while ($row = DB_fetch_assoc($res)) {
 			$recentOrders[] = $row;
