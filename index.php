@@ -3,11 +3,12 @@
 $PageSecurity = 0;
 
 require(__DIR__ . '/includes/session.php');
+echo 'coming soon! ';
+exit;
 if (isset($_POST['NewLogin']) and !isset($_SESSION['FormID'])) {
 	$_SESSION['FormID'] = sha1(uniqid(mt_rand(), true));
 }
-echo 'coming soon! ';
-exit;
+
 /// @todo this is better left handled to be done in session.php, which can send an http redirect instead
 if (isset($_SESSION['FirstLogIn']) and $_SESSION['FirstLogIn'] == '1' and isset($_SESSION['DatabaseName'])) {
 	$_SESSION['FirstRun'] = true;
