@@ -17,7 +17,8 @@ if (!isset($PathPrefix)) {
 }
 
 require($PathPrefix . 'vendor/autoload.php');
-
+echo 'coming soon! ';
+exit;
 if (!file_exists($PathPrefix . 'config.php')) {
 	// gg: there is no need for htmlspecialchars here, as we never output $RootPath into html
 	/// @todo what if we are on a webpage in a subfolder?
@@ -28,8 +29,7 @@ if (!file_exists($PathPrefix . 'config.php')) {
 	header('Location:' . $RootPath . '/install/index.php');
 	exit();
 }
-echo 'coming soon! ';
-exit;
+
 $DefaultDatabase = 'weberpdemo';
 
 include($PathPrefix . 'config.php');
