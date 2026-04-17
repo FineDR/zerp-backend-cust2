@@ -1,5 +1,6 @@
 <?php
-
+echo 'coming soon! ';
+exit;
 $PageSecurity = 0;
 
 require(__DIR__ . '/includes/session.php');
