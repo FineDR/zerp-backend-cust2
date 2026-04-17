@@ -48,7 +48,37 @@ if (!isset($_SESSION['SuppTrans']->SupplierName) AND isset($_GET['SupplierID']) 
 }
 
 echo '<div class="db-page">';
-echo '<div class="db-page-header">
+	echo '<style>
+		.db-aside-btn {
+			width: 100%;
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			padding: 10px 12px;
+			border-radius: var(--radius-md);
+			border: 1px solid transparent;
+			background: transparent;
+			color: var(--text-body);
+			font-size: 0.875rem;
+			font-weight: 500;
+			cursor: pointer;
+			transition: all var(--transition-fast);
+			text-align: left;
+		}
+		.db-aside-btn:hover {
+			background: var(--primary-soft);
+			color: var(--primary);
+			border-color: var(--primary-subtle);
+		}
+		.db-aside-btn i {
+			width: 20px;
+			text-align: center;
+			color: var(--primary);
+			font-size: 1rem;
+		}
+	</style>';
+
+	echo '<div class="db-page-header">
 		<div>
 			<h2 class="db-page-title"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="db-title-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> ' . __('Enter Supplier Invoice') . '</h2>
 			<p class="db-page-subtitle">' . __('Invoicing') . ' <span class="val-bold">' . $SupplierID . ' - ' . $SupplierName . '</span></p>
@@ -642,7 +672,7 @@ if (!isset($_POST['PostInvoice'])) {
 			<div class="db-card-body" style="padding: var(--space-2);">';
 	
 	$sourceTypes = [
-		['name' => 'GRNS', 'label' => __('Purchase Orders (GRNs)'), 'icon' => 'shopping-cart'],
+		['name' => 'GRNS', 'label' => __('Purchase Orders'), 'icon' => 'shopping-cart'],
 		['name' => 'Shipts', 'label' => __('Shipments'), 'icon' => 'truck'],
 		['name' => 'Contracts', 'label' => __('Contracts'), 'icon' => 'file-text'],
 		['name' => 'FixedAssets', 'label' => __('Fixed Assets'), 'icon' => 'briefcase'],
@@ -651,8 +681,9 @@ if (!isset($_POST['PostInvoice'])) {
 
 	foreach ($sourceTypes as $source) {
 		if (isset($source['condition']) && !$source['condition']) continue;
-		echo '<button type="submit" name="' . $source['name'] . '" value="' . $source['label'] . '" class="db-menu-link" style="width: 100%; border: none; text-align: left; background: transparent; cursor: pointer;">
-				<i class="fas fa-' . $source['icon'] . '" style="width: 20px; color: var(--db-primary);"></i> ' . $source['label'] . '
+		echo '<button type="submit" name="' . $source['name'] . '" value="' . $source['label'] . '" class="db-aside-btn">
+				<i class="fas fa-' . $source['icon'] . '"></i>
+				<span>' . $source['label'] . '</span>
 			  </button>';
 	}
 	echo '  </div>
