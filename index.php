@@ -6,7 +6,8 @@ require(__DIR__ . '/includes/session.php');
 if (isset($_POST['NewLogin']) and !isset($_SESSION['FormID'])) {
 	$_SESSION['FormID'] = sha1(uniqid(mt_rand(), true));
 }
-
+echo 'coming soon! ';
+exit;
 /// @todo this is better left handled to be done in session.php, which can send an http redirect instead
 if (isset($_SESSION['FirstLogIn']) and $_SESSION['FirstLogIn'] == '1' and isset($_SESSION['DatabaseName'])) {
 	$_SESSION['FirstRun'] = true;
@@ -19,8 +20,7 @@ if (isset($_SESSION['FirstLogIn']) and $_SESSION['FirstLogIn'] == '1' and isset(
 if (isset($_POST['CompanyNameField'])) {
 	setcookie('Company', $_POST['CompanyNameField'], time() + 3600 * 24 * 30);
 }
-echo 'coming soon! ';
-exit;
+
 $Title = __('Main Menu');
 $SQL = "SELECT value FROM session_data WHERE userid='" . $_SESSION['UserID'] . "' AND field='module'";
 $Result = DB_query($SQL);
