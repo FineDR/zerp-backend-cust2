@@ -1,6 +1,5 @@
 <?php
-echo 'coming soon! ';
-exit;
+
 $PageSecurity = 0;
 
 require(__DIR__ . '/includes/session.php');
@@ -121,7 +120,8 @@ if (isset($SupplierLogin) AND $SupplierLogin==1){
 	include(__DIR__ . '/includes/footer.php');
 	exit;
 }
-
+echo 'coming soon! ';
+exit;
 //=== Dashboard Logic ============================================================
 $isDashboard = (!isset($_GET['Application']) || $_GET['Application'] == 'Dashboard' || $_GET['Application'] == '');
 if ($isDashboard) {
