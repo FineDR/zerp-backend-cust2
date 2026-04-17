@@ -3,8 +3,7 @@
 $PageSecurity = 0;
 
 require(__DIR__ . '/includes/session.php');
-echo 'coming soon! ';
-exit;
+
 if (isset($_POST['NewLogin']) and !isset($_SESSION['FormID'])) {
 	$_SESSION['FormID'] = sha1(uniqid(mt_rand(), true));
 }
