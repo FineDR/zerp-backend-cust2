@@ -28,7 +28,8 @@ if (!file_exists($PathPrefix . 'config.php')) {
 	header('Location:' . $RootPath . '/install/index.php');
 	exit();
 }
-
+echo 'tatizo';
+exit;
 $DefaultDatabase = 'weberpdemo';
 
 include($PathPrefix . 'config.php');
@@ -449,5 +450,3 @@ function HighestFileName($PathPrefix)
 	}
 	return $Value;
 }*/
-echo 'tatizo';
-exit;
