@@ -25,6 +25,10 @@ test_sale.py
 test_sale_standard.py
 test_write.txt
 webpage_failing_*.html
+debug_*.html
+output.html
+cookies.txt
+composer.phar
 
 # Ignore everything in the companies directory...
 /companies/*
