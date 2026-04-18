@@ -6,9 +6,9 @@
  * the input of criteria screen
  */
 
-require(__DIR__ . '/includes/session.php');
-echo 'trial me'; exit;
 use Dompdf\Dompdf;
+
+require(__DIR__ . '/includes/session.php');
 
 include(__DIR__ . '/includes/SetDomPDFOptions.php');
 
@@ -32,6 +32,17 @@ if (isset($_POST['PeriodFrom']) and isset($_POST['PeriodTo']) and $_POST['Period
 
 	prnMsg(__('The selected period from is actually after the period to! Please re-select the reporting period'), 'error');
 	$_POST['NewReport'] = __('Select A Different Period');
+}
+
+if (!isset($_POST['SelectedBudget']) or $_POST['SelectedBudget'] == '') {
+	$SQL = "SELECT id FROM glbudgetheaders WHERE current=1 LIMIT 1";
+	$Result = DB_query($SQL);
+	if (DB_num_rows($Result) > 0) {
+		$MyRow = DB_fetch_array($Result);
+		$_POST['SelectedBudget'] = $MyRow['id'];
+	} else {
+		$_POST['SelectedBudget'] = 0;
+	}
 }
 
 if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsheet'])) {
@@ -163,6 +174,15 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsh
 			ORDER BY groupname,
 					accountcode";
 	$AccountListResult = DB_query($SQL);
+
+	if (DB_num_rows($AccountListResult) == 0) {
+		$Title = __('General Ledger Trial Balance');
+		include(__DIR__ . '/includes/header.php');
+		prnMsg(__('There are no general ledger accounts available to include in the trial balance for your user account'), 'warn');
+		include(__DIR__ . '/includes/footer.php');
+		exit();
+	}
+
 	$AccountListRow = DB_fetch_array($AccountListResult);
 
 	$HTML .= '<tr>
