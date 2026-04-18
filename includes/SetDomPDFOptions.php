@@ -2,10 +2,11 @@
 
 /* set all options for DomPDF in one place for reusability and consistency */
 
+require 'vendor/autoload.php';
+
 use Dompdf\Options;
 
 $DomPDFOptions = new Options();
-echo 'trial me'; exit;
 
 $DomPDFOptions->set('isHtml5ParserEnabled', true);
 $DomPDFOptions->set('isRemoteEnabled', true);
