@@ -7,7 +7,7 @@
  */
 
 require(__DIR__ . '/includes/session.php');
-
+echo 'trial me'; exit;
 use Dompdf\Dompdf;
 
 include(__DIR__ . '/includes/SetDomPDFOptions.php');
