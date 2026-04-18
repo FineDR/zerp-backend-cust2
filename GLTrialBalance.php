@@ -8,7 +8,6 @@
 
 require(__DIR__ . '/includes/session.php');
 use Dompdf\Dompdf;
-echo 'trial me'; exit;
 
 include(__DIR__ . '/includes/SetDomPDFOptions.php');
 
@@ -33,6 +32,7 @@ if (isset($_POST['PeriodFrom']) and isset($_POST['PeriodTo']) and $_POST['Period
 	prnMsg(__('The selected period from is actually after the period to! Please re-select the reporting period'), 'error');
 	$_POST['NewReport'] = __('Select A Different Period');
 }
+echo 'trial me'; exit;
 
 if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsheet'])) {
 
