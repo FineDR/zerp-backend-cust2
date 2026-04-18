@@ -15,6 +15,7 @@ $Title = __('Trial Balance');
 
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/AccountSectionsDef.php'); //this reads in the Accounts Sections array
+echo 'trial me'; exit;
 
 // Merges gets into posts:
 if (isset($_GET['PeriodFrom'])) {
@@ -32,7 +33,6 @@ if (isset($_POST['PeriodFrom']) and isset($_POST['PeriodTo']) and $_POST['Period
 	prnMsg(__('The selected period from is actually after the period to! Please re-select the reporting period'), 'error');
 	$_POST['NewReport'] = __('Select A Different Period');
 }
-echo 'trial me'; exit;
 
 if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsheet'])) {
 
