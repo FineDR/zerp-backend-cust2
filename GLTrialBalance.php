@@ -8,9 +8,9 @@
 
 require(__DIR__ . '/includes/session.php');
 use Dompdf\Dompdf;
+echo 'trial me'; exit;
 
 include(__DIR__ . '/includes/SetDomPDFOptions.php');
-echo 'trial me'; exit;
 
 $Title = __('Trial Balance');
 
