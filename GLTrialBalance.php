@@ -5,7 +5,7 @@
  * sheets as at the end of the period selected - so first off need to show
  * the input of criteria screen
  */
-
+require 'vendor/autoload.php';
 use Dompdf\Dompdf;
 
 require(__DIR__ . '/includes/session.php');
