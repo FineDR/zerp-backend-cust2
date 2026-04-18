@@ -10,12 +10,12 @@ require(__DIR__ . '/includes/session.php');
 use Dompdf\Dompdf;
 
 include(__DIR__ . '/includes/SetDomPDFOptions.php');
+echo 'trial me'; exit;
 
 $Title = __('Trial Balance');
 
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/AccountSectionsDef.php'); //this reads in the Accounts Sections array
-echo 'trial me'; exit;
 
 // Merges gets into posts:
 if (isset($_GET['PeriodFrom'])) {
