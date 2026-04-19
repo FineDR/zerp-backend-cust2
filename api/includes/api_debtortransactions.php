@@ -351,7 +351,7 @@ function InsertDebtorReceipt($Receipt, $User, $Password) {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-
+return ludoumeona;
 	/*Get Company Defaults */
 	$ReadCoyResult = api_DB_query("SELECT debtorsact,
 										pytdiscountact,
