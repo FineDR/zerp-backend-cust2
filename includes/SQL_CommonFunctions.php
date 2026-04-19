@@ -2,6 +2,8 @@
 
 /* Common SQL Functions */
 
+if (!function_exists('GetNextTransNo')) {
+
 function GetNextTransNo($TransType) {
 
 	/* SQL to get the next transaction number these are maintained in the table SysTypes - Transaction Types
@@ -541,4 +543,5 @@ function AdjustBankAccountsDueToCurrencyExchangeRate($SelectedCurrency, $OldRate
 			prnMsg(__('Bank Account') . ' ' . $MyRowBankAccount['bankaccountname'] . ' ' . __('Currency Rate difference of') . ' ' . locale_number_format($DifferenceToAdjust, $_SESSION['CompanyRecord']['decimalplaces']) . ' ' . __('has been posted'),'success');
 		}
 	}
+}
 }
