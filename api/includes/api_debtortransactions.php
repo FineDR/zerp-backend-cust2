@@ -332,7 +332,7 @@ function GetDebtorsGLCode() {
 
 function InsertDebtorReceipt($Receipt, $User, $Password) {
 	
-return 'ludoumeona';
+//return 'ludoumeona';
 	/*
 	This function inserts a debtors receipt into a bank account/GL Postings
 
@@ -347,6 +347,7 @@ return 'ludoumeona';
 
 	*/
 	$Errors = array();
+	return 'ludoumeona';
 	$db = db($User, $Password);
 	if (gettype($db)=='integer') {
 		$Errors[0]=NoAuthorisation;
