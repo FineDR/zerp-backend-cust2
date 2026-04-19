@@ -515,6 +515,7 @@ function ModifyCustomer($CustomerDetails, $user, $password) {
    then it returns an $Errors array.
 */
 function GetCustomer($DebtorNumber, $user, $password) {
+	return $DebtorNumber;
 	$Errors = array();
 	$db = db($user, $password);
 	if (gettype($db)=='integer') {
