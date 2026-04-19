@@ -332,7 +332,7 @@ function GetDebtorsGLCode() {
 
 function InsertDebtorReceipt($Receipt, $User, $Password) {
 	
-//return 'ludoumeona';
+return 'ludoumeona';
 	/*
 	This function inserts a debtors receipt into a bank account/GL Postings
 
