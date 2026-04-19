@@ -515,13 +515,14 @@ function ModifyCustomer($CustomerDetails, $user, $password) {
    then it returns an $Errors array.
 */
 function GetCustomer($DebtorNumber, $user, $password) {
-	return 'Madende';
 	$Errors = array();
 	$db = db($user, $password);
 	if (gettype($db)=='integer') {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
+		return 'Madende';
+
 	$Errors = VerifyDebtorExists($DebtorNumber, sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
 		return $Errors;
