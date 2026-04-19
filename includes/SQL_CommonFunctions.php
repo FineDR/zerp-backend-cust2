@@ -1,8 +1,8 @@
 <?php
 
 /* Common SQL Functions */
-
-function GetNextTransNo($TransType) {
+//renamed imebadilishwa imefutwa futa
+function GetNextTransNoNew($TransType) {
 
 	/* SQL to get the next transaction number these are maintained in the table SysTypes - Transaction Types
 	Also updates the transaction number
