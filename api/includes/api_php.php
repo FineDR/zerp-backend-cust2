@@ -26,6 +26,7 @@ if (!isset($WebErpSessionType)) {
 	}
 }
 
+$DefaultDatabase = 'zerp_backend';
 $api_DatabaseName = $_SESSION['DatabaseName'] ?? $DefaultDatabase;
 
 include(__DIR__ . '/api_errorcodes.php');
