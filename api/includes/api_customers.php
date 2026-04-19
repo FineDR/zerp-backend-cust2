@@ -521,7 +521,6 @@ function GetCustomer($DebtorNumber, $user, $password) {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-		return 'Madende';
 
 	$Errors = VerifyDebtorExists($DebtorNumber, sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
@@ -531,7 +530,7 @@ function GetCustomer($DebtorNumber, $user, $password) {
 	$Result = DB_query($SQL);
 	$Errors[0] = 0; // None found.
 	$Errors[1] = DB_fetch_array($Result);
-
+		return 'Madende';
 	//return $Errors;
 	return $SQL;
 }
