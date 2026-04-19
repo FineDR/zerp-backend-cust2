@@ -353,8 +353,6 @@ function InsertDebtorReceipt($Receipt, $User, $Password) {
 		return $Errors;
 	}
 
-return 'ludoumeona';
-
 	/*Get Company Defaults */
 	$ReadCoyResult = api_DB_query("SELECT debtorsact,
 										pytdiscountact,
