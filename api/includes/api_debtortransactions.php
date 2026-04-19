@@ -347,8 +347,9 @@ function InsertDebtorReceipt($Receipt, $User, $Password) {
 
 	*/
 	$Errors = array();
-	return 'ludoumeona';
+	
 	$db = db($User, $Password);
+	return 'ludoumeona';
 	if (gettype($db)=='integer') {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
