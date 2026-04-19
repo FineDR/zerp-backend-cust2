@@ -530,7 +530,8 @@ function GetCustomer($DebtorNumber, $user, $password) {
 	$Errors[0] = 0; // None found.
 	$Errors[1] = DB_fetch_array($Result);
 
-	return $Errors;
+	//return $Errors;
+	return $SQL;
 }
 
 /** This function takes a field name, and a string, and then returns an
