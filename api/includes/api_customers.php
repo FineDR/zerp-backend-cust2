@@ -521,19 +521,18 @@ function GetCustomer($DebtorNumber, $user, $password) {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-
+		return 'Madende na ='.$password;
 	$Errors = VerifyDebtorExists($DebtorNumber, sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
 		return $Errors;
 	}
-			return 'Madende';
+	
 	$SQL="SELECT * FROM debtorsmaster WHERE debtorno='".$DebtorNumber."'";
 	$Result = DB_query($SQL);
 	$Errors[0] = 0; // None found.
 	$Errors[1] = DB_fetch_array($Result);
 
-	//return $Errors;
-	return $SQL;
+	return $Errors;=
 }
 
 /** This function takes a field name, and a string, and then returns an
