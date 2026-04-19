@@ -526,11 +526,12 @@ function GetCustomer($DebtorNumber, $user, $password) {
 	if (sizeof($Errors)!=0) {
 		return $Errors;
 	}
+			return 'Madende';
 	$SQL="SELECT * FROM debtorsmaster WHERE debtorno='".$DebtorNumber."'";
 	$Result = DB_query($SQL);
 	$Errors[0] = 0; // None found.
 	$Errors[1] = DB_fetch_array($Result);
-		return 'Madende';
+
 	//return $Errors;
 	return $SQL;
 }
