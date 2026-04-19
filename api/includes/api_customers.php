@@ -521,12 +521,11 @@ function GetCustomer($DebtorNumber, $user, $password) {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-	
+	return 'juma =>'.$DebtorNumber;
 	$Errors = VerifyDebtorExists($DebtorNumber, sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
 		return $Errors;
 	}
-	return 'mariam';
 	$SQL="SELECT * FROM debtorsmaster WHERE debtorno='".$DebtorNumber."'";
 	$Result = DB_query($SQL);
 	$Errors[0] = 0; // None found.
