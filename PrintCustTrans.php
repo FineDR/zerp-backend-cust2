@@ -1,6 +1,7 @@
 <?php
-require (__DIR__ . '/includes/session.php');
-include ('includes/SQL_CommonFunctions.php');
+require_once (__DIR__ . '/includes/session.php');
+require_once (__DIR__ . '/vendor/autoload.php');
+include_once (__DIR__ . '/includes/SQL_CommonFunctions.php');
 
 use Dompdf\Dompdf;
 

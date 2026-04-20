@@ -24,8 +24,12 @@ include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/StockFunctions.php');
 include(__DIR__ . '/includes/CountriesArray.php');
 
-if (isset($_GET['identifier'])) {
-	$identifier=$_GET['identifier'];
+if (isset($_POST['identifier'])) {
+	$identifier = $_POST['identifier'];
+} elseif (isset($_GET['identifier'])) {
+	$identifier = $_GET['identifier'];
+} else {
+	$identifier = date('U');
 }
 
 unset($_SESSION['WarnOnce']);
@@ -796,9 +800,9 @@ echo '<div class="db-page">
 			</div>
 		</div>';
 
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post" class="db-pos-wrapper">
+echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" class="db-pos-wrapper">
 		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-		<input type="hidden" name="identifier" value="' . $identifier . '" />';
+		<input type="hidden" name="identifier" value="' . htmlspecialchars($identifier) . '" />';
 
 echo '<div class="db-pos-main">';
 

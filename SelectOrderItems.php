@@ -20,10 +20,10 @@ if (isset($_GET['NewOrder'])) {
 	exit;
 }
 
-if (isset($_GET['identifier'])) {
-	$identifier = $_GET['identifier'];
-} elseif (isset($_POST['identifier'])) {
+if (isset($_POST['identifier'])) {
 	$identifier = $_POST['identifier'];
+} elseif (isset($_GET['identifier'])) {
+	$identifier = $_GET['identifier'];
 } else {
 	/*unique session identifier to ensure that there is no conflict with other order entry sessions on the same machine  */
 	$identifier = date('U');
