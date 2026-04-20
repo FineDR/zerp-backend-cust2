@@ -24,8 +24,31 @@ include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/StockFunctions.php');
 include(__DIR__ . '/includes/CountriesArray.php');
 
-if (isset($_GET['identifier'])) {
-	$identifier=$_GET['identifier'];
+/* Helper function to convert localized date to Y-m-d for HTML5 date picker */
+function form_date($date_str) {
+	if (empty($date_str)) return '';
+	if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_str)) return $date_str;
+	
+	$format = $_SESSION['DefaultDateFormat'];
+	$parts = explode('/', $date_str);
+	if (count($parts) != 3) return $date_str;
+	
+	if ($format == 'd/m/Y') {
+		return $parts[2] . '-' . $parts[1] . '-' . $parts[0];
+	} elseif ($format == 'm/d/Y') {
+		return $parts[2] . '-' . $parts[0] . '-' . $parts[1];
+	} elseif ($format == 'Y/m/d') {
+		return $parts[0] . '-' . $parts[1] . '-' . $parts[2];
+	}
+	return $date_str;
+}
+
+if (isset($_POST['identifier'])) {
+	$identifier = $_POST['identifier'];
+} elseif (isset($_GET['identifier'])) {
+	$identifier = $_GET['identifier'];
+} else {
+	$identifier = date('U');
 }
 
 unset($_SESSION['WarnOnce']);
@@ -59,6 +82,21 @@ if (isset($_POST['ProcessOrder']) OR isset($_POST['MakeRecurringOrder'])) {
 if (isset($_POST['Update'])
 	OR isset($_POST['BackToLineDetails'])
 	OR isset($_POST['MakeRecurringOrder'])) {
+
+	/* Convert HTML5 type="date" values to localized format for system integrity */
+	$dateFields = array('DeliveryDate', 'QuoteDate', 'ConfirmedDate');
+	foreach ($dateFields as $field) {
+		if (isset($_POST[$field]) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_POST[$field])) {
+			$dateParts = explode('-', $_POST[$field]);
+			if ($_SESSION['DefaultDateFormat'] == 'd/m/Y') {
+				$_POST[$field] = $dateParts[2] . '/' . $dateParts[1] . '/' . $dateParts[0];
+			} elseif ($_SESSION['DefaultDateFormat'] == 'm/d/Y') {
+				$_POST[$field] = $dateParts[1] . '/' . $dateParts[2] . '/' . $dateParts[0];
+			} elseif ($_SESSION['DefaultDateFormat'] == 'Y/m/d') {
+				$_POST[$field] = $dateParts[0] . '/' . $dateParts[1] . '/' . $dateParts[2];
+			}
+		}
+	}
 
 	$InputErrors =0;
 	if (mb_strlen($_POST['DeliverTo'])<=1) {
@@ -796,9 +834,9 @@ echo '<div class="db-page">
 			</div>
 		</div>';
 
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post" class="db-pos-wrapper">
+echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" class="db-pos-wrapper">
 		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-		<input type="hidden" name="identifier" value="' . $identifier . '" />';
+		<input type="hidden" name="identifier" value="' . htmlspecialchars($identifier) . '" />';
 
 echo '<div class="db-pos-main">';
 
@@ -875,15 +913,15 @@ echo '			</select>
 			</div>
 			<div class="db-field-group col-4">
 				<label class="db-label">' . __('Delivery Date') . ' <small>(' . $_SESSION['DefaultDateFormat'] . ')</small></label>
-				<input type="text" name="DeliveryDate" class="db-input date" placeholder="' . $_SESSION['DefaultDateFormat'] . '" value="' . $_SESSION['Items'.$identifier]->DeliveryDate . '" />
+				<input type="date" name="DeliveryDate" class="db-input date" placeholder="' . $_SESSION['DefaultDateFormat'] . '" value="' . form_date($_SESSION['Items'.$identifier]->DeliveryDate) . '" />
 			</div>
 			<div class="db-field-group col-4">
 				<label class="db-label">' . __('Quote Date') . ' <small>(' . $_SESSION['DefaultDateFormat'] . ')</small></label>
-				<input type="text" name="QuoteDate" class="db-input date" placeholder="' . $_SESSION['DefaultDateFormat'] . '" value="' . $_SESSION['Items'.$identifier]->QuoteDate . '" />
+				<input type="date" name="QuoteDate" class="db-input date" placeholder="' . $_SESSION['DefaultDateFormat'] . '" value="' . form_date($_SESSION['Items'.$identifier]->QuoteDate) . '" />
 			</div>
 			<div class="db-field-group col-4">
 				<label class="db-label">' . __('Confirm Date') . ' <small>(' . $_SESSION['DefaultDateFormat'] . ')</small></label>
-				<input type="text" name="ConfirmedDate" class="db-input date" placeholder="' . $_SESSION['DefaultDateFormat'] . '" value="' . $_SESSION['Items'.$identifier]->ConfirmedDate . '" />
+				<input type="date" name="ConfirmedDate" class="db-input date" placeholder="' . $_SESSION['DefaultDateFormat'] . '" value="' . form_date($_SESSION['Items'.$identifier]->ConfirmedDate) . '" />
 			</div>';
 			
 if ($CustomerLogin != 1) {

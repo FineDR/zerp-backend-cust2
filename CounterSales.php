@@ -120,6 +120,10 @@ if (isset($_GET['NewOrder'])) {
 	}
 }
 
+if (isset($_POST['Location']) && isset($_SESSION['Items' . $identifier])) {
+	$_SESSION['Items' . $identifier]->Location = $_POST['Location'];
+}
+
 
 if (!isset($_SESSION['Items' . $identifier])) {
 	/* It must be a new order being created $_SESSION['Items'.$identifier] would be set up from the order
@@ -467,6 +471,15 @@ if (isset($_POST['Search']) or isset($_POST['Next']) or isset($_POST['Previous']
  * **********************************
  * */
 if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
+	if (!isset($_SESSION['Items' . $identifier]) || !is_object($_SESSION['Items' . $identifier])) {
+		prnMsg(__('The sale session has expired or was not initialized. Please start a new sale.'), 'error');
+		echo '<br /><div class="centre"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">' . __('Back to POS') . '</a></div>';
+		include(__DIR__ . '/includes/footer.php');
+		exit();
+	}
+	if (isset($_POST['Location'])) {
+		$_SESSION['Items' . $identifier]->Location = $_POST['Location'];
+	}
 	$InputError = false; //always assume the best
 	//but check for the worst
 	if (count($_SESSION['Items' . $identifier]->LineItems) == 0) {
@@ -766,7 +779,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 												'" . -$AssParts['quantity'] * $OrderLine->Quantity . "',
 												'" . $AssParts['standard'] . "',
 												0,
-												newqoh-" . ($AssParts['quantity'] * $OrderLine->Quantity) . " )";
+												'" . ($QtyOnHandPrior - ($AssParts['quantity'] * $OrderLine->Quantity)) . "' )";
 
 					$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('Stock movement records for the assembly components of') . ' ' . $OrderLine->StockID . ' ' . __('could not be inserted because');
 					$Result = DB_query($SQL, $ErrMsg, '', true);
@@ -818,7 +831,7 @@ if (isset($_POST['ProcessSale']) AND $_POST['ProcessSale'] != '') {
 								'" . $_SESSION['Items' . $identifier]->Branch . "',
 								'" . $LocalCurrencyPrice . "',
 								'" . $PeriodNo . "',
-								'" . $OrderNo . "',
+								'0',
 								'" . -$OrderLine->Quantity . "',
 								'" . $OrderLine->DiscountPercent . "',
 								'" . $OrderLine->StandardCost . "',
@@ -1452,6 +1465,29 @@ echo '<section class="pos-cart-container" style="flex: 1; display: flex; flex-di
                 <i class="fas fa-trash-alt"></i> ' . __('Clear All') . '
             </button>
         </div>
+		
+		<div style="padding: 15px; margin: 10px; background: #f0fdf4; border: 1px solid #d1fae5; border-radius: 12px; margin-bottom: 20px;">
+			<label style="display: block; font-size: 0.75rem; font-weight: 800; color: #065f46; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">' . __('Logistics & Operations') . '</label>
+			<div style="display: flex; align-items: center; gap: 10px;">
+				<div style="width: 32px; height: 32px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+					<i class="fas fa-warehouse" style="color: #059669; font-size: 0.9rem;"></i>
+				</div>
+				<div style="flex: 1;">
+					<div style="font-size: 0.7rem; color: #059669; font-weight: 600; margin-bottom: 2px;">' . __('Dispensing From') . '</div>
+					<select name="Location" class="db-input" onchange="this.form.submit()" style="width: 100%; border: none; background: transparent; font-weight: 800; color: #064e3b; padding: 0; height: auto; cursor: pointer;">';
+					
+$LocSQL = "SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND canview=1";
+$LocResult = DB_query($LocSQL);
+while ($LocRow = DB_fetch_array($LocResult)) {
+	$selected = ($_SESSION['Items' . $identifier]->Location == $LocRow['loccode']) ? 'selected' : '';
+	echo '<option value="' . $LocRow['loccode'] . '" ' . $selected . '>' . $LocRow['locationname'] . '</option>';
+}
+
+echo '				</select>
+				</div>
+			</div>
+		</div>
+
         <div class="pos-cart-items" id="CartItemsContainer">';
 
 // Initial Cart Render (Same logic as AJAX will use)

@@ -9,13 +9,104 @@ include(__DIR__ . '/includes/DefineCartClass.php');
 include(__DIR__ . '/includes/DefineSerialItems.php');
 
 require(__DIR__ . '/includes/session.php');
+require 'vendor/autoload.php';
 
 $Title = __('Confirm Dispatches and Invoice An Order');
 $ViewTopic = 'ARTransactions';
 $BookMark = 'ConfirmInvoice';
-$ExtraHeadContent = '<link rel="stylesheet" href="' . $RootPath . '/css/modern-zerp/styles.css">
-					<link rel="stylesheet" href="' . $RootPath . '/css/modern-zerp/pos.css">
-					<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">';
+$ExtraHeadContent = '
+<style>
+	:root {
+		--primary: #059669;
+		--primary-hover: #047857;
+		--primary-light: #ecfdf5;
+		--secondary: #0ea5e9;
+		--text-main: #111827;
+		--text-secondary: #4b5563;
+		--bg-main: #f9fafb;
+		--border-soft: #f3f4f6;
+		--card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+	}
+	
+	.ScriptTitle { display: none !important; }
+	.MainBody { padding: 0 !important; gap: 0 !important; background: transparent !important; }
+	
+	.db-page { padding: 40px; background: var(--bg-main); min-height: 100vh; font-family: "Inter", sans-serif; }
+	
+	.premium-header { margin-bottom: 32px; position: relative; }
+	.breadcrumb-container { font-size: 0.75rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; text-transform: lowercase; letter-spacing: 0.5px; }
+	.breadcrumb-item { color: var(--text-secondary); text-decoration: none; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+	.breadcrumb-item:hover { color: var(--primary); }
+	.breadcrumb-separator { font-size: 0.6rem; opacity: 0.3; margin: 0 10px; }
+	
+	.dashboard-title { font-size: 2.25rem; font-weight: 900; letter-spacing: -1.5px; color: #064e3b; margin: 0; line-height: 1.1; }
+	.dashboard-subtitle { font-size: 1rem; margin-top: 8px; color: #065f46; font-weight: 500; opacity: 0.7; }
+	
+	.architect-grid { display: grid; grid-template-columns: 360px 1fr; gap: 32px; align-items: start; }
+	
+	.db-card { background: #fff; border-radius: 24px; border: 1px solid #e5e7eb; box-shadow: var(--card-shadow); overflow: hidden; margin-bottom: 0; }
+	.db-card-header { background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%); border-bottom: 1px solid #f3f4f6; padding: 24px; display: flex; justify-content: space-between; align-items: center; }
+	.db-card-title { font-size: 0.85rem; font-weight: 800; color: #064e3b; margin: 0; display: flex; align-items: center; gap: 12px; text-transform: uppercase; letter-spacing: 1.5px; }
+	
+	.registry-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+	.registry-table th { background: #f9fafb; padding: 16px 24px; text-align: left; font-size: 0.7rem; text-transform: uppercase; font-weight: 900; color: #065f46; letter-spacing: 1px; border-bottom: 1px solid #f3f4f6; }
+	.registry-table td { padding: 16px 24px; font-size: 0.85rem; color: #374151; border-bottom: 1px solid #f3f4f6; transition: all 0.2s; }
+	.registry-table tr:last-child td { border-bottom: none; }
+	.registry-table tr:hover td { background: #f8fafc; }
+	
+	.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 32px; }
+	.kpi-card-v2 { background: #fff; border-radius: 20px; padding: 24px; display: flex; align-items: center; gap: 20px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+	.kpi-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+	.kpi-data { display: flex; flex-direction: column; }
+	.kpi-data .label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 4px; }
+	.kpi-data .value { font-size: 1.15rem; font-weight: 900; color: #111827; }
+	
+	.db-input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; font-size: 0.9rem; font-weight: 600; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+	.db-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); outline: none; }
+	
+	.primary-btn-modern { 
+		display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+		padding: 18px 32px; border-radius: 16px; background: var(--primary); color: #fff;
+		border: none; font-weight: 800; font-size: 0.95rem; cursor: pointer;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+	}
+	.primary-btn-modern:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(5, 150, 105, 0.3); }
+	.primary-btn-modern:active { transform: translateY(0); }
+	
+	.action-pill { padding: 6px 14px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; background: #f0fdf4; color: #166534; text-decoration: none; border: 1px solid #dcfce7; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+	.action-pill:hover { background: #dcfce7; transform: translateY(-1px); }
+
+	/* MODAL STYLES (Modernized) */
+	.pos-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+	.pos-modal-content { background: #fff; border-radius: 32px; padding: 48px; width: 100%; max-width: 560px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+	.pos-modal-icon { width: 80px; height: 80px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 32px; }
+	.pos-modal-title { font-size: 2rem; font-weight: 900; color: #064e3b; margin-bottom: 12px; letter-spacing: -1px; }
+	.pos-modal-subtitle { font-size: 1.1rem; color: #4b5563; margin-bottom: 40px; font-weight: 500; }
+	.pos-modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+	.pos-btn-primary { background: var(--primary); color: #fff; padding: 16px; border-radius: 16px; font-weight: 800; text-decoration: none; transition: all 0.2s; }
+	.pos-btn-outline { border: 2px solid #e5e7eb; color: #374151; padding: 16px; border-radius: 16px; font-weight: 800; text-decoration: none; transition: all 0.2s; }
+	.pos-btn-ghost { grid-column: span 2; padding: 16px; color: #6b7280; font-weight: 700; text-decoration: none; margin-top: 8px; font-size: 0.9rem; }
+	.pos-btn-primary:hover { background: var(--primary-hover); }
+	.pos-btn-outline:hover { background: #f9fafb; border-color: #d1d5db; }
+
+	/* PRNMSG ALERT STYLES (Modernized) */
+	.error, .warn, .success, .info { 
+		padding: 16px 24px; border-radius: 16px; margin: 24px 0; 
+		font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 16px;
+		border: 1px solid transparent; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+	}
+	.error { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+	.warn { background: #fffbeb; color: #b45309; border-color: #fef3c7; }
+	.success { background: #f0fdf4; color: #15803d; border-color: #dcfce7; }
+	.info { background: #f0f9ff; color: #0369a1; border-color: #e0f2fe; }
+	
+	.error::before { content: "\f06a"; font-family: "Font Awesome 5 Free"; font-weight: 900; }
+	.warn::before { content: "\f071"; font-family: "Font Awesome 5 Free"; font-weight: 900; }
+	.success::before { content: "\f058"; font-family: "Font Awesome 5 Free"; font-weight: 900; }
+	.info::before { content: "\f05a"; font-family: "Font Awesome 5 Free"; font-weight: 900; }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+';
 include(__DIR__ . '/includes/header.php');
 
 include(__DIR__ . '/includes/CurrenciesArray.php');
@@ -24,26 +115,17 @@ include(__DIR__ . '/includes/FreightCalculation.php');
 include(__DIR__ . '/includes/GetSalesTransGLCodes.php');
 include(__DIR__ . '/includes/CommissionFunctions.php');
 
-if (empty($_GET['identifier'])) {
+if (isset($_POST['identifier'])) {
+	$identifier = $_POST['identifier'];
+} elseif (isset($_GET['identifier'])) {
+	$identifier = $_GET['identifier'];
+} else {
 	/*unique session identifier to ensure that there is no conflict with other order entry sessions on the same machine  */
 	$identifier = date('U');
-} else {
-	$identifier = $_GET['identifier'];
 }
 if (isset($_POST['DispatchDate'])) {
     // Pointless conversion removed
 }
-if (!isset($_GET['OrderNumber']) and !isset($_SESSION['ProcessingOrder'])) {
-	/* This page can only be called with an order number for invoicing*/
-	echo '<div class="centre">
-			<a href="' . $RootPath . '/SelectSalesOrder.php">' . __('Select a sales order to invoice') . '</a>
-		</div>
-		<br />';
-	prnMsg(__('This page can only be opened if an order has been selected Please select an order first from the delivery details screen click on Confirm for invoicing'), 'error');
-	include(__DIR__ . '/includes/footer.php');
-	exit();
-}
-
 if (isset($_GET['SuccessInvoiceNo'])) {
 	$InvoiceNo = $_GET['SuccessInvoiceNo'];
 	if ($_SESSION['InvoicePortraitFormat'] == 0) {
@@ -78,9 +160,22 @@ if (isset($_GET['SuccessInvoiceNo'])) {
 				</div>
 			</div>
 		  </div>';
+	include(__DIR__ . '/includes/footer.php');
+	exit;
 }
 
-elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0) {
+if (!isset($_GET['OrderNumber']) and !isset($_SESSION['ProcessingOrder'])) {
+	/* This page can only be called with an order number for invoicing*/
+	echo '<div class="centre">
+			<a href="' . $RootPath . '/SelectSalesOrder.php">' . __('Select a sales order to invoice') . '</a>
+		</div>
+		<br />';
+	prnMsg(__('This page can only be opened if an order has been selected Please select an order first from the delivery details screen click on Confirm for invoicing'), 'error');
+	include(__DIR__ . '/includes/footer.php');
+	exit();
+}
+
+elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0 and (!isset($_SESSION['ProcessingOrder']) or $_SESSION['ProcessingOrder'] != $_GET['OrderNumber'])) {
 
 	unset($_SESSION['Items' . $identifier]->LineItems);
 	unset($_SESSION['Items' . $identifier]);
@@ -150,8 +245,6 @@ elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0) {
 	$GetOrdHdrResult = DB_query($OrderHeaderSQL, $ErrMsg);
 
 	if (DB_num_rows($GetOrdHdrResult) == 1) {
-
-
 		$MyRow = DB_fetch_array($GetOrdHdrResult);
 
 		$_SESSION['Items' . $identifier]->DebtorNo = $MyRow['debtorno'];
@@ -289,13 +382,24 @@ elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0) {
 		include(__DIR__ . '/includes/footer.php');
 		exit();
 	} //valid order returned from the entered order number
+}
 
+// Security: If the Cart object is still not initialized, we cannot proceed. 
+// This avoids "Attempt to assign property on null" Fatal Errors.
+if (!isset($_SESSION['Items' . $identifier]) || !is_object($_SESSION['Items' . $identifier])) {
+	prnMsg(__('The order session has expired or was not initialized. Please select an order to invoice.'), 'error');
+	echo '<br /><div class="centre"><a href="' . $RootPath . '/SelectSalesOrder.php">' . __('Back to Order Selection') . '</a></div>';
+	include(__DIR__ . '/includes/footer.php');
+	exit();
 } else {
 
 	/* if processing, a dispatch page has been called and ${$StkItm->LineNumber} would have been set from the post
 	 set all the necessary session variables changed by the POST */
 	if (isset($_POST['ShipVia'])) {
 		$_SESSION['Items' . $identifier]->ShipVia = $_POST['ShipVia'];
+	}
+	if (isset($_POST['Location'])) {
+		$_SESSION['Items' . $identifier]->Location = $_POST['Location'];
 	}
 	if (isset($_POST['ChargeFreightCost'])) {
 		$_SESSION['Items' . $identifier]->FreightCost = filter_number_format($_POST['ChargeFreightCost']);
@@ -347,60 +451,91 @@ if ($_SESSION['Items' . $identifier]->SpecialInstructions) {
 }
 
 echo '<div class="db-page">
-		<div class="db-page-header">
-			<div>
-				<h2 class="db-page-title">' . __('Fulfillment & Invoicing') . '</h2>
-				<p class="db-page-subtitle">' . __('Confirm dispatch quantities and generate the customer invoice.') . '</p>
-			</div>
-			<div class="db-header-actions">
-				<p class="db-page-subtitle">' . __('Customer') . ': <strong>' . $_SESSION['Items' . $identifier]->CustomerName . '</strong> (' . $_SESSION['Items' . $identifier]->DebtorNo . ')</p>
+		<div class="premium-header">
+			<div style="display: flex; justify-content: space-between; align-items: flex-end;">
+				<div>
+					<div class="breadcrumb-container">
+						<a href="index.php" class="breadcrumb-item"><i class="fas fa-home"></i> ' . __('home') . '</a>
+						<i class="fas fa-chevron-right breadcrumb-separator"></i>
+						<a href="index.php?Application=AR" class="breadcrumb-item">' . __('receivables') . '</a>
+						<i class="fas fa-chevron-right breadcrumb-separator"></i>
+						<span style="color: #064e3b; opacity: 0.9;">' . __('fulfillment & invoicing') . '</span>
+					</div>
+					<div>
+						<h1 class="dashboard-title">' . __('Order Fulfillment') . '</h1>
+						<p class="dashboard-subtitle">' . __('Confirm dispatch quantities and generate the customer invoice for order #') . $_SESSION['Items' . $identifier]->OrderNo . '</p>
+					</div>
+				</div>
+				<div style="margin-bottom: 5px;">
+					<div style="background: #ecfdf5; border: 1px solid #d1fae5; padding: 10px 20px; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
+						<div style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);"></div>
+						<span style="font-size: 0.85rem; font-weight: 800; color: #065f46; text-transform: uppercase; letter-spacing: 0.5px;">' . __('Processing Order') . '</span>
+					</div>
+				</div>
 			</div>
 		</div>';
 
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post" class="db-pos-wrapper">
+echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '&OrderNumber=' . urlencode($_SESSION['Items' . $identifier]->OrderNo) . '" method="post">
 		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-echo '<div class="db-pos-main">';
+echo '<div class="architect-grid">';
 
-/* ORDER INFO CARD */
-echo '<div class="db-card" style="margin-bottom: var(--space-6);">
-		<div class="db-card-body" style="display: flex; justify-content: space-between; align-items: center;">
-			<div class="db-kpi-item">
-				<span class="db-kpi-label">' . __('Order Number') . '</span>
-				<span class="db-kpi-value">#' . $_SESSION['Items' . $identifier]->OrderNo . '</span>
+// We start buffering the right column (table) first to calculate totals
+ob_start();
+
+/* ORDER INFO KPI ROW */
+echo '<div class="kpi-grid">
+		<div class="kpi-card-v2">
+			<div class="kpi-icon" style="background: #eff6ff; color: #1d4ed8;"><i class="fas fa-user-tie"></i></div>
+			<div class="kpi-data">
+				<span class="label">' . __('Customer') . '</span>
+				<span class="value" style="font-size: 1rem;">' . $_SESSION['Items' . $identifier]->CustomerName . '</span>
 			</div>
-			<div class="db-kpi-item">
-				<span class="db-kpi-label">' . __('Currency') . '</span>
-				<span class="db-kpi-value">' . $_SESSION['Items' . $identifier]->DefaultCurrency . '</span>
+		</div>
+		<div class="kpi-card-v2">
+			<div class="kpi-icon" style="background: #fff7ed; color: #ea580c;"><i class="fas fa-coins"></i></div>
+			<div class="kpi-data">
+				<span class="label">' . __('Currency') . '</span>
+				<span class="value">' . $_SESSION['Items' . $identifier]->DefaultCurrency . '</span>
 			</div>
-			<div class="db-kpi-item">
-				<span class="db-kpi-label">' . __('Dispatch Date') . '</span>
-				<input type="text" name="DispatchDate" class="db-input date" style="width: 150px;" value="' . (isset($_POST['DispatchDate']) ? $_POST['DispatchDate'] : date($_SESSION['DefaultDateFormat'])) . '" />
+		</div>
+		<div class="kpi-card-v2">
+			<div class="kpi-icon" style="background: #fdf2f8; color: #db2777;"><i class="fas fa-hashtag"></i></div>
+			<div class="kpi-data">
+				<span class="label">' . __('Line Items') . '</span>
+				<span class="value">' . count($_SESSION['Items' . $identifier]->LineItems) . '</span>
+			</div>
+		</div>
+		<div class="kpi-card-v2">
+			<div class="kpi-icon" style="background: #f0fdf4; color: #10b981;"><i class="fas fa-calendar-check"></i></div>
+			<div class="kpi-data">
+				<span class="label">' . __('Dispatch Date') . '</span>
+				<input type="date" name="DispatchDate" class="db-input" style="padding: 2px 8px; border: none; background: transparent; font-size: 1rem; font-weight: 850; width: 140px; color: #111827;" value="' . (isset($_POST['DispatchDate']) ? $_POST['DispatchDate'] : date('Y-m-d')) . '" />
 			</div>
 		</div>
 	  </div>';
 
 /***************************************************************
-	Line Item Display
+	Line Item Registry Table
 ***************************************************************/
-echo '<table class="selection">
-	<thead>
-	<tr>
-		<th>' . __('Item Code') . '</th>
-		<th>' . __('Item Description') . '</th>
-		<th>' . __('Ordered') . '</th>
-		<th>' . __('Units') . '</th>
-		<th>' . __('Already') . '<br />' . __('Sent') . '</th>
-		<th>' . __('This Dispatch') . '</th>
-		<th>' . __('Price') . '</th>
-		<th>' . __('Discount') . '</th>
-		<th>' . __('Total') . '<br />' . __('Excl Tax') . '</th>
-		<th>' . __('Tax Authority') . '</th>
-		<th>' . __('Tax %') . '</th>
-		<th>' . __('Tax Amount') . '</th>
-		<th>' . __('Total') . '<br />' . __('Incl Tax') . '</th>
-	</tr>
-	</thead><tbody>';
+echo '<div class="db-card">
+		<div class="db-card-header">
+			<h3 class="db-card-title"><i class="fas fa-boxes"></i> ' . __('Inventory Dispatch Registry') . '</h3>
+		</div>
+		<div style="overflow-x: auto;">
+			<table class="registry-table">
+				<thead>
+					<tr>
+						<th>' . __('Item Details') . '</th>
+						<th style="text-align: right;">' . __('Ordered') . '</th>
+						<th style="text-align: right;">' . __('Invoiced') . '</th>
+						<th style="width: 140px; text-align: center;">' . __('Dispatch Qty') . '</th>
+						<th style="text-align: right;">' . __('Unit Price') . '</th>
+						<th style="text-align: right;">' . __('Tax Amount') . '</th>
+						<th style="text-align: right;">' . __('Line Total') . '</th>
+					</tr>
+				</thead>
+				<tbody>';
 
 $_SESSION['Items' . $identifier]->total = 0;
 $_SESSION['Items' . $identifier]->totalVolume = 0;
@@ -409,26 +544,19 @@ $TaxTotals = array();
 $TaxGLCodes = array();
 $TaxTotal = 0;
 
-/*show the line items on the order with the quantity being dispatched available for modification */
-
-$j = 0; // Used for autofocus on first field.
+$j = 0; 
 foreach ($_SESSION['Items' . $identifier]->LineItems as $LnItm) {
-	if ($LnItm->QOHatLoc < $LnItm->Quantity and ($LnItm->MBflag == 'B' or $LnItm->MBflag == 'M')) {
-		/*There is a stock deficiency in the stock location selected */
-		$RowStarter = '<tr style="background:#FF0000;color:#FFC0CB">'; //rows show red where stock deficiency
-
-	} else {
-		$RowStarter = '<tr class="striped_row">';
-	}
+	$Shortage = ($LnItm->QOHatLoc < $LnItm->Quantity and ($LnItm->MBflag == 'B' or $LnItm->MBflag == 'M'));
+	
 	if (sizeOf($LnItm->SerialItems) > 0) {
-		$_SESSION['Items' . $identifier]->LineItems[$LnItm->LineNumber]->QtyDispatched = 0; //initialise QtyDispatched
-		foreach ($LnItm->SerialItems as $SerialItem) { //calculate QtyDispatched from bundle quantities
+		$_SESSION['Items' . $identifier]->LineItems[$LnItm->LineNumber]->QtyDispatched = 0;
+		foreach ($LnItm->SerialItems as $SerialItem) {
 			$_SESSION['Items' . $identifier]->LineItems[$LnItm->LineNumber]->QtyDispatched+= $SerialItem->BundleQty;
 		}
 	} elseif (isset($_POST[$LnItm->LineNumber . '_QtyDispatched'])) {
-		if (is_numeric(filter_number_format($_POST[$LnItm->LineNumber . '_QtyDispatched'])) and filter_number_format($_POST[$LnItm->LineNumber . '_QtyDispatched']) <= ($_SESSION['Items' . $identifier]->LineItems[$LnItm->LineNumber]->Quantity - $_SESSION['Items' . $identifier]->LineItems[$LnItm->LineNumber]->QtyInv)) {
-
-			$_SESSION['Items' . $identifier]->LineItems[$LnItm->LineNumber]->QtyDispatched = round(filter_number_format($_POST[$LnItm->LineNumber . '_QtyDispatched']), $LnItm->DecimalPlaces);
+		$PostedQty = filter_number_format($_POST[$LnItm->LineNumber . '_QtyDispatched']);
+		if (is_numeric($PostedQty) and $PostedQty <= ($LnItm->Quantity - $LnItm->QtyInv)) {
+			$_SESSION['Items' . $identifier]->LineItems[$LnItm->LineNumber]->QtyDispatched = round($PostedQty, $LnItm->DecimalPlaces);
 		}
 	}
 
@@ -437,105 +565,63 @@ foreach ($_SESSION['Items' . $identifier]->LineItems as $LnItm) {
 	$_SESSION['Items' . $identifier]->totalVolume+= ($LnItm->QtyDispatched * $LnItm->Volume);
 	$_SESSION['Items' . $identifier]->totalWeight+= ($LnItm->QtyDispatched * $LnItm->Weight);
 
-	echo $RowStarter;
-	echo '<td>' . $LnItm->StockID . '</td>
-		<td class="text" title="' . $LnItm->LongDescription . '">' . $LnItm->ItemDescription . '</td>
-		<td class="number">' . locale_number_format($LnItm->Quantity, $LnItm->DecimalPlaces) . '</td>
-		<td class="text">' . $LnItm->Units . '</td>
-		<td class="number">' . locale_number_format($LnItm->QtyInv, $LnItm->DecimalPlaces) . '</td>';
+	$TaxLineTotal = 0; 
+	foreach ($LnItm->Taxes AS $Tax) {
+		$TaxAmount = ($Tax->TaxRate * $LineTotal);
+		$TaxLineTotal += $TaxAmount;
+		$TaxTotal += $TaxAmount; // Update global tax total
+		if (!isset($TaxTotals[$Tax->TaxAuthID])) $TaxTotals[$Tax->TaxAuthID] = 0;
+		$TaxTotals[$Tax->TaxAuthID] += $TaxAmount;
+		$TaxGLCodes[$Tax->TaxAuthID] = $Tax->TaxGLCode;
+	}
 
+	echo '<tr>
+			<td>
+				<div style="font-weight: 700; color: #111827;">' . $LnItm->StockID . '</div>
+				<div style="font-size: 0.75rem; color: #6b7280; margin-top: 2px;">' . $LnItm->ItemDescription . '</div>';
+	
+	if ($Shortage) {
+		echo '<div style="margin-top: 6px;"><span class="badge" style="background: #fef2f2; color: #dc2626; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; border: 1px solid #fee2e2;"><i class="fas fa-exclamation-triangle"></i> ' . __('Stock Shortage') . '</span></div>';
+	} else {
+		echo '<div style="margin-top: 6px;"><span class="badge" style="background: #f0fdf4; color: #166534; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; border: 1px solid #dcfce7;"><i class="fas fa-check-circle"></i> ' . __('Available') . '</span></div>';
+	}
+	
+	echo '  </td>
+			<td style="text-align: right; font-weight: 600;">' . locale_number_format($LnItm->Quantity, $LnItm->DecimalPlaces) . ' <span style="font-size: 0.7rem; color: #9ca3af;">' . $LnItm->Units . '</span></td>
+			<td style="text-align: right; color: #6b7280;">' . locale_number_format($LnItm->QtyInv, $LnItm->DecimalPlaces) . '</td>';
+
+	echo '<td style="text-align: center;">';
 	if ($LnItm->Controlled == 1) {
-
 		if (isset($_POST['ProcessInvoice'])) {
-			echo '<td class="number">' . locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces) . '</td>';
+			echo '<span style="font-weight: 800; color: #059669;">' . locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces) . '</span>';
 		} else {
-			echo '<td class="number"><input type="hidden" name="' . $LnItm->LineNumber . '_QtyDispatched" required="required" maxlength="11"  value="' . $LnItm->QtyDispatched . '" /><a href="' . $RootPath . '/ConfirmDispatchControlled_Invoice.php?identifier=' . urlencode($identifier) . '&LineNo=' . urlencode($LnItm->LineNumber) . '">' . locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces) . '</a></td>';
+			echo '<input type="hidden" name="' . $LnItm->LineNumber . '_QtyDispatched" value="' . $LnItm->QtyDispatched . '" />
+				  <a href="' . $RootPath . '/ConfirmDispatchControlled_Invoice.php?identifier=' . urlencode($identifier) . '&LineNo=' . urlencode($LnItm->LineNumber) . '" class="action-pill">
+					<i class="fas fa-barcode"></i> ' . locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces) . '
+				  </a>';
 		}
 	} else {
 		if (isset($_POST['ProcessInvoice'])) {
-			echo '<td class="number">', locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces), '</td>';
+			echo '<span style="font-weight: 800; color: #059669;">' . locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces) . '</span>';
 		} else {
-			echo '<td class="number"><input ', (++$j == 1 ? 'autofocus="autofocus" ' : ''), 'class="number" maxlength="12" name="', $LnItm->LineNumber, '_QtyDispatched" required="required" title="', __('Enter the quantity to charge the customer for, that has been dispatched'), '" type="text" size="12" value="', locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces), '" /></td>';
+			echo '<input ' . (++$j == 1 ? 'autofocus ' : '') . ' class="db-input" style="text-align: center; height: 38px; border-color: #d1fae5; background: #f0fdf4;" name="' . $LnItm->LineNumber . '_QtyDispatched" type="text" value="' . locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces) . '" />';
 		}
-	}
-	$DisplayDiscountPercent = locale_number_format($LnItm->DiscountPercent * 100, 2) . '%';
-	$DisplayLineNetTotal = locale_number_format($LineTotal, $_SESSION['Items' . $identifier]->CurrDecimalPlaces);
-	$DisplayPrice = locale_number_format($LnItm->Price, $_SESSION['Items' . $identifier]->CurrDecimalPlaces);
-	echo '<td class="number">' . $DisplayPrice . '</td>
-		<td class="number">' . $DisplayDiscountPercent . '</td>
-		<td class="number">' . $DisplayLineNetTotal . '</td>';
-
-	/*Need to list the taxes applicable to this line */
-	echo '<td>';
-	$i = 0;
-	foreach ($_SESSION['Items' . $identifier]->LineItems[$LnItm->LineNumber]->Taxes AS $Tax) {
-		if ($i > 0) {
-			echo '<br />';
-		}
-		echo $Tax->TaxAuthDescription;
-		$i++;
-	}
-	echo '</td>
-		<td class="number">';
-
-	$i = 1; // initialise the number of taxes iterated through
-	$TaxLineTotal = 0; //initialise tax total for the line
-
-
-	foreach ($LnItm->Taxes AS $Tax) {
-		if (empty($TaxTotals[$Tax->TaxAuthID])) {
-			$TaxTotals[$Tax->TaxAuthID] = 0;
-		}
-		if ($i > 1) {
-			echo '<br />';
-		}
-		if (isset($_POST['ProcessInvoice'])) {
-			echo $Tax->TaxRate * 100;
-		} else {
-			echo '<input type="text" class="number" required="required" title="' . __('Enter the tax rate applicable as a number') . '" name="' . $LnItm->LineNumber . $i . '_TaxRate" maxlength="4" size="4" value="' . $Tax->TaxRate * 100 . '" />';
-		}
-		$i++;
-		if ($Tax->TaxOnTax == 1) {
-			$TaxTotals[$Tax->TaxAuthID]+= ($Tax->TaxRate * ($LineTotal + $TaxLineTotal));
-			$TaxLineTotal+= ($Tax->TaxRate * ($LineTotal + $TaxLineTotal));
-		} else {
-			$TaxTotals[$Tax->TaxAuthID]+= ($Tax->TaxRate * $LineTotal);
-			$TaxLineTotal+= ($Tax->TaxRate * $LineTotal);
-		}
-		$TaxGLCodes[$Tax->TaxAuthID] = $Tax->TaxGLCode;
 	}
 	echo '</td>';
+	
+	echo '<td style="text-align: right; font-weight: 600;">' . locale_number_format($LnItm->Price, $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '</td>
+		  <td style="text-align: right; color: #059669; font-weight: 600;">' . locale_number_format($TaxLineTotal, $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '</td>
+		  <td style="text-align: right; font-weight: 800; color: #064e3b;">' . locale_number_format($LineTotal + $TaxLineTotal, $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '</td>
+		</tr>';
 
-	$TaxTotal+= $TaxLineTotal;
-
-	$DisplayTaxAmount = locale_number_format($TaxLineTotal, $_SESSION['Items' . $identifier]->CurrDecimalPlaces);
-
-	$DisplayGrossLineTotal = locale_number_format($LineTotal + $TaxLineTotal, $_SESSION['Items' . $identifier]->CurrDecimalPlaces);
-
-	echo '<td class="number">' . $DisplayTaxAmount . '</td>
-			<td class="number">' . $DisplayGrossLineTotal . '</td>';
-
-	if ($LnItm->Controlled == 1) {
-		if (!isset($_POST['ProcessInvoice'])) {
-			echo '<td><a href="' . $RootPath . '/ConfirmDispatchControlled_Invoice.php?identifier=' . urlencode($identifier) . '&LineNo=' . urlencode($LnItm->LineNumber) . '">';
-			if ($LnItm->Serialised == 1) {
-				echo __('Enter Serial Numbers');
-			} else { /*Just batch/roll/lot control */
-				echo __('Enter Batch/Roll/Lot #');
-			}
-			echo '</a></td>';
-		}
-	}
-	echo '</tr>';
 	if (mb_strlen($LnItm->Narrative) > 1) {
-		$Narrative = str_replace('\r\n', '<br />', $LnItm->Narrative);
-		echo $RowStarter . '<td colspan="12">' . stripslashes($Narrative) . '</td></tr>';
+		echo '<tr><td colspan="7" style="padding: 10px 20px; background: #f8fafc; font-size: 0.8rem; color: #4b5563; font-style: italic; border-bottom: 1px solid #f3f4f6;">
+				<i class="fas fa-comment-dots" style="margin-right: 8px; opacity: 0.5;"></i>' . stripslashes(str_replace('\r\n', ' ', $LnItm->Narrative)) . '
+			  </td></tr>';
 	}
-} //end foreach ($Line)
-/*Don't re-calculate freight if some of the order has already been delivered -
-depending on the business logic required this condition may not be required.
-It seems unfair to charge the customer twice for freight if the order
-was not fully delivered the first time ?? */
+}
+
+echo '</tbody></table></div></div>';
 
 if (!isset($_SESSION['Items' . $identifier]->FreightCost) or $_SESSION['Items' . $identifier]->FreightCost == 0) {
 	if ($_SESSION['DoFreightCalc']) {
@@ -547,120 +633,138 @@ if (!isset($_SESSION['Items' . $identifier]->FreightCost) or $_SESSION['Items' .
 	} else {
 		$FreightCost = 0;
 	}
-	if (isset($BestShipper) and !is_numeric($BestShipper)) {
-		$SQL = "SELECT shipper_id FROM shippers WHERE shipper_id='" . $_SESSION['Default_Shipper'] . "'";
-		$ErrMsg = __('There was a problem testing for a default shipper because');
-		$TestShipperExists = DB_query($SQL, $ErrMsg);
-		if (DB_num_rows($TestShipperExists) == 1) {
-			$BestShipper = $_SESSION['Default_Shipper'];
-		} else {
-			$SQL = "SELECT shipper_id FROM shippers";
-			$ErrMsg = __('There was a problem testing for a default shipper');
-			$TestShipperExists = DB_query($SQL, $ErrMsg);
-			if (DB_num_rows($TestShipperExists) >= 1) {
-				$ShipperReturned = DB_fetch_row($TestShipperExists);
-				$BestShipper = $ShipperReturned[0];
-			} else {
-				prnMsg(__('There are no shippers defined') . '. ' . __('Please use the link below to set up shipping freight companies, the system expects the shipping company to be selected or a default freight company to be used'), 'error');
-				echo '<a href="' . $RootPath . 'Shippers.php">' . __('Enter') . '/' . __('Amend Freight Companies') . '</a>';
-			}
-		}
-	}
-}
-
-if (isset($_POST['ChargeFreightCost']) and !is_numeric(filter_number_format($_POST['ChargeFreightCost']))) {
-	$_POST['ChargeFreightCost'] = 0;
-}
-
-echo '<tr>
-	<td class="number" colspan="2">', __('Order Freight Cost'), '</td>
-	<td class="number">', locale_number_format($_SESSION['Old_FreightCost'], $_SESSION['Items' . $identifier]->CurrDecimalPlaces), '</td>';
-
-if ($_SESSION['DoFreightCalc']) {
-	echo '<td class="number" colspan="2">', __('Recalculated Freight Cost'), '</td>
-		<td class="number">', locale_number_format($FreightCost, $_SESSION['Items' . $identifier]->CurrDecimalPlaces), '</td>';
 } else {
-	//	echo '<td colspan="1"></td>';// Should be?:	echo '<td colspan="3">&nbsp;</td>';
-
+	$FreightCost = $_SESSION['Items' . $identifier]->FreightCost;
 }
-if (!isset($_POST['ChargeFreightCost'])) {
-	$_POST['ChargeFreightCost'] = 0;
-}
-echo '<td class="number" colspan="2">', __('Charge Freight Cost ex Tax'), '</td>';
-if ($_SESSION['Items' . $identifier]->Any_Already_Delivered() == 1 and (!isset($_SESSION['Items' . $identifier]->FreightCost) or $_POST['ChargeFreightCost'] == 0)) {
 
-	echo '<td><input class="number" maxlength="12" name="ChargeFreightCost" required="required" size="10" type="text" value="0" /></td>';
-	$_SESSION['Items' . $identifier]->FreightCost = 0;
-} else {
-	if (isset($_POST['ProcessInvoice'])) {
-		echo '<td class="number">' . locale_number_format($_SESSION['Items' . $identifier]->FreightCost, $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '</td>';
-	} else {
-		echo '<td class="number"><input class="number" maxlength="12" name="ChargeFreightCost" size="10" type="text" value="' . locale_number_format($_SESSION['Items' . $identifier]->FreightCost, $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '" /></td>';
+	if (isset($_POST['ChargeFreightCost']) and !is_numeric(filter_number_format($_POST['ChargeFreightCost']))) {
+		$_POST['ChargeFreightCost'] = 0;
 	}
-	$_POST['ChargeFreightCost'] = locale_number_format($_SESSION['Items' . $identifier]->FreightCost, $_SESSION['Items' . $identifier]->CurrDecimalPlaces);
-}
 
-$FreightTaxTotal = 0; // initialise tax total
-echo '<td>';
+	echo '</tbody></table></div></div>'; // end table card
 
-$i = 0; // initialise the number of taxes iterated through
+$TableContent = ob_get_clean();
+
+// Now we render the LEFT column (Setup Sidebar)
+/* CALCULATE FREIGHT TAXES BEFORE SIDEBAR RENDERING */
+$FreightTaxTotal = 0; 
 foreach ($_SESSION['Items' . $identifier]->FreightTaxes as $FreightTaxLine) {
-	if ($i > 0) {
-		echo '<br />';
-	}
-	echo $FreightTaxLine->TaxAuthDescription;
-	$i++;
-}
-
-echo '</td><td class="number">';
-
-$i = 0;
-foreach ($_SESSION['Items' . $identifier]->FreightTaxes as $FreightTaxLine) {
-	if ($i > 0) {
-		echo '<br />';
-	}
-
-	if (isset($_POST['ProcessInvoice'])) {
-		echo $FreightTaxLine->TaxRate * 100;
-	} else {
-		echo '<input class="number" maxlength="4" name="FreightTaxRate' . $FreightTaxLine->TaxCalculationOrder . '" size="4" type="text" value="' . locale_number_format($FreightTaxLine->TaxRate * 100, $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '" />';
-	}
-
 	if ($FreightTaxLine->TaxOnTax == 1) {
-		$TaxTotals[$FreightTaxLine->TaxAuthID]+= ($FreightTaxLine->TaxRate * ($_SESSION['Items' . $identifier]->FreightCost + $FreightTaxTotal));
-		$FreightTaxTotal+= ($FreightTaxLine->TaxRate * ($_SESSION['Items' . $identifier]->FreightCost + $FreightTaxTotal));
+		$TaxAmount = ($FreightTaxLine->TaxRate * ($_SESSION['Items' . $identifier]->FreightCost + $FreightTaxTotal));
+		if (!isset($TaxTotals[$FreightTaxLine->TaxAuthID])) $TaxTotals[$FreightTaxLine->TaxAuthID] = 0;
+		$TaxTotals[$FreightTaxLine->TaxAuthID] += $TaxAmount;
+		$FreightTaxTotal += $TaxAmount;
 	} else {
-		$TaxTotals[$FreightTaxLine->TaxAuthID]+= ($FreightTaxLine->TaxRate * $_SESSION['Items' . $identifier]->FreightCost);
-		$FreightTaxTotal+= ($FreightTaxLine->TaxRate * $_SESSION['Items' . $identifier]->FreightCost);
+		$TaxAmount = ($FreightTaxLine->TaxRate * $_SESSION['Items' . $identifier]->FreightCost);
+		if (!isset($TaxTotals[$FreightTaxLine->TaxAuthID])) $TaxTotals[$FreightTaxLine->TaxAuthID] = 0;
+		$TaxTotals[$FreightTaxLine->TaxAuthID] += $TaxAmount;
+		$FreightTaxTotal += $TaxAmount;
 	}
-	$i++;
 	$TaxGLCodes[$FreightTaxLine->TaxAuthID] = $FreightTaxLine->TaxGLCode;
 }
-echo '</td>';
+$TaxTotal += $FreightTaxTotal; // All taxes combined
+$GrandTotal = $_SESSION['Items' . $identifier]->total + $_SESSION['Items' . $identifier]->FreightCost + $TaxTotal;
 
-echo '<td class="number">' . locale_number_format($FreightTaxTotal, $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '</td>
-	<td class="number">' . locale_number_format($FreightTaxTotal + filter_number_format($_POST['ChargeFreightCost']), $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '</td>
-	</tr>';
+// Sidebar Column
+echo '<div style="display: flex; flex-direction: column; gap: 24px;">';
 
-$TaxTotal+= $FreightTaxTotal;
+/* ORDER SUMMARY CARD */
+echo '<div class="db-card" style="border-color: #d1fae5; background: #f0fdf4;">
+		<div class="db-card-header" style="background: #ecfdf5; border-bottom: 1px solid #d1fae5;">
+			<h3 class="db-card-title"><i class="fas fa-receipt"></i> ' . __('Order Summary') . '</h3>
+		</div>
+		<div style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+			<div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #4b5563;">
+				<span>' . __('Net Total') . '</span>
+				<span style="font-weight: 700;">' . locale_number_format($_SESSION['Items' . $identifier]->total, $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '</span>
+			</div>
+			<div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #4b5563;">
+				<span>' . __('Tax Total') . '</span>
+				<span style="font-weight: 700;">' . locale_number_format($TaxTotal, $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '</span>
+			</div>
+			<div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #4b5563; align-items: center;">
+				<span>' . __('Freight') . '</span>
+				<input class="db-input" name="ChargeFreightCost" type="text" style="width: 100px; height: 32px; padding: 4px 8px; text-align: right;" value="' . locale_number_format($FreightCost, $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '" />
+			</div>
+			<div style="height: 1px; background: #d1fae5; margin: 8px 0;"></div>
+			<div style="display: flex; justify-content: space-between; align-items: flex-end;">
+				<span style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: #065f46; letter-spacing: 1px;">' . __('Grand Total') . '</span>
+				<span style="font-size: 1.75rem; font-weight: 950; color: #064e3b; letter-spacing: -1px;">' . locale_number_format($GrandTotal, $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '</span>
+			</div>
+		</div>
+	  </div>';
 
-$DisplaySubTotal = locale_number_format(($_SESSION['Items' . $identifier]->total + filter_number_format($_POST['ChargeFreightCost'])), $_SESSION['Items' . $identifier]->CurrDecimalPlaces);
+/* LOGISTICS & SETTINGS CARDS */
+echo '<div class="db-card">
+		<div class="db-card-header">
+			<h3 class="db-card-title"><i class="fas fa-truck-loading"></i> ' . __('Logistics & Billing') . '</h3>
+		</div>
+		<div style="padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+			<div>
+				<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 800; color: #6b7280; display: block; margin-bottom: 8px;">' . __('Consignment Ref') . '</label>
+				<input type="text" name="Consignment" value="' . (isset($_POST['Consignment']) ? $_POST['Consignment'] : $_SESSION['Items' . $identifier]->Consignment) . '" class="db-input" placeholder="' . __('Ref #') . '" />
+			</div>
+			<div>
+				<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 800; color: #6b7280; display: block; margin-bottom: 8px;">' . __('Packages') . '</label>
+				<input type="text" name="Packages" value="' . (isset($_POST['Packages']) ? $_POST['Packages'] : $_SESSION['Items' . $identifier]->Packages) . '" class="db-input" style="width: 80px;" />
+			</div>
+			<div>
+				<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 800; color: #6b7280; display: block; margin-bottom: 8px;">' . __('Dispensing From') . '</label>
+				<select name="Location" class="db-input">
+					<option value="">' . __('Select Location') . '...</option>';
+					$locsql = "SELECT loccode, locationname FROM locations";
+					$locrs = DB_query($locsql);
+					while ($locrow = DB_fetch_array($locrs)) {
+						echo '<option ' . ($_SESSION['Items' . $identifier]->Location == $locrow['loccode'] ? 'selected' : '') . ' value="' . $locrow['loccode'] . '">' . $locrow['locationname'] . ' (' . $locrow['loccode'] . ')</option>';
+					}
+echo '			</select>
+			</div>
+			<div>
+				<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 800; color: #6b7280; display: block; margin-bottom: 8px;">' . __('Ship Via') . '</label>
+				<select name="ShipVia" class="db-input">';
+					$shippersql = "SELECT shipper_id, shippername FROM shippers";
+					$shipperrs = DB_query($shippersql);
+					while ($shipperrrow = DB_fetch_array($shipperrs)) {
+						echo '<option ' . ($_SESSION['Items' . $identifier]->ShipVia == $shipperrrow['shipper_id'] ? 'selected' : '') . ' value="' . $shipperrrow['shipper_id'] . '">' . $shipperrrow['shippername'] . '</option>';
+					}
+echo '			</select>
+			</div>
+			<div>
+				<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 800; color: #6b7280; display: block; margin-bottom: 8px;">' . __('Internal Workspace') . '</label>
+				<textarea name="InternalComments" rows="3" class="db-input" style="font-size: 0.8rem; font-style: italic;">' . reverse_escape($_SESSION['Items' . $identifier]->InternalComments) . '</textarea>
+			</div>
+		</div>
+	  </div>';
 
-echo '<tr>
-	<td colspan="8" class="number">' . __('Invoice Totals') . '</td>
-	<td class="number"><hr /><b>' . $DisplaySubTotal . '</b><hr /></td>
-	<td colspan="2"></td>
-	<td class="number"><hr /><b>' . locale_number_format($TaxTotal, $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '</b><hr /></td>
-	<td class="number"><hr /><b>' . locale_number_format($TaxTotal + ($_SESSION['Items' . $identifier]->total + $_POST['ChargeFreightCost']), $_SESSION['Items' . $identifier]->CurrDecimalPlaces) . '</b><hr /></td>
-</tr>';
+/* SIDEBAR ACTIONS CARD */
+echo '<div class="db-card" style="border: none; background: transparent; box-shadow: none;">
+		<div style="display: flex; flex-direction: column; gap: 12px; padding: 0;">
+			<button name="Update" type="submit" value="Update" class="primary-btn-modern" style="background: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); width: 100%;">
+				<i class="fas fa-sync-alt"></i> ' . __('Update Computation') . '
+			</button>
+			<button name="ProcessInvoice" type="submit" value="ProcessInvoice" class="primary-btn-modern" style="width: 100%;">
+				<i class="fas fa-file-invoice-dollar"></i> ' . __('Finalize & Invoice') . '
+			</button>
+		</div>
+	  </div>';
+
+echo '</div>'; // End left column
+
+
+// Main Content Column
+echo '<div style="display: flex; flex-direction: column; gap: 32px;">';
+echo $TableContent;
+echo '</div>'; // End Main Column
+echo '</div>'; // End architect-grid
+echo '</div>'; // End db-page
+echo '</form>';
+
 
 if (!isset($_POST['DispatchDate']) or !Is_Date($_POST['DispatchDate'])) {
 	$DefaultDispatchDate = date($_SESSION['DefaultDateFormat'], CalcEarliestDispatchDate());
 } else {
 	$DefaultDispatchDate = $_POST['DispatchDate'];
 }
-
-echo '<tbody></table><br />';
 
 if (isset($_POST['ProcessInvoice']) and $_POST['ProcessInvoice'] != '') {
 
@@ -1066,6 +1170,7 @@ if (isset($_POST['ProcessInvoice']) and $_POST['ProcessInvoice'] != '') {
 					$QtyOnHandPrior = 0;
 				}
 
+				error_log("antigravity_trace: Updating locstock for item [" . $OrderLine->StockID . "] at location [" . $_SESSION['Items' . $identifier]->Location . "] by qty [" . $OrderLine->QtyDispatched . "]");
 				$SQL = "UPDATE locstock
 						SET quantity = locstock.quantity - " . $OrderLine->QtyDispatched . "
 						WHERE locstock.stockid = '" . $OrderLine->StockID . "'
@@ -1608,8 +1713,7 @@ if (isset($_POST['ProcessInvoice']) and $_POST['ProcessInvoice'] != '') {
 									narrative,
 									amount
 								) VALUES (
-									10,'" . $InvoiceNo . "','" . $DefaultDispatchDate . "','" . $PeriodNo . "','" . $DisposalRow['costact'] . "','" . $_SESSION['Items' . $identifier]->DebtorNo . " - " . $OrderLine->StockID . ' ' . __('cost disposal') . "','" . -$DisposalRow['cost'] . "')";
-									mb_substr($_SESSION['Items' . $identifier]->DebtorNo . " - " . $OrderLine->StockID . ' ' . __('cost disposal'), 0, 200) . "','" .
+									10,'" . $InvoiceNo . "','" . $DefaultDispatchDate . "','" . $PeriodNo . "','" . $DisposalRow['costact'] . "','" . mb_substr($_SESSION['Items' . $identifier]->DebtorNo . " - " . $OrderLine->StockID . ' ' . __('cost disposal'), 0, 200) . "','" . -$DisposalRow['cost'] . "')";
 						$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The reversal of asset cost on disposal GL posting could not be inserted because');
 						$Result = DB_query($SQL, $ErrMsg, '', true);
 					}
@@ -1793,77 +1897,7 @@ if (isset($_POST['ProcessInvoice']) and $_POST['ProcessInvoice'] != '') {
 
 	echo '<script>window.location.href="' . $RedirectURL . '";</script>';
 	exit();
-} else { /*Process Invoice not set so allow input of invoice data */
-
-	if (!isset($_POST['Consignment'])) {
-		if ($_SESSION['Items' . $identifier]->Consignment != '') {
-			$_POST['Consignment'] = $_SESSION['Items' . $identifier]->Consignment;
-		} else {
-			$_POST['Consignment'] = '';
-		}
-	}
-	if (!isset($_POST['Packages'])) {
-		if ($_SESSION['Items' . $identifier]->Packages) {
-			$_POST['Packages'] = $_SESSION['Items' . $identifier]->Packages;
-		} else {
-			$_POST['Packages'] = '1';
-		}
-	}
-	if (!isset($_POST['InvoiceText'])) {
-		$_POST['InvoiceText'] = '';
-	}
-
-	echo '<fieldset>
-			<legend>', __('Invoice Details'), '</legend>';
-
-	echo '<field>
-			<label for="DispatchDate">', __('Date On Invoice'), ':</label>
-			<input required="required" autofocus="autofocus" maxlength="10" size="15" name="DispatchDate" value="', FormatDateForSQL($DefaultDispatchDate), '" id="datepicker" type="date" />
-			<fieldhelp>', __('The date the goods/services were sent. This is the date that will appear as the invoice date.'), '</fieldhelp>
-		</field>';
-
-	echo '<field>
-			<label for="Consignment">', __('Consignment Note Ref'), ':</label>
-			<input type="text" maxlength="20" size="20" name="Consignment" value="', $_POST['Consignment'], '" />
-			<fieldhelp>', __('The consignment reference for this delivery.'), '</fieldhelp>
-		</field>';
-
-	echo '<field>
-			<label for="Packages">', __('No Of Packages in Delivery'), ':</label>
-			<input type="text" maxlength="6" size="6" class="number" name="Packages" value="', $_POST['Packages'], '" />
-			<fieldhelp>', __('The number of packages in this delivery.'), '</fieldhelp>
-		</field>';
-
-	echo '<field>
-			<label for="BOPolicy">', __('Action For Balance'), ':</label>
-			<select required="required" name="BOPolicy">
-				<option selected="selected" value="BO">', __('Automatically put balance on back order'), '</option>
-				<option value="CAN">', __('Cancel any quantities not delivered'), '</option>
-			</select>
-			<fieldhelp>', __('Action to be taken for any remaining balance on the order.'), '</fieldhelp>
-		</field>';
-
-	echo '<field>
-			<label for="InvoiceText">', __('Invoice Text'), ':</label>
-			<textarea spellcheck="true" name="InvoiceText" cols="31" rows="5">', reverse_escape($_POST['InvoiceText']), '</textarea>
-			<fieldhelp>', __('Any text that should appear on the invoice. This text will be visible to the customer.'), '</fieldhelp>
-		</field>';
-
-	echo '<field>
-			<label for="InternalComments">', __('Internal Comments'), ':</label>
-			<textarea spellcheck="true" name="InternalComments" pattern=".{0,20}" cols="31" rows="5">', reverse_escape($_SESSION['Items' . $identifier]->InternalComments), '</textarea>
-			<fieldhelp>', __('Any internal text for this invoice. This text will not be visible to the customer.'), '</fieldhelp>
-		</field>';
-
-	echo '</fieldset>';
-	echo '<div class="centre">
-			<input name="Update" type="submit" value="', __('Update'), '" />
-			<input name="ProcessInvoice" type="submit" value="', __('Process Invoice'), '" />
-		</div>
-		<input type="hidden" name="ShipVia" value="' . $_SESSION['Items' . $identifier]->ShipVia . '" />';
-}
-
-echo '</div>';
-echo '</form>';
-
+} // End if ProcessInvoice
+ 
 include(__DIR__ . '/includes/footer.php');
+
