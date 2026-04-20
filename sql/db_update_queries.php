@@ -59,3 +59,4 @@ ALTER TABLE salesorders ADD CONSTRAINT salesorders_ibfk_1
 ALTER TABLE orderdeliverydifferenceslog ADD CONSTRAINT orderdeliverydifferenceslog_ibfk_2
   FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
 
+MUM20220407764
