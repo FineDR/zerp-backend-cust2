@@ -120,7 +120,7 @@ ALTER TABLE contracts ADD CONSTRAINT contracts_ibfk_1
 ALTER TABLE orderdeliverydifferenceslog ADD CONSTRAINT orderdeliverydifferenceslog_ibfk_2
   FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
 
-  
+
   After this, verify everything is done:
 sqlSELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
 FROM information_schema.COLUMNS
@@ -128,3 +128,38 @@ WHERE TABLE_SCHEMA = 'zerp_backend'
   AND COLUMN_NAME = 'debtorno'
   AND CHARACTER_MAXIMUM_LENGTH < 32;
 That should return 0 rows and you'll be done.
+
+
+
+SELECT CONSTRAINT_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
+FROM information_schema.KEY_COLUMN_USAGE
+WHERE TABLE_NAME = 'custbranch'
+  AND TABLE_SCHEMA = 'zerp_backend'
+  AND REFERENCED_TABLE_NAME IS NOT NULL;
++-------------------+-----------------+-----------------------+------------------------+
+| CONSTRAINT_NAME   | COLUMN_NAME     | REFERENCED_TABLE_NAME | REFERENCED_COLUMN_NAME |
++-------------------+-----------------+-----------------------+------------------------+
+| custbranch_ibfk_1 | debtorno        | debtorsmaster         | debtorno               |
+| custbranch_ibfk_2 | area            | areas                 | areacode               |
+| custbranch_ibfk_3 | salesman        | salesman              | salesmancode           |
+| custbranch_ibfk_4 | defaultlocation | locations             | loccode                |
+| custbranch_ibfk_6 | defaultshipvia  | shippers              | shipper_id             |
+| custbranch_ibfk_7 | taxgroupid      | taxgroups             | taxgroupid             |
++-------------------+-----------------+-----------------------+------------------------+
+6 rows in set (0.003 sec)
+
+SELECT CONSTRAINT_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
+FROM information_schema.KEY_COLUMN_USAGE
+WHERE TABLE_NAME = 'debtorsmaster'
+  AND TABLE_SCHEMA = 'zerp_backend'
+  AND REFERENCED_TABLE_NAME IS NOT NULL;
+  +----------------------+--------------+-----------------------+------------------------+
+| CONSTRAINT_NAME      | COLUMN_NAME  | REFERENCED_TABLE_NAME | REFERENCED_COLUMN_NAME |
++----------------------+--------------+-----------------------+------------------------+
+| debtorsmaster_ibfk_1 | holdreason   | holdreasons           | reasoncode             |
+| debtorsmaster_ibfk_2 | currcode     | currencies            | currabrev              |
+| debtorsmaster_ibfk_3 | paymentterms | paymentterms          | termsindicator         |
+| debtorsmaster_ibfk_4 | salestype    | salestypes            | typeabbrev             |
+| debtorsmaster_ibfk_5 | typeid       | debtortype            | typeid                 |
++----------------------+--------------+-----------------------+------------------------+
+5 rows in set (0.004 sec)
