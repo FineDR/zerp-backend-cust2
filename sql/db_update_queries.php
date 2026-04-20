@@ -60,4 +60,71 @@ ALTER TABLE salesorders ADD CONSTRAINT salesorders_ibfk_1
 ALTER TABLE orderdeliverydifferenceslog ADD CONSTRAINT orderdeliverydifferenceslog_ibfk_2
   FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
 
-MUM20220407764
+
+
+ALTER TABLE custbranch MODIFY branchcode VARCHAR(32);
+-- Drop the FK on custbranch
+ALTER TABLE custbranch DROP FOREIGN KEY custbranch_ibfk_1;
+-- Now modify
+ALTER TABLE custbranch MODIFY debtorno VARCHAR(32);
+-- Recreate the FK
+ALTER TABLE custbranch ADD CONSTRAINT custbranch_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+
+
+================
+SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = 'zerp_backend'
+  AND COLUMN_NAME = 'debtorno'
+  AND CHARACTER_MAXIMUM_LENGTH < 32;
+================
+
+-- Drop all FKs blocking custbranch.debtorno
+ALTER TABLE contracts DROP FOREIGN KEY contracts_ibfk_1;
+ALTER TABLE custbranch DROP FOREIGN KEY custbranch_ibfk_1;
+
+-- Modify
+ALTER TABLE custbranch MODIFY debtorno VARCHAR(32);
+ALTER TABLE contracts MODIFY debtorno VARCHAR(32);
+
+-- Recreate both FKs
+ALTER TABLE custbranch ADD CONSTRAINT custbranch_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE contracts ADD CONSTRAINT contracts_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
+
+  =======
+  -- Drop FKs blocking custbranch
+ALTER TABLE contracts DROP FOREIGN KEY contracts_ibfk_1;
+ALTER TABLE orderdeliverydifferenceslog DROP FOREIGN KEY orderdeliverydifferenceslog_ibfk_2;
+ALTER TABLE custbranch DROP FOREIGN KEY custbranch_ibfk_1;
+
+-- Modify all 7 remaining tables
+ALTER TABLE custbranch MODIFY debtorno VARCHAR(32);
+ALTER TABLE custnotes MODIFY debtorno VARCHAR(32);
+ALTER TABLE sellthroughsupport MODIFY debtorno VARCHAR(32);
+ALTER TABLE prices MODIFY debtorno VARCHAR(32);
+ALTER TABLE custcontacts MODIFY debtorno VARCHAR(32);
+ALTER TABLE debtortrans MODIFY debtorno VARCHAR(32);
+ALTER TABLE stockmoves MODIFY debtorno VARCHAR(32);
+
+-- Also modify debtorno in the FK child tables if not already done
+ALTER TABLE orderdeliverydifferenceslog MODIFY debtorno VARCHAR(32);
+
+-- Recreate all FKs
+ALTER TABLE custbranch ADD CONSTRAINT custbranch_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE contracts ADD CONSTRAINT contracts_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
+ALTER TABLE orderdeliverydifferenceslog ADD CONSTRAINT orderdeliverydifferenceslog_ibfk_2
+  FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
+
+  
+  After this, verify everything is done:
+sqlSELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = 'zerp_backend'
+  AND COLUMN_NAME = 'debtorno'
+  AND CHARACTER_MAXIMUM_LENGTH < 32;
+That should return 0 rows and you'll be done.

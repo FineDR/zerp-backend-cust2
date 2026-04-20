@@ -255,7 +255,6 @@ function VerifyCustomerType($DebtorType , $i, $Errors) {
    is only updated if the $Errors is empty, else the function returns an
    array of one to many error codes.
 */
-//function InsertCustomer($CustomerDetails, $user = '', $password = '') {
 function InsertCustomers($CustomerDetails, $user, $password) {
 	$Errors = array();
 	$db = db($user, $password);
@@ -379,6 +378,7 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 			$Errors[2]=$CustomerDetails['name'];
 		}
 	}
+	return $SQL;
 	return $Errors;
 }
 
