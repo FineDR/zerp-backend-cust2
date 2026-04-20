@@ -379,8 +379,7 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 			$Errors[2]=$CustomerDetails['name'];
 		}
 	}
-	return $SQL;
-	//return $Errors;
+	return $Errors;
 }
 
 /** Modifies a customer record in the webERP database. This function takes an
