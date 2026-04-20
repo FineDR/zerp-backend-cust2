@@ -521,7 +521,6 @@ function GetCustomer($DebtorNumber, $user, $password) {
 		$Errors[0]=NoAuthorisation;
 		return $Errors;
 	}
-	return 'juma =>'.$DebtorNumber;
 	$Errors = VerifyDebtorExists($DebtorNumber, sizeof($Errors), $Errors);
 	if (sizeof($Errors)!=0) {
 		return $Errors;
