@@ -378,7 +378,6 @@ function InsertCustomers($CustomerDetails, $user, $password) {
 			$Errors[2]=$CustomerDetails['name'];
 		}
 	}
-	return $SQL;
 	return $Errors;
 }
 
