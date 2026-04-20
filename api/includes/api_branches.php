@@ -21,7 +21,7 @@ function VerifyBranchDebtorExists($DebtorNumber, $i, $Errors) {
 /** Verify that the branch number is valid, and doesn't already
    exist. */
 function VerifyBranchNo($DebtorNumber, $BranchNumber, $i, $Errors) {
-	if ((mb_strlen($BranchNumber)<1) or (mb_strlen($BranchNumber)>10)) {
+	if ((mb_strlen($BranchNumber)<1) or (mb_strlen($BranchNumber)>32)) {
 		$Errors[$i] = IncorrectBranchNumberLength;
 	}
 	$Searchsql = "SELECT count(debtorno)
@@ -38,7 +38,7 @@ function VerifyBranchNo($DebtorNumber, $BranchNumber, $i, $Errors) {
 
 /** Verify that the branch number exists. */
 function VerifyBranchNoExists($DebtorNumber, $BranchNumber, $i, $Errors) {
-	if ((mb_strlen($BranchNumber)<1) or (mb_strlen($BranchNumber)>10)) {
+	if ((mb_strlen($BranchNumber)<1) or (mb_strlen($BranchNumber)>32)) {
 		$Errors[$i] = IncorrectBranchNumberLength;
 	}
 	$Searchsql = "SELECT count(debtorno)
@@ -56,7 +56,7 @@ function VerifyBranchNoExists($DebtorNumber, $BranchNumber, $i, $Errors) {
 
 /** Check that the name exists and is 40 characters or less long */
 function VerifyBranchName($BranchName, $i, $Errors) {
-	if ((mb_strlen($BranchName)<1) or (mb_strlen($BranchName)>40)) {
+	if ((mb_strlen($BranchName)<1) or (mb_strlen($BranchName)>70)) {
 		$Errors[$i] = IncorrectBranchNameLength;
 	}
 	return $Errors;

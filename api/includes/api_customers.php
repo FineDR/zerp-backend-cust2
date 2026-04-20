@@ -8,7 +8,7 @@ if (!isset($PathPrefix)) {
 /** Verify that the debtor number is valid, and doesn't already
    exist. */
 function VerifyDebtorNo($DebtorNumber, $i, $Errors) {
-	if ((mb_strlen($DebtorNumber)<1) or (mb_strlen($DebtorNumber)>10)) {
+	if ((mb_strlen($DebtorNumber)<1) or (mb_strlen($DebtorNumber)>32)) {
 		$Errors[$i] = IncorrectDebtorNumberLength;
 	}
 	$Searchsql = "SELECT count(debtorno)
@@ -37,7 +37,7 @@ function VerifyDebtorExists($DebtorNumber, $i, $Errors) {
 
 /** Check that the name exists and is 40 characters or less long */
 function VerifyDebtorName($DebtorName, $i, $Errors) {
-	if ((mb_strlen($DebtorName)<1) or (mb_strlen($DebtorName)>40)) {
+	if ((mb_strlen($DebtorName)<1) or (mb_strlen($DebtorName)>70)) {
 		$Errors[$i] = IncorrectDebtorNameLength;
 	}
 	return $Errors;
