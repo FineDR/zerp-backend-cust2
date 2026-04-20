@@ -880,7 +880,10 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 						($_SESSION['Items'.$identifier]->Quotation==1 ? __('Quotation') : __('Sales Order')) . '
 					</h3>
 					<div class="db-card-actions">
-						<input type="submit" name="ChangeCustomer" class="db-btn db-btn-sm db-btn-secondary" value="' . __('Change Customer') . '" />
+						<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post">
+							<input name="FormID" type="hidden" value="' . $_SESSION['FormID'] . '" />
+							<input type="submit" name="ChangeCustomer" class="db-btn db-btn-sm db-btn-secondary" value="' . __('Change Customer') . '" />
+						</form>
 					</div>
 				</div>
 				<div class="db-card-body">
