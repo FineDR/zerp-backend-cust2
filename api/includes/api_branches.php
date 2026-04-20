@@ -510,7 +510,6 @@ function GetCustomerBranchCodes($DebtorNumber, $user, $password)
 			$Errors[] = $MyRow[0];
 		}
 	}
-
 	return  $Errors;
 }
 
