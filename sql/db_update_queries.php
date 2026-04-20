@@ -50,6 +50,7 @@ ALTER TABLE recurringsalesorders MODIFY debtorno VARCHAR(32);
 ALTER TABLE salesorders MODIFY debtorno VARCHAR(32);
 ALTER TABLE orderdeliverydifferenceslog MODIFY debtorno VARCHAR(32);
 ALTER TABLE debtorsmaster MODIFY debtorno VARCHAR(32);
+ALTER TABLE debtorsmaster MODIFY editransport VARCHAR(32);
 
 -- Recreate the FKs (verify targets before running)
 ALTER TABLE recurringsalesorders ADD CONSTRAINT recurringsalesorders_ibfk_1
