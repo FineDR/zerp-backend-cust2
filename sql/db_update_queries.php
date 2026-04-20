@@ -7,49 +7,55 @@ INSERT INTO debtortrans (debtorno, branchcode, trandate, transno, type, ovamount
 VALUES ('NS1369/005', 'NS1369/005','', '38', '10', '5000', '150', 'SP001', '');
 
 
-I am re-opening the LMS system until tomorrow, January 23rd, at 9:00 a.m.
+on the issue of adjusting the size of debtorno:
 
-Failed to create order: [1046, 1091, 1005, 1003, 1003, 1039, 1095]
+ALTER TABLE custbranch DROP FOREIGN KEY custbranch_ibfk_1;
+ALTER TABLE debtorsmaster MODIFY debtorno VARCHAR(32);
+ALTER TABLE custbranch MODIFY debtorno VARCHAR(32);
+ALTER TABLE custbranch 
+  ADD CONSTRAINT custbranch_ibfk_1 
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
 
-Successfully received certificate.
-Certificate is saved at: /etc/letsencrypt/live/lib.sadc.int/fullchain.pem
-Key is saved at:         /etc/letsencrypt/live/lib.sadc.int/privkey.pem
+  ================= lllllll =============================
 
-Update Koha System Preferences (CRITICAL)
+-- Drop all known FKs referencing debtorno
+ALTER TABLE custbranch DROP FOREIGN KEY custbranch_ibfk_1;
+ALTER TABLE custitem DROP FOREIGN KEY custitem_ibfk_2;
+ALTER TABLE contracts DROP FOREIGN KEY contracts_ibfk_1;
+-- (add any others the query reveals)
 
-Go to Koha Admin:
+-- Modify debtorno in ALL affected tables
+ALTER TABLE debtorsmaster MODIFY debtorno VARCHAR(32);
+ALTER TABLE custbranch MODIFY debtorno VARCHAR(32);
+ALTER TABLE custitem MODIFY debtorno VARCHAR(32);
+ALTER TABLE contracts MODIFY debtorno VARCHAR(32);
+-- (add any others)
 
-OPAC preferences:
-OPACBaseURL = https://lib.sadc.int
+-- Recreate all FKs
+ALTER TABLE custbranch ADD CONSTRAINT custbranch_ibfk_1 
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE custitem ADD CONSTRAINT custitem_ibfk_2 
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);  -- verify this is correct
+ALTER TABLE contracts ADD CONSTRAINT contracts_ibfk_1 
+  FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);    -- verify this is correct
 
-Staff preferences (if staff also secured):
-IntranetBaseURL = https://intra.lib.sadc.int:8080
+-- Drop remaining FKs
+ALTER TABLE recurringsalesorders DROP FOREIGN KEY recurringsalesorders_ibfk_1;
+ALTER TABLE salesorders DROP FOREIGN KEY salesorders_ibfk_1;
+ALTER TABLE orderdeliverydifferenceslog DROP FOREIGN KEY orderdeliverydifferenceslog_ibfk_2;
 
+-- Modify debtorno in remaining tables
+ALTER TABLE custbranch MODIFY debtorno VARCHAR(32);
+ALTER TABLE recurringsalesorders MODIFY debtorno VARCHAR(32);
+ALTER TABLE salesorders MODIFY debtorno VARCHAR(32);
+ALTER TABLE orderdeliverydifferenceslog MODIFY debtorno VARCHAR(32);
+ALTER TABLE debtorsmaster MODIFY debtorno VARCHAR(32);
 
-Restart Apache:
+-- Recreate the FKs (verify targets before running)
+ALTER TABLE recurringsalesorders ADD CONSTRAINT recurringsalesorders_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE salesorders ADD CONSTRAINT salesorders_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE orderdeliverydifferenceslog ADD CONSTRAINT orderdeliverydifferenceslog_ibfk_2
+  FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
 
-sudo systemctl restart apache2
-
-Successfully received certificate.
-Certificate is saved at: /etc/letsencrypt/live/madini.info.tz/fullchain.pem
-Key is saved at:         /etc/letsencrypt/live/madini.info.tz/privkey.pem
-This certificate expires on 2026-05-02.
-
-
-rsync -aHAX --numeric-ids \
-  /mnt/ubuntu/var/lib/postgresql \
-  rroot@89.117.50.48:/root/
-
-  usr/lib/systemd/.cache/update-check
-  /usr/lib/x86_64-linux-gnu/e2fsprogs/e2scrub_all_cron
-  SHELL=/bin/sh
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-@reboot root ip route replace $(ip route list dev eth0 scope link | head -n1 | awk '{ print $1 }') via $(ip route list dev eth0 | awk '/default/{ print $3 }') dev eth0 &>/dev/null
-
- Failed to create cash sale: [1027, 1046] 
- zalongwa1
- zalongwa1
- 
- nbc
- nbcconnect
- nbcsecure
