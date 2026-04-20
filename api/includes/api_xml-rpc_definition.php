@@ -126,7 +126,7 @@ $ReturnValue = __('This function returns an array of integers. ')
 	. __('If the first element is zero then the function was successful. ')
 	. __('Otherwise an array of error codes is returned and no insertion takes place. ');
 
-$InsertCustomer_sig = array(
+$_sig = array(
 	array(Value::$xmlrpcArray, Value::$xmlrpcStruct),
 	array(Value::$xmlrpcArray, Value::$xmlrpcStruct, Value::$xmlrpcString, Value::$xmlrpcString));
 $InsertCustomer_doc = apiBuildDocHTML($Description, $Parameter, $ReturnValue);
