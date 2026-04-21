@@ -1255,10 +1255,6 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 	}
 	$PartCode=$InvoiceDetails['partcode'];
 
-	//hardcoded for testing purposes
-    $PartCode = 'ZTL001';
-	//return $PartCode.' --> '.$Searchsql.' -->'.$InvoiceDetails['partcode'];
-	//return $PartCode;
 	$Errors=VerifyStockCodeExists($PartCode, sizeof($Errors), $Errors );
 	//$Errors=VerifyInvoiceStockCodeExists($PartCode, sizeof($Errors), $Errors );
 	unset($InvoiceDetails['partcode']);
@@ -1271,9 +1267,8 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 	$Errors=VerifyBranchNoExists($InvoiceDetails['debtorno'],$InvoiceDetails['branchcode'], sizeof($Errors), $Errors);
 	$Errors=VerifyTransNO($InvoiceDetails['transno'], 10, sizeof($Errors), $Errors);
 	$InvoiceDetails['trandate']=$InvoiceDetails['trandate'];
-	//return $InvoiceDetails['trandate'];
-	//$Errors=VerifyDateFormat($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
-	//$Errors=VerifyInvoiceTransactionDate($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
+	$Errors=VerifyDateFormat($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
+	$Errors=VerifyInvoiceTransactionDate($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
 	if (isset($InvoiceDetails['settled'])){
 		$Errors=VerifySettled($InvoiceDetails['settled'], sizeof($Errors), $Errors);
 	}

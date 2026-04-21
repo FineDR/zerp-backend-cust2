@@ -291,3 +291,8 @@ WHERE TABLE_SCHEMA = 'zerp_backend'
   ===== you should get 0================
 
 
+
+
+Bill: http://41.59.82.179/ega-zbc/bill_result
+Payment: http://41.59.82.179/ega-zbc/payments
+Reconciliation: http://41.59.82.179/ega-zbc/reconciliation
