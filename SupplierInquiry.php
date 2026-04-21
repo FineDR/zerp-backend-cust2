@@ -34,7 +34,7 @@ if (isset($_GET['FromDate'])) {
 	$_POST['TransAfterDate']=$_GET['FromDate'];
 }
 if (!isset($_POST['TransAfterDate']) OR !Is_Date($_POST['TransAfterDate'])) {
-	$_POST['TransAfterDate'] = date($_SESSION['DefaultDateFormat'],mktime(0,0,0,date('m')-12,date('d'),date('Y')));
+	$_POST['TransAfterDate'] = date($_SESSION['DefaultDateFormat'],mktime(0,0,0,date('m')-24,date('d'),date('Y')));
 }
 
 $SQL = "SELECT suppliers.suppname,
@@ -174,9 +174,6 @@ echo '<div class="db-page-header" style="padding: var(--space-6) var(--space-6) 
 					</button>
 				</form>
 				<a href="' . $RootPath . '/SelectSupplier.php" class="db-btn db-btn-secondary" style="height: 42px; padding: 0 16px;">' . __('Switch Supplier') . '</a>
-				<button onclick="window.print()" class="db-btn db-btn-primary" style="height: 42px; width: 42px; padding: 0; display: flex; align-items: center; justify-content: center;">
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-				</button>
 			</div>
 		</div>
 	</div>';
@@ -185,7 +182,7 @@ echo '<div class="db-workspace">';
 
 echo '<div class="db-grid db-grid-5" style="gap: var(--space-4); margin-bottom: var(--space-6);">';
 $kpis = [
-	['label' => __('Total Balance'), 'value' => $SupplierRecord['balance'], 'color' => 'var(--primary)', 'icon' => 'M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'],
+	['label' => __('Total Balance'), 'value' => $SupplierRecord['balance'], 'color' => 'var(--primary)', 'icon' => 'M12 1v22M19 5H5v14h14V5zM9 9h6M9 13h6M9 17h6'],
 	['label' => __('Current'), 'value' => ($SupplierRecord['balance'] - $SupplierRecord['due']), 'color' => 'var(--success)', 'icon' => 'M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01 9 11.01'],
 	['label' => __('Due Now'), 'value' => ($SupplierRecord['due']-$SupplierRecord['overdue1']), 'color' => 'var(--warning)', 'icon' => 'M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 6v6l4 2'],
 	['label' => __('30-60 Days'), 'value' => ($SupplierRecord['overdue1']-$SupplierRecord['overdue2']), 'color' => 'var(--danger)', 'icon' => 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01'],
@@ -270,9 +267,9 @@ if (DB_num_rows($TransResult) == 0) {
 				</td>
 				<td>
 					<div style="font-weight: 800; font-size: 0.875rem;"><a href="' . $RootPath . '/SuppWhereAlloc.php?TransType=' . $MyRow['type'] . '&TransNo=' . $MyRow['transno'] . '" style="color: var(--primary); text-decoration: none;">#' . $MyRow['transno'] . '</a></div>
-					<div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; font-weight: 600;">' . $MyRow['suppreference'] . '</div>
+					<div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; font-weight: 700; background: var(--bg-main); padding: 1px 6px; border-radius: 4px; display: inline-block;">' . $MyRow['suppreference'] . '</div>
 				</td>
-				<td style="font-size: 0.8125rem; color: var(--text-muted); max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="' . htmlspecialchars($MyRow['transtext'], ENT_QUOTES, 'UTF-8') . '">' . $MyRow['transtext'] . '</td>
+				<td style="font-size: 0.8125rem; color: var(--text-muted); max-width: 320px; font-weight: 500; line-height: 1.4;">' . (empty($MyRow['transtext']) ? '<span style="opacity:0.5; font-style:italic;">' . __('Ref') . ': ' . $MyRow['suppreference'] . '</span>' : htmlspecialchars($MyRow['transtext'], ENT_QUOTES, 'UTF-8')) . '</td>
 				<td class="text-right" style="font-weight: 800; font-size: 0.875rem; color: var(--text-main);">' . locale_number_format($MyRow['totalamount'], $SupplierRecord['currdecimalplaces']) . '</td>
 				<td class="text-right" style="font-size: 0.8125rem; color: var(--text-muted); font-weight: 600;">' . locale_number_format($MyRow['allocated'], $SupplierRecord['currdecimalplaces']) . '</td>
 				<td class="text-right">';
