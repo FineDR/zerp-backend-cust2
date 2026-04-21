@@ -341,10 +341,6 @@ function InsertBranch($BranchDetails, $user, $password) {
 	if (isset($BranchDetails['custbranchcode'])){
 		$Errors=VerifyCustBranchCode($BranchDetails['custbranchcode'], sizeof($Errors), $Errors);
 	}
-	$BranchDetails['lat']=0;
-	$BranchDetails['lng']=0;
-	$FieldNames='';
-	$FieldValues='';
 	foreach ($BranchDetails as $key => $Value) {
 		$FieldNames.=$key.', ';
 		$FieldValues.='"'.$Value.'", ';
@@ -509,7 +505,11 @@ function GetCustomerBranchCodes($DebtorNumber, $user, $password)
 			$Errors[] = $MyRow[0];
 		}
 	}
-	return  $Errors;
+	if($Errors == 0){
+       return  $Errors;
+	}else{
+       return  $Errors.'NoRecord Found';
+	}
 }
 
 /** This function takes a debtorno and branch code and returns an associative array containing

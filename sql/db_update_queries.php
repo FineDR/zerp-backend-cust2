@@ -283,11 +283,170 @@ ALTER TABLE orderdeliverydifferenceslog ADD CONSTRAINT orderdeliverydifferencesl
 
 
   ===== confirm everythibg is fine=====
-  SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
 FROM information_schema.COLUMNS
 WHERE TABLE_SCHEMA = 'zerp_backend'
   AND COLUMN_NAME = 'debtorno'
   AND CHARACTER_MAXIMUM_LENGTH < 32;
   ===== you should get 0================
 
+SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = 'zerp_backend'
+  AND COLUMN_NAME = 'branchcode'
+  AND CHARACTER_MAXIMUM_LENGTH < 32;
+
++----------------------+-------------+--------------------------+
+| TABLE_NAME           | COLUMN_NAME | CHARACTER_MAXIMUM_LENGTH |
++----------------------+-------------+--------------------------+
+| contracts            | branchcode  |                       10 |
+| recurringsalesorders | branchcode  |                       10 |
+| custbranch           | branchcode  |                       10 |
+| prices               | branchcode  |                       10 |
+| salesorders          | branchcode  |                       10 |
+| debtortrans          | branchcode  |                       10 |
+| www_users            | branchcode  |                       10 |
+| stockmoves           | branchcode  |                       10 |
++----------------------+-------------+--------------------------+
+8 rows in set (0.025 sec)
+
+MariaDB [zerp_backend]> SELECT TABLE_NAME, CONSTRAINT_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
+    -> FROM information_schema.KEY_COLUMN_USAGE
+    ->  WHERE TABLE_SCHEMA = 'zerp_backend'
+    ->   AND COLUMN_NAME = 'branchcode'
+    ->   AND REFERENCED_TABLE_NAME IS NOT NULL
+    ->  ORDER BY TABLE_NAME, CONSTRAINT_NAME;
++----------------------+-----------------------------+-------------+-----------------------+------------------------+
+| TABLE_NAME           | CONSTRAINT_NAME             | COLUMN_NAME | REFERENCED_TABLE_NAME | REFERENCED_COLUMN_NAME |
++----------------------+-----------------------------+-------------+-----------------------+------------------------+
+| contracts            | contracts_ibfk_1            | branchcode  | custbranch            | branchcode             |
+| recurringsalesorders | recurringsalesorders_ibfk_1 | branchcode  | custbranch            | branchcode             |
+| salesorders          | salesorders_ibfk_1          | branchcode  | custbranch            | branchcode             |
++----------------------+-----------------------------+-------------+-----------------------+------------------------+
+3 rows in set (0.012 sec)
+
+
+
+
+Step 1 — Find all foreign keys involving branchcode:
+
+SELECT TABLE_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME
+FROM information_schema.KEY_COLUMN_USAGE
+WHERE TABLE_SCHEMA = 'zerp_backend'
+  AND COLUMN_NAME = 'branchcode'
+  AND REFERENCED_TABLE_NAME IS NOT NULL;
+
+
+Bill: http://41.59.82.179/ega-zbc/bill_result
+Payment: http://41.59.82.179/ega-zbc/payments
+Reconciliation: http://41.59.82.179/ega-zbc/reconciliation
+
+================
+  ===== confirm everythibg is fine=====
+SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = 'zerp_backend'
+  AND COLUMN_NAME = 'debtorno'
+  AND CHARACTER_MAXIMUM_LENGTH < 32;
+  ===== you should get 0================
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Drop all debtorno FKs
+ALTER TABLE contracts                   DROP FOREIGN KEY contracts_ibfk_1;
+ALTER TABLE custbranch                  DROP FOREIGN KEY custbranch_ibfk_1;
+ALTER TABLE custitem                    DROP FOREIGN KEY custitem_ibfk_2;
+ALTER TABLE orderdeliverydifferenceslog DROP FOREIGN KEY orderdeliverydifferenceslog_ibfk_2;
+ALTER TABLE recurringsalesorders        DROP FOREIGN KEY recurringsalesorders_ibfk_1;
+ALTER TABLE salesorders                 DROP FOREIGN KEY salesorders_ibfk_1;
+
+-- Alter the two remaining tables
+ALTER TABLE custitem      MODIFY COLUMN debtorno VARCHAR(32) NOT NULL;
+ALTER TABLE debtorsmaster MODIFY COLUMN debtorno VARCHAR(32) NOT NULL;
+
+-- Recreate all FKs
+ALTER TABLE custbranch                  ADD CONSTRAINT custbranch_ibfk_1                  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE custitem                    ADD CONSTRAINT custitem_ibfk_2                    FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE orderdeliverydifferenceslog ADD CONSTRAINT orderdeliverydifferenceslog_ibfk_2 FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE contracts                   ADD CONSTRAINT contracts_ibfk_1                   FOREIGN KEY (debtorno, branchcode) REFERENCES custbranch(debtorno, branchcode);
+ALTER TABLE recurringsalesorders        ADD CONSTRAINT recurringsalesorders_ibfk_1        FOREIGN KEY (debtorno, branchcode) REFERENCES custbranch(debtorno, branchcode);
+ALTER TABLE salesorders                 ADD CONSTRAINT salesorders_ibfk_1                 FOREIGN KEY (debtorno, branchcode) REFERENCES custbranch(debtorno, branchcode);
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- Final verify
+SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = 'zerp_backend'
+  AND COLUMN_NAME = 'debtorno'
+ORDER BY CHARACTER_MAXIMUM_LENGTH, TABLE_NAME;
+
+SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = 'zerp_backend'
+AND COLUMN_NAME = 'debtorno'
+ORDER BY CHARACTER_MAXIMUM_LENGTH, TABLE_NAME;
++-----------------------------+-------------+--------------------------+
+| TABLE_NAME                  | COLUMN_NAME | CHARACTER_MAXIMUM_LENGTH |
++-----------------------------+-------------+--------------------------+
+| contracts                   | debtorno    |                       32 |
+| custbranch                  | debtorno    |                       32 |
+| custcontacts                | debtorno    |                       32 |
+| custitem                    | debtorno    |                       32 |
+| custnotes                   | debtorno    |                       32 |
+| debtorsmaster               | debtorno    |                       32 |
+| debtortrans                 | debtorno    |                       32 |
+| orderdeliverydifferenceslog | debtorno    |                       32 |
+| prices                      | debtorno    |                       32 |
+| recurringsalesorders        | debtorno    |                       32 |
+| salesorders                 | debtorno    |                       32 |
+| sellthroughsupport          | debtorno    |                       32 |
+| stockmoves                  | debtorno    |                       32 |
++-----------------------------+-------------+--------------------------+
+13 rows in set (0.013 sec)
+
+SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = 'zerp_backend'
+AND COLUMN_NAME = 'debtorno'
+ORDER BY CHARACTER_MAXIMUM_LENGTH, TABLE_NAME;
+
+
+==========branchcode================
+SELECT TABLE_NAME, CONSTRAINT_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
+FROM information_schema.KEY_COLUMN_USAGE
+ WHERE TABLE_SCHEMA = 'zerp_backend'
+  AND COLUMN_NAME = 'branchcode'
+  AND REFERENCED_TABLE_NAME IS NOT NULL
+ ORDER BY TABLE_NAME, CONSTRAINT_NAME;
+ SET FOREIGN_KEY_CHECKS = 0;
+
+-- Drop all branchcode FKs
+ALTER TABLE contracts            DROP FOREIGN KEY contracts_ibfk_1;
+ALTER TABLE recurringsalesorders DROP FOREIGN KEY recurringsalesorders_ibfk_1;
+ALTER TABLE salesorders          DROP FOREIGN KEY salesorders_ibfk_1;
+
+-- Alter parent first, then children
+ALTER TABLE custbranch           MODIFY COLUMN branchcode VARCHAR(32) NOT NULL;
+ALTER TABLE contracts            MODIFY COLUMN branchcode VARCHAR(32) NOT NULL;
+ALTER TABLE recurringsalesorders MODIFY COLUMN branchcode VARCHAR(32) NOT NULL;
+ALTER TABLE prices               MODIFY COLUMN branchcode VARCHAR(32) NOT NULL;
+ALTER TABLE salesorders          MODIFY COLUMN branchcode VARCHAR(32) NOT NULL;
+ALTER TABLE debtortrans          MODIFY COLUMN branchcode VARCHAR(32) NOT NULL;
+ALTER TABLE www_users            MODIFY COLUMN branchcode VARCHAR(32) NOT NULL;
+ALTER TABLE stockmoves           MODIFY COLUMN branchcode VARCHAR(32) NOT NULL;
+
+-- Recreate FKs (compound key with debtorno — already VARCHAR(32))
+ALTER TABLE contracts            ADD CONSTRAINT contracts_ibfk_1            FOREIGN KEY (debtorno, branchcode) REFERENCES custbranch(debtorno, branchcode);
+ALTER TABLE recurringsalesorders ADD CONSTRAINT recurringsalesorders_ibfk_1 FOREIGN KEY (debtorno, branchcode) REFERENCES custbranch(debtorno, branchcode);
+ALTER TABLE salesorders          ADD CONSTRAINT salesorders_ibfk_1          FOREIGN KEY (debtorno, branchcode) REFERENCES custbranch(debtorno, branchcode);
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- Verify
+SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = 'zerp_backend'
+  AND COLUMN_NAME = 'branchcode'
+ORDER BY CHARACTER_MAXIMUM_LENGTH, TABLE_NAME;
 

@@ -1244,156 +1244,153 @@ function CreateCreditNote($Header,$LineDetails, $User, $Password) {
  ************ USE ONLY WITH CAUTION********************
  */
 function InsertSalesInvoice($InvoiceDetails, $user, $password) {
-	$Errors = array();
-	$db = db($user, $password);
-	if (gettype($db)=='integer') {
-		$Errors[0]=NoAuthorisation;
-		return $Errors;
-	}
-	foreach ($InvoiceDetails as $key => $Value) {
-		$InvoiceDetails[$key] = DB_escape_string($Value);
-	}
-	$PartCode=$InvoiceDetails['partcode'];
-
-	//hardcoded for testing purposes
-    $PartCode = 'ZTL001';
-	//return $PartCode.' --> '.$Searchsql.' -->'.$InvoiceDetails['partcode'];
-	//return $PartCode;
-	$Errors=VerifyStockCodeExists($PartCode, sizeof($Errors), $Errors );
-	//$Errors=VerifyInvoiceStockCodeExists($PartCode, sizeof($Errors), $Errors );
-	unset($InvoiceDetails['partcode']);
-	$SalesArea=$InvoiceDetails['salesarea'];
-	unset($InvoiceDetails['salesarea']);
-	$InvoiceDetails['transno']=GetNextTransNo(10);
-	$InvoiceDetails['order_']=$InvoiceDetails['transno'];
-	$InvoiceDetails['type'] = 10;
-	$Errors=VerifyDebtorExists($InvoiceDetails['debtorno'], sizeof($Errors), $Errors);
-	$Errors=VerifyBranchNoExists($InvoiceDetails['debtorno'],$InvoiceDetails['branchcode'], sizeof($Errors), $Errors);
-	$Errors=VerifyTransNO($InvoiceDetails['transno'], 10, sizeof($Errors), $Errors);
-	$InvoiceDetails['trandate']=$InvoiceDetails['trandate'];
-	//return $InvoiceDetails['trandate'];
-	//$Errors=VerifyDateFormat($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
-	//$Errors=VerifyInvoiceTransactionDate($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
-	if (isset($InvoiceDetails['settled'])){
-		$Errors=VerifySettled($InvoiceDetails['settled'], sizeof($Errors), $Errors);
-	}
-	if (isset($InvoiceDetails['reference'])){
-		$Errors=VerifyReference($InvoiceDetails['reference'], sizeof($Errors), $Errors);
-	}
-	if (isset($InvoiceDetails['tpe'])){
-		$Errors=VerifyTpe($InvoiceDetails['tpe'], sizeof($Errors), $Errors);
-	}
-	if (isset($InvoiceDetails['order_'])){
-		$Errors=VerifyOrderNumber($InvoiceDetails['order_'], sizeof($Errors), $Errors);
-	}
-	if (isset($InvoiceDetails['rate'])){
-		$Errors=VerifyExchangeRate($InvoiceDetails['rate'], sizeof($Errors), $Errors);
-	}
-	if (isset($InvoiceDetails['ovamount'])){
-		$Errors=VerifyOVAmount($InvoiceDetails['ovamount'], sizeof($Errors), $Errors);
-	}
-	if (isset($InvoiceDetails['ovgst'])){
-		$Errors=VerifyOVGst($InvoiceDetails['ovgst'], sizeof($Errors), $Errors);
-	}
-	if (isset($InvoiceDetails['ovfreight'])){
-		$Errors=VerifyOVFreight($InvoiceDetails['ovfreight'], sizeof($Errors), $Errors);
-	}
-	if (isset($InvoiceDetails['ovdiscount'])){
-		$Errors=VerifyOVDiscount($InvoiceDetails['ovdiscount'], sizeof($Errors), $Errors);
-	}
-	if (isset($InvoiceDetails['diffonexch'])){
-		$Errors=VerifyDiffOnExchange($InvoiceDetails['diffonexch'], sizeof($Errors), $Errors);
-	}
-	if (isset($InvoiceDetails['alloc'])){
-		$Errors=VerifyAllocated($InvoiceDetails['alloc'], sizeof($Errors), $Errors);
-	}
-	if (isset($InvoiceDetails['invtext'])){
-		$Errors=VerifyInvoiceText($InvoiceDetails['invtext'], sizeof($Errors), $Errors);
-	}
-	if (isset($InvoiceDetails['shipvia'])){
-		$Errors=VerifyShipVia($InvoiceDetails['shipvia'], sizeof($Errors), $Errors);
-	}
-	if (isset($InvoiceDetails['edisent'])){
-		$Errors=VerifyEdiSent($InvoiceDetails['edisent'], sizeof($Errors), $Errors);
-	}
-	if (isset($InvoiceDetails['consignment'])){
-		$Errors=VerifyConsignment($InvoiceDetails['consignment'], sizeof($Errors), $Errors);
-	}
-	$FieldNames='';
-	$FieldValues='';
-	$InvoiceDetails['trandate']=ConvertToSQLDate($InvoiceDetails['trandate']);
-	//hardcodedate for testing
-	$InvoiceDetails['trandate']= date("Y-m-d"); //'2025-12-17';
-	$InvoiceDetails['prd']=GetPeriodFromTransactionDate($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
-	//hardcode for testing
-	//$InvoiceDetails['prd']=1;
-	foreach ($InvoiceDetails as $key => $Value) {
-		$FieldNames.=$key.', ';
-		$FieldValues.='"'.$Value.'", ';
-	}
-	if (sizeof($Errors)==0) {
-		DB_Txn_Begin();
-		$SQL = "INSERT INTO debtortrans (" . mb_substr($FieldNames,0,-2) .")
-								VALUES (" . mb_substr($FieldValues,0,-2) .") ";
-								//return $SQL;
-		$Result = DB_query($SQL);
-		$SQL = "UPDATE systypes SET typeno='" . $InvoiceDetails['transno'] . "' WHERE typeid=10";
-		$Result = DB_query($SQL);
-		//update salesorder table
-		//hardcode for testing purposes
-		$SalesArea = 3;
-		$ordertype = 1;
-		$salesperson = 1;
-		$SQL = "INSERT INTO salesorders (orderno,debtorno,branchcode,orddate,ordertype,salesperson,deliverydate,fromstkloc,shipvia) 
-		        VALUES ('" . $InvoiceDetails['transno'] ."',
-				        '" . $InvoiceDetails['debtorno'] ."',
-						'" . $InvoiceDetails['branchcode'] ."',
-						'" . $InvoiceDetails['trandate'] ."',
-						'" . $InvoiceDetails['type'] ."',
-						'" . $InvoiceDetails['salesperson'] ."',
-						'" . $InvoiceDetails['trandate'] ."',
-						'" . $SalesArea ."',
-						'" . $InvoiceDetails['shipvia'] ."')";
-						//return $SQL;
-		$Result = DB_query($SQL);
-		$SalesGLCode=GetSalesGLCode($SalesArea, $PartCode);
-		$DebtorsGLCode=GetDebtorsGLCode();
-		$SQL="INSERT INTO gltrans VALUES(null,
-										10,
-										'" . $InvoiceDetails['transno'] . "',
-										0,
-										'" . $InvoiceDetails['trandate'] ."',
-										'" . $InvoiceDetails['prd'] . "',
-										'" . $DebtorsGLCode. "',
-										'". __('Invoice for') .' -' . $InvoiceDetails['debtorno'] .' ' . __('Total') . ' - '. $InvoiceDetails['ovamount'] . "',
-										'" . $InvoiceDetails['ovamount'] . "',
-										'" . $InvoiceDetails['jobref'] . "')";
-      //  $SQL="INSERT INTO gltrans VALUES(null,10,'" . GetNextTransNo(10) . "',0,'" . $InvoiceDetails['trandate'] ."','" . $InvoiceDetails['prd'] . "','" . $DebtorsGLCode. "','". __('Invoice for') .' -' . $InvoiceDetails['debtorno'] .' ' . __('Total') . ' - '. $InvoiceDetails['ovamount'] . "','" . $InvoiceDetails['ovamount'] . "',0,'" . $InvoiceDetails['jobref'] . "',1)";								
-		//								return $SQL;
-		$Result = api_DB_query($SQL);
-		$SQL="INSERT INTO gltrans VALUES(null,
-										10,
-										'" . $InvoiceDetails['transno'] . "',
-										0,
-										'" . $InvoiceDetails['trandate'] ."',
-										'" . $InvoiceDetails['prd'] . "',
-										'" . $SalesGLCode . "',
-										'" . __('Invoice for') . ' -' . $InvoiceDetails['debtorno'] . ' ' . __('Total') .' - '. $InvoiceDetails['ovamount'] ."',
-										'" . (-intval($InvoiceDetails['ovamount'])) ."',
-										'" . $InvoiceDetails['jobref'] . "')";
-		$Result = api_DB_query($SQL);
-		DB_Txn_Commit();
-		if (DB_error_no() != 0) {
-			$Errors[0] = DatabaseUpdateFailed;
-		} else {
-			$Errors[0]=0;
-			//  Return invoice number too
-			$Errors[] = $InvoiceDetails['transno'];
-		}
-		return  $Errors;
-	} else {
-		return $Errors;
-	}
+    $Errors = array();
+    $db = db($user, $password);
+    if (gettype($db)=='integer') {
+        $Errors[0]=NoAuthorisation;
+        return $Errors;
+    }
+    foreach ($InvoiceDetails as $key => $Value) {
+        $InvoiceDetails[$key] = DB_escape_string($Value);
+    }
+    $PartCode=$InvoiceDetails['partcode'];
+    // REMOVED: return 'step1';
+    $Errors=VerifyStockCodeExists($PartCode, sizeof($Errors), $Errors);
+    $Errors=VerifyInvoiceStockCodeExists($PartCode, sizeof($Errors), $Errors);
+    unset($InvoiceDetails['partcode']);
+    $SalesArea=$InvoiceDetails['salesarea'];
+    unset($InvoiceDetails['salesarea']);
+    $InvoiceDetails['transno']=GetNextTransNo(10);
+    $InvoiceDetails['order_']=$InvoiceDetails['transno'];
+    $InvoiceDetails['type'] = 10;
+    $Errors=VerifyDebtorExists($InvoiceDetails['debtorno'], sizeof($Errors), $Errors);
+    $Errors=VerifyBranchNoExists($InvoiceDetails['debtorno'],$InvoiceDetails['branchcode'], sizeof($Errors), $Errors);
+    $Errors=VerifyTransNO($InvoiceDetails['transno'], 10, sizeof($Errors), $Errors);
+    $InvoiceDetails['trandate']=$InvoiceDetails['trandate'];
+    $Errors=VerifyDateFormat($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
+    $Errors=VerifyInvoiceTransactionDate($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
+    if (isset($InvoiceDetails['settled'])){
+        $Errors=VerifySettled($InvoiceDetails['settled'], sizeof($Errors), $Errors);
+    }
+    if (isset($InvoiceDetails['reference'])){
+        $Errors=VerifyReference($InvoiceDetails['reference'], sizeof($Errors), $Errors);
+    }
+    if (isset($InvoiceDetails['tpe'])){
+        $Errors=VerifyTpe($InvoiceDetails['tpe'], sizeof($Errors), $Errors);
+    }
+    if (isset($InvoiceDetails['order_'])){
+        $Errors=VerifyOrderNumber($InvoiceDetails['order_'], sizeof($Errors), $Errors);
+    }
+    if (isset($InvoiceDetails['rate'])){
+        $Errors=VerifyExchangeRate($InvoiceDetails['rate'], sizeof($Errors), $Errors);
+    }
+    if (isset($InvoiceDetails['ovamount'])){
+        $Errors=VerifyOVAmount($InvoiceDetails['ovamount'], sizeof($Errors), $Errors);
+    }
+    if (isset($InvoiceDetails['ovgst'])){
+        $Errors=VerifyOVGst($InvoiceDetails['ovgst'], sizeof($Errors), $Errors);
+    }
+    if (isset($InvoiceDetails['ovfreight'])){
+        $Errors=VerifyOVFreight($InvoiceDetails['ovfreight'], sizeof($Errors), $Errors);
+    }
+    if (isset($InvoiceDetails['ovdiscount'])){
+        $Errors=VerifyOVDiscount($InvoiceDetails['ovdiscount'], sizeof($Errors), $Errors);
+    }
+    if (isset($InvoiceDetails['diffonexch'])){
+        $Errors=VerifyDiffOnExchange($InvoiceDetails['diffonexch'], sizeof($Errors), $Errors);
+    }
+    if (isset($InvoiceDetails['alloc'])){
+        $Errors=VerifyAllocated($InvoiceDetails['alloc'], sizeof($Errors), $Errors);
+    }
+    if (isset($InvoiceDetails['invtext'])){
+        $Errors=VerifyInvoiceText($InvoiceDetails['invtext'], sizeof($Errors), $Errors);
+    }
+    if (isset($InvoiceDetails['shipvia'])){
+        $Errors=VerifyShipVia($InvoiceDetails['shipvia'], sizeof($Errors), $Errors);
+    }
+    if (isset($InvoiceDetails['edisent'])){
+        $Errors=VerifyEdiSent($InvoiceDetails['edisent'], sizeof($Errors), $Errors);
+    }
+    if (isset($InvoiceDetails['consignment'])){
+        $Errors=VerifyConsignment($InvoiceDetails['consignment'], sizeof($Errors), $Errors);
+    }
+    $FieldNames='';
+    $FieldValues='';
+    $InvoiceDetails['trandate']=ConvertToSQLDate($InvoiceDetails['trandate']);
+    $InvoiceDetails['trandate']= date("Y-m-d");
+    $InvoiceDetails['prd']=GetPeriodFromTransactionDate($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
+    foreach ($InvoiceDetails as $key => $Value) {
+        $FieldNames.=$key.', ';
+        $FieldValues.='"'.$Value.'", ';
+    }
+    if (sizeof($Errors)==0) {
+        DB_Txn_Begin();
+        $SQL = "INSERT INTO debtortrans (" . mb_substr($FieldNames,0,-2) .")
+                VALUES (" . mb_substr($FieldValues,0,-2) .") ";
+        // REMOVED: return $SQL;
+        $Result = DB_query($SQL);
+        if (DB_error_no() != 0) {
+            DB_Txn_Rollback();
+            return ['error' => 'debtortrans INSERT failed', 'sql' => $SQL, 'err' => DB_error_msg()];
+        }
+        $SQL = "UPDATE systypes SET typeno='" . $InvoiceDetails['transno'] . "' WHERE typeid=10";
+        $Result = DB_query($SQL);
+        $SQL = "INSERT INTO salesorders (orderno,debtorno,branchcode,orddate,ordertype,salesperson,deliverydate,fromstkloc,shipvia) 
+                VALUES ('" . $InvoiceDetails['transno'] ."',
+                        '" . $InvoiceDetails['debtorno'] ."',
+                        '" . $InvoiceDetails['branchcode'] ."',
+                        '" . $InvoiceDetails['trandate'] ."',
+                        '" . $InvoiceDetails['type'] ."',
+                        '" . $InvoiceDetails['salesperson'] ."',
+                        '" . $InvoiceDetails['trandate'] ."',
+                        '" . $SalesArea ."',
+                        '" . $InvoiceDetails['shipvia'] ."')";
+        // REMOVED: return $SQL;
+        $Result = DB_query($SQL);
+        if (DB_error_no() != 0) {
+            DB_Txn_Rollback();
+            return ['error' => 'salesorders INSERT failed', 'sql' => $SQL, 'err' => DB_error_msg()];
+        }
+        $SalesGLCode=GetSalesGLCode($SalesArea, $PartCode);
+        $DebtorsGLCode=GetDebtorsGLCode();
+        $SQL="INSERT INTO gltrans VALUES(null,
+                        10,
+                        '" . $InvoiceDetails['transno'] . "',
+                        0,
+                        '" . $InvoiceDetails['trandate'] ."',
+                        '" . $InvoiceDetails['prd'] . "',
+                        '" . $DebtorsGLCode. "',
+                        '". __('Invoice for') .' -' . $InvoiceDetails['debtorno'] .' ' . __('Total') . ' - '. $InvoiceDetails['ovamount'] . "',
+                        '" . $InvoiceDetails['ovamount'] . "',
+                        '" . $InvoiceDetails['jobref'] . "')";
+        // REMOVED: return $SQL;
+        $Result = api_DB_query($SQL);
+        if (DB_error_no() != 0) {
+            DB_Txn_Rollback();
+            return ['error' => 'gltrans debtors INSERT failed', 'sql' => $SQL, 'err' => DB_error_msg()];
+        }
+        $SQL="INSERT INTO gltrans VALUES(null,
+                        10,
+                        '" . $InvoiceDetails['transno'] . "',
+                        0,
+                        '" . $InvoiceDetails['trandate'] ."',
+                        '" . $InvoiceDetails['prd'] . "',
+                        '" . $SalesGLCode . "',
+                        '" . __('Invoice for') . ' -' . $InvoiceDetails['debtorno'] . ' ' . __('Total') .' - '. $InvoiceDetails['ovamount'] ."',
+                        '" . (-intval($InvoiceDetails['ovamount'])) ."',
+                        '" . $InvoiceDetails['jobref'] . "')";
+        $Result = api_DB_query($SQL);
+        if (DB_error_no() != 0) {
+            DB_Txn_Rollback();
+            return ['error' => 'gltrans sales INSERT failed', 'sql' => $SQL, 'err' => DB_error_msg()];
+        }
+        DB_Txn_Commit();
+        $Errors[0]=0;
+        $Errors[] = $InvoiceDetails['transno'];
+        return $Errors;
+    } else {
+        return $Errors;
+    }
 }
 
 /** This function is quite specific and probably not generally useful
