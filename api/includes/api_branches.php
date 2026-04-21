@@ -509,7 +509,8 @@ function GetCustomerBranchCodes($DebtorNumber, $user, $password)
 			$Errors[] = $MyRow[0];
 		}
 	}
-	return  $Errors;
+	return $SQL;
+	//return  $Errors;
 }
 
 /** This function takes a debtorno and branch code and returns an associative array containing
