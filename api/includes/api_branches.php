@@ -510,9 +510,9 @@ function GetCustomerBranchCodes($DebtorNumber, $user, $password)
 		}
 	}
 	if($Errors == 0){
-       return  'NoRecords';
+       return  $Errors;
 	}else{
-       return  $Errors.'-ok';
+       return  $Errors.'NoRecord Found';
 	}
 }
 
