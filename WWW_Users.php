@@ -8,25 +8,150 @@ $Title = __('Users Maintenance');
 $ViewTopic = 'GettingStarted';
 $BookMark = 'UserMaintenance';
 
-if (isset($_POST['UserID']) AND isset($_POST['ID'])) {
-	if ($_POST['UserID'] == $_POST['ID']) {
-		if (isset($_POST['UserLanguage']) && !checkLanguageChoice($_POST['UserLanguage'])) {
-			$_POST['UserLanguage'] = $DefaultLanguage;
-		}
-	} elseif (isset($_POST['UserLanguage']) && !checkLanguageChoice($_POST['UserLanguage'])) {
-		$_POST['UserLanguage'] = $DefaultLanguage;
+
+// Inject premium styles for the Architect workspace
+$ExtraHeadContent = '
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+	.ScriptTitle { display: none !important; }
+	.MainBody { padding: 0 !important; gap: 0 !important; background: transparent !important; }
+	.db-page { padding: var(--space-8) var(--space-6); background: var(--bg-main); min-height: 100vh; font-family: "Inter", sans-serif; }
+	
+	.premium-header { margin-bottom: 40px; }
+	
+	/* Architect Workspace Overrides */
+	.db-card { 
+		background: #ffffff; 
+		border-radius: 20px; 
+		border: 1px solid #e5e7eb; 
+		box-shadow: var(--shadow-sm);
+		overflow: hidden;
 	}
-}
+	.db-card-header { 
+		background: #f9fafb; 
+		border-bottom: 1px solid #f3f4f6; 
+		padding: 20px 30px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.db-card-title {
+		font-size: 1.1rem;
+		font-weight: 850;
+		color: #064e3b;
+		margin: 0;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+	}
+	
+	.architect-btn {
+		display: inline-flex; align-items: center; gap: 10px;
+		padding: 12px 28px; border-radius: 50px;
+		background: #059669; color: #ffffff; border: none;
+		font-weight: 700; font-size: 0.85rem; text-decoration: none;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+		cursor: pointer;
+	}
+	.architect-btn:hover { background: #065f46; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3); }
+	.architect-btn i { color: #ffffff !important; }
+
+    /* Form Styles */
+    .db-form-section { margin-bottom: 32px; }
+    .db-form-label {
+        font-size: 0.72rem; 
+        text-transform: uppercase; 
+        font-weight: 900; 
+        letter-spacing: 1.2px; 
+        color: #065f46; 
+        display: block; 
+        margin-bottom: 8px;
+    }
+    .db-input {
+        width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border: 1px solid #d1fae5;
+        padding: 0 16px; box-sizing: border-box; background: #ffffff;
+    }
+    .db-input:focus { border-color: #059669; outline: none; box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1); }
+    
+    /* Responsive Layout */
+    .db-bottom-layout { 
+        display: grid; 
+        grid-template-columns: 280px 1fr; 
+        gap: 32px; 
+        align-items: start; 
+    }
+    
+    @media (max-width: 1200px) {
+        .db-bottom-layout { grid-template-columns: 280px 1fr; gap: 24px; }
+    }
+    
+    @media (max-width: 992px) {
+        .db-bottom-layout { grid-template-columns: 1fr; }
+        .db-sidebar { position: static; width: 100%; }
+        .premium-header { flex-direction: column; align-items: flex-start; gap: 24px; }
+        .db-header-actions { width: 100%; }
+        .architect-btn { width: 100%; justify-content: center; }
+    }
+
+    .module-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+    }
+    
+    /* Card Grids */
+    .card-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .card-grid-fill { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+    
+    .db-table-wrapper { overflow-x: auto; border-radius: 12px; }
+    .db-table th { white-space: nowrap; }
+
+    @media (max-width: 768px) {
+        .card-grid-2 { grid-template-columns: 1fr; }
+        .db-card-header { padding: 15px 20px; }
+        .db-card-body { padding: 20px !important; }
+        .premium-header h1 { font-size: 1.8rem !important; }
+    }
+</style>';
 
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme,
-	'/images/group_add.png" title="', // Icon image.
-	$Title, '" /> ', // Icon title.
-	$Title, '</p>';// Page title.
+echo '<div class="db-page">
+		<div class="premium-header">
+			<div style="display: flex; justify-content: space-between; align-items: flex-end;">
+				<div>
+					<div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 12px; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.6;">
+						<i class="fas fa-home"></i> ' . __('Setup') . ' <i class="fas fa-chevron-right" style="font-size: 0.6rem;"></i> ' . __('Identity') . '
+					</div>
+					<div style="display: flex; align-items: center; gap: 24px;">
+						<div>
+							<h1 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px; color: #064e3b; margin: 0; line-height: 1;">' . $Title . '</h1>
+							<p style="font-size: 1.1rem; margin-top: 8px; color: #065f46; font-weight: 500; opacity: 0.8;">' . __('Manage system access, security roles, and user preferences') . '</p>
+						</div>
+					</div>
+				</div>
+				<div class="db-header-actions">';
+
+if (isset($SelectedUser)) {
+    echo '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" class="architect-btn">
+            <i class="fas fa-users"></i> ' . __('Review Existing Users') . '
+          </a>';
+} else {
+    echo '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?NewUser=Yes" class="architect-btn">
+            <i class="fas fa-plus"></i> ' . __('Create New User') . '
+          </a>';
+}
+
+echo '				</div>
+			</div>
+		</div>';
 
 if ($AllowDemoMode) {
 	prnMsg(__('Demo mode is currently active, which disables the security model administration'), 'warn');
+	echo '</div>'; // End db-page
 	include(__DIR__ . '/includes/footer.php');
 	exit();
 }
@@ -64,6 +189,7 @@ $PDFLanguages = array(
 );
 
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
+include(__DIR__ . '/includes/LanguagesArray.php');
 
 // Make an array of the security roles
 $SQL = "SELECT secroleid,
@@ -152,19 +278,23 @@ if (isset($_POST['submit'])) {
 	}
 	$_POST['ModulesAllowed']= $ModulesAllowed;
 
-	// Initialize missing POST variables to prevent undefined array key warnings
-	if (!isset($_POST['Cust'])) {
-		$_POST['Cust'] = '';
-	}
-	if (!isset($_POST['BranchCode'])) {
-		$_POST['BranchCode'] = '';
-	}
-	if (!isset($_POST['SupplierID'])) {
-		$_POST['SupplierID'] = '';
-	}
-	if (!isset($_POST['Salesman'])) {
-		$_POST['Salesman'] = '';
-	}
+	// Initialize missing POST variables to prevent undefined array key warnings and ensure stable SQL
+	if (!isset($_POST['Cust'])) $_POST['Cust'] = '';
+	if (!isset($_POST['BranchCode'])) $_POST['BranchCode'] = '';
+	if (!isset($_POST['SupplierID'])) $_POST['SupplierID'] = '';
+	if (!isset($_POST['Salesman'])) $_POST['Salesman'] = '';
+    if (!isset($_POST['Blocked'])) $_POST['Blocked'] = 0;
+    if (!isset($_POST['Access'])) $_POST['Access'] = 0;
+    if (!isset($_POST['CanCreateTender'])) $_POST['CanCreateTender'] = 0;
+    if (!isset($_POST['Theme'])) $_POST['Theme'] = $_SESSION['Theme'];
+    if (!isset($_POST['UserLanguage'])) $_POST['UserLanguage'] = $_SESSION['Language'];
+    if (!isset($_POST['PDFLanguage'])) $_POST['PDFLanguage'] = 0;
+    if (!isset($_POST['PageSize'])) $_POST['PageSize'] = 'A4';
+    if (!isset($_POST['ShowDashboard'])) $_POST['ShowDashboard'] = 0;
+    if (!isset($_POST['ShowPageHelp'])) $_POST['ShowPageHelp'] = 1;
+    if (!isset($_POST['ShowFieldHelp'])) $_POST['ShowFieldHelp'] = 1;
+    if (!isset($_POST['Department'])) $_POST['Department'] = 0;
+    if (!isset($_POST['Timeout'])) $_POST['Timeout'] = 60;
 
 	if (isset($SelectedUser) AND $InputError != 1) {
 
@@ -362,31 +492,50 @@ if (isset($_POST['submit'])) {
 
 }
 
-if (!isset($SelectedUser)) {
 
-/* If its the first time the page has been displayed with no parameters then none of the above are true and the list of Users will be displayed with links to delete or edit each. These will call the same page again and allow update/input or deletion of the records*/
+/* --------------------------------------------------------------------------------------------------
+   MAIN DASHBOARD RENDERER
+   -------------------------------------------------------------------------------------------------- */
 
-	echo '<table class="selection">
-		<thead>
-			<tr>
-				<th class="SortedColumn">', __('User Login'), '</th>
-				<th class="SortedColumn">', __('Full Name'), '</th>
-				<th class="SortedColumn">', __('Telephone'), '</th>
-				<th class="SortedColumn">', __('Email'), '</th>
-				<th class="SortedColumn">', __('Timeout'), '</th>
-				<th class="SortedColumn">', __('Customer Code'), '</th>
-				<th class="SortedColumn">', __('Branch Code'), '</th>
-				<th class="SortedColumn">', __('Supplier Code'), '</th>
-				<th class="SortedColumn">', __('Salesperson'), '</th>
-				<th class="SortedColumn">', __('Last Visit'), '</th>
-				<th class="SortedColumn">', __('User Role'), '</th>
-				<th class="SortedColumn">', __('Report Size'), '</th>
-				<th class="SortedColumn">', __('Theme'), '</th>
-				<th class="SortedColumn">', __('Language'), '</th>
-				<th class="noPrint" colspan="2">&nbsp;</th>
-			</tr>
-		</thead>
-		<tbody>';
+/* VIEW: LIST REGISTRY */
+if (!isset($SelectedUser) && !isset($_GET['NewUser'])) {
+
+    echo '<div class="db-bottom-layout">';
+
+    echo '<aside class="db-sidebar">';
+    /* Sidebar Card: Registry Actions */
+    echo '<div class="db-card">
+            <div class="db-card-header">
+                <h3 class="db-card-title"><i class="fas fa-tools"></i>' . __('Maintenance') . '</h3>
+            </div>
+            <div style="padding: 24px;">
+                <p style="font-size: 0.85rem; color: #065f46; font-weight: 500; margin-bottom: 24px;">' . __('User accounts define the security perimeters and environmental preferences for each employee.') . '</p>
+                <a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?NewUser=Yes" class="architect-btn" style="width: 100%; justify-content: center;">
+                    <i class="fas fa-user-plus"></i> ' . __('Add New Member') . '
+                </a>
+            </div>
+        </div>';
+    echo '</aside>';
+
+    echo '<main class="db-main" style="display: flex; flex-direction: column; gap: 32px; overflow: hidden;">';
+	echo '<div class="db-card">
+            <div class="db-card-header">
+                <h3 class="db-card-title"><i class="fas fa-list-ul"></i> ' . __('Active User Registry') . '</h3>
+            </div>
+            <div class="db-table-wrapper">
+                <table class="db-table">
+                    <thead>
+                        <tr style="height: 60px;">
+                            <th style="padding-left: 30px;">', __('Login'), '</th>
+                            <th>', __('Full Name'), '</th>
+                            <th>', __('Role'), '</th>
+                            <th>', __('Email'), '</th>
+                            <th>', __('Last Visit'), '</th>
+                            <th>', __('Language'), '</th>
+                            <th style="padding-right: 30px;" class="noPrint">', __('Actions'), '</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
 
 	$SQL = "SELECT userid,
 					realname,
@@ -405,7 +554,6 @@ if (!isset($SelectedUser)) {
 					language
 				FROM www_users";
 
-	// Only Sys Admin can see other sys admins. To prevent rogue employees playing with sys admin rights;-)
 	if ($_SESSION['AccessLevel'] != 8){
 		$SQL = $SQL . " WHERE fullaccess != '8'";
 	}
@@ -414,482 +562,357 @@ if (!isset($SelectedUser)) {
 
 	while ($MyRow = DB_fetch_array($Result)) {
 		if (!isset($MyRow['lastvisitdate'])) {
-			$LastVisitDate = __('No login record');
+			$LastVisitDate = __('Never');
 		} else {
 			$LastVisitDate = ConvertSQLDate($MyRow['lastvisitdate']);
 		}
-		/*The SecurityHeadings array is defined in config.php */
-		echo '<tr class="striped_row">
-				<td class="text">', $MyRow['userid'], '</td>
-				<td class="text">', $MyRow['realname'], '</td>
-				<td class="text">', $MyRow['phone'], ' </td>
-				<td class="text">', $MyRow['email'], '</td>
-				<td class="number">', $MyRow['timeout'], ' ' , __('mins') , '</td>
-				<td class="text">', $MyRow['customerid'], '</td>
-				<td class="text">', $MyRow['branchcode'], '</td>
-				<td class="text">', $MyRow['supplierid'], '</td>
-				<td class="text">', $MyRow['salesman'], '</td>
-				<td class="date">', $LastVisitDate, '</td>
-				<td class="text">', $SecurityRoles[($MyRow['fullaccess'])], '</td>
-				<td class="text">', $MyRow['pagesize'], '</td>
-				<td class="text">', $MyRow['theme'], '</td>
-				<td class="text">', $LanguagesArray[$MyRow['language']]['LanguageName'], '</td>
-				<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '?', '&amp;SelectedUser=', $MyRow['userid'], '">', __('Edit'), '</a></td>
-				<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '?', '&amp;SelectedUser=', $MyRow['userid'], '&amp;delete=1" onclick="return confirm(\'', __('Are you sure you wish to delete this user?'), '\');">', __('Delete'), '</a></td>
+        
+        $EditLink = htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedUser=' . $MyRow['userid'];
+        $DeleteLink = htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedUser=' . $MyRow['userid'] . '&amp;delete=1';
+
+		echo '<tr style="height: 65px;">
+				<td style="padding-left: 30px; font-weight: 800; color: #059669;">
+                    <a href="' . $EditLink . '" style="color: #059669; text-decoration: none; border-bottom: 1px dashed transparent; transition: all 0.2s;" onmouseover="this.style.borderBottomColor=\'#059669\'" onmouseout="this.style.borderBottomColor=\'transparent\'">' . $MyRow['userid'] . '</a>
+                </td>
+				<td style="font-weight: 600;">' . $MyRow['realname'] . '</td>
+				<td><span style="background: #f3f4f6; color: #4b5563; padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 800;">' . $SecurityRoles[$MyRow['fullaccess']] . '</span></td>
+				<td style="color: #6b7280; font-size: 0.85rem;">' . $MyRow['email'] . '</td>
+				<td style="font-size: 0.85rem;">' . $LastVisitDate . '</td>
+				<td style="font-size: 0.85rem;">' . $LanguagesArray[$MyRow['language']]['LanguageName'] . '</td>
+				<td style="padding-right: 30px;" class="noPrint">
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <a href="' . $EditLink . '" title="' . __('Edit') . '" style="color: #059669; text-decoration: none; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="' . $DeleteLink . '" title="' . __('Delete') . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this user?') . '\');" style="color: #ef4444; text-decoration: none; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                    </div>
+                </td>
 			</tr>';
-	}// END foreach($Result as $MyRow).
-	echo '</tbody></table>';
-} //end of ifs and buts!
-
-
-if (isset($SelectedUser)) {
-	echo '<div class="centre"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">' . __('Review Existing Users') . '</a></div>';
-}
-
-echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-if (isset($SelectedUser)) {
-	//editing an existing User
-
-	$SQL = "SELECT
-				userid,
-				realname,
-				phone,
-				email,
-				timeout,
-				customerid,
-				branchcode,
-				supplierid,
-				salesman,
-				pagesize,
-				fullaccess,
-				cancreatetender,
-				defaultlocation,
-				modulesallowed,
-				showdashboard,
-				showpagehelp,
-				showfieldhelp,
-				blocked,
-				theme,
-				language,
-				pdflanguage,
-				department
-			FROM www_users
-			WHERE userid='" . $SelectedUser . "'";
-
-	$Result = DB_query($SQL);
-	$MyRow = DB_fetch_array($Result);
-
-	$_POST['UserID'] = $MyRow['userid'];
-	$_POST['RealName'] = $MyRow['realname'];
-	$_POST['Phone'] = $MyRow['phone'];
-	$_POST['Email'] = $MyRow['email'];
-	$_POST['Timeout']	= $MyRow['timeout'];
-	$_POST['Cust']	= $MyRow['customerid'];
-	$_POST['BranchCode'] = $MyRow['branchcode'];
-	$_POST['SupplierID'] = $MyRow['supplierid'];
-	$_POST['Salesman'] = $MyRow['salesman'];
-	$_POST['PageSize'] = $MyRow['pagesize'];
-	$_POST['Access'] = $MyRow['fullaccess'];
-	$_POST['CanCreateTender'] = $MyRow['cancreatetender'];
-	$_POST['DefaultLocation'] = $MyRow['defaultlocation'];
-	$_POST['ModulesAllowed'] = $MyRow['modulesallowed'];
-	$_POST['ShowDashboard'] = $MyRow['showdashboard'];
-	$_POST['ShowPageHelp'] = $MyRow['showpagehelp'];
-	$_POST['ShowFieldHelp'] = $MyRow['showfieldhelp'];
-	$_POST['Blocked'] = $MyRow['blocked'];
-	$_POST['Theme'] = $MyRow['theme'];
-	$_POST['UserLanguage'] = $MyRow['language'];
-	$_POST['PDFLanguage'] = $MyRow['pdflanguage'];
-	$_POST['Department'] = $MyRow['department'];
-
-	echo '<input type="hidden" name="SelectedUser" value="' . $SelectedUser . '" />';
-	echo '<input type="hidden" name="UserID" value="' . $_POST['UserID'] . '" />';
-	echo '<input type="hidden" name="ModulesAllowed" value="' . $_POST['ModulesAllowed'] . '" />';
-
-	echo '<fieldset>
-			<legend>', __('Amend User Details'), '</legend>
-			<field>
-				<label for="UserID">' . __('User Code') . ':</label>
-				<fieldtext>' . $_POST['UserID'] . '</fieldtext>
-			</field>';
-
-} else { //end of if $SelectedUser only do the else when a new record is being entered
-
-	echo '<fieldset>
-			<legend>', __('Create New User'), '</legend>
-			<field>
-				<label for="UserID">' . __('User Login') . ':</label>
-				<input pattern="(?!^([aA]{1}[dD]{1}[mM]{1}[iI]{1}[nN]{1})$)[^?+.&\\>< ]{4,}" type="text" required="required" name="UserID" size="22" maxlength="20" placeholder="'.__('At least 4 characters').'" title="" />
-				<fieldhelp>'.__('Please input not less than 4 characters and canot be admin or contains illegal characters').'</fieldhelp>
-			</field>';
-
-	/*set the default modules to show to all
-	this had trapped a few people previously*/
-	$i=0;
-	if (!isset($_POST['ModulesAllowed'])) {
-		$_POST['ModulesAllowed']='';
 	}
-	foreach($ModuleList as $ModuleName) {
-		if ($i>0) {
-			$_POST['ModulesAllowed'] .=',';
-		}
-		$_POST['ModulesAllowed'] .= '1';
-		$i++;
-	}
-	$_POST['ShowDashboard'] = 0;
-	$_POST['ShowPageHelp'] = 1;
-	$_POST['ShowFieldHelp'] = 1;
-}
+	echo '</tbody></table></div></div>';
+    echo '</main>';
+    echo '</div>'; // End db-bottom-layout
 
-if (!isset($_POST['RealName'])) {
-	$_POST['RealName']='';
-}
-if (!isset($_POST['Phone'])) {
-	$_POST['Phone']='';
-}
-if (!isset($_POST['Email'])) {
-	$_POST['Email']='';
-}
-if (!isset($_POST['Timeout'])) {
-	$_POST['Timeout']=10;
-}
-echo '<field>
-		<label for="Password">' . __('Password') . ':</label>
-		<input type="password" pattern=".{5,}" name="Password" ' . (!isset($SelectedUser) ? 'required="required"' : '') . ' size="22" maxlength="20" value="" placeholder="'.__('At least 5 characters').'" title="" />
-		<fieldhelp>'.__('Passwords must be 5 characters or more and cannot same as the users id. A mix of upper and lower case and some non-alphanumeric characters are recommended.').'</fieldhelp>
-	</field>';
-echo '<field>
-		<label for="RealName">' . __('Full Name') . ':</label>
-		<input type="text" name="RealName" ' . (isset($SelectedUser) ? 'autofocus="autofocus"' : '') . ' required="required" value="' . $_POST['RealName'] . '" size="36" maxlength="35" />
-	</field>';
-echo '<field>
-		<label for="Phone">' . __('Telephone No') . ':</label>
-		<input type="tel" name="Phone" pattern="[0-9+()\s-]*" value="' . $_POST['Phone'] . '" size="32" maxlength="30" />
-	</field>';
-echo '<field>
-		<label for="Email">' . __('Email Address') .':</label>
-		<input type="email" name="Email" placeholder="' . __('e.g. user@domain.com') . '" required="required" value="' . $_POST['Email'] .'" size="32" maxlength="55" title="" />
-		<fieldhelp>'.__('A valid email address is required').'</fieldhelp>
-	</field>';
-echo '<field>
-		<label for="Timeout">' . __('Timeout after') .':</label>
-		<input type="text" class="number" name="Timeout" required="required" value="' . $_POST['Timeout'] .'" size="4" maxlength="5" title="" />&nbsp;', __('minutes'), '
-		<fieldhelp>'.__('Log the user out after this interval of non-use').'</fieldhelp>
-	</field>';
-echo '<field>
-		<label for="Access">' . __('User Role') . ':</label>
-		<select name="Access">';
-
-foreach($SecurityRoles as $SecKey => $SecVal) {
-	if (isset($_POST['Access']) and $SecKey == $_POST['Access']) {
-		echo '<option selected="selected" value="' . $SecKey . '">' . $SecVal . '</option>';
-	} else {
-		echo '<option value="' . $SecKey . '">' . $SecVal . '</option>';
-	}
-}
-echo '</select>';
-echo '<input type="hidden" name="ID" value="'.$_SESSION['UserID'].'" />
-	</field>';
-
-echo '<field>
-		<label for="CanCreateTender">' . __('User Can Create Tenders') . ':</label>
-		<select name="CanCreateTender">';
-
-if (isset($_POST['CanCreateTender']) and $_POST['CanCreateTender']==0) {
-	echo '<option selected="selected" value="0">' . __('No') . '</option>';
-	echo '<option value="1">' . __('Yes') . '</option>';
 } else {
- 	echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-	echo '<option value="0">' . __('No') . '</option>';
+    /* VIEW: EDIT/CREATE FORM */
+
+    if (isset($SelectedUser)) {
+        //editing an existing User
+        $SQL = "SELECT * FROM www_users WHERE userid='" . $SelectedUser . "'";
+        $Result = DB_query($SQL);
+        $MyRow = DB_fetch_array($Result);
+
+        $_POST['UserID'] = $MyRow['userid'];
+        $_POST['RealName'] = $MyRow['realname'];
+        $_POST['Phone'] = $MyRow['phone'];
+        $_POST['Email'] = $MyRow['email'];
+        $_POST['Timeout'] = $MyRow['timeout'];
+        $_POST['Cust'] = $MyRow['customerid'];
+        $_POST['BranchCode'] = $MyRow['branchcode'];
+        $_POST['SupplierID'] = $MyRow['supplierid'];
+        $_POST['Salesman'] = $MyRow['salesman'];
+        $_POST['PageSize'] = $MyRow['pagesize'];
+        $_POST['Access'] = $MyRow['fullaccess'];
+        $_POST['CanCreateTender'] = $MyRow['cancreatetender'];
+        $_POST['DefaultLocation'] = $MyRow['defaultlocation'];
+        $_POST['ModulesAllowed'] = $MyRow['modulesallowed'];
+        $_POST['ShowDashboard'] = $MyRow['showdashboard'];
+        $_POST['ShowPageHelp'] = $MyRow['showpagehelp'];
+        $_POST['ShowFieldHelp'] = $MyRow['showfieldhelp'];
+        $_POST['Blocked'] = $MyRow['blocked'];
+        $_POST['Theme'] = $MyRow['theme'];
+        $_POST['UserLanguage'] = $MyRow['language'];
+        $_POST['PDFLanguage'] = $MyRow['pdflanguage'];
+        $_POST['Department'] = $MyRow['department'];
+    } else {
+        // New User defaults
+        $i=0;
+        if (!isset($_POST['ModulesAllowed'])) {
+            $_POST['ModulesAllowed']='';
+            foreach($ModuleList as $ModuleName) {
+                if ($i>0) $_POST['ModulesAllowed'] .=',';
+                $_POST['ModulesAllowed'] .= '1';
+                $i++;
+            }
+        }
+        $_POST['ShowDashboard'] = 0;
+        $_POST['ShowPageHelp'] = 1;
+        $_POST['ShowFieldHelp'] = 1;
+        $_POST['UserID'] = ''; // Ensure UserID is empty for new users
+        if (!isset($_POST['Timeout'])) $_POST['Timeout']=60;
+    }
+
+    if (isset($SelectedUser) || isset($_GET['NewUser'])) {
+
+        echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" style="display: contents;">';
+        echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+
+        if (isset($SelectedUser)) {
+            echo '<input type="hidden" name="SelectedUser" value="' . $SelectedUser . '" />';
+            echo '<input type="hidden" name="UserID" value="' . $_POST['UserID'] . '" />';
+        }
+        echo '<input type="hidden" name="ModulesAllowed" value="' . ($_POST['ModulesAllowed'] ?? '') . '" />';
+
+        echo '<div class="db-bottom-layout">
+                <aside class="db-sidebar">
+                    <div class="db-card">
+                        <div class="db-card-header">
+                            <h3 class="db-card-title"><i class="fas fa-info-circle"></i> ' . __('Status') . '</h3>
+                        </div>
+                        <div style="padding: 24px;">
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: #6b7280;">' . __('Mode') . '</span>
+                                    <span class="db-badge ' . (isset($SelectedUser) ? 'db-badge-info' : 'db-badge-success') . '">' . (isset($SelectedUser) ? __('Editing') : __('Creating')) . '</span>
+                                </div>';
+        if (isset($SelectedUser)) {
+            echo '              <div style="display: flex; justify-content: space-between;">
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: #6b7280;">' . __('ID') . '</span>
+                                    <span style="font-size: 0.85rem; font-weight: 900; color: #064e3b;">' . $_POST['UserID'] . '</span>
+                                </div>';
+        }
+        echo '              </div>
+                            <hr style="margin: 24px 0; border: 0; border-top: 1px solid #f3f4f6;" />
+                            <button type="submit" name="submit" class="architect-btn" style="width: 100%; justify-content: center;">
+                                <i class="fas fa-save"></i> ' . __('Commit Changes') . '
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+                <main class="db-main" style="display: flex; flex-direction: column; gap: 32px; overflow: hidden;">';
+
+        /* CARD 1: IDENTITY & SECURITY */
+        echo '<div class="db-card">
+                <div class="db-card-header">
+                    <h3 class="db-card-title"><i class="fas fa-shield-alt"></i> ' . __('Security & Identity') . '</h3>
+                </div>
+                <div class="db-card-body card-grid-2" style="padding: 30px;">';
+
+        if (!isset($SelectedUser)) {
+            echo '<div>
+                    <label class="db-form-label">' . __('User Login ID') . '</label>
+                    <input pattern="(?!^([aA]{1}[dD]{1}[mM]{1}[iI]{1}[nN]{1})$)[^?+.&\\>< ]{4,}" type="text" required="required" name="UserID" class="db-input" placeholder="'.__('At least 4 characters').'" />
+                  </div>';
+        } else {
+            echo '<div>
+                    <label class="db-form-label">' . __('User Login ID') . '</label>
+                    <div style="height: 50px; display: flex; align-items: center; font-weight: 800; color: #064e3b; padding: 0 16px; background: #f9fafb; border-radius: 12px; border: 1px solid #f3f4f6;">' . $_POST['UserID'] . '</div>
+                  </div>';
+        }
+
+        echo '<div>
+                <label class="db-form-label">' . __('User Professional Role') . '</label>
+                <select name="Access" class="db-input">';
+        foreach($SecurityRoles as $SecKey => $SecVal) {
+            echo '<option ' . (($_POST['Access'] ?? '') == $SecKey ? 'selected="selected"' : '') . ' value="' . $SecKey . '">' . $SecVal . '</option>';
+        }
+        echo '  </select>
+                <input type="hidden" name="ID" value="'.$_SESSION['UserID'].'" />
+              </div>
+
+              <div>
+                <label class="db-form-label">' . __('Password') . '</label>
+                <input type="password" pattern=".{5,}" name="Password" ' . (!isset($SelectedUser) ? 'required="required"' : '') . ' class="db-input" placeholder="'.__('At least 5 characters').'" />
+              </div>
+              
+              <div>
+                <label class="db-form-label">' . __('Account Status') . '</label>
+                <select name="Blocked" class="db-input">
+                    <option value="0" ' . (($_POST['Blocked'] ?? 0) == 0 ? 'selected="selected"' : '') . '>' . __('Active') . '</option>
+                    <option value="1" ' . (($_POST['Blocked'] ?? 1) == 1 ? 'selected="selected"' : '') . '>' . __('Blocked / Suspended') . '</option>
+                </select>
+              </div>
+            </div>
+        </div>';
+
+        /* CARD 2: PERSONAL PROFILE */
+        echo '<div class="db-card">
+                <div class="db-card-header">
+                    <h3 class="db-card-title"><i class="fas fa-address-card"></i> ' . __('Personnel Profile') . '</h3>
+                </div>
+                <div class="db-card-body card-grid-2" style="padding: 30px;">
+                    <div style="grid-column: span 2;">
+                        <label class="db-form-label">' . __('Full Display Name') . '</label>
+                        <input type="text" name="RealName" required="required" value="' . ($_POST['RealName'] ?? '') . '" class="db-input" />
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('Professional Email') . '</label>
+                        <input type="email" name="Email" required="required" value="' . ($_POST['Email'] ?? '') . '" class="db-input" />
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('Contact Telephone') . '</label>
+                        <input type="tel" name="Phone" value="' . ($_POST['Phone'] ?? '') . '" class="db-input" />
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('Session Timeout') . '</label>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <input type="number" name="Timeout" required="required" value="' . ($_POST['Timeout'] ?? 60) . '" class="db-input" style="width: 100px;" />
+                            <span style="font-weight: 700; color: #6b7280;">' . __('Minutes') . '</span>
+                        </div>
+                    </div>
+                </div>
+              </div>';
+
+        /* CARD 3: WORKSPACE & PREFERENCES */
+        echo '<div class="db-card">
+                <div class="db-card-header">
+                    <h3 class="db-card-title"><i class="fas fa-desktop"></i> ' . __('Workspace & Preferences') . '</h3>
+                </div>
+                <div class="db-card-body card-grid-fill" style="padding: 30px;">
+                    <div>
+                        <label class="db-form-label">' . __('System Language') . '</label>
+                        <select name="UserLanguage" class="db-input">';
+        foreach($LanguagesArray as $LanguageEntry => $LanguageName) {
+            echo '<option ' . (($_POST['UserLanguage'] ?? '') == $LanguageEntry ? 'selected="selected"' : '') . ' value="' . $LanguageEntry . '">' . $LanguageName['LanguageName'] . '</option>';
+        }
+        echo '          </select>
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('Visual Theme') . '</label>
+                        <select name="Theme" class="db-input">';
+        $ThemeDirectories = scandir($PathPrefix . 'css/');
+        foreach($ThemeDirectories as $ThemeName) {
+            if (is_dir('css/' . $ThemeName) AND $ThemeName != '.' AND $ThemeName != '..' AND $ThemeName != '.svn') {
+                echo '<option ' . (($_POST['Theme'] ?? '') == $ThemeName ? 'selected="selected"' : '') . ' value="' . $ThemeName . '">' . $ThemeName . '</option>';
+            }
+        }
+        echo '          </select>
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('PDF Language') . '</label>
+                        <select name="PDFLanguage" class="db-input">';
+        for($i=0;$i<count($PDFLanguages);$i++) {
+            echo '<option ' . (($_POST['PDFLanguage'] ?? 0) == $i ? 'selected="selected"' : '') . ' value="' . $i .'">' . $PDFLanguages[$i] . '</option>';
+        }
+        echo '          </select>
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('Reports Page Size') . '</label>
+                        <select name="PageSize" class="db-input">
+                            <option value="A4" ' . (($_POST['PageSize'] ?? '') == 'A4' ? 'selected="selected"' : '') . '>A4</option>
+                            <option value="A3" ' . (($_POST['PageSize'] ?? '') == 'A3' ? 'selected="selected"' : '') . '>A3</option>
+                            <option value="A3_Landscape" ' . (($_POST['PageSize'] ?? '') == 'A3_Landscape' ? 'selected="selected"' : '') . '>A3 Landscape</option>
+                            <option value="Letter" ' . (($_POST['PageSize'] ?? '') == 'Letter' ? 'selected="selected"' : '') . '>Letter</option>
+                            <option value="Letter_Landscape" ' . (($_POST['PageSize'] ?? '') == 'Letter_Landscape' ? 'selected="selected"' : '') . '>Letter Landscape</option>
+                            <option value="Legal" ' . (($_POST['PageSize'] ?? '') == 'Legal' ? 'selected="selected"' : '') . '>Legal</option>
+                            <option value="Legal_Landscape" ' . (($_POST['PageSize'] ?? '') == 'Legal_Landscape' ? 'selected="selected"' : '') . '>Legal Landscape</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('Display Dashboard') . '</label>
+                        <select name="ShowDashboard" class="db-input">
+                            <option value="0" ' . (($_POST['ShowDashboard'] ?? 0) == 0 ? 'selected="selected"' : '') . '>' . __('No') . '</option>
+                            <option value="1" ' . (($_POST['ShowDashboard'] ?? 1) == 1 ? 'selected="selected"' : '') . '>' . __('Yes') . '</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('Show Page Help') . '</label>
+                        <select name="ShowPageHelp" class="db-input">
+                            <option value="0" ' . (($_POST['ShowPageHelp'] ?? 1) == 0 ? 'selected="selected"' : '') . '>' . __('No') . '</option>
+                            <option value="1" ' . (($_POST['ShowPageHelp'] ?? 1) == 1 ? 'selected="selected"' : '') . '>' . __('Yes') . '</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('Show Field Help') . '</label>
+                        <select name="ShowFieldHelp" class="db-input">
+                            <option value="0" ' . (($_POST['ShowFieldHelp'] ?? 1) == 0 ? 'selected="selected"' : '') . '>' . __('No') . '</option>
+                            <option value="1" ' . (($_POST['ShowFieldHelp'] ?? 1) == 1 ? 'selected="selected"' : '') . '>' . __('Yes') . '</option>
+                        </select>
+                    </div>
+                </div>
+              </div>';
+
+        /* CARD 4: BUSINESS LOGIC & RESTRICTIONS */
+        echo '<div class="db-card">
+                <div class="db-card-header">
+                    <h3 class="db-card-title"><i class="fas fa-lock"></i> ' . __('Business Logic & Restrictions') . '</h3>
+                </div>
+                <div class="db-card-body card-grid-fill" style="padding: 30px;">
+                    <div>
+                        <label class="db-form-label">' . __('Default Inventory Location') . '</label>
+                        <select name="DefaultLocation" class="db-input">';
+        $LocSQL = "SELECT loccode, locationname FROM locations";
+        $LocResult = DB_query($LocSQL);
+        while($LocRow=DB_fetch_array($LocResult)) {
+            echo '<option ' . (($_POST['DefaultLocation'] ?? '') == $LocRow['loccode'] ? 'selected="selected"' : '') . ' value="' . $LocRow['loccode'] . '">' . $LocRow['locationname'] . '</option>';
+        }
+        echo '          </select>
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('Restrict to Sales Person') . '</label>
+                        <select name="Salesman" class="db-input">
+                            <option value="">' . __('Not restricted') . '</option>';
+        $SmSQL = "SELECT salesmancode, salesmanname FROM salesman WHERE current = 1 ORDER BY salesmanname";
+        $SmResult = DB_query($SmSQL);
+        while($SmRow=DB_fetch_array($SmResult)) {
+            echo '<option ' . (($_POST['Salesman'] ?? '') == $SmRow['salesmancode'] ? 'selected="selected"' : '') . ' value="' . $SmRow['salesmancode'] . '">' . $SmRow['salesmanname'] . '</option>';
+        }
+        echo '          </select>
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('Internal Department') . '</label>
+                        <select name="Department" class="db-input">
+                            <option value="0">' . __('Any Department') . '</option>';
+        $DeptSQL = "SELECT departmentid, description FROM departments ORDER BY description";
+        $DeptResult = DB_query($DeptSQL);
+        while($DeptRow=DB_fetch_array($DeptResult)) {
+            echo '<option ' . (($_POST['Department'] ?? '') == $DeptRow['departmentid'] ? 'selected="selected"' : '') . ' value="' . $DeptRow['departmentid'] . '">' . $DeptRow['description'] . '</option>';
+        }
+        echo '          </select>
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('Audit Tender Rights') . '</label>
+                        <select name="CanCreateTender" class="db-input">
+                            <option value="0" ' . (($_POST['CanCreateTender'] ?? 0) == 0 ? 'selected="selected"' : '') . '>' . __('No') . '</option>
+                            <option value="1" ' . (($_POST['CanCreateTender'] ?? 1) == 1 ? 'selected="selected"' : '') . '>' . __('Yes') . '</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('Linked Customer Code') . '</label>
+                        <input type="text" name="Cust" value="' . ($_POST['Cust'] ?? '') . '" class="db-input" placeholder="' . __('Optional') . '" />
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('Linked Branch Code') . '</label>
+                        <input type="text" name="BranchCode" value="' . ($_POST['BranchCode'] ?? '') . '" class="db-input" placeholder="' . __('Optional') . '" />
+                    </div>
+                    <div>
+                        <label class="db-form-label">' . __('Linked Supplier Code') . '</label>
+                        <input type="text" name="SupplierID" value="' . ($_POST['SupplierID'] ?? '') . '" class="db-input" placeholder="' . __('Optional') . '" />
+                    </div>
+                </div>
+              </div>';
+
+        /* CARD 5: MODULE PERMISSIONS */
+        echo '<div class="db-card">
+                <div class="db-card-header">
+                    <h3 class="db-card-title"><i class="fas fa-th-large"></i> ' . __('System Module Access') . '</h3>
+                </div>
+                <div style="padding: 30px;">
+                    <div class="module-grid">';
+        
+        $ModulesAllowedArr = explode(',', ($_POST['ModulesAllowed'] ?? ''));
+        foreach($ModuleList as $i => $ModuleName) {
+            $allowed = (isset($ModulesAllowedArr[$i]) && $ModulesAllowedArr[$i] == 1);
+            echo '<div class="module-card" style="background: #f9fafb; padding: 16px; border-radius: 12px; border: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 700; color: #064e3b; font-size: 0.85rem;">' . $ModuleName . '</span>
+                    <select name="Module_' . $i . '" style="border: 1px solid #d1fae5; border-radius: 8px; padding: 4px 8px; font-weight: 700; color: ' . ($allowed ? '#059669' : '#ef4444') . ';">
+                        <option value="1" ' . ($allowed ? 'selected="selected"' : '') . '>' . __('Allowed') . '</option>
+                        <option value="0" ' . (!$allowed ? 'selected="selected"' : '') . '>' . __('Restricted') . '</option>
+                    </select>
+                  </div>';
+        }
+        echo '      </div>
+                </div>
+              </div>';
+
+        echo '	</main>
+            </div>'; // End db-bottom-layout
+        echo '</form>';
+    }
 }
-echo '</select>
-	</field>';
 
-echo '<field>
-		<label for="DefaultLocation">' . __('Default Location') . ':</label>
-		<select name="DefaultLocation">';
-
-$SQL = "SELECT loccode, locationname FROM locations";
-$Result = DB_query($SQL);
-
-while($MyRow=DB_fetch_array($Result)) {
-	if (isset($_POST['DefaultLocation']) AND $MyRow['loccode'] == $_POST['DefaultLocation']) {
-		echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-	} else {
-		echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-	}
-}
-
-echo '</select>
-	</field>';
-
-if (!isset($_POST['Cust'])) {
-	$_POST['Cust']='';
-}
-if (!isset($_POST['BranchCode'])) {
-	$_POST['BranchCode']='';
-}
-if (!isset($_POST['SupplierID'])) {
-	$_POST['SupplierID']='';
-}
-echo '<field>
-		<label for="Cust">' . __('Customer Code') . ':</label>
-		<input type="text" name="Cust" data-type="no-ilLegal-chars" title="" size="10" maxlength="10" value="' . $_POST['Cust'] . '" />
-		<fieldhelp>' . __('If this user login is to be associated with a customer account, enter the customer account code') . '</fieldhelp>
-	</field>';
-
-echo '<field>
-		<label for="BranchCode">' . __('Branch Code') . ':</label>
-		<input type="text" name="BranchCode" data-type="no-ilLegal-chars" title="" size="10" maxlength="10" value="' . $_POST['BranchCode'] .'" />
-		<fieldhelp>' . __('If this user login is to be associated with a customer account a valid branch for the customer account must be entered.') . '</fieldhelp>
-	</field>';
-
-echo '<field>
-		<label for="SupplierID">' . __('Supplier Code') . ':</label>
-		<input type="text" name="SupplierID" data-type="no-ilLegal-chars" size="10" maxlength="10" value="' . $_POST['SupplierID'] .'" />
-	</field>';
-
-echo '<field>
-		<label for="Salesman">' . __('Restrict to Sales Person') . ':</label>
-		<select name="Salesman">';
-
-$SQL = "SELECT salesmancode, salesmanname FROM salesman WHERE current = 1 ORDER BY salesmanname";
-$Result = DB_query($SQL);
-if ((isset($_POST['Salesman']) AND $_POST['Salesman']=='') OR !isset($_POST['Salesman'])) {
-	echo '<option selected="selected" value="">' . __('Not a salesperson only login') . '</option>';
-} else {
-	echo '<option value="">' . __('Not a salesperson only login') . '</option>';
-}
-while($MyRow=DB_fetch_array($Result)) {
-
-	if (isset($_POST['Salesman']) AND $MyRow['salesmancode'] == $_POST['Salesman']) {
-		echo '<option selected="selected" value="' . $MyRow['salesmancode'] . '">' . $MyRow['salesmanname'] . '</option>';
-	} else {
-		echo '<option value="' . $MyRow['salesmancode'] . '">' . $MyRow['salesmanname'] . '</option>';
-	}
-
-}
-
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label for="PageSize">' . __('Reports Page Size') .':</label>
-		<select name="PageSize">';
-
-if (isset($_POST['PageSize']) AND $_POST['PageSize']=='A4') {
-	echo '<option selected="selected" value="A4">' . __('A4') . '</option>';
-} else {
-	echo '<option value="A4">' . __('A4') . '</option>';
-}
-
-if (isset($_POST['PageSize']) AND $_POST['PageSize']=='A3') {
-	echo '<option selected="selected" value="A3">' . __('A3') . '</option>';
-} else {
-	echo '<option value="A3">' . __('A3') . '</option>';
-}
-
-if (isset($_POST['PageSize']) AND $_POST['PageSize']=='A3_Landscape') {
-	echo '<option selected="selected" value="A3_Landscape">' . __('A3') . ' ' . __('landscape') . '</option>';
-} else {
-	echo '<option value="A3_Landscape">' . __('A3') . ' ' . __('landscape') . '</option>';
-}
-
-if (isset($_POST['PageSize']) AND $_POST['PageSize']=='Letter') {
-	echo '<option selected="selected" value="Letter">' . __('Letter') . '</option>';
-} else {
-	echo '<option value="Letter">' . __('Letter') . '</option>';
-}
-
-if (isset($_POST['PageSize']) AND $_POST['PageSize']=='Letter_Landscape') {
-	echo '<option selected="selected" value="Letter_Landscape">' . __('Letter') . ' ' . __('landscape') . '</option>';
-} else {
-	echo '<option value="Letter_Landscape">' . __('Letter') . ' ' . __('landscape') . '</option>';
-}
-
-if (isset($_POST['PageSize']) AND $_POST['PageSize']=='Legal') {
-	echo '<option selected="selected" value="Legal">' . __('Legal') . '</option>';
-} else {
-	echo '<option value="Legal">' . __('Legal') . '</option>';
-}
-if (isset($_POST['PageSize']) AND $_POST['PageSize']=='Legal_Landscape') {
-	echo '<option selected="selected" value="Legal_Landscape">' . __('Legal') . ' ' . __('landscape') . '</option>';
-} else {
-	echo '<option value="Legal_Landscape">' . __('Legal') . ' ' . __('landscape') . '</option>';
-}
-
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label for="Theme">' . __('Theme') . ':</label>
-		<select required="required" name="Theme">';
-
-$ThemeDirectories = scandir($PathPrefix . 'css/');
-
-if (!isset($_POST['Theme'])) {
-	$_POST['Theme'] = $DefaultTheme;
-}
-
-foreach($ThemeDirectories as $ThemeName) {
-
-	if (is_dir('css/' . $ThemeName) AND $ThemeName != '.' AND $ThemeName != '..' AND $ThemeName != '.svn') {
-
-		if (isset($_POST['Theme']) AND $_POST['Theme'] == $ThemeName) {
-			echo '<option selected="selected" value="' . $ThemeName . '">' . $ThemeName . '</option>';
-		} elseif (!isset($_POST['Theme']) AND ($Theme==$ThemeName)) {
-			echo '<option selected="selected" value="' . $ThemeName . '">' . $ThemeName . '</option>';
-		} else {
-			echo '<option value="' . $ThemeName . '">' . $ThemeName . '</option>';
-		}
-	}
-}
-
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label for="UserLanguage">' . __('Language') . ':</label>
-		<select required="required" name="UserLanguage">';
-
-foreach($LanguagesArray as $LanguageEntry => $LanguageName) {
-	if (isset($_POST['UserLanguage']) AND $_POST['UserLanguage'] == $LanguageEntry) {
-		echo '<option selected="selected" value="' . $LanguageEntry . '">' . $LanguageName['LanguageName'] . '</option>';
-	} elseif (!isset($_POST['UserLanguage']) AND $LanguageEntry == $DefaultLanguage) {
-		echo '<option selected="selected" value="' . $LanguageEntry . '">' . $LanguageName['LanguageName'] . '</option>';
-	} else {
-		echo '<option value="' . $LanguageEntry . '">' . $LanguageName['LanguageName'] . '</option>';
-	}
-}
-echo '</select>
-	</field>';
-
-/*Make an array out of the comma separated list of modules allowed*/
-$ModulesAllowed = explode(',',$_POST['ModulesAllowed']);
-$i = 0;
-foreach($ModuleList as $ModuleName) {
-	echo '<field>
-			<label for="Module_', $i, '">', $ModuleListLabel[$i], ':</label>
-			<select id="Module_', $i, '" name="Module_', $i, '">';
-	if ($ModulesAllowed[$i] == 0) {
-		echo '<option selected="selected" value="0">', __('No'), '</option>',
-			 '<option value="1">', __('Yes'), '</option>';
-	} else {
-		echo '<option value="0">', __('No'), '</option>',
-	 		 '<option selected="selected" value="1">', __('Yes'), '</option>';
-	}
-	echo '</select>
-		</field>';
-	$i++;
-}// END foreach($ModuleList as $ModuleName).
-
-// Turn off/on dashboard:
-echo '<field>
-		<label for="ShowDashboard">', __('Display dashboard'), ':</label>
-		<select id="ShowDashboard" name="ShowDashboard">';
-if ($_POST['ShowDashboard']==0) {
-	echo '<option selected="selected" value="0">', __('No'), '</option>',
-		 '<option value="1">', __('Yes'), '</option>';
-} else {
-	echo '<option value="0">', __('No'), '</option>',
- 		 '<option selected="selected" value="1">', __('Yes'), '</option>';
-}
-echo '</select>', fShowFieldHelp(__('Show dashboard page after login')), // Function fShowFieldHelp() in ~/includes/MiscFunctions.php
-		'
-	</field>';
-// Turn off/on page help:
-echo '<field>
-		<label for="ShowPageHelp">', __('Display page help'), ':</label>
-		<select id="ShowPageHelp" name="ShowPageHelp">';
-if ($_POST['ShowPageHelp']==0) {
-	echo '<option selected="selected" value="0">', __('No'), '</option>',
-		 '<option value="1">', __('Yes'), '</option>';
-} else {
-	echo '<option value="0">', __('No'), '</option>',
- 		 '<option selected="selected" value="1">', __('Yes'), '</option>';
-}
-echo '</select>', fShowFieldHelp(__('Show page help when available')), // Function fShowFieldHelp() in ~/includes/MiscFunctions.php
-		'
-	</field>';
-// Turn off/on field help:
-echo '<field>
-		<label for="ShowFieldHelp">', __('Display field help'), ':</label>
-		<select id="ShowFieldHelp" name="ShowFieldHelp">';
-if ($_POST['ShowFieldHelp']==0) {
-	echo '<option selected="selected" value="0">', __('No'), '</option>',
-		 '<option value="1">', __('Yes'), '</option>';
-} else {
-	echo '<option value="0">', __('No'), '</option>',
- 		 '<option selected="selected" value="1">', __('Yes'), '</option>';
-}
-echo '</select>', fShowFieldHelp(__('Show field help when available')), // Function fShowFieldHelp() in ~/includes/MiscFunctions.php
-		'
-	</field>';
-
-if (!isset($_POST['PDFLanguage'])) {
-	$_POST['PDFLanguage']=0;
-}
-echo '<field>
-		<label for="PDFLanguage">', __('PDF Language Support'), ':</label>
-		<select id="PDFLanguage" name="PDFLanguage">';
-for($i=0;$i<count($PDFLanguages);$i++) {
-	if ($_POST['PDFLanguage']==$i) {
-		echo '<option selected="selected" value="' . $i .'">' . $PDFLanguages[$i] . '</option>';
-	} else {
-		echo '<option value="' . $i .'">' . $PDFLanguages[$i]. '</option>';
-	}
-}
-echo '</select>
-	</field>';
-
-/* Allowed Department for Internal Requests */
-
-echo '<field>
-		<label for="Department">' . __('Allowed Department for Internal Requests') . ':</label>';
-
-$SQL = "SELECT departmentid,
-			description
-		FROM departments
-		ORDER BY description";
-
-$Result = DB_query($SQL);
-echo '<select name="Department">';
-if ((isset($_POST['Department']) AND $_POST['Department']=='0') OR !isset($_POST['Department'])) {
-	echo '<option selected="selected" value="0">' . __('Any Internal Department') . '</option>';
-} else {
-	echo '<option value="">' . __('Any Internal Department') . '</option>';
-}
-while($MyRow=DB_fetch_array($Result)) {
-	if (isset($_POST['Department']) AND $MyRow['departmentid'] == $_POST['Department']) {
-		echo '<option selected="selected" value="' . $MyRow['departmentid'] . '">' . $MyRow['description'] . '</option>';
-	} else {
-		echo '<option value="' . $MyRow['departmentid'] . '">' . $MyRow['description'] . '</option>';
-	}
-}
-echo '</select>
-	</field>';
-
-/* Account status */
-
-echo '<field>
-		<label for="Blocked">' . __('Account Status') . ':</label>
-		<select required="required" name="Blocked">';
-if (isset($_POST['Blocked']) and $_POST['Blocked']==0) {
-	echo '<option selected="selected" value="0">' . __('Open') . '</option>';
-	echo '<option value="1">' . __('Blocked') . '</option>';
-} else {
- 	echo '<option selected="selected" value="1">' . __('Blocked') . '</option>';
-	echo '<option value="0">' . __('Open') . '</option>';
-}
-echo '</select>
-	</field>';
-
-echo '</fieldset>
-	<div class="centre">
-		<input type="submit" name="submit" value="' . __('Enter Information') . '" />
-	</div>
-	</form>';
+echo '</div>'; // End db-page
 
 include(__DIR__ . '/includes/footer.php');

@@ -3,6 +3,18 @@
 
 $LanguagesArray = array();
 
+$LanguagesArray['en_US.utf8']['LanguageName'] = 'English United States';
+$LanguagesArray['en_US.utf8']['WindowsLocale'] = 'english-us';
+$LanguagesArray['en_US.utf8']['DecimalPoint'] = '.';
+$LanguagesArray['en_US.utf8']['ThousandsSeparator'] = ',';
+$LanguagesArray['en_US.utf8']['Direction'] = 'ltr';
+
+$LanguagesArray['sw_KE.utf8']['LanguageName'] = 'Kiswahili';
+$LanguagesArray['sw_KE.utf8']['WindowsLocale'] = 'swahili';
+$LanguagesArray['sw_KE.utf8']['DecimalPoint'] = '.';
+$LanguagesArray['sw_KE.utf8']['ThousandsSeparator'] = ',';
+$LanguagesArray['sw_KE.utf8']['Direction'] = 'ltr';
+
 $LanguagesArray['ar_EG.utf8']['LanguageName'] = 'مصرى';
 $LanguagesArray['ar_EG.utf8']['WindowsLocale'] = 'arabic';
 $LanguagesArray['ar_EG.utf8']['DecimalPoint'] = ',';
@@ -39,11 +51,6 @@ $LanguagesArray['en_IN.utf8']['DecimalPoint'] = '.';
 $LanguagesArray['en_IN.utf8']['ThousandsSeparator'] = ',';
 $LanguagesArray['en_IN.utf8']['Direction'] = 'ltr';
 
-$LanguagesArray['en_US.utf8']['LanguageName'] = 'English United States';
-$LanguagesArray['en_US.utf8']['WindowsLocale'] = 'english-us';
-$LanguagesArray['en_US.utf8']['DecimalPoint'] = '.';
-$LanguagesArray['en_US.utf8']['ThousandsSeparator'] = ',';
-$LanguagesArray['en_US.utf8']['Direction'] = 'ltr';
 
 $LanguagesArray['es_ES.utf8']['LanguageName'] = 'Español';
 $LanguagesArray['es_ES.utf8']['WindowsLocale'] = 'spanish';
@@ -189,11 +196,6 @@ $LanguagesArray['sv_SE.utf8']['DecimalPoint'] = ',';
 $LanguagesArray['sv_SE.utf8']['ThousandsSeparator'] = ' ';
 $LanguagesArray['sv_SE.utf8']['Direction'] = 'ltr';
 
-$LanguagesArray['sw_KE.utf8']['LanguageName'] = 'Kiswahili';
-$LanguagesArray['sw_KE.utf8']['WindowsLocale'] = 'swahili';
-$LanguagesArray['sw_KE.utf8']['DecimalPoint'] = '.';
-$LanguagesArray['sw_KE.utf8']['ThousandsSeparator'] = ',';
-$LanguagesArray['sw_KE.utf8']['Direction'] = 'ltr';
 
 $LanguagesArray['tr_TR.utf8']['LanguageName'] = 'Qırımtatarca';
 $LanguagesArray['tr_TR.utf8']['WindowsLocale'] = 'turkish';
