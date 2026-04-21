@@ -10,29 +10,50 @@ $BookMark = 'NewCustomerBranch';// Anchor's id in the manual's html document.
 include(__DIR__ . '/includes/header.php');
 
 include(__DIR__ . '/includes/CountriesArray.php');
+include(__DIR__ . '/includes/LanguagesArray.php');
 
-echo '<div class="db-page">
-		<header class="db-page-header">
-			<div>
-				<h2 class="db-page-title">' . $Title . '</h2>
-				<p class="db-page-subtitle">' . __('Manage customer delivery points and regional settings') . '</p>
-			</div>
-			<div class="db-header-actions">';
+// Initialize numeric separators from language preferences with global scope
+global $ThousandsSeparator, $DecimalPoint;
+$ThousandsSeparator = $LanguagesArray[$_SESSION['Language']]['ThousandsSeparator'] ?? (isset($_SESSION['DefaultThousandsSeparator']) ? $_SESSION['DefaultThousandsSeparator'] : ',');
+$DecimalPoint = $LanguagesArray[$_SESSION['Language']]['DecimalPoint'] ?? (isset($_SESSION['DefaultDecimalPoint']) ? $_SESSION['DefaultDecimalPoint'] : '.');
 
-if (isset($_GET['DebtorNo']) OR isset($_POST['DebtorNo'])) {
-	$DBNo = (isset($_GET['DebtorNo']) ? $_GET['DebtorNo'] : $_POST['DebtorNo']);
-	echo '<a href="' . $RootPath . '/Customers.php?DebtorNo=' . $DBNo . '" class="db-btn db-btn-secondary">
-			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-			' . __('Edit Customer') . '
-		  </a>';
+if (isset($_GET['DebtorNo'])) {
+	$DebtorNo = mb_strtoupper($_GET['DebtorNo']);
+} elseif (isset($_POST['DebtorNo'])){
+	$DebtorNo = mb_strtoupper($_POST['DebtorNo']);
 }
 
-echo '		<a href="' . $RootPath . '/SelectCustomer.php" class="db-btn db-btn-secondary">
-				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
-				' . __('Back to Search') . '
-			</a>
+$SQLname = "SELECT name FROM debtorsmaster WHERE debtorno='" . $DebtorNo . "'";
+$Result = DB_query($SQLname);
+$Row = DB_fetch_array($Result);
+$CustomerName = $Row['name'];
+
+echo '<div class="db-page">
+		<div class="premium-header">
+			<div>
+				<div style="font-size: 0.72rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; text-transform: lowercase; letter-spacing: 1px;">
+					<a href="index.php" class="breadcrumb-item"><i class="fas fa-home"></i> ' . __('home') . '</a>
+					<i class="fas fa-chevron-right breadcrumb-separator"></i>
+					<a href="SelectCustomer.php" class="breadcrumb-item">' . __('customer search') . '</a>
+					<i class="fas fa-chevron-right breadcrumb-separator"></i>
+					<a href="Customers.php?DebtorNo=' . $DebtorNo . '" class="breadcrumb-item">' . __('maintenance') . '</a>
+					<i class="fas fa-chevron-right breadcrumb-separator"></i>
+					<span style="color: #064e3b; opacity: 0.9;">' . __('customer branches') . '</span>
+				</div>
+				<div>
+					<h1 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px; color: #064e3b; margin: 0; line-height: 1;">' . (isset($_GET['SelectedBranch']) ? __('Modify Branch') : __('Branch Registry')) . '</h1>
+					<p style="font-size: 1.1rem; margin-top: 12px; color: #065f46; font-weight: 500; opacity: 0.8;">' . __('Managing delivery points for') . ' <span style="font-weight: 800;">' . htmlspecialchars($CustomerName, ENT_QUOTES, 'UTF-8') . '</span></p>
+				</div>
 			</div>
-		</header>';
+			<div class="db-header-actions">
+				<a href="' . $RootPath . '/Customers.php?DebtorNo=' . $DebtorNo . '" class="architect-btn secondary">
+					<i class="fas fa-user"></i> ' . __('Edit Customer') . '
+				</a>
+				<a href="' . $RootPath . '/SelectCustomer.php" class="architect-btn secondary">
+					<i class="fas fa-search"></i> ' . __('Search Others') . '
+				</a>
+			</div>
+		</div>';
 
 if (isset($_GET['DebtorNo'])) {
 	$DebtorNo = mb_strtoupper($_GET['DebtorNo']);
@@ -145,11 +166,11 @@ if (isset($_POST['submit'])) {
 				$Longitude = $json[0]['lon'];
 			} else {
 				// No results found
-				echo '<div class="page_help_text"><b>' . __('Geocode Notice') . ':</b> ' . __('Address') . ': ' . $Address . ' ' . __('failed to geocode') . ' - ' . __('No results found') . '</div>';
+				prnMsg(__('Geocode Notice') . ': ' . $Address . ' ' . __('failed to geocode') . ' - ' . __('No results found'), 'info');
 			}
 		} else {
 			// Connection failed
-			echo '<div class="page_help_text"><b>' . __('Geocode Notice') . ':</b> ' . __('Address') . ': ' . $Address . ' ' . __('failed to geocode') . ' - ' . __('Connection failed') . '</div>';
+			prnMsg(__('Geocode Notice') . ': ' . $Address . ' ' . __('failed to geocode') . ' - ' . __('Connection failed'), 'warn');
 		}
 		
 		// Respect Nominatim usage policy: 1 request per second
@@ -407,73 +428,62 @@ if (!isset($SelectedBranch)){
 				ON custbranch.salesman=salesman.salesmancode
 				INNER JOIN taxgroups
 				ON custbranch.taxgroupid=taxgroups.taxgroupid
-				WHERE custbranch.debtorno = '".$DebtorNo."'";
-
-	if ($_SESSION['SalesmanLogin'] !=  '') {
-		$SQL .= " AND custbranch.salesman='" . $_SESSION['SalesmanLogin'] . "'";
-	}
+				WHERE custbranch.debtorno='" . $DebtorNo . "'";
 
 	$Result = DB_query($SQL);
-	$MyRow = DB_fetch_row($Result);
-	$TotalEnable = 0;
-	$TotalDisable = 0;
-	if ($MyRow) {
-		echo '<div class="card-v2" style="margin-bottom: var(--space-6);">
-				<div class="card-header-v2">
-					<h3>
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-						' . __('Branches Defined for') . ' ' . $DebtorNo . ' - ' . $MyRow[0] . '
-					</h3>
-				</div>
-				<div class="db-card-body">
-					<div class="db-table-wrapper">
-						<table class="db-table divider">
-							<thead>
-								<tr>
-									<th>' . __('Code') . '</th>
-									<th>' . __('Name') . '</th>
-									<th>' . __('Contact') . '</th>
-									<th>' . __('Salesperson / Area') . '</th>
-									<th>' . __('Contact Info') . '</th>
-									<th>' . __('Tax Group') . '</th>
-									<th class="text-center">' . __('Status') . '</th>
-									<th class="text-center">' . __('Actions') . '</th>
-								</tr>
-							</thead>
-							<tbody>';
+
+	if (DB_num_rows($Result) > 0) {
+		$MyRow = DB_fetch_row($Result);
+		$TotalEnable = 0;
+		$TotalDisable = 0;
+		echo '<div style="background: #fff; overflow-x: auto;">
+					<table class="registry-table">
+						<thead>
+							<tr>
+								<th>' . __('Branch Code') . '</th>
+								<th>' . __('Branch Name') . '</th>
+								<th>' . __('Authorized Contact') . '</th>
+								<th>' . __('Logistics / Region') . '</th>
+								<th>' . __('Communication') . '</th>
+								<th>' . __('Tax Group') . '</th>
+								<th class="text-center">' . __('Status') . '</th>
+								<th style="text-align: right;">' . __('Actions') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
 
 		do {
 			echo '<tr>
-					<td class="font-bold">' . $MyRow[1] . '</td>
+					<td style="font-weight: 700; color: #064e3b;">' . $MyRow[1] . '</td>
 					<td>' . $MyRow[2] . '</td>
 					<td>' . $MyRow[5] . '</td>
 					<td>
-						<div class="text-sm font-bold">' . $MyRow[3] . '</div>
-						<div class="text-xs text-muted">' . $MyRow[4] . '</div>
+						<div style="font-weight: 600;">' . $MyRow[3] . '</div>
+						<div style="font-size: 0.75rem; opacity: 0.6;">' . $MyRow[4] . '</div>
 					</td>
 					<td>
-						<div class="text-sm">' . $MyRow[6] . '</div>
-						<div class="text-xs"><a href="mailto:' . $MyRow[8] . '">' . $MyRow[8] . '</a></div>
+						<div style="font-weight: 600;">' . $MyRow[6] . '</div>
+						<div style="font-size: 0.75rem; color: #059669;"><a href="mailto:' . $MyRow[8] . '">' . $MyRow[8] . '</a></div>
 					</td>
 					<td>' . $MyRow[9] . '</td>
 					<td class="text-center">';
 			
 			if ($MyRow[10]) {
-				echo '<span class="db-badge db-badge-danger">' . __('Disabled') . '</span>';
+				echo '<span class="badge" style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">' . __('Disabled') . '</span>';
 				$TotalDisable++;
 			} else {
-				echo '<span class="db-badge db-badge-success">' . __('Enabled') . '</span>';
+				echo '<span class="badge" style="background: #f0fdf4; color: #059669; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">' . __('Enabled') . '</span>';
 				$TotalEnable++;
 			}
 
 			echo '</td>
-					<td class="text-center">
-						<div class="db-action-group" style="justify-content:center;">
-							<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?DebtorNo=' . $DebtorNo . '&amp;SelectedBranch=' . urlencode($MyRow[1]) . '" class="db-btn db-btn-icon db-btn-ghost" title="' . __('Edit') . '">
-								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+					<td style="text-align: right;">
+						<div style="display: flex; gap: 8px; justify-content: flex-end;">
+							<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?DebtorNo=' . $DebtorNo . '&amp;SelectedBranch=' . urlencode($MyRow[1]) . '" class="db-btn db-btn-icon" style="background: #f3f4f6; color: #059669; height: 32px; width: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;" title="' . __('Edit') . '">
+								<i class="fas fa-edit" style="font-size: 0.8rem;"></i>
 							</a>
-							<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?DebtorNo=' . $DebtorNo . '&amp;SelectedBranch=' . urlencode($MyRow[1]) . '&amp;delete=yes" class="db-btn db-btn-icon db-btn-ghost text-danger" title="' . __('Delete') . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this branch?') . '\');">
-								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+							<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?DebtorNo=' . $DebtorNo . '&amp;SelectedBranch=' . urlencode($MyRow[1]) . '&amp;delete=yes" class="db-btn db-btn-icon" style="background: #fef2f2; color: #dc2626; height: 32px; width: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;" title="' . __('Delete') . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this branch?') . '\');">
+								<i class="fas fa-trash-alt" style="font-size: 0.8rem;"></i>
 							</a>
 						</div>
 					</td>
@@ -866,13 +876,13 @@ if (!isset($_GET['delete'])) {
 		</div>
 	</div>'; // End db-card-body
 
-	echo '<div class="db-card-actions" style="justify-content: center; padding: 2rem; background: var(--surface-alt); border-top: 1px solid var(--border-color);">
-			<button type="submit" name="submit" class="db-btn db-btn-primary db-btn-large">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:10px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+	echo '<div class="db-card-actions" style="justify-content: center; padding: 32px; background: #f9fafb; border-top: 1px solid #f3f4f6; gap: 16px;">
+			<button type="submit" name="submit" class="architect-btn" style="width: 240px; height: 48px;">
+				<i class="fas fa-check-circle" style="margin-right: 10px;"></i>
 				' . __('Save Branch Details') . '
 			</button>
-			<button type="reset" class="db-btn db-btn-secondary db-btn-large" style="margin-left: 1rem;">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:10px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+			<button type="reset" class="architect-btn secondary" style="width: 140px; height: 48px;">
+				<i class="fas fa-undo" style="margin-right: 10px;"></i>
 				' . __('Reset') . '
 			</button>
 		</div>
