@@ -54,23 +54,44 @@ function PrepStep($StepNum) {
 function RetrieveReports() {
 	global $ReportGroups, $FormGroups;
 
-	$OutputString = '';
+	$OutputString = '<div class="report-gallery">';
 	foreach ($ReportGroups as $key=>$GName) {
-		$OutputString .= '<tr style="background-color:#CCCCCC"><td colspan="2" align="center">'.$GName.'</td></tr>';
-		$OutputString .= '<tr><td align="center">'.RPT_REPORTS.'</td><td align="center">'.RPT_FORMS.'</td></tr>';
-		$OutputString .= '<tr><td width="250" valign="top">';
+		$OutputString .= '<div class="report-group-card">
+                            <div class="report-group-header">
+                                <i class="fas fa-folder-open"></i> '.$GName.'
+                            </div>
+                            <div class="report-group-body">
+                                <div class="report-type-section">
+                                    <h6><i class="fas fa-file-invoice"></i> '.RPT_REPORTS.'</h6>';
+                                    
 		$sql= "SELECT id, reportname FROM ".DBReports."
 			WHERE defaultreport='1' AND reporttype='rpt' AND groupname='".$key."'
 			ORDER BY reportname";
 		$Result = DB_query($sql,'','',false,true);
-		while ($Temp = DB_fetch_array($Result)) $OutputString .= '<input type="radio" name="ReportID" value="'.$Temp['id'].'">'.$Temp['reportname'].'<br />';
+		while ($Temp = DB_fetch_array($Result)) {
+            $OutputString .= '<label class="report-item default-rpt">
+                                <input type="radio" name="ReportID" value="'.$Temp['id'].'">
+                                <span class="report-name">'.$Temp['reportname'].'</span>
+                                <span class="badge badge-system">'.__('System').'</span>
+                              </label>';
+        }
+        
 		$sql= "SELECT id, reportname FROM ".DBReports."
 			WHERE defaultreport='0' AND reporttype='rpt' AND groupname='".$key."'
 			ORDER BY reportname";
 		$Result = DB_query($sql,'','',false,true);
-		if (DB_num_rows($Result)>0) $OutputString .= '<u>'.RPT_CUSTRPT.'</u><br />';
-		while ($Temp = DB_fetch_array($Result)) $OutputString .= '<input type="radio" name="ReportID" value="'.$Temp['id'].'">'.$Temp['reportname'].'<br />';
-		$OutputString .= '</td>'.chr(10).'<td width="250" valign="top">';
+		if (DB_num_rows($Result)>0) $OutputString .= '<div class="custom-divider">'.RPT_CUSTRPT.'</div>';
+		while ($Temp = DB_fetch_array($Result)) {
+            $OutputString .= '<label class="report-item custom-rpt">
+                                <input type="radio" name="ReportID" value="'.$Temp['id'].'">
+                                <span class="report-name">'.$Temp['reportname'].'</span>
+                              </label>';
+        }
+        
+		$OutputString .= '</div>
+                          <div class="report-type-section">
+                            <h6><i class="fas fa-scroll"></i> '.RPT_FORMS.'</h6>';
+                            
 		$sql= "SELECT id, groupname, reportname FROM ".DBReports."
 			WHERE defaultreport='1' AND reporttype='frm'
 			ORDER BY groupname, reportname";
@@ -79,18 +100,24 @@ function RetrieveReports() {
 		while ($Temp = DB_fetch_array($Result)) $FormList[] = $Temp;
 		foreach ($FormGroups as $index=>$value) {
 			$Group=explode(':',$index); // break into main group and form group array
-			if ($Group[0]==$key AND $FormList<>'') { // then it's a part of the group we're showing
+			if ($Group[0]==$key AND count($FormList)>0) { // then it's a part of the group we're showing
 				$WriteOnce = true;
 				foreach ($FormList as $Entry) {
 					if ($Entry['groupname']==$index) { // then it's part of this listing
-						if ($WriteOnce) { $OutputString .= $value.'<br />'; $WriteOnce=false; }
-						$OutputString .= '&nbsp;&nbsp;<input type="radio" name="ReportID" value="'.$Entry['id'].'">'.$Entry['reportname'].'<br />';
+						if ($WriteOnce) { $OutputString .= '<div class="form-sub-header">'.$value.'</div>'; $WriteOnce=false; }
+						$OutputString .= '<label class="report-item form-rpt">
+                                            <input type="radio" name="ReportID" value="'.$Entry['id'].'">
+                                            <span class="report-name">'.$Entry['reportname'].'</span>
+                                          </label>';
 					}
 				}
 			}
 		}
-		$OutputString .= '</td></tr>';
+		$OutputString .= '      </div>
+                            </div>
+                          </div>';
 	}
+    $OutputString .= '</div>';
 	return $OutputString;
 }
 

@@ -254,6 +254,12 @@ switch ($Action) {
 				$FormParams = PrepStep('4');
 				break;
 			case RPT_BTN_BACK:
+				$sql = "SELECT reportname FROM ".DBReports." WHERE id='".$ReportID."'";
+				$Result = DB_query($sql,'','',false,true);
+				$myrow = DB_fetch_array($Result);
+				$_POST['ReportName'] = $myrow['reportname'];
+				$FormParams = PrepStep('2');
+				break;
 			default:	// bail to reports home
 				$DropDownString = RetrieveReports();
 				$FormParams = PrepStep('1');
@@ -689,8 +695,261 @@ switch ($Action) {
 
 $Title = $FormParams['title']; // fetch the title for the header.php file
 
-include($PathPrefix . 'includes/header.php');
+// Inject modern Architect styles
+echo '<style>
+    :root {
+        --primary: #059669;
+        --primary-dark: #065f46;
+        --primary-light: #ecfdf5;
+        --page-padding: 30px;
+    }
+    .db-page {
+        padding: 0 var(--page-padding);
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    .premium-header { 
+        margin-bottom: 24px; 
+        padding: 24px 30px; 
+        background: #fff;
+        border-bottom: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    
+    .db-bottom-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 24px;
+        align-items: start;
+        padding-bottom: 50px;
+    }
+    
+    .step-navigator {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        padding: 20px;
+        position: sticky;
+        top: 20px;
+    }
+    .step-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 8px;
+        color: #64748b;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+    }
+    .step-item.active {
+        background: var(--primary-light);
+        color: var(--primary-dark);
+        border-color: #d1fae5;
+    }
+    .step-num {
+        width: 24px; height: 24px; background: #f1f5f9; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; font-size: 0.7rem;
+    }
+    .step-item.active .step-num { background: var(--primary); color: white; }
+
+    .arch-card { 
+        background: #ffffff; 
+        border-radius: 12px; 
+        border: 1px solid #e2e8f0; 
+        box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+    .arch-card-header { 
+        background: #f8fafc; 
+        border-bottom: 1px solid #f1f5f9; 
+        padding: 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .arch-card-title {
+        font-size: 0.9rem; font-weight: 800; color: #1e293b; margin:0;
+        text-transform: uppercase; letter-spacing: 0.5px;
+        display: flex; align-items: center; gap: 8px;
+    }
+
+    .arch-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 10px 20px; border-radius: 8px;
+        background: var(--primary); color: #fff; border: none;
+        font-weight: 700; font-size: 0.8rem; cursor: pointer;
+        transition: all 0.2s; text-decoration: none;
+    }
+    .arch-btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .arch-btn-secondary { background: #f1f5f9; color: #475569; }
+
+    /* Fix legacy table styles */
+    table { border-collapse: collapse; }
+    form { margin: 0; }
+
+    /* Report Gallery Styles */
+    .report-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+        gap: 24px;
+    }
+    .report-group-card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .report-group-header {
+        background: #f8fafc;
+        padding: 12px 20px;
+        font-weight: 800;
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .report-group-body {
+        padding: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        flex-grow: 1;
+    }
+    .report-type-section h6 {
+        margin: 0 0 12px 0;
+        font-size: 0.7rem;
+        font-weight: 900;
+        color: var(--primary);
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .report-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: 4px;
+        border: 1px solid transparent;
+    }
+    .report-item:hover {
+        background: #f8fafc;
+        border-color: #e2e8f0;
+    }
+    .report-item input[type="radio"] {
+        accent-color: var(--primary);
+        width: 16px;
+        height: 16px;
+        margin: 0;
+    }
+    .report-name {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #334155;
+    }
+    .badge {
+        font-size: 0.6rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .badge-system { background: #dcfce7; color: #166534; }
+    .custom-divider {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: #94a3b8;
+        margin: 12px 0 8px 0;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 4px;
+    }
+    .form-sub-header {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #64748b;
+        margin: 8px 0 4px 0;
+        padding-left: 12px;
+    }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+';
+
+echo '<div class="db-page">
+		<header class="premium-header">
+            <div>
+                <div style="font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">
+                    ' . __('Reporting Engine') . '
+                </div>
+                <h1 style="font-size: 1.8rem; font-weight: 900; letter-spacing: -1px; color: #1e293b; margin: 0;">' . $Title . '</h1>
+            </div>
+            <div>
+                <a href="' . $PathPrefix . 'index.php?Application=Utilities" class="arch-btn arch-btn-secondary">
+                    <i class="fas fa-home"></i> ' . __('Exit Builder') . '
+                </a>
+            </div>
+		</header>';
+
+// Step Mapping for Navigator
+$StepMap = [
+    'forms/ReportsHome.html.php' => 1,
+    'forms/ReportsID.html.php' => 2,
+    'forms/ReportsPageSetup.html.php' => 3,
+    'forms/ReportsDBSetup.html.php' => 4,
+    'forms/ReportsFieldSetup.html.php' => 5,
+    'forms/ReportsCritSetup.html.php' => 6,
+    'forms/ReportsImport.html.php' => 1
+];
+$PageFile = $FormParams['IncludePage'] ?? '';
+$CurrentStep = $StepMap[$PageFile] ?? 1;
+
+echo '<div class="db-bottom-layout">
+        <aside class="db-col-aside">
+            <div class="step-navigator">
+                <div class="step-item ' . ($CurrentStep == 1 ? 'active' : '') . '">
+                    <div class="step-num">1</div> ' . __('Select Report') . '
+                </div>
+                <div class="step-item ' . ($CurrentStep == 2 ? 'active' : '') . '">
+                    <div class="step-num">2</div> ' . __('Identify') . '
+                </div>
+                <div class="step-item ' . ($CurrentStep == 3 ? 'active' : '') . '">
+                    <div class="step-num">3</div> ' . __('Page Layout') . '
+                </div>
+                <div class="step-item ' . ($CurrentStep == 4 ? 'active' : '') . '">
+                    <div class="step-num">4</div> ' . __('Set Tables') . '
+                </div>
+                <div class="step-item ' . ($CurrentStep == 5 ? 'active' : '') . '">
+                    <div class="step-num">5</div> ' . __('Add Fields') . '
+                </div>
+                <div class="step-item ' . ($CurrentStep == 6 ? 'active' : '') . '">
+                    <div class="step-num">6</div> ' . __('Apply Filters') . '
+                </div>
+            </div>
+        </aside>
+
+        <main class="db-col-main">';
+
 if ($usrMsg) foreach ($usrMsg as $temp) prnmsg($temp['message'],$temp['level']);
 include($FormParams['IncludePage']);
+
+echo '  </main>
+    </div>
+</div>';
+
 include($PathPrefix . 'includes/footer.php');
 // End main body
