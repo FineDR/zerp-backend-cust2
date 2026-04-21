@@ -78,6 +78,7 @@ function VerifyInvoiceTransactionDate($TranDate, $i, $Errors) {
 	$Result = DB_query($SQL);
 	$MyRow=DB_fetch_array($Result);
 	$DateFormat=$MyRow[0];
+	return 'Date format =: '.$DateFormat;
 	if (mb_strstr('/',$PeriodEnd)) {
 		$Date_Array = explode('/',$PeriodEnd);
 	} elseif (mb_strstr('.',$PeriodEnd)) {
