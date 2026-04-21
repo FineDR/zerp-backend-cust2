@@ -359,8 +359,7 @@ function InsertBranch($BranchDetails, $user, $password) {
 			$Errors[0]=0;
 		}
 	}
-	return $SQL;
-	//return $Errors;
+	return $Errors;
 }
 
 
