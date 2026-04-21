@@ -1,6 +1,7 @@
 <?php
 
 require(__DIR__ . '/includes/session.php');
+require 'vendor/autoload.php';
 
 use Dompdf\Dompdf;
 

@@ -23,16 +23,16 @@ if (!isset($_POST['AjaxSearch'])) {
 
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 
-if (isset($_POST['DueDateFrom'])) {
+if (isset($_POST['DueDateFrom']) AND Is_date($_POST['DueDateFrom'])) {
 	$_POST['DueDateFrom'] = ConvertSQLDate($_POST['DueDateFrom']);
 }
-if (isset($_POST['DueDateTo'])) {
+if (isset($_POST['DueDateTo']) AND Is_date($_POST['DueDateTo'])) {
 	$_POST['DueDateTo'] = ConvertSQLDate($_POST['DueDateTo']);
 }
-if (isset($_POST['OrderDateFrom'])) {
+if (isset($_POST['OrderDateFrom']) AND Is_date($_POST['OrderDateFrom'])) {
 	$_POST['OrderDateFrom'] = ConvertSQLDate($_POST['OrderDateFrom']);
 }
-if (isset($_POST['OrderDateTo'])) {
+if (isset($_POST['OrderDateTo']) AND Is_date($_POST['OrderDateTo'])) {
 	$_POST['OrderDateTo'] = ConvertSQLDate($_POST['OrderDateTo']);
 }
 
@@ -104,7 +104,7 @@ if (isset($_POST['PlacePO'])) { /*user hit button to place PO for selected order
 					ON stockmaster.categoryid = stockcategory.categoryid
 				WHERE purchdata.preferred = 1
 					AND purchdata.effectivefrom <= CURRENT_DATE
-					AND (" . $OrdersToPlacePOFor . ")
+					AND (" . ($OrdersToPlacePOFor != "" ? $OrdersToPlacePOFor : "1=0") . ")
 				GROUP BY purchdata.supplierno,
 					purchdata.stockid,
 					purchdata.price,
@@ -158,7 +158,7 @@ if (isset($_POST['PlacePO'])) { /*user hit button to place PO for selected order
 					AND purchdata.effectivefrom <= CURRENT_DATE
 					AND bom.effectiveafter <= CURRENT_DATE
 					AND bom.effectiveto > CURRENT_DATE
-					AND (" . $OrdersToPlacePOFor . ")
+					AND (" . ($OrdersToPlacePOFor != "" ? $OrdersToPlacePOFor : "1=0") . ")
 				GROUP BY purchdata.supplierno,
 					purchdata.stockid,
 					purchdata.price,
@@ -442,7 +442,9 @@ if (isset($_POST['PlacePO'])) { /*user hit button to place PO for selected order
 				prnMsg(__('Purchase Order') . ' ' . $PO_OrderNo . ' ' . __('on') . ' ' . $SupplierID . ' ' . __('has been created'), 'success');
 				DB_Txn_Commit();
 			}
-			$Result = DB_query("UPDATE salesorders SET poplaced = 1 WHERE " . $OrdersToPlacePOFor);
+			if (mb_strlen($OrdersToPlacePOFor) > 0) {
+				$Result = DB_query("UPDATE salesorders SET poplaced = 1 WHERE " . $OrdersToPlacePOFor);
+			}
 		}/*There were items that had purchasing data set up to create POs for */
 	} /* there were sales orders checked to place POs for */
 }/*end of purchase order creation code */
@@ -699,8 +701,8 @@ if (DB_num_rows($SalesOrdersResult) > 0) {
 			}
 			$PrintQuotation = $RootPath . '/PDFQuotation.php?QuotationNo=' . urlencode((string) $MyRow['orderno']) . '&orientation=landscape';
 			$PrintQuotationPortrait = $RootPath . '/PDFQuotation.php?QuotationNo=' . urlencode((string) $MyRow['orderno']) . '&orientation=portrait';
-			$FormatedDelDate = isset($MyRow['deliverydate']) && $MyRow['deliverydate'] != '' ? ConvertSQLDate($MyRow['deliverydate']) : '';
-			$FormatedOrderDate = isset($MyRow['orddate']) && $MyRow['orddate'] != '' ? ConvertSQLDate($MyRow['orddate']) : '';
+			$FormatedDelDate = (isset($MyRow['deliverydate']) && $MyRow['deliverydate'] != '' && $MyRow['deliverydate'] != '0000-00-00') ? ConvertSQLDate($MyRow['deliverydate']) : '';
+			$FormatedOrderDate = (isset($MyRow['orddate']) && $MyRow['orddate'] != '' && $MyRow['orddate'] != '0000-00-00') ? ConvertSQLDate($MyRow['orddate']) : '';
 			$FormatedOrderValue = locale_number_format($MyRow['ordervalue'], $_SESSION['CompanyRecord']['decimalplaces']);
 
 			$OrdersTotal += $MyRow['ordervalue'];

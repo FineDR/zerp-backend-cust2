@@ -54,74 +54,187 @@ echo '<style>
 	#Header_SubBreadcrumb, .legacy-footer { display: none !important; }
 
 	/* ---- Tab visibility ---- */
-	.pay-tab-content { display: none; }
+	.pay-tab-content { display: none; margin-top:20px; }
 	.pay-tab-content.active { display: block; animation: db-fade-in 0.25s ease; }
 	@keyframes db-fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+	/* ---- Architect Dashboard Overrides ---- */
+	.db-card { 
+		background: #ffffff; 
+		border-radius: 16px !important; 
+		border: 1px solid #e5e7eb; 
+		box-shadow: var(--shadow-sm);
+		overflow: hidden;
+		margin-bottom: 24px;
+	}
+    .db-card-header { 
+        background: #f9fafb; 
+        border-bottom: 1px solid #f3f4f6; 
+        padding: 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .db-card-title {
+        font-size: 0.9rem; font-weight: 850; color: #064e3b; margin: 0;
+        display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    
+    .db-btn, .architect-btn, .db-btn-secondary, .db-btn-primary {
+        border-radius: 8px !important;
+        padding: 10px 20px;
+        font-weight: 700;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        border: none;
+        font-size: 0.85rem;
+    }
+    .db-btn-primary { background: #059669; color: #ffffff; }
+    .db-btn-primary:hover { background: #065f46; }
+    .db-btn-secondary { background: #f3f4f6; color: #4b5563; }
+    .db-btn-secondary:hover { background: #e5e7eb; }
+
+    /* ---- Form Standardization ---- */
+    .db-form-group { margin-bottom: 24px; }
+    .db-form-label {
+        display: block;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        color: #065f46;
+        margin-bottom: 8px;
+    }
+    .db-form-input, .db-form-select, .db-input {
+        width: 100%;
+        height: 48px;
+        padding: 0 16px;
+        border-radius: 8px !important;
+        border: 1px solid #d1fae5;
+        background: #ffffff;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+    .db-form-input:focus, .db-form-select:focus {
+        border-color: #059669;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+    }
 
 	/* ---- Sidebar nav ---- */
 	.db-nav-aside {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: 6px;
 		padding: 4px 0;
 	}
 	.db-nav-item {
 		display: flex;
 		align-items: center;
-		gap: 10px;
+		gap: 12px;
 		width: 100%;
-		padding: 12px 16px;
+		padding: 14px 18px;
 		border: none;
 		background: transparent;
-		color: var(--text-muted);
-		font-size: 0.85rem;
-		font-weight: 700;
-		border-radius: var(--radius-md);
+		color: #52635a;
+		font-size: 0.88rem;
+		font-weight: 750;
+		border-radius: 8px !important;
 		cursor: pointer;
 		text-align: left;
+		transition: all 0.2s ease;
 		border: 1px solid transparent;
-		transition: all 0.18s ease;
-		line-height: 1.3;
 	}
 	.db-nav-item i {
-		width: 18px;
-		text-align: center;
-		font-size: 0.9rem;
-		flex-shrink: 0;
-		opacity: 0.65;
+		width: 18px; text-align: center; font-size: 1rem; opacity: 0.5;
 	}
 	.db-nav-item.active {
-		background: var(--primary-soft);
-		color: var(--primary);
-		border-color: rgba(0,0,0,0.05);
+		background: #059669;
+		color: #ffffff;
+		box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15);
 	}
 	.db-nav-item.active i { opacity: 1; }
 	.db-nav-item:hover:not(.active) {
-		background: var(--surface-alt);
-		color: var(--text-main);
+		background: #f0fdf4;
+		color: #059669;
 	}
 
 	/* ---- Layout columns ---- */
 	.db-col-aside {
-		min-width: 240px;
-		max-width: 260px;
+		min-width: 280px;
+		max-width: 300px;
 		flex-shrink: 0;
-		padding: var(--space-5);
-		background: var(--surface-alt);
-		border-right: 1px solid var(--border-soft);
+		padding: 24px;
+		background: #f9fafb;
+		border-right: 1px solid #e5e7eb;
 		overflow-y: auto;
 	}
 	.db-col-main {
 		flex: 1;
-		padding: var(--space-6);
+		padding: 32px;
 		overflow-y: auto;
 		min-width: 0;
+		background: #ffffff;
 	}
 	.db-bottom-layout {
 		display: flex;
-		height: calc(100vh - 110px);
+		height: calc(100vh - 120px);
 		overflow: hidden;
 	}
+
+    /* ---- Responsive Logic ---- */
+    @media (max-width: 1024px) {
+        .db-col-aside { min-width: 250px; padding: 20px; }
+        .db-col-main { padding: 24px; }
+    }
+
+    @media (max-width: 992px) {
+        .db-bottom-layout { 
+            flex-direction: column; 
+            height: auto; 
+            overflow: visible;
+        }
+        .db-col-aside { 
+            max-width: 100% !important; 
+            width: 100%; 
+            border-right: none; 
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: #ffffff;
+            padding: 15px;
+        }
+        .db-col-main { 
+            width: 100%; 
+            overflow: visible;
+            padding: 20px;
+        }
+        .db-nav-aside {
+            flex-direction: row;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 5px;
+            gap: 10px;
+        }
+        .db-nav-item {
+            width: auto;
+            padding: 10px 15px;
+            font-size: 0.8rem;
+        }
+        .db-card[style*="margin-top: 16px"] { display: none; } /* Hide session summary in sidebar on mobile */
+    }
+
+    @media (max-width: 600px) {
+        .db-page-header { flex-direction: column !important; align-items: flex-start !important; gap: 15px !important; }
+        .db-header-actions { width: 100% !important; }
+        .db-btn, .db-btn-secondary { width: 100% !important; justify-content: center !important; }
+        .db-page-title { font-size: 1.1rem !important; }
+    }
 </style>
 <script>
 function payShowTab(tabId) {
@@ -133,6 +246,24 @@ function payShowTab(tabId) {
 	if (btn) btn.classList.add("active");
 	try { localStorage.setItem("payment_active_tab_v2", tabId); } catch(e) {}
 }
+
+function payVerify(amountId, totalId) {
+    var amtInput = document.getElementById(amountId);
+    var ttlInput = document.getElementById(totalId);
+    if (!amtInput || !ttlInput) return true;
+
+    var amt = parseFloat(amtInput.value.replace(/,/g, "")) || 0;
+    var ttl = parseFloat(ttlInput.value.replace(/,/g, "")) || 0;
+
+    if (ttl !== 0 && Math.abs(amt - ttl) > 0.01) {
+        if (!confirm("' . __('The principal amount does not match the total allocation. Proceed anyway?') . '")) {
+            if (window.event) window.event.preventDefault();
+            return false;
+        }
+    }
+    return true;
+}
+
 window.addEventListener("load", function() {
 	var saved = "";
 	try { saved = localStorage.getItem("payment_active_tab_v2") || ""; } catch(e) {}
@@ -1444,7 +1575,7 @@ if ($_SESSION['CompanyRecord']['gllink_creditors'] == 1 AND $_SESSION['PaymentDe
 }
 
 echo '<!-- TAB 4: REVIEW & FINALIZE -->
-	<div id="tab-finalize" class="tab-content">
+	<div id="pay-tab-finalize" class="pay-tab-content">
 		<div class="db-card">
 			<div class="db-card-header">
 				<div class="db-card-title"><i class="fas fa-file-invoice-dollar" style="color: var(--primary);"></i> ' . __('Review & Remittance Confirmation') . '</div>
