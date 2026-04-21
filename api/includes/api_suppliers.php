@@ -172,6 +172,7 @@ function VerifyDateFormat($suppliersincedate, $i, $Errors) {
 		$Month=$DateArray[1];
 		$Year=$DateArray[0];
 	} elseif ($DateFormat=='Y-m-d') {
+		return $DateFormat;
 		$Day=$DateArray[2];
 		$Month=$DateArray[1];
 		$Year=$DateArray[0];
