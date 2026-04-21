@@ -1254,7 +1254,6 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
         $InvoiceDetails[$key] = DB_escape_string($Value);
     }
     $PartCode=$InvoiceDetails['partcode'];
-	return 'partcode ->'.$PartCode;
     $Errors=VerifyStockCodeExists($PartCode, sizeof($Errors), $Errors);
     $Errors=VerifyInvoiceStockCodeExists($PartCode, sizeof($Errors), $Errors);
     unset($InvoiceDetails['partcode']);
