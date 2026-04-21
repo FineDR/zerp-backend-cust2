@@ -1244,7 +1244,6 @@ function CreateCreditNote($Header,$LineDetails, $User, $Password) {
  ************ USE ONLY WITH CAUTION********************
  */
 function InsertSalesInvoice($InvoiceDetails, $user, $password) {
-	return 'mama';
     $Errors = array();
     $db = db($user, $password);
     if (gettype($db)=='integer') {
