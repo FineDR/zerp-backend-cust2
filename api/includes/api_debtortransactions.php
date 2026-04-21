@@ -105,7 +105,7 @@ function VerifyInvoiceTransactionDate($TranDate, $i, $Errors) {
 		$Year=$DateArray[2];
 	}
 	if (!checkdate(intval($Month), intval($Day), intval($Year))) {
-		$Errors[$i] = InvalidSupplierSinceDate;
+		$Errors[$i] = InvalidInvoiceTransactionDate;
 	}
 	return $Errors;
 }
