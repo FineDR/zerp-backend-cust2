@@ -1,0 +1,82 @@
+/* Special Order Entry Styles */
+
+.special-order-page {
+    --so-accent: var(--warning-color);
+    --so-accent-soft: var(--warning-bg);
+}
+
+/* Margin Indicator */
+.margin-badge {
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.margin-positive {
+    background: var(--success-bg);
+    color: var(--success);
+    border: 1px solid var(--success-subtle);
+}
+
+.margin-negative {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid var(--danger-subtle);
+}
+
+/* Dual Currency Labels */
+.currency-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+/* Aside Info Cards */
+.aside-info-card {
+    border-left: 4px solid var(--primary);
+}
+
+.aside-info-card.supplier { border-left-color: var(--primary); }
+.aside-info-card.customer { border-left-color: var(--success); }
+
+.info-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.info-value {
+    font-weight: 700;
+    color: var(--text-main);
+    font-size: 0.95rem;
+}
+
+/* Summary Table Enhancements */
+.so-summary-table {
+    border-spacing: 0;
+    width: 100%;
+}
+
+.so-summary-table thead th {
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 12px;
+    text-align: left;
+}
+
+.so-summary-table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+/* Entry Form Layout */
+.entry-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+}
