@@ -1330,15 +1330,15 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 		DB_Txn_Begin();
 		$SQL = "INSERT INTO debtortrans (" . mb_substr($FieldNames,0,-2) .")
 								VALUES (" . mb_substr($FieldValues,0,-2) .") ";
-								//return $SQL;
+								return $SQL;
 		$Result = DB_query($SQL);
 		$SQL = "UPDATE systypes SET typeno='" . $InvoiceDetails['transno'] . "' WHERE typeid=10";
 		$Result = DB_query($SQL);
 		//update salesorder table
 		//hardcode for testing purposes
-		$SalesArea = 3;
-		$ordertype = 1;
-		$salesperson = 1;
+		// $SalesArea = 3;
+		// $ordertype = 1;
+		// $salesperson = 1;
 		$SQL = "INSERT INTO salesorders (orderno,debtorno,branchcode,orddate,ordertype,salesperson,deliverydate,fromstkloc,shipvia) 
 		        VALUES ('" . $InvoiceDetails['transno'] ."',
 				        '" . $InvoiceDetails['debtorno'] ."',
@@ -1349,7 +1349,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 						'" . $InvoiceDetails['trandate'] ."',
 						'" . $SalesArea ."',
 						'" . $InvoiceDetails['shipvia'] ."')";
-						//return $SQL;
+						return $SQL;
 		$Result = DB_query($SQL);
 		$SalesGLCode=GetSalesGLCode($SalesArea, $PartCode);
 		$DebtorsGLCode=GetDebtorsGLCode();
@@ -1363,8 +1363,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 										'". __('Invoice for') .' -' . $InvoiceDetails['debtorno'] .' ' . __('Total') . ' - '. $InvoiceDetails['ovamount'] . "',
 										'" . $InvoiceDetails['ovamount'] . "',
 										'" . $InvoiceDetails['jobref'] . "')";
-      //  $SQL="INSERT INTO gltrans VALUES(null,10,'" . GetNextTransNo(10) . "',0,'" . $InvoiceDetails['trandate'] ."','" . $InvoiceDetails['prd'] . "','" . $DebtorsGLCode. "','". __('Invoice for') .' -' . $InvoiceDetails['debtorno'] .' ' . __('Total') . ' - '. $InvoiceDetails['ovamount'] . "','" . $InvoiceDetails['ovamount'] . "',0,'" . $InvoiceDetails['jobref'] . "',1)";								
-		//								return $SQL;
+										return $SQL;
 		$Result = api_DB_query($SQL);
 		$SQL="INSERT INTO gltrans VALUES(null,
 										10,
