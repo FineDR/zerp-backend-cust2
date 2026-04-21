@@ -341,10 +341,6 @@ function InsertBranch($BranchDetails, $user, $password) {
 	if (isset($BranchDetails['custbranchcode'])){
 		$Errors=VerifyCustBranchCode($BranchDetails['custbranchcode'], sizeof($Errors), $Errors);
 	}
-	$BranchDetails['lat']=0;
-	$BranchDetails['lng']=0;
-	$FieldNames='';
-	$FieldValues='';
 	foreach ($BranchDetails as $key => $Value) {
 		$FieldNames.=$key.', ';
 		$FieldValues.='"'.$Value.'", ';
