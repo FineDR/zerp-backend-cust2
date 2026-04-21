@@ -120,6 +120,26 @@ ALTER TABLE contracts ADD CONSTRAINT contracts_ibfk_1
 ALTER TABLE orderdeliverydifferenceslog ADD CONSTRAINT orderdeliverydifferenceslog_ibfk_2
   FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
 
+-- Drop all blocking FKs
+ALTER TABLE recurringsalesorders DROP FOREIGN KEY recurringsalesorders_ibfk_1;
+ALTER TABLE contracts DROP FOREIGN KEY contracts_ibfk_1;
+ALTER TABLE orderdeliverydifferenceslog DROP FOREIGN KEY orderdeliverydifferenceslog_ibfk_2;
+ALTER TABLE custbranch DROP FOREIGN KEY custbranch_ibfk_1;
+
+-- Modify
+ALTER TABLE custbranch MODIFY debtorno VARCHAR(32);
+ALTER TABLE recurringsalesorders MODIFY debtorno VARCHAR(32);
+
+-- Recreate FKs
+ALTER TABLE custbranch ADD CONSTRAINT custbranch_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE recurringsalesorders ADD CONSTRAINT recurringsalesorders_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE contracts ADD CONSTRAINT contracts_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
+ALTER TABLE orderdeliverydifferenceslog ADD CONSTRAINT orderdeliverydifferenceslog_ibfk_2
+  FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
+
 
   After this, verify everything is done:
 sqlSELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
@@ -163,3 +183,111 @@ WHERE TABLE_NAME = 'debtorsmaster'
 | debtorsmaster_ibfk_5 | typeid       | debtortype            | typeid                 |
 +----------------------+--------------+-----------------------+------------------------+
 5 rows in set (0.004 sec)
+
+
+====================
+
+-- Drop ALL blocking FKs first (including custbranch's own)
+ALTER TABLE recurringsalesorders DROP FOREIGN KEY recurringsalesorders_ibfk_1;
+ALTER TABLE contracts DROP FOREIGN KEY contracts_ibfk_1;
+ALTER TABLE orderdeliverydifferenceslog DROP FOREIGN KEY orderdeliverydifferenceslog_ibfk_2;
+ALTER TABLE custbranch DROP FOREIGN KEY custbranch_ibfk_1;
+
+-- THEN modify
+ALTER TABLE custbranch MODIFY debtorno VARCHAR(32);
+ALTER TABLE recurringsalesorders MODIFY debtorno VARCHAR(32);
+
+-- THEN recreate
+ALTER TABLE custbranch ADD CONSTRAINT custbranch_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE recurringsalesorders ADD CONSTRAINT recurringsalesorders_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE contracts ADD CONSTRAINT contracts_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
+ALTER TABLE orderdeliverydifferenceslog ADD CONSTRAINT orderdeliverydifferenceslog_ibfk_2
+  FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
+
+
+-- Drop all blocking FKs
+ALTER TABLE custitem DROP FOREIGN KEY custitem_ibfk_2;
+ALTER TABLE custbranch DROP FOREIGN KEY custbranch_ibfk_1;
+ALTER TABLE salesorders DROP FOREIGN KEY salesorders_ibfk_1;
+
+-- Now modify all 4 tables
+ALTER TABLE debtorsmaster MODIFY debtorno VARCHAR(32);
+ALTER TABLE custbranch MODIFY debtorno VARCHAR(32);
+ALTER TABLE salesorders MODIFY debtorno VARCHAR(32);
+ALTER TABLE custitem MODIFY debtorno VARCHAR(32);
+
+-- Recreate FKs
+ALTER TABLE custitem ADD CONSTRAINT custitem_ibfk_2
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE custbranch ADD CONSTRAINT custbranch_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE salesorders ADD CONSTRAINT salesorders_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+
+-- Drop both custitem FKs and contracts FK
+ALTER TABLE custitem DROP FOREIGN KEY `custitem_ibfk_2`;
+ALTER TABLE custitem DROP FOREIGN KEY ` custitem _ibfk_2`;
+ALTER TABLE contracts DROP FOREIGN KEY contracts_ibfk_1;
+
+-- Now modify
+ALTER TABLE debtorsmaster MODIFY debtorno VARCHAR(32);
+ALTER TABLE custbranch MODIFY debtorno VARCHAR(32);
+ALTER TABLE custitem MODIFY debtorno VARCHAR(32);
+
+-- Recreate FKs
+ALTER TABLE custitem ADD CONSTRAINT custitem_ibfk_2
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE contracts ADD CONSTRAINT contracts_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
+
+ALTER TABLE custbranch DROP FOREIGN KEY custbranch_ibfk_1;
+ALTER TABLE debtorsmaster MODIFY debtorno VARCHAR(32);
+ALTER TABLE custbranch MODIFY debtorno VARCHAR(32);
+ALTER TABLE custbranch ADD CONSTRAINT custbranch_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+
+ALTER TABLE custbranch DROP FOREIGN KEY custbranch_ibfk_1;
+ALTER TABLE debtorsmaster MODIFY debtorno VARCHAR(32);
+ALTER TABLE custbranch MODIFY debtorno VARCHAR(32);
+ALTER TABLE custbranch ADD CONSTRAINT custbranch_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+
+-- Drop every FK referencing debtorno across all tables
+ALTER TABLE custbranch DROP FOREIGN KEY custbranch_ibfk_1;
+ALTER TABLE custitem DROP FOREIGN KEY custitem_ibfk_2;
+ALTER TABLE contracts DROP FOREIGN KEY contracts_ibfk_1;
+ALTER TABLE salesorders DROP FOREIGN KEY salesorders_ibfk_1;
+ALTER TABLE recurringsalesorders DROP FOREIGN KEY recurringsalesorders_ibfk_1;
+ALTER TABLE orderdeliverydifferenceslog DROP FOREIGN KEY orderdeliverydifferenceslog_ibfk_2;
+
+-- Modify the two remaining tables
+ALTER TABLE debtorsmaster MODIFY debtorno VARCHAR(32);
+ALTER TABLE custbranch MODIFY debtorno VARCHAR(32);
+
+-- Recreate all FKs
+ALTER TABLE custbranch ADD CONSTRAINT custbranch_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE custitem ADD CONSTRAINT custitem_ibfk_2
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE salesorders ADD CONSTRAINT salesorders_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE recurringsalesorders ADD CONSTRAINT recurringsalesorders_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES debtorsmaster(debtorno);
+ALTER TABLE contracts ADD CONSTRAINT contracts_ibfk_1
+  FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
+ALTER TABLE orderdeliverydifferenceslog ADD CONSTRAINT orderdeliverydifferenceslog_ibfk_2
+  FOREIGN KEY (debtorno) REFERENCES custbranch(debtorno);
+
+
+  ===== confirm everythibg is fine=====
+  SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = 'zerp_backend'
+  AND COLUMN_NAME = 'debtorno'
+  AND CHARACTER_MAXIMUM_LENGTH < 32;
+  ===== you should get 0================
+
+
