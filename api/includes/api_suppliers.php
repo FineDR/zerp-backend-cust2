@@ -131,6 +131,10 @@ function VerifySupplierSinceDate($suppliersincedate, $i, $Errors) {
 		$Day=$DateArray[2];
 		$Month=$DateArray[1];
 		$Year=$DateArray[0];
+	} elseif ($DateFormat=='Y-m-d') {
+		$Day=$DateArray[2];
+		$Month=$DateArray[1];
+		$Year=$DateArray[0];
 	} elseif ($DateFormat=='d.m.Y') {
 		$Day=$DateArray[0];
 		$Month=$DateArray[1];
@@ -164,6 +168,10 @@ function VerifyDateFormat($suppliersincedate, $i, $Errors) {
 		$Month=$DateArray[0];
 		$Year=$DateArray[2];
 	} elseif ($DateFormat=='Y/m/d') {
+		$Day=$DateArray[2];
+		$Month=$DateArray[1];
+		$Year=$DateArray[0];
+	} elseif ($DateFormat=='Y-m-d') {
 		$Day=$DateArray[2];
 		$Month=$DateArray[1];
 		$Year=$DateArray[0];
