@@ -1254,7 +1254,6 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
         $InvoiceDetails[$key] = DB_escape_string($Value);
     }
     $PartCode=$InvoiceDetails['partcode'];
-    // REMOVED: return 'step1';
     $Errors=VerifyStockCodeExists($PartCode, sizeof($Errors), $Errors);
     $Errors=VerifyInvoiceStockCodeExists($PartCode, sizeof($Errors), $Errors);
     unset($InvoiceDetails['partcode']);
@@ -1327,7 +1326,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
         DB_Txn_Begin();
         $SQL = "INSERT INTO debtortrans (" . mb_substr($FieldNames,0,-2) .")
                 VALUES (" . mb_substr($FieldValues,0,-2) .") ";
-        // REMOVED: return $SQL;
+       return $SQL;
         $Result = DB_query($SQL);
         if (DB_error_no() != 0) {
             DB_Txn_Rollback();
