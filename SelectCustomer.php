@@ -7,20 +7,100 @@ require(__DIR__ . '/includes/session.php');
 $Title = __('Search Customers');
 $ViewTopic = 'AccountsReceivable';
 $BookMark = 'SelectCustomer';
+$ExtraHeadContent = '
+<style>
+	.card-v2 { background: #ffffff; border-radius: 24px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden; margin-bottom: 24px; transition: transform 0.2s, box-shadow 0.2s; }
+	.card-v2:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08); }
+	.card-header-v2 { background: #f9fafb; border-bottom: 1px solid #f3f4f6; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+	.card-header-v2 h3 { font-size: 1rem; font-weight: 850; color: #064e3b; margin: 0; text-transform: uppercase; letter-spacing: 1.5px; display: flex; align-items: center; }
+	
+	/* Architect Layout Engine */
+	.architect-grid { display: grid !important; gap: 24px !important; }
+	.architect-grid-6 { grid-template-columns: repeat(6, 1fr) !important; }
+	.architect-grid-4 { grid-template-columns: repeat(4, 1fr) !important; }
+	.architect-grid-3 { grid-template-columns: repeat(3, 1fr) !important; }
+	.architect-grid-2 { grid-template-columns: repeat(2, 1fr) !important; }
+	
+	/* Action Tiles */
+	.db-action-tile { 
+		display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+		padding: 24px 16px; border-radius: 20px; background: #ffffff; border: 1.5px solid #f3f4f6;
+		text-decoration: none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+	.db-action-tile:hover { background: #f0fdf4; border-color: #059669; transform: scale(1.05); }
+	
+	.db-action-icon { 
+		width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; 
+		background: #f1f5f9; color: #475569; transition: all 0.2s;
+	}
+	.db-action-tile:hover .db-action-icon { transform: rotate(-5deg); }
+	
+	.db-icon-blue { background: #eff6ff; color: #3b82f6; }
+	.db-icon-green { background: #f0fdf4; color: #059669; }
+	.db-icon-red { background: #fef2f2; color: #dc2626; }
+	.db-icon-neutral { background: #f8fafc; color: #64748b; }
+	
+	.db-action-text { font-size: 0.8rem; font-weight: 700; color: #1e293b; text-align: center; }
+	
+	/* Badges & UI Elements */
+	.db-badge { padding: 5px 12px; border-radius: 9999px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+	.db-badge-success { background: #dcfce7; color: #166534; }
+	.db-badge-info { background: #e0f2fe; color: #075985; }
+	
+	.db-btn { 
+		display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+		padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 0.85rem;
+		border: none; cursor: pointer; transition: all 0.2s;
+	}
+	.db-btn-primary { background: #059669; color: #ffffff; }
+	.db-btn-primary:hover { background: #065f46; transform: translateY(-1px); }
+	.db-btn-outline { background: transparent; border: 1.5px solid #e2e8f0; color: #475569; }
+	.db-btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
+	.db-btn-small { padding: 6px 12px; font-size: 0.75rem; }
+
+	.db-ref { font-family: "JetBrains Mono", monospace; font-weight: 700; color: #059669; background: #ecfdf5; padding: 2px 6px; border-radius: 4px; border: 1px solid #d1fae5; }
+	.db-info-list { display: flex; flex-direction: column; gap: 8px; }
+	.db-info-item { display: flex; align-items: center; gap: 10px; color: #475569; }
+	.db-muted { color: #94a3b8; }
+	.db-link { color: #059669; text-decoration: none; font-weight: 600; }
+	.db-link:hover { text-decoration: underline; }
+
+	.db-table-wrapper { border-radius: 12px; overflow: hidden; border: 1px solid #f1f5f9; }
+	.db-table { width: 100%; border-collapse: collapse; }
+	.db-table th { background: #f8fafc; padding: 12px 16px; text-align: left; font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; }
+	.db-table td { padding: 12px 16px; font-size: 0.85rem; color: #334155; border-top: 1px solid #f1f5f9; }
+	
+	/* Responsive Adjustments */
+	@media (max-width: 1200px) { .db-grid-6 { grid-template-columns: repeat(3, 1fr); } }
+	@media (max-width: 768px) { 
+		.db-grid-6 { grid-template-columns: repeat(2, 1fr); } 
+		.db-grid-4, .db-grid-3 { grid-template-columns: repeat(2, 1fr); }
+		.premium-header { padding: 30px; flex-direction: column; align-items: flex-start; gap: 20px; }
+	}
+</style>';
+
 include(__DIR__ . '/includes/header.php');
 
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 
 echo '<div class="db-page">
-		<div class="db-page-header">
+		<div class="premium-header">
 			<div>
-				<h2 class="db-page-title">' . $Title . '</h2>
-				<p class="db-page-subtitle">' . __('Identify and manage customer accounts') . '</p>
+				<div style="font-size: 0.72rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; text-transform: lowercase; letter-spacing: 1px;">
+					<a href="index.php" class="breadcrumb-item"><i class="fas fa-home"></i> ' . __('home') . '</a>
+					<i class="fas fa-chevron-right breadcrumb-separator"></i>
+					<a href="index.php?Application=AR" class="breadcrumb-item">' . __('receivables') . '</a>
+					<i class="fas fa-chevron-right breadcrumb-separator"></i>
+					<span style="color: #064e3b; opacity: 0.9;">' . __('customer search') . '</span>
+				</div>
+				<div>
+					<h1 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px; color: #064e3b; margin: 0; line-height: 1;">' . $Title . '</h1>
+					<p style="font-size: 1.1rem; margin-top: 12px; color: #065f46; font-weight: 500; opacity: 0.8;">' . __('Identify and manage customer accounts') . '</p>
+				</div>
 			</div>
 			<div class="db-header-actions">
-				<a href="' . $RootPath . '/Customers.php" class="db-btn db-btn-primary">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-					' . __('Add New Customer') . '
+				<a href="' . $RootPath . '/Customers.php" class="architect-btn">
+					<i class="fas fa-plus"></i> ' . __('Add New Customer') . '
 				</a>
 			</div>
 		</div>';
@@ -168,7 +248,7 @@ if (isset($_SESSION['CustomerID']) and $_SESSION['CustomerID'] != '' and !isset(
 			</div>
 			
 			<div class="db-card-body">
-				<div class="db-grid db-grid-6">
+				<div class="architect-grid architect-grid-6">
 					<a href="' . $RootPath . '/SelectOrderItems.php?NewOrder=Yes&SelectedCustomer=' . urlencode($_SESSION['CustomerID']) . '" class="db-action-tile">
 						<div class="db-action-icon db-icon-blue">
 							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
@@ -235,7 +315,7 @@ echo '<div class="card-v2" style="background: var(--surface-alt); border: 1px so
 
 				<details class="db-accordion" style="margin-top: var(--space-4);">
 					<summary style="font-size: 0.85rem; color: var(--text-muted);">' . __('Advanced Filtering Options') . '</summary>
-					<div class="db-grid db-grid-4" style="margin-top: var(--space-4);">
+					<div class="architect-grid architect-grid-4" style="margin-top: var(--space-4);">
 						<div class="db-field">
 							<label class="db-label">' . __('Description Keywords') . '</label>
 							<input type="text" name="Keywords" value="' . (isset($_POST['Keywords']) ? $_POST['Keywords'] : '') . '" />
@@ -253,7 +333,7 @@ echo '<div class="card-v2" style="background: var(--surface-alt); border: 1px so
 							<input type="text" name="CustAdd" value="' . (isset($_POST['CustAdd']) ? $_POST['CustAdd'] : '') . '" />
 						</div>
 					</div>
-					<div class="db-grid db-grid-2" style="margin-top: var(--space-3);">
+					<div class="architect-grid architect-grid-2" style="margin-top: var(--space-3);">
 						<div class="db-field">
 							<label class="db-label">' . __('Customer Type') . '</label>';
 $Result2 = DB_query("SELECT typeid, typename FROM debtortype ORDER BY typename");
@@ -312,7 +392,7 @@ if (isset($SearchResult)) {
 				</div>';
 		}
 
-		echo '<div class="db-grid db-grid-3" style="margin-top: var(--space-4);">';
+		echo '<div class="architect-grid architect-grid-3" style="margin-top: var(--space-4);">';
 		DB_data_seek($SearchResult, ($_POST['PageOffset'] - 1) * $_SESSION['DisplayRecordsMax']);
 		$RowIndex = 0;
 		while (($MyRow = DB_fetch_array($SearchResult)) and ($RowIndex <> $_SESSION['DisplayRecordsMax'])) {
@@ -394,7 +474,7 @@ if (isset($_SESSION['CustomerID']) and $_SESSION['CustomerID'] != '' && $_SESSIO
 	$TotalRes = DB_query($SQL);
 	$TRow = DB_fetch_array($TotalRes);
 
-	echo '<div class="db-grid db-grid-2" style="margin-top: var(--space-6);">
+	echo '<div class="architect-grid architect-grid-2" style="margin-top: var(--space-6);">
 			<div class="card-v2">
 				<div class="card-header-v2">
 					<h3>' . __('Account Insights') . '</h3>

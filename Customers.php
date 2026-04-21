@@ -25,7 +25,14 @@ $ExtraHeadContent = '
 	.MainBody { padding: 0 !important; gap: 0 !important; background: transparent !important; }
 	.db-page { padding: var(--space-8) var(--space-6); background: var(--bg-main); min-height: 100vh; font-family: "Inter", sans-serif; }
 	
-	.premium-header { margin-bottom: 32px; position: relative; }
+	.premium-header { 
+		margin-bottom: 40px; 
+		padding: 40px 50px;
+		background: #ffffff;
+		border-radius: 24px;
+		border: 1px solid #e5e7eb;
+		box-shadow: var(--shadow-sm);
+	}
 	.premium-header::before { display: none !important; }
 	
 	.db-card-header { 
@@ -98,6 +105,9 @@ $ExtraHeadContent = '
 	.db-tab:hover { background: #fff; color: #059669; }
 	.db-tab.active { background: #fff; color: #059669; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 	
+	.db-tab.has-error { color: #dc2626 !important; position: relative; }
+	.db-tab.has-error::after { content: \'\'; position: absolute; top: 12px; right: 8px; width: 6px; height: 6px; background: #dc2626; border-radius: 50%; }
+
 	.db-tab-panel { display: none; }
 	.db-tab-panel.active { display: block; animation: slideIn 0.3s ease-out; }
 	
@@ -105,8 +115,8 @@ $ExtraHeadContent = '
 		from { opacity: 0; transform: translateY(10px); }
 		to { opacity: 1; transform: translateY(0); }
 	}
-	
-	.breadcrumb-item { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; }
+
+	.breadcrumb-item { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; font-size: 0.72rem; font-weight: 700; text-transform: lowercase; letter-spacing: 1px; }
 	.breadcrumb-item:hover { color: #059669; }
 	.breadcrumb-separator { font-size: 0.6rem; opacity: 0.4; margin: 0 4px; }
 	
@@ -134,30 +144,57 @@ $ExtraHeadContent = '
 	function switchTab(tabId) {
 		document.querySelectorAll(".db-tab").forEach(t => t.classList.remove("active"));
 		document.querySelectorAll(".db-tab-panel").forEach(p => p.classList.remove("active"));
-		document.querySelector(`[onclick=\"switchTab(\'${tabId}\')\"]`).classList.add("active");
-		document.getElementById(tabId).classList.add("active");
+		const tabBtn = document.querySelector(`[onclick^="switchTab(\'${tabId}\')"]`);
+		if (tabBtn) tabBtn.classList.add("active");
+		const panel = document.getElementById(tabId);
+		if (panel) panel.classList.add("active");
+		
+		// Update hidden input for persistence
+		let persistInput = document.getElementById("ActiveTabPersist");
+		if (!persistInput) {
+			persistInput = document.createElement("input");
+			persistInput.type = "hidden";
+			persistInput.name = "ActiveTab";
+			persistInput.id = "ActiveTabPersist";
+			document.querySelector("form").appendChild(persistInput);
+		}
+		persistInput.value = tabId;
 	}
+	
+	window.addEventListener(\'load\', () => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const tabFromUrl = urlParams.get(\'ActiveTab\');
+		if (tabFromUrl) switchTab(tabFromUrl);
+	});
 </script>';
 
 include(__DIR__ . '/includes/header.php');
 
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/CountriesArray.php');
+include(__DIR__ . '/includes/LanguagesArray.php');
+
+// Initialize numeric separators from language preferences with global scope
+global $ThousandsSeparator, $DecimalPoint;
+$ThousandsSeparator = $LanguagesArray[$_SESSION['Language']]['ThousandsSeparator'] ?? (isset($_SESSION['DefaultThousandsSeparator']) ? $_SESSION['DefaultThousandsSeparator'] : ',');
+$DecimalPoint = $LanguagesArray[$_SESSION['Language']]['DecimalPoint'] ?? (isset($_SESSION['DefaultDecimalPoint']) ? $_SESSION['DefaultDecimalPoint'] : '.');
 
 echo '<div class="db-page">
 		<div class="premium-header">
 			<div style="display: flex; justify-content: space-between; align-items: flex-end;">
 				<div>
 					<div style="font-size: 0.72rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; text-transform: lowercase; letter-spacing: 1px;">
-						<a href="index.php" class="breadcrumb-item"><i class="fas fa-home"></i> ' . __('home') . '</a>
-						<i class="fas fa-chevron-right breadcrumb-separator"></i>
-						<a href="index.php?Application=AR" class="breadcrumb-item">' . __('receivables') . '</a>
-						<i class="fas fa-chevron-right breadcrumb-separator"></i>
-						<span style="color: #064e3b; opacity: 0.9;">' . __('customer maintenance') . '</span>
-					</div>
+					<a href="index.php" class="breadcrumb-item"><i class="fas fa-home"></i> ' . __('home') . '</a>
+					<i class="fas fa-chevron-right breadcrumb-separator"></i>
+					<a href="index.php?Application=AR" class="breadcrumb-item">' . __('receivables') . '</a>
+					<i class="fas fa-chevron-right breadcrumb-separator"></i>
+					<a href="SelectCustomer.php" class="breadcrumb-item">' . __('search customers') . '</a>
+					<i class="fas fa-chevron-right breadcrumb-separator"></i>
+					<span style="color: #064e3b; opacity: 0.9;">' . __('customer maintenance') . '</span>
+				</div>
 					<div>
 						<h1 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px; color: #064e3b; margin: 0; line-height: 1;">' . $Title . '</h1>
-						<p style="font-size: 1.1rem; margin-top: 8px; color: #065f46; font-weight: 500; opacity: 0.8;">' . __('Build and maintain high-value customer profiles and credit configurations') . '</p>
+						<p style="font-size: 1.1rem; margin-top: 12px; color: #065f46; font-weight: 500; opacity: 0.8;">' . __('Build and maintain high-value customer profiles and credit configurations') . '</p>
 					</div>
 				</div>
 			</div>
@@ -262,6 +299,21 @@ if (isset($_POST['submit'])) {
 		$Errors[$i] = 'Discount';
 		$i++;
 	}
+	// Identify which tab has errors for automatic switching
+	$ErrorTabs = array();
+	foreach ($Errors as $ErrorField) {
+		if (in_array($ErrorField, array('DebtorNo', 'CustName', 'SalesType', 'typeid'))) $ErrorTabs['tab-identity'] = true;
+		if (preg_match('/Address/', $ErrorField)) $ErrorTabs['tab-location'] = true;
+		if (in_array($ErrorField, array('CreditLimit', 'PymtDiscount', 'Discount', 'TaxRef', 'CurrCode', 'PaymentTerms'))) $ErrorTabs['tab-financial'] = true;
+		if (in_array($ErrorField, array('ClientSince', 'HoldReason'))) $ErrorTabs['tab-settings'] = true;
+	}
+	
+	// Error tabs take precedence over previous activity
+	if (!empty($ErrorTabs)) {
+		$ActiveTab = array_key_first($ErrorTabs);
+	} else {
+		$ActiveTab = $_POST['ActiveTab'] ?? 'tab-identity';
+	}
 
 	if ($InputError != 1) {
 
@@ -295,8 +347,7 @@ if (isset($_POST['submit'])) {
 												invaddrbranch='" . $_POST['AddrInvBranch'] . "',
 												taxref='" . $_POST['TaxRef'] . "',
 												customerpoline='" . $_POST['CustomerPOLine'] . "',
-												typeid='" . $_POST['typeid'] . "',
-												language_id='" . $_POST['LanguageID'] . "'
+												typeid='" . $_POST['typeid'] . "'
 					  WHERE debtorno = '" . $_POST['DebtorNo'] . "'";
 			} else {
 
@@ -325,8 +376,7 @@ if (isset($_POST['submit'])) {
 												invaddrbranch='" . $_POST['AddrInvBranch'] . "',
 												taxref='" . $_POST['TaxRef'] . "',
 												customerpoline='" . $_POST['CustomerPOLine'] . "',
-												typeid='" . $_POST['typeid'] . "',
-												language_id='" . $_POST['LanguageID'] . "'
+												typeid='" . $_POST['typeid'] . "'
 						WHERE debtorno = '" . $_POST['DebtorNo'] . "'";
 
 				if ($OldCurrency != $_POST['CurrCode']) {
@@ -370,8 +420,7 @@ if (isset($_POST['submit'])) {
 							invaddrbranch,
 							taxref,
 							customerpoline,
-							typeid,
-							language_id)
+							typeid)
 				VALUES ('" . $_POST['DebtorNo'] . "',
 						'" . $_POST['CustName'] . "',
 						'" . $_POST['Address1'] . "',
@@ -392,8 +441,7 @@ if (isset($_POST['submit'])) {
 						'" . $_POST['AddrInvBranch'] . "',
 						'" . $_POST['TaxRef'] . "',
 						'" . $_POST['CustomerPOLine'] . "',
-						'" . $_POST['typeid'] . "',
-						'" . $_POST['LanguageID'] . "')";
+						'" . $_POST['typeid'] . "')";
 
 			$ErrMsg = __('This customer could not be added because');
 			$Result = DB_query($SQL, $ErrMsg);
@@ -502,7 +550,6 @@ if (isset($_POST['Reset'])) {
 	unset($_POST['InvAddrBranch']);
 	unset($_POST['TaxRef']);
 	unset($_POST['CustomerPOLine']);
-	unset($_POST['LanguageID']);
 }
 
 /*DebtorNo could be set from a post or a get when passed as a parameter to this page */
@@ -576,19 +623,24 @@ if (!isset($DebtorNo)) {
 
 			<main class="db-main" style="display: flex; flex-direction: column;">
 				<div class="db-tab-bar">
-					<div class="db-tab active" onclick="switchTab(\'tab-identity\')">
+					<div class="db-tab' . ($ActiveTab == 'tab-identity' ? ' active' : '') . (isset($ErrorTabs['tab-identity']) ? ' has-error' : '') . '" onclick="switchTab(\'tab-identity\')">
 						<i class="fas fa-id-card"></i> ' . __('Identity') . '
 					</div>
-					<div class="db-tab" onclick="switchTab(\'tab-location\')">
+					<div class="db-tab' . ($ActiveTab == 'tab-location' ? ' active' : '') . (isset($ErrorTabs['tab-location']) ? ' has-error' : '') . '" onclick="switchTab(\'tab-location\')">
 						<i class="fas fa-map-marker-alt"></i> ' . __('Location') . '
 					</div>
-					<div class="db-tab" onclick="switchTab(\'tab-config\')">
-						<i class="fas fa-sliders-h"></i> ' . __('Configuration') . '
+					<div class="db-tab' . ($ActiveTab == 'tab-financial' ? ' active' : '') . (isset($ErrorTabs['tab-financial']) ? ' has-error' : '') . '" onclick="switchTab(\'tab-financial\')">
+						<i class="fas fa-money-bill-wave"></i> ' . __('Financial') . '
+					</div>
+					<div class="db-tab' . ($ActiveTab == 'tab-settings' ? ' active' : '') . (isset($ErrorTabs['tab-settings']) ? ' has-error' : '') . '" onclick="switchTab(\'tab-settings\')">
+						<i class="fas fa-cogs"></i> ' . __('Settings') . '
 					</div>
 				</div>
 
+				<input type="hidden" name="ActiveTab" id="ActiveTabPersist" value="' . $ActiveTab . '" />
+
 				<!-- Tab 1: Identity -->
-				<div id="tab-identity" class="db-tab-panel active">
+				<div id="tab-identity" class="db-tab-panel' . ($ActiveTab == 'tab-identity' ? ' active' : '') . '">
 					<div class="db-card" style="border-radius: 20px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden;">
 						<div class="db-card-header">
 							<h3 class="db-card-title">' . __('General Profile') . '</h3>
@@ -714,23 +766,37 @@ if (!isset($DebtorNo)) {
 								</div>
 							</div>
 
+							</div>
+
+							<div class="db-grid-3" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #f3f4f6;">
+								<div class="db-form-group">
+									<label class="db-label">' . __('Invoice Branch') . '</label>
+									<select name="AddrInvBranch" class="db-input">
+										<option value="0">' . __('None') . '</option>';
+	$Result = DB_query("SELECT branchcode, brname FROM custbranch");
+	while ($MyRow = DB_fetch_array($Result)) {
+		echo '<option value="' . $MyRow['branchcode'] . '">' . $MyRow['brname'] . '</option>';
+	}
+	echo '				</select>
+								</div>
+								<div class="db-form-group">
+									<label class="db-label">' . __('Customer PO Line') . '</label>
+									<select name="CustomerPOLine" class="db-input">
+										<option value="0">' . __('No') . '</option>
+										<option value="1">' . __('Yes') . '</option>
+									</select>
+								</div>
+								<div class="db-form-group">
+									<label class="db-label">' . __('Discount Code') . '</label>
+									<input type="text" name="DiscountCode" class="db-input" maxlength="2" />
+								</div>
+							</div>
+
 							<div class="db-grid-2" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #f3f4f6;">
 								<div class="db-form-group">
 									<label class="db-label">' . __('Client Since') . '</label>
 									<input type="date" name="ClientSince" value="' . date('Y-m-d') . '" class="db-input" />
 								</div>
-								<div class="db-form-group">
-									<label class="db-label">' . __('Preferred Language') . '</label>
-									<select name="LanguageID" required="required" class="db-input">';
-	foreach ($LanguagesArray as $LanguageCode => $LanguageName) {
-		$selected = ($_SESSION['Language'] == $LanguageCode) ? 'selected="selected"' : '';
-		echo '<option ' . $selected . ' value="' . $LanguageCode . '">' . $LanguageName['LanguageName'] . '</option>';
-	}
-	echo '				</select>
-								</div>
-							</div>
-
-							<div class="db-grid-2" style="margin-top: 12px;">
 								<div class="db-form-group">
 									<label class="db-label">' . __('Credit Status') . '</label>
 									<select name="HoldReason" required="required" class="db-input">';
@@ -779,7 +845,6 @@ if (!isset($DebtorNo)) {
 		$_POST['TaxRef'] = $MyRow['taxref'];
 		$_POST['CustomerPOLine'] = $MyRow['customerpoline'];
 		$_POST['typeid'] = $MyRow['typeid'];
-		$_POST['LanguageID'] = $MyRow['language_id'];
 
 		echo '<input type="hidden" name="DebtorNo" value="' . $DebtorNo . '" />';
 	}
@@ -963,6 +1028,28 @@ if (!isset($DebtorNo)) {
 									<label class="db-label">' . __('Tax Reference') . '</label>
 									<input type="text" name="TaxRef" class="db-input" value="' . $_POST['TaxRef'] . '" />
 								</div>
+								<div class="db-form-group">
+									<label class="db-label">' . __('Invoice Branch') . '</label>
+									<select name="AddrInvBranch" class="db-input">
+										<option value="0">' . __('None') . '</option>';
+	$Result = DB_query("SELECT branchcode, brname FROM custbranch WHERE debtorno='" . $DebtorNo . "'");
+	while ($myr = DB_fetch_array($Result)) {
+		$sel = ($_POST['InvAddrBranch'] == $myr['branchcode']) ? 'selected="selected"' : '';
+		echo '<option ' . $sel . ' value="' . $myr['branchcode'] . '">' . $myr['brname'] . '</option>';
+	}
+	echo '				</select>
+								</div>
+								<div class="db-form-group">
+									<label class="db-label">' . __('Customer PO Line') . '</label>
+									<select name="CustomerPOLine" class="db-input">
+										<option ' . ($_POST['CustomerPOLine'] == 0 ? 'selected="selected"' : '') . ' value="0">' . __('No') . '</option>
+										<option ' . ($_POST['CustomerPOLine'] == 1 ? 'selected="selected"' : '') . ' value="1">' . __('Yes') . '</option>
+									</select>
+								</div>
+								<div class="db-form-group">
+									<label class="db-label">' . __('Discount Code') . '</label>
+									<input type="text" name="DiscountCode" class="db-input" value="' . $_POST['DiscountCode'] . '" maxlength="2" />
+								</div>
 							</div>
 						</div>
 					</div>
@@ -978,16 +1065,7 @@ if (!isset($DebtorNo)) {
 							<div class="db-grid-2">
 								<div class="db-form-group">
 									<label class="db-label">' . __('Client Since') . '</label>
-									<input type="date" name="ClientSince" class="db-input" value="' . FormatDateForSQL($_POST['ClientSince']) . '" />
-								</div>
-								<div class="db-form-group">
-									<label class="db-label">' . __('Language') . '</label>
-									<select name="LanguageID" class="db-input">';
-	foreach ($LanguagesArray as $lc => $ln) {
-		$sel = ($_POST['LanguageID'] == $lc) ? 'selected="selected"' : '';
-		echo '<option ' . $sel . ' value="' . $lc . '">' . $ln['LanguageName'] . '</option>';
-	}
-	echo '				</select>
+									<input type="date" name="ClientSince" class="db-input" value="' . (Is_Date($_POST['ClientSince']) ? FormatDateForSQL($_POST['ClientSince']) : $_POST['ClientSince']) . '" />
 								</div>
 								<div class="db-form-group">
 									<label class="db-label">' . __('Credit Status') . '</label>
