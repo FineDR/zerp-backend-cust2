@@ -1267,7 +1267,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
     $Errors=VerifyTransNO($InvoiceDetails['transno'], 10, sizeof($Errors), $Errors);
     $InvoiceDetails['trandate']=$InvoiceDetails['trandate'];
     $Errors=VerifyDateFormat($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
-    $Errors=VerifyInvoiceTransactionDate($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
+   // $Errors=VerifyInvoiceTransactionDate($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
     if (isset($InvoiceDetails['settled'])){
         $Errors=VerifySettled($InvoiceDetails['settled'], sizeof($Errors), $Errors);
     }
