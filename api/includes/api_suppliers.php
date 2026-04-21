@@ -150,40 +150,51 @@ function VerifySupplierSinceDate($suppliersincedate, $i, $Errors) {
  * must be in the same format as the date format specified in the
  * target webERP company */
 function VerifyDateFormat($suppliersincedate, $i, $Errors) {
-	$SQL="SELECT confvalue FROM config where confname='DefaultDateFormat'";
-	$Result = DB_query($SQL);
-	$MyRow=DB_fetch_array($Result);
-	$DateFormat=$MyRow[0];
-	if (mb_strstr('/',$PeriodEnd)) {
-		$Date_Array = explode('/',$PeriodEnd);
-	} elseif (mb_strstr('.',$PeriodEnd)) {
-		$Date_Array = explode('.',$PeriodEnd);
-	}
-	if ($DateFormat=='d/m/Y') {
-		$Day=$DateArray[0];
-		$Month=$DateArray[1];
-		$Year=$DateArray[2];
-	} elseif ($DateFormat=='m/d/Y') {
-		$Day=$DateArray[1];
-		$Month=$DateArray[0];
-		$Year=$DateArray[2];
-	} elseif ($DateFormat=='Y/m/d') {
-		$Day=$DateArray[2];
-		$Month=$DateArray[1];
-		$Year=$DateArray[0];
-	} elseif ($DateFormat=='Y-m-d') {
-		$Day=$DateArray[2];
-		$Month=$DateArray[1];
-		$Year=$DateArray[0];
-	} elseif ($DateFormat=='d.m.Y') {
-		$Day=$DateArray[0];
-		$Month=$DateArray[1];
-		$Year=$DateArray[2];
-	}
-	if (!checkdate(intval($Month), intval($Day), intval($Year))) {
-		//$Errors[$i] = InvalidSupplierSinceDate;
-	}
-	return $Errors;
+    $SQL = "SELECT confvalue FROM config WHERE confname='DefaultDateFormat'";
+    $Result = DB_query($SQL);
+    $MyRow = DB_fetch_array($Result);
+    $DateFormat = $MyRow[0];
+
+    // Fix: use correct variable name and correct mb_strstr argument order
+    if (mb_strstr($suppliersincedate, '/')) {
+        $DateArray = explode('/', $suppliersincedate);
+    } elseif (mb_strstr($suppliersincedate, '.')) {
+        $DateArray = explode('.', $suppliersincedate);
+    } elseif (mb_strstr($suppliersincedate, '-')) {
+        $DateArray = explode('-', $suppliersincedate);
+    } else {
+        $Errors[$i] = InvalidSupplierSinceDate;
+        return $Errors;
+    }
+
+    if (count($DateArray) !== 3) {
+        $Errors[$i] = InvalidSupplierSinceDate;
+        return $Errors;
+    }
+
+    // Fix: consistent variable name $DateArray throughout
+    if ($DateFormat == 'd/m/Y' || $DateFormat == 'd.m.Y') {
+        $Day   = $DateArray[0];
+        $Month = $DateArray[1];
+        $Year  = $DateArray[2];
+    } elseif ($DateFormat == 'm/d/Y') {
+        $Day   = $DateArray[1];
+        $Month = $DateArray[0];
+        $Year  = $DateArray[2];
+    } elseif ($DateFormat == 'Y/m/d' || $DateFormat == 'Y-m-d') {
+        $Day   = $DateArray[2];
+        $Month = $DateArray[1];
+        $Year  = $DateArray[0];
+    } else {
+        $Errors[$i] = InvalidSupplierSinceDate;
+        return $Errors;
+    }
+
+    if (!checkdate(intval($Month), intval($Day), intval($Year))) {
+        $Errors[$i] = InvalidSupplierSinceDate;
+    }
+
+    return $Errors;
 }
 
 function VerifyBankAccount($BankAccount, $i, $Errors) {
