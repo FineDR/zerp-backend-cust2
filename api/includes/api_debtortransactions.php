@@ -69,47 +69,6 @@ function ConvertToSQLDate($DateEntry) {
 
 } // end function ConvertSQLDate
 
-/** Check that the transaction date and Delivery date are  valid dates. The date
- * must be in the same format as the date format specified in the
- * target webERP company */
-
-function VerifyInvoiceTransactionDate($TranDate, $i, $Errors) {
-	$SQL="SELECT confvalue FROM config where confname='DefaultDateFormat'";
-	$Result = DB_query($SQL);
-	$MyRow=DB_fetch_array($Result);
-	$DateFormat=$MyRow[0];
-	if (mb_strstr('/',$PeriodEnd)) {
-		$Date_Array = explode('/',$PeriodEnd);
-	} elseif (mb_strstr('.',$PeriodEnd)) {
-		$Date_Array = explode('.',$PeriodEnd);
-	}
-	if ($DateFormat=='d/m/Y') {
-		$Day=$DateArray[0];
-		$Month=$DateArray[1];
-		$Year=$DateArray[2];
-	} elseif ($DateFormat=='m/d/Y') {
-		$Day=$DateArray[1];
-		$Month=$DateArray[0];
-		$Year=$DateArray[2];
-	} elseif ($DateFormat=='Y/m/d') {
-		$Day=$DateArray[2];
-		$Month=$DateArray[1];
-		$Year=$DateArray[0];
-	} elseif ($DateFormat=='Y-m-d') {
-		$Day=$DateArray[2];
-		$Month=$DateArray[1];
-		$Year=$DateArray[0];
-	} elseif ($DateFormat=='d.m.Y') {
-		$Day=$DateArray[0];
-		$Month=$DateArray[1];
-		$Year=$DateArray[2];
-	}
-	if (!checkdate(intval($Month), intval($Day), intval($Year))) {
-		//$Errors[$i] = InvalidSupplierSinceDate;
-	}
-	return $Errors;
-}
-
 /** Check that the transaction date is a valid date. The date
  * must be in the same format as the date format specified in the
  * target webERP company */
@@ -1266,8 +1225,8 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
     $Errors=VerifyBranchNoExists($InvoiceDetails['debtorno'],$InvoiceDetails['branchcode'], sizeof($Errors), $Errors);
     $Errors=VerifyTransNO($InvoiceDetails['transno'], 10, sizeof($Errors), $Errors);
     $InvoiceDetails['trandate']=$InvoiceDetails['trandate'];
-    $Errors=VerifyDateFormat($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
-    $Errors=VerifyInvoiceTransactionDate($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
+   // $Errors=VerifyDateFormat($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
+   // $Errors=VerifyInvoiceTransactionDate($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
     if (isset($InvoiceDetails['settled'])){
         $Errors=VerifySettled($InvoiceDetails['settled'], sizeof($Errors), $Errors);
     }
