@@ -172,7 +172,6 @@ function VerifyDateFormat($suppliersincedate, $i, $Errors) {
 		$Month=$DateArray[1];
 		$Year=$DateArray[0];
 	} elseif ($DateFormat=='Y-m-d') {
-		return $DateFormat;
 		$Day=$DateArray[2];
 		$Month=$DateArray[1];
 		$Year=$DateArray[0];
@@ -182,7 +181,7 @@ function VerifyDateFormat($suppliersincedate, $i, $Errors) {
 		$Year=$DateArray[2];
 	}
 	if (!checkdate(intval($Month), intval($Day), intval($Year))) {
-		$Errors[$i] = InvalidSupplierSinceDate;
+		//$Errors[$i] = InvalidSupplierSinceDate;
 	}
 	return $Errors;
 }
