@@ -2,72 +2,304 @@
 
 require(__DIR__ . '/includes/session.php');
 
-$Title = __('Script Security Token Assignment');
+$Title = __('Script Security');
 $ViewTopic = 'SecuritySchema';
 $BookMark = 'PageSecurity';
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/security.png" title="' . $Title . '" alt="" />' . ' ' . $Title . '</p><br />';
+// Inject premium Architect styles
+echo '<style>
+    :root {
+        --primary: #059669;
+        --primary-dark: #065f46;
+        --primary-light: #ecfdf5;
+        --page-padding: 40px;
+    }
+    .db-page {
+        padding: 0 var(--page-padding);
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+    .premium-header { 
+        margin-bottom: 30px; 
+        padding: 24px 30px; 
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid #e5e7eb;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .premium-header-inner {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center;
+        gap: 20px;
+    }
+    .db-bottom-layout {
+        display: grid;
+        grid-template-columns: 400px 1fr;
+        gap: 32px;
+        align-items: start;
+        padding-bottom: 50px;
+    }
+    .arch-card { 
+        background: #ffffff; 
+        border-radius: 16px; 
+        border: 1px solid #e5e7eb; 
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        margin-bottom: 32px;
+    }
+    .arch-card-header { 
+        background: #f9fafb; 
+        border-bottom: 1px solid #f3f4f6; 
+        padding: 20px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+    .arch-card-title {
+        font-size: 0.95rem; font-weight: 850; color: #064e3b; margin:0;
+        display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .arch-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 10px 20px; border-radius: 8px;
+        background: #059669; color: #ffffff; border: none;
+        font-weight: 700; font-size: 0.85rem; cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+    .arch-btn:hover { background: #065f46; transform: translateY(-1px); }
+    .arch-btn-secondary { background: #f3f4f6; color: #374151; }
+    .arch-btn-secondary:hover { background: #e5e7eb; }
+    
+    .arch-badge { padding: 4px 10px; border-radius: 10px; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; }
+    .arch-badge-success { background: #dcfce7; color: #166534; }
+    .arch-badge-neutral { background: #f3f4f6; color: #4b5563; }
+    .arch-badge-warn { background: #fef3c7; color: #92400e; }
+    
+    .arch-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px 40px;
+    }
+    .arch-form-label { display: block; font-size: 0.72rem; font-weight: 900; color: #064e3b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .arch-form-input { width: 100%; height: 48px; border-radius: 8px; border: 1.5px solid #d1fae5; padding: 0 16px; font-weight: 600; font-size: 0.95rem; transition: border-color 0.2s; }
+    .arch-form-input:focus { border-color: #059669; outline: none; box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1); }
+
+    .list-item {
+        padding: 16px 20px; border-bottom: 1px solid #f3f4f6; transition: all 0.2s; cursor: pointer; display: flex; align-items: center; gap: 15px; text-decoration: none; color: inherit;
+    }
+    .list-item:hover { background: #f0fdf4; }
+    .list-item.active { background: #ecfdf5; border-left: 4px solid #059669; padding-left: 16px; }
+
+    .section-divider {
+        margin: 40px 0 24px 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #065f46;
+    }
+    .section-title { font-size: 0.75rem; font-weight: 950; text-transform: uppercase; letter-spacing: 1.5px; }
+
+    .dependency-chip {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 14px; background: #f9fafb; border: 1px solid #e5e7eb;
+        border-radius: 8px; font-size: 0.8rem; font-weight: 600; color: #374151;
+        margin: 4px; border-left: 3px solid #6366f1;
+    }
+
+    @media (max-width: 992px) {
+        .db-bottom-layout { grid-template-columns: 1fr; }
+        .premium-header { position: relative; border-radius: 0; margin-left: calc(-1 * var(--page-padding)); margin-right: calc(-1 * var(--page-padding)); }
+        .db-col-aside { order: 2; }
+        .db-col-main { order: 1; }
+    }
+
+    @media (max-width: 640px) {
+        :root { --page-padding: 15px; }
+        .premium-header-inner { flex-direction: column; align-items: flex-start; }
+        .arch-form-grid { grid-template-columns: 1fr; gap: 20px; }
+    }
+</style>';
+
+echo '<div class="db-page">
+		<header class="premium-header">
+			<div class="premium-header-inner">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 800; color: #059669; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-file-shield"></i> ' . __('System Security') . ' <i class="fas fa-chevron-right" style="font-size: 0.6rem; opacity: 0.5;"></i> ' . __('Script Permissions') . '
+                    </div>
+                    <h1 style="font-size: 2.2rem; font-weight: 950; letter-spacing: -1.5px; color: #064e3b; margin: 0; line-height: 1;">' . $Title . '</h1>
+                </div>
+                <div>
+                    <a href="' . $RootPath . '/WWW_Users.php" class="arch-btn arch-btn-secondary">
+                        <i class="fas fa-users"></i> ' . __('Back to Users') . '
+                    </a>
+                </div>
+			</div>
+		</header>';
 
 if ($AllowDemoMode) {
-	prnMsg(__('The the system is in demo mode and the security model administration is disabled'), 'warn');
+	prnMsg(__('In demo mode security administration is disabled'), 'warn');
 	include(__DIR__ . '/includes/footer.php');
 	exit();
 }
 
-if (isset($_POST['Update'])) {
-	foreach ($_POST as $ScriptName => $PageSecurityValue) {
-		if ($ScriptName != 'Update' and $ScriptName != 'FormID') {
-			$ScriptName = mb_substr($ScriptName, 0, mb_strlen($ScriptName) - 4) . '.php';
-			$SQL = "UPDATE scripts SET pagesecurity='" . $PageSecurityValue . "' WHERE script='" . $ScriptName . "'";
-			$UpdateResult = DB_query($SQL, __('Could not update the Script Security Token assigned to the script because'));
-		}
-	}
+$SelectedScript = isset($_GET['SelectedScript']) ? $_GET['SelectedScript'] : (isset($_POST['SelectedScript']) ? $_POST['SelectedScript'] : '');
+
+// Logic Handling
+if (isset($_POST['Update']) && $SelectedScript != '') {
+	$PageSecurityValue = $_POST['PageSecurity'];
+	$SQL = "UPDATE scripts SET pagesecurity='" . $PageSecurityValue . "' WHERE script='" . $SelectedScript . "'";
+	DB_query($SQL);
+	prnMsg(__('Script security updated successfully'), 'success');
 }
 
-$SQL = "SELECT script,
-			pagesecurity,
-			description
-		FROM scripts";
+echo '<div class="db-bottom-layout">
+        <aside class="db-col-aside">
+            <div class="arch-card" style="position: sticky; top: 100px;">
+                <div class="arch-card-header">
+                    <h3 class="arch-card-title"><i class="fas fa-search"></i> ' . __('Script Registry') . '</h3>
+                </div>
+                <div style="padding: 15px; border-bottom: 1px solid #f3f4f6; background: #fff;">
+                    <form method="get" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" style="display:flex; gap:10px;">
+                        <input type="text" name="SearchTerm" class="arch-form-input" style="height:40px; font-size:0.85rem;" placeholder="' . __('Search scripts...') . '" value="' . (isset($_GET['SearchTerm']) ? $_GET['SearchTerm'] : '') . '" />
+                        <button type="submit" class="arch-btn" style="height:40px; padding:0 20px; gap:10px;" title="' . __('Search Script Registry') . '">
+                            <i class="fas fa-search"></i>
+                            <span>' . __('Search') . '</span>
+                        </button>
+                    </form>
+                </div>
+                <div class="db-card-body" style="padding:0; max-height: calc(100vh - 350px); overflow-y: auto;">';
 
-$Result = DB_query($SQL);
+    $SearchWhere = isset($_GET['SearchTerm']) ? " WHERE script LIKE '%" . $_GET['SearchTerm'] . "%' OR description LIKE '%" . $_GET['SearchTerm'] . "%'" : "";
+    $SQL = "SELECT script, description, pagesecurity FROM scripts " . $SearchWhere . " ORDER BY script";
+    $Result = DB_query($SQL);
+    
+    if (DB_num_rows($Result) == 0) {
+        echo '<div style="padding:40px; text-align:center; color:#9ca3af; font-size:0.85rem; font-weight:600;">' . __('No scripts found') . '</div>';
+    }
 
-echo '<form method="post" id="PageSecurity" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+    while ($MyRow = DB_fetch_array($Result)) {
+        $isActive = ($SelectedScript == $MyRow['script']) ? 'active' : '';
+        echo '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedScript=' . $MyRow['script'] . (isset($_GET['SearchTerm']) ? '&amp;SearchTerm=' . $_GET['SearchTerm'] : '') . '" class="list-item ' . $isActive . '">
+                <div style="width:32px; height:32px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:0.75rem;"><i class="fas fa-file-code"></i></div>
+                <div style="flex:1;">
+                    <div style="font-weight: 800; font-size: 0.85rem; color:#111827;">' . $MyRow['script'] . '</div>
+                    <div style="font-size: 0.7rem; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">' . htmlspecialchars(__($MyRow['description']), ENT_QUOTES, 'UTF-8') . '</div>
+                </div>
+                <i class="fas fa-chevron-right" style="color:#9ca3af; font-size:0.7rem;"></i>
+              </a>';
+    }
 
-echo '<fieldset>
-		<legend>', __('Script Security Token Assignment'), '</legend>';
+    echo '      </div>
+            </div>
 
-$TokenSql = "SELECT tokenid,
-					tokenname
-			FROM securitytokens
-			ORDER BY tokenname";
-$TokenResult = DB_query($TokenSql);
+            <div class="arch-card">
+                <div class="arch-card-header"><h3 class="arch-card-title"><i class="fas fa-tools"></i> ' . __('Governance Suite') . '</h3></div>
+                <div class="db-card-body" style="padding: 10px 0;">
+                    <a href="' . $RootPath . '/SecurityTokens.php" class="list-item" style="border:none;"><i class="fas fa-key" style="color:#6366f1;"></i> <span style="font-weight:600; font-size:0.85rem;">' . __('Security Tokens') . '</span></a>
+                    <a href="' . $RootPath . '/WWW_Access.php" class="list-item" style="border:none;"><i class="fas fa-user-tag" style="color:#f59e0b;"></i> <span style="font-weight:600; font-size:0.85rem;">' . __('Access Roles') . '</span></a>
+                </div>
+            </div>
+        </aside>
 
-while ($MyRow = DB_fetch_array($Result)) {
-	echo '<field>
-			<label for="' . $MyRow['script'] . '">' . $MyRow['script'] . '</label>
-			<select name="' . $MyRow['script'] . '">';
+        <main class="db-col-main">';
 
-	while ($MyTokenRow = DB_fetch_array($TokenResult)) {
-		if ($MyTokenRow['tokenid'] == $MyRow['pagesecurity']) {
-			echo '<option selected="selected" value="' . $MyTokenRow['tokenid'] . '">' . $MyTokenRow['tokenname'] . '</option>';
-		} else {
-			echo '<option value="' . $MyTokenRow['tokenid'] . '">' . $MyTokenRow['tokenname'] . '</option>';
-		}
-	}
-	echo '</select>
-		</field>';
-	DB_data_seek($TokenResult, 0);
-}
+    if ($SelectedScript != '') {
+        $r = DB_fetch_array(DB_query("SELECT script, description, pagesecurity FROM scripts WHERE script='" . $SelectedScript . "'"));
+        
+        echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
+        echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+        echo '<input type="hidden" name="SelectedScript" value="' . $SelectedScript . '" />';
 
-echo '</fieldset>';
+        echo '<div class="arch-card">
+                <div class="arch-card-header">
+                    <div>
+                        <h3 class="arch-card-title"><i class="fas fa-file-shield" style="color:var(--primary);"></i> ' . __('Script Security Hub') . '</h3>
+                        <div style="font-size: 0.75rem; color: #6b7280; font-weight:600; margin-top:5px;">' . __('Authorization mapping for single system document') . '</div>
+                    </div>
+                </div>
+                <div class="db-card-body" style="padding:40px;">';
 
-echo '<div class="centre">
-		<input type="submit" name="Update" value="' . __('Update Script Security Token Assignation') . '" />
-	</div>
-	<br />
-    </div>
-	</form>';
+        // Partition 1: Identity
+        echo '      <div class="section-divider" style="margin-top:0;">
+                        <i class="fas fa-id-card"></i> <span class="section-title">' . __('Script Identity') . '</span>
+                    </div>
+                    <div style="display:flex; gap:24px; align-items:center; background:#f9fafb; padding:24px; border-radius:12px; border:1px solid #f3f4f6; margin-bottom:40px;">
+                        <div style="width:56px; height:56px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; border-radius:12px; font-size:1.4rem;">
+                            <i class="fas fa-file-lines"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:0.7rem; font-weight:900; color:#065f46; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">' . __('System File') . '</div>
+                            <div style="font-size:1.2rem; font-weight:850; color:#111827;">' . $r['script'] . '</div>
+                            <div style="font-size:0.85rem; color:#6b7280; font-weight:600; margin-top:2px;">' . htmlspecialchars(__($r['description']), ENT_QUOTES, 'UTF-8') . '</div>
+                        </div>
+                    </div>';
+
+        // Partition 2: Authorization Hub
+        echo '      <div class="section-divider">
+                        <i class="fas fa-key"></i> <span class="section-title">' . __('Authorization Hub') . '</span>
+                    </div>
+                    <div class="arch-form-grid" style="grid-template-columns: 1fr;">
+                        <div class="arch-form-field">
+                            <label class="arch-form-label">' . __('Assigned Security Token') . '</label>
+                            <select name="PageSecurity" class="arch-form-input">';
+                            $TokenResult = DB_query("SELECT tokenid, tokenname FROM securitytokens ORDER BY tokenname");
+                            while ($token = DB_fetch_array($TokenResult)) {
+                                echo '<option value="' . $token['tokenid'] . '" ' . ($token['tokenid'] == $r['pagesecurity'] ? 'selected' : '') . '>' . htmlspecialchars(__($token['tokenname']), ENT_QUOTES, 'UTF-8') . ' (' . $token['tokenid'] . ')</option>';
+                            }
+        echo '              </select>
+                            <div style="font-size: 0.72rem; color: #9ca3af; font-weight: 600; margin-top: 8px;">' . __('Select the security key required to access this system script.') . '</div>
+                        </div>
+                    </div>';
+
+        // Partition 3: Impact Assessment
+        echo '      <div class="section-divider" style="margin-top:50px;">
+                        <i class="fas fa-users-viewfinder"></i> <span class="section-title">' . __('Impact Assessment') . '</span>
+                    </div>';
+        
+        $InqRoles = DB_query("SELECT securityroles.secrolename FROM securitygroups INNER JOIN securityroles ON securitygroups.secroleid = securityroles.secroleid WHERE securitygroups.tokenid='" . $r['pagesecurity'] . "'");
+        $RoleList = array();
+        while($role = DB_fetch_array($InqRoles)) $RoleList[] = $role['secrolename'];
+
+        echo '      <div style="background: #f0fdf4; border: 1px solid #d1fae5; padding: 24px; border-radius: 12px;">
+                        <label class="arch-form-label" style="color:#065f46;">' . __('Authorized User Roles') . ' (' . count($RoleList) . ')</label>
+                        <div style="font-size:0.85rem; color:#065f46; font-weight:600; margin-bottom:15px; opacity:0.8;">' . __('Based on the assigned token, the following roles currently have access to this page:') . '</div>
+                        <div style="max-height: 150px; overflow-y: auto;">';
+        if (count($RoleList) == 0) echo '<div style="font-size:0.8rem; color:#9ca3af;">' . __('No roles currently authorized.') . '</div>';
+        foreach($RoleList as $role) echo '<div class="dependency-chip"><i class="fas fa-user-tag" style="font-size:0.7rem; opacity:0.6;"></i> ' . $role . '</div>';
+        echo '          </div>
+                    </div>';
+
+        echo '      <div style="margin-top:50px; display:flex; justify-content:center;">
+                        <button type="submit" name="Update" class="arch-btn" style="padding:16px 80px; font-size:1.05rem; box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.4);">
+                            <i class="fas fa-save" style="margin-right:12px;"></i>
+                            ' . __('Update Permissions') . '
+                        </button>
+                    </div>';
+
+        echo '  </div>
+              </div>
+              </form>';
+    } else {
+        echo '<div style="padding: 60px; text-align: center; color: #065f46; border: 2px dashed #d1fae5; border-radius: 12px; background: #f0fdf4; margin-top:20px;">
+                <i class="fas fa-file-shield" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;"></i>
+                <h3 style="font-weight: 850; margin-bottom: 10px;">Audit script-level security</h3>
+                <p style="font-size: 0.9rem; font-weight: 600; color: #059669;">Select a system script from the registry sidebar to audit or update its security token requirement.</p>
+              </div>';
+    }
+
+    echo '</main></div>'; // End Layout
+echo '</div>'; // End Page
 
 include(__DIR__ . '/includes/footer.php');
