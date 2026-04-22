@@ -1363,6 +1363,8 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
         }
         $SalesGLCode=GetSalesGLCode($SalesArea, $PartCode);
         $DebtorsGLCode=GetDebtorsGLCode();
+			return 'haya';
+
         $SQL="INSERT INTO gltrans VALUES(null,
                         10,
                         '" . $InvoiceDetails['transno'] . "',
@@ -1379,8 +1381,6 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
             DB_Txn_Rollback();
             return ['error' => 'gltrans debtors INSERT failed', 'sql' => $SQL, 'err' => DB_error_msg()];
         }
-			return 'haya';
-
         $SQL="INSERT INTO gltrans VALUES(null,
                         10,
                         '" . $InvoiceDetails['transno'] . "',
