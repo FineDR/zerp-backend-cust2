@@ -1337,14 +1337,15 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
         $SQL = "INSERT INTO debtortrans (" . mb_substr($FieldNames,0,-2) .")
                 VALUES (" . mb_substr($FieldValues,0,-2) .") ";
         // REMOVED: return $SQL;
-			return 'hapaje: '.$SQL;
         $Result = DB_query($SQL);
         if (DB_error_no() != 0) {
             DB_Txn_Rollback();
             return ['error' => 'debtortrans INSERT failed', 'sql' => $SQL, 'err' => DB_error_msg()];
         }
         $SQL = "UPDATE systypes SET typeno='" . $InvoiceDetails['transno'] . "' WHERE typeid=10";
-        $Result = DB_query($SQL);
+       			return 'hapaje: '.$SQL;
+
+		$Result = DB_query($SQL);
         $SQL = "INSERT INTO salesorders (orderno,debtorno,branchcode,orddate,ordertype,salesperson,deliverydate,fromstkloc,shipvia) 
                 VALUES ('" . $InvoiceDetails['transno'] ."',
                         '" . $InvoiceDetails['debtorno'] ."',
