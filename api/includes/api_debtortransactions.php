@@ -1389,7 +1389,6 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
                         '" . __('Invoice for') . ' -' . $InvoiceDetails['debtorno'] . ' ' . __('Total') .' - '. $InvoiceDetails['ovamount'] ."',
                         '" . (-intval($InvoiceDetails['ovamount'])) ."',
                         '" . $InvoiceDetails['jobref'] . "')";
-			return 'hapaje: '.$SQL;
         $Result = api_DB_query($SQL);
         if (DB_error_no() != 0) {
             DB_Txn_Rollback();
