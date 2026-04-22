@@ -1399,7 +1399,8 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
         $Errors[] = $InvoiceDetails['transno'];
         return $Errors;
     } else {
-        return $Errors;
+		 return $SQL;
+       // return $Errors;
     }
 }
 
