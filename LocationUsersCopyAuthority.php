@@ -31,7 +31,16 @@ $ExtraHeadContent = '
         align-items: center;
         max-width: 1400px;
         margin: 0 auto;
+        gap: 20px;
     }
+	
+    .breadcrumb-wrap { 
+        font-size: 0.72rem; font-weight: 850; color: #6b7280; margin-bottom: 6px; 
+        display: flex; align-items: center; gap: 10px; text-transform: uppercase; 
+        letter-spacing: 1.2px; opacity: 0.6;
+    }
+    .breadcrumb-wrap a { color: inherit; text-decoration: none; }
+    .breadcrumb-wrap a:hover { text-decoration: underline; opacity: 1; }
 	
 	.db-card { 
 		background: #ffffff; 
@@ -181,8 +190,12 @@ echo '<div class="db-page">
 		<div class="premium-header">
 			<div class="premium-header-inner">
 				<div>
-					<div style="font-size: 0.72rem; font-weight: 850; color: #6b7280; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 1.2px; opacity: 0.6;">
-						<i class="fas fa-shield-alt"></i> ' . __('Security') . ' <i class="fas fa-chevron-right" style="font-size: 0.5rem;"></i> ' . __('Permissions') . '
+					<div class="breadcrumb-wrap">
+						<a href="index.php"><i class="fas fa-home"></i></a> 
+                        <i class="fas fa-chevron-right" style="font-size: 0.5rem;"></i>
+                        <a href="index.php?Application=system">' . __('Security') . '</a>
+                        <i class="fas fa-chevron-right" style="font-size: 0.5rem;"></i> 
+                        ' . __('Copy Authority') . '
 					</div>
 					<h1 style="font-size: 1.8rem; font-weight: 950; letter-spacing: -1px; color: #064e3b; margin: 0; line-height: 1.1;">' . $Title . '</h1>
 				</div>

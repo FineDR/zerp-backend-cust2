@@ -25,7 +25,7 @@ $ExtraHeadContent = '
         z-index: 1000;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
-    .premium-header-inner {
+    	.premium-header-inner {
         display: flex; 
         justify-content: space-between; 
         align-items: center;
@@ -33,6 +33,14 @@ $ExtraHeadContent = '
         margin: 0 auto;
         gap: 20px;
     }
+	
+    .breadcrumb-wrap { 
+        font-size: 0.65rem; font-weight: 850; color: #6b7280; margin-bottom: 4px; 
+        display: flex; align-items: center; gap: 8px; text-transform: uppercase; 
+        letter-spacing: 1px; opacity: 0.6;
+    }
+    .breadcrumb-wrap a { color: inherit; text-decoration: none; }
+    .breadcrumb-wrap a:hover { text-decoration: underline; opacity: 1; }
 	
 	.db-card { 
 		background: #ffffff; 
@@ -214,8 +222,12 @@ echo '<div class="db-page">
 		<div class="premium-header">
 			<div class="premium-header-inner">
 				<div style="flex: 1;">
-					<div style="font-size: 0.65rem; font-weight: 850; color: #6b7280; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;">
-						<i class="fas fa-th-large"></i> ' . __('Dashboard') . ' <i class="fas fa-chevron-right" style="font-size: 0.4rem;"></i> ' . __('Settings') . '
+					<div class="breadcrumb-wrap">
+						<a href="index.php"><i class="fas fa-home"></i></a> 
+                        <i class="fas fa-chevron-right" style="font-size: 0.4rem;"></i>
+                        <a href="index.php?Application=Dashboard">' . __('Dashboard') . '</a>
+                        <i class="fas fa-chevron-right" style="font-size: 0.4rem;"></i> 
+                        ' . __('Settings') . '
 					</div>
 					<h1 style="font-size: 1.6rem; font-weight: 950; letter-spacing: -0.5px; color: #064e3b; margin: 0; line-height: 1.1;">' . $Title . '</h1>
 				</div>
