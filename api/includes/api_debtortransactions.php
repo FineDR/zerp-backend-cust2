@@ -208,7 +208,7 @@ function VerifySettled($Settled, $i, $Errors) {
 /** Check that the transaction reference is 20 characters
  *  or less long */
 function VerifyReference($Reference, $i, $Errors) {
-	if (mb_strlen($Reference)>20) {
+	if (mb_strlen($Reference)>100) {
 		$Errors[$i] = IncorrectReference;
 	}
 	return $Errors;
