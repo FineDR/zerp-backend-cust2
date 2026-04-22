@@ -1281,8 +1281,6 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
 	if (isset($InvoiceDetails['settled'])){
         $Errors=VerifySettled($InvoiceDetails['settled'], sizeof($Errors), $Errors);
     }
-		return 'haya';
-
     if (isset($InvoiceDetails['reference'])){
         $Errors=VerifyReference($InvoiceDetails['reference'], sizeof($Errors), $Errors);
     }
@@ -1345,7 +1343,8 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
             return ['error' => 'debtortrans INSERT failed', 'sql' => $SQL, 'err' => DB_error_msg()];
         }
         $SQL = "UPDATE systypes SET typeno='" . $InvoiceDetails['transno'] . "' WHERE typeid=10";
-       			
+       		return 'haya';
+		
 		$Result = DB_query($SQL);
         $SQL = "INSERT INTO salesorders (orderno,debtorno,branchcode,orddate,ordertype,salesperson,deliverydate,fromstkloc,shipvia) 
                 VALUES ('" . $InvoiceDetails['transno'] ."',
