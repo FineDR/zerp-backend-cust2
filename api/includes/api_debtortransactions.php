@@ -1323,7 +1323,6 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
     if (isset($InvoiceDetails['consignment'])){
         $Errors=VerifyConsignment($InvoiceDetails['consignment'], sizeof($Errors), $Errors);
     }
-	return 'hapaje';
     $FieldNames='';
     $FieldValues='';
     $InvoiceDetails['trandate']=ConvertToSQLDate($InvoiceDetails['trandate']);
@@ -1338,6 +1337,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
         $SQL = "INSERT INTO debtortrans (" . mb_substr($FieldNames,0,-2) .")
                 VALUES (" . mb_substr($FieldValues,0,-2) .") ";
         // REMOVED: return $SQL;
+			return 'hapaje: '.$SQL;
         $Result = DB_query($SQL);
         if (DB_error_no() != 0) {
             DB_Txn_Rollback();
