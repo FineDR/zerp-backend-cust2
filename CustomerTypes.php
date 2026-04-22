@@ -2,24 +2,141 @@
 
 require(__DIR__ . '/includes/session.php');
 
-$Title = __('Customer Types') . ' / ' . __('Maintenance');
+$Title = __('Customer Types Maintenance');
 $ViewTopic = 'Setup';
 $BookMark = 'CustomerTypes';
-include(__DIR__ . '/includes/header.php');
 
-echo '<div class="db-page">
-		<header class="db-page-header">
-			<div>
-				<h2 class="db-page-title">' . $Title . '</h2>
-				<p class="db-page-subtitle">' . __('Categorize customers for reporting and pricing') . '</p>
-			</div>
-			<div class="db-header-actions">
-				<a href="' . $RootPath . '/SelectCustomer.php" class="db-btn db-btn-secondary">
-					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
-					' . __('Back to Search') . '
-				</a>
-			</div>
-		</header>';
+// Inject premium Architect Workspace styles
+$ExtraHeadContent = '
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+	.ScriptTitle { display: none !important; }
+	.MainBody { padding: 0 !important; gap: 0 !important; background: transparent !important; }
+	.db-page { padding: 20px 15px; background: var(--bg-main); min-height: 100vh; font-family: "Inter", sans-serif; box-sizing: border-box; }
+	
+	.premium-header { 
+        margin: -20px -15px 30px -15px;
+        padding: 20px; 
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid #e5e7eb;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .premium-header-inner {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center;
+        max-width: 100%;
+        margin: 0 auto;
+        gap: 20px;
+    }
+	
+    .breadcrumb-wrap { 
+        font-size: 0.65rem; font-weight: 850; color: #6b7280; margin-bottom: 4px; 
+        display: flex; align-items: center; gap: 8px; text-transform: uppercase; 
+        letter-spacing: 1px; opacity: 0.6;
+    }
+    .breadcrumb-wrap a { color: inherit; text-decoration: none; }
+    .breadcrumb-wrap a:hover { text-decoration: underline; opacity: 1; }
+
+	.db-card { 
+		background: #ffffff; 
+		border-radius: 16px; 
+		border: 1px solid #e5e7eb; 
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+        margin-bottom: 30px;
+        width: 100%;
+        box-sizing: border-box;
+	}
+	.db-card-header { 
+		background: #f9fafb; 
+		border-bottom: 1px solid #f3f4f6; 
+		padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+	}
+	.db-card-title {
+		font-size: 0.8rem;
+		font-weight: 850;
+		color: #064e3b;
+		margin: 0;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		text-transform: uppercase;
+		letter-spacing: 0.8px;
+	}
+    .db-card-body { padding: 25px; }
+	
+    field {
+        display: block;
+        margin-bottom: 18px;
+    }
+    field label {
+        font-size: 0.62rem; 
+        text-transform: uppercase; 
+        font-weight: 900; 
+        letter-spacing: 0.8px; 
+        color: #064e3b; 
+        display: block; 
+        margin-bottom: 6px;
+        opacity: 0.7;
+    }
+    field input, field select {
+        width: 100%; border-radius: 10px; height: 44px; font-weight: 600; border: 1px solid #d1fae5;
+        padding: 0 14px; box-sizing: border-box; background: #ffffff; font-family: inherit; font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+    field input:focus, field select:focus { 
+        border-color: #059669; outline: none; box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1); 
+    }
+    .fieldhelp { font-size: 0.75rem; color: #64748b; margin-top: 6px; display: block; font-weight: 500; }
+
+	.architect-btn {
+		display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+		padding: 12px 24px; border-radius: 10px;
+		background: #059669; color: #ffffff; border: none;
+		font-weight: 700; font-size: 0.85rem; text-decoration: none;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+		cursor: pointer;
+        font-family: inherit;
+        white-space: nowrap;
+	}
+	.architect-btn:hover { background: #065f46; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(5, 150, 105, 0.3); }
+	
+    .db-bottom-layout { 
+        display: grid; 
+        grid-template-columns: 1fr 340px; 
+        gap: 30px; 
+        align-items: start; 
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table.modern-table { width: 100%; border-collapse: collapse; min-width: 700px; }
+    table.modern-table th, table.modern-table td { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; color: #334155; vertical-align: middle; }
+    table.modern-table th { text-align: left; background: #f8fafc; font-size: 0.65rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; color: #64748b; border-bottom: 2px solid #edf2f7; }
+    
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; }
+    .badge-emerald { background: #d1fae5; color: #065f46; }
+
+    @media (max-width: 1200px) {
+        .db-bottom-layout { grid-template-columns: 1fr; gap: 20px; }
+        .premium-header-inner { flex-direction: column; align-items: stretch; text-align: center; }
+        .architect-btn { width: 100%; }
+        .db-bottom-layout aside { order: 2; }
+        .db-bottom-layout main { order: 1; }
+    }
+</style>';
+
+include(__DIR__ . '/includes/header.php');
 
 if (isset($_POST['SelectedType'])){
 	$SelectedType = mb_strtoupper($_POST['SelectedType']);
@@ -29,272 +146,139 @@ if (isset($_POST['SelectedType'])){
 
 $Errors = array();
 
-
-
 if (isset($_POST['submit'])) {
-
-	//initialise no input errors assumed initially before we test
 	$InputError = 0;
-
-	/* actions to take once the user has clicked the submit button
-	ie the page has called itself with some user input */
-
-	//first off validate inputs sensible
-	$i=1;
-	if (mb_strlen($_POST['TypeName']) >100) {
+	if (mb_strlen($_POST['TypeName']) > 100 || mb_strlen($_POST['TypeName']) == 0) {
 		$InputError = 1;
-		prnMsg(__('The customer type name description must be 100 characters or less long'),'error');
-		$Errors[$i] = 'CustomerType';
-		$i++;
+		prnMsg(__('The customer type name must be between 1 and 100 characters'),'error');
 	}
 
-	if (mb_strlen($_POST['TypeName'])==0) {
+	$CheckSQL = "SELECT count(*) FROM debtortype WHERE typename = '" . $_POST['TypeName'] . "'";
+	if (DB_fetch_row(DB_query($CheckSQL))[0] > 0 and !isset($SelectedType)) {
 		$InputError = 1;
-		echo '<br />';
-		prnMsg(__('The customer type name description must contain at least one character'),'error');
-		$Errors[$i] = 'CustomerType';
-		$i++;
-	}
-
-	$CheckSQL = "SELECT count(*)
-		     FROM debtortype
-		     WHERE typename = '" . $_POST['TypeName'] . "'";
-	$Checkresult=DB_query($CheckSQL);
-	$CheckRow=DB_fetch_row($Checkresult);
-	if ($CheckRow[0]>0 and !isset($SelectedType)) {
-		$InputError = 1;
-		echo '<br />';
 		prnMsg(__('You already have a customer type called').' '.$_POST['TypeName'],'error');
-		$Errors[$i] = 'CustomerName';
-		$i++;
 	}
 
 	if (isset($SelectedType) AND $InputError != 1) {
-
-		$SQL = "UPDATE debtortype
-			SET typename = '" . $_POST['TypeName'] . "'
-			WHERE typeid = '" .$SelectedType."'";
-
-		$Msg = __('The customer type') . ' ' . $SelectedType . ' ' .  __('has been updated');
-	} elseif ( $InputError != 1 ) {
-
-		// First check the type is not being duplicated
-
-		$CheckSQL = "SELECT count(*)
-			     FROM debtortype
-			     WHERE typename = '" . $_POST['TypeName'] . "'";
-
-		$Checkresult = DB_query($CheckSQL);
-		$CheckRow = DB_fetch_row($Checkresult);
-
-		if ( $CheckRow[0] > 0 ) {
-			$InputError = 1;
-			prnMsg( __('The customer type') . ' ' . $_POST['typeid'] . __(' already exist.'),'error');
-		} else {
-
-			// Add new record on submit
-
-			$SQL = "INSERT INTO debtortype
-						(typename)
-					VALUES ('" . $_POST['TypeName'] . "')";
-
-
-			$Msg = __('Customer type') . ' ' . $_POST["typename"] .  ' ' . __('has been created');
-			$CheckSQL = "SELECT count(typeid)
-			     FROM debtortype";
-			$Result = DB_query($CheckSQL);
-			$Row = DB_fetch_row($Result);
-
-		}
+		$SQL = "UPDATE debtortype SET typename = '" . $_POST['TypeName'] . "' WHERE typeid = '" .$SelectedType."'";
+		$Msg = __('The customer type has been updated');
+	} elseif ($InputError != 1) {
+		$SQL = "INSERT INTO debtortype (typename) VALUES ('" . $_POST['TypeName'] . "')";
+		$Msg = __('Customer type') . ' ' . $_POST["TypeName"] .  ' ' . __('has been created');
 	}
 
-	if ( $InputError != 1) {
-	//run the SQL from either of the above possibilites
-		$Result = DB_query($SQL);
-
-
-	// Fetch the default price list.
-		$DefaultCustomerType = $_SESSION['DefaultCustomerType'];
-
-	// Does it exist
-		$CheckSQL = "SELECT count(*)
-			     FROM debtortype
-			     WHERE typeid = '" . $DefaultCustomerType . "'";
-		$Checkresult = DB_query($CheckSQL);
-		$CheckRow = DB_fetch_row($Checkresult);
-
-	// If it doesnt then update config with newly created one.
-		if ($CheckRow[0] == 0) {
-			$SQL = "UPDATE config
-					SET confvalue='" . $_POST['typeid'] . "'
-					WHERE confname='DefaultCustomerType'";
-			$Result = DB_query($SQL);
-			$_SESSION['DefaultCustomerType'] = $_POST['typeid'];
-		}
-		echo '<br />';
-		prnMsg($Msg,'success');
-
-		unset($SelectedType);
-		unset($_POST['typeid']);
-		unset($_POST['TypeName']);
-	}
-
-} elseif ( isset($_GET['delete']) ) {
-
-	// PREVENT DELETES IF DEPENDENT RECORDS IN 'DebtorTrans'
-	// Prevent delete if saletype exist in customer transactions
-
-	$SQL= "SELECT COUNT(*)
-	       FROM debtortrans
-	       WHERE debtortrans.type='".$SelectedType."'";
-
-	$ErrMsg = __('The number of transactions using this customer type could not be retrieved');
-	$Result = DB_query($SQL, $ErrMsg);
-
-	$MyRow = DB_fetch_row($Result);
-	if ($MyRow[0]>0) {
-		prnMsg(__('Cannot delete this type because customer transactions have been created using this type') . '<br />' . __('There are') . ' ' . $MyRow[0] . ' ' . __('transactions using this type'),'error');
-
-	} else {
-
-		$SQL = "SELECT COUNT(*) FROM debtorsmaster WHERE typeid='".$SelectedType."'";
-
-		$ErrMsg = __('The number of transactions using this Type record could not be retrieved because');
-		$Result = DB_query($SQL, $ErrMsg);
-		$MyRow = DB_fetch_row($Result);
-		if ($MyRow[0]>0) {
-			prnMsg(__('Cannot delete this type because customers are currently set up to use this type') . '<br />' . __('There are') . ' ' . $MyRow[0] . ' ' . __('customers with this type code'));
-		} else {
-			$Result = DB_query("SELECT typename FROM debtortype WHERE typeid='".$SelectedType."'");
-			if (DB_Num_Rows($Result)>0){
-				$TypeRow = DB_fetch_array($Result);
-				$TypeName = $TypeRow['typename'];
-
-				$SQL="DELETE FROM debtortype WHERE typeid='".$SelectedType."'";
-				$ErrMsg = __('The Type record could not be deleted because');
-				$Result = DB_query($SQL, $ErrMsg);
-				echo '<br />';
-				prnMsg(__('Customer type') . ' ' . $TypeName  . ' ' . __('has been deleted') ,'success');
+	if ($InputError != 1) {
+		DB_query($SQL);
+		if (!isset($SelectedType)) {
+            $newID = DB_Last_Insert_ID('debtortype', 'typeid');
+			$CheckConf = DB_query("SELECT count(*) FROM debtortype WHERE typeid = (SELECT confvalue FROM config WHERE confname='DefaultCustomerType')");
+			if (DB_fetch_row($CheckConf)[0] == 0) {
+				DB_query("UPDATE config SET confvalue='" . $newID . "' WHERE confname='DefaultCustomerType'");
 			}
-			unset ($SelectedType);
-			unset($_GET['delete']);
-
 		}
-	} //end if sales type used in debtor transactions or in customers set up
+		prnMsg($Msg,'success');
+		unset($SelectedType); unset($_POST['TypeName']);
+	}
+} elseif (isset($_GET['delete'])) {
+	$CheckTrans = DB_query("SELECT COUNT(*) FROM debtortrans WHERE type='".$SelectedType."'");
+	$CheckCust = DB_query("SELECT COUNT(*) FROM debtorsmaster WHERE typeid='".$SelectedType."'");
+	if (DB_fetch_row($CheckTrans)[0] > 0 || DB_fetch_row($CheckCust)[0] > 0) {
+		prnMsg(__('Cannot delete this type because transactions or customers refer to it'),'warn');
+	} else {
+		DB_query("DELETE FROM debtortype WHERE typeid='".$SelectedType."'");
+		prnMsg(__('Customer type deleted'),'success');
+		unset ($SelectedType);
+	}
 }
 
-	$SQL = "SELECT typeid, typename FROM debtortype";
-	$Result = DB_query($SQL);
-
-	echo '<div class="card-v2" style="margin-bottom: var(--space-6);">
-			<div class="card-header-v2">
-				<h3>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-					' . __('Defined Customer Types') . '
-				</h3>
-			</div>
-			<div class="db-card-body">
-				<div class="db-table-wrapper">
-					<table class="db-table divider">
-						<thead>
-							<tr>
-								<th>' . __('ID') . '</th>
-								<th>' . __('Type Name') . '</th>
-								<th class="text-center">' . __('Actions') . '</th>
-							</tr>
-						</thead>
-						<tbody>';
-
-	while ($MyRow = DB_fetch_row($Result)) {
-		echo '<tr>
-				<td class="font-bold">' . $MyRow[0] . '</td>
-				<td>' . $MyRow[1] . '</td>
-				<td class="text-center">
-					<div class="db-action-group" style="justify-content:center;">
-						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedType=' . $MyRow[0] . '" class="db-btn db-btn-icon db-btn-ghost" title="' . __('Edit') . '">
-							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-						</a>
-						<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedType=' . $MyRow[0] . '&amp;delete=yes" class="db-btn db-btn-icon db-btn-ghost text-danger" title="' . __('Delete') . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this Customer Type?') . '\');">
-							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-						</a>
+echo '<div class="db-page">
+		<div class="premium-header">
+			<div class="premium-header-inner">
+				<div style="flex: 1;">
+					<div class="breadcrumb-wrap">
+						<a href="index.php"><i class="fas fa-home"></i></a> 
+                        <i class="fas fa-chevron-right" style="font-size: 0.4rem;"></i>
+                        <a href="index.php?Application=system">' . __('Setup') . '</a>
+                        <i class="fas fa-chevron-right" style="font-size: 0.4rem;"></i> 
+                        ' . __('Customer Types') . '
 					</div>
-				</td>
-			</tr>';
-	}
-	echo '				</tbody>
-					</table>
+					<h1 style="font-size: 1.6rem; font-weight: 950; letter-spacing: -0.5px; color: #064e3b; margin: 0; line-height: 1.1;">' . $Title . '</h1>
 				</div>
+                <div class="header-actions">
+                     <button type="submit" form="cust-form" name="submit" class="architect-btn">
+                        <i class="fas fa-save"></i> ' . (isset($SelectedType) ? __('Update Type') : __('Create Type')) . '
+                    </button>
+                </div>
 			</div>
-		</div>';
+		</div>
 
-//end of ifs and buts!
-	if (isset($SelectedType)) {
-		echo '<div class="centre" style="margin-bottom: var(--space-6);">
-				<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" class="db-btn db-btn-secondary">
-					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M4 19h16M4 14h16M4 9h16M4 4h16"></path></svg>
-					' . __('Show All Types Defined') . '
-				</a>
-			</div>';
-	}
+        <div class="db-bottom-layout">
+            <main class="db-main" style="min-width: 0;">';
+                
+                $SQL = "SELECT * FROM debtortype ORDER BY typeid";
+                $Result = DB_query($SQL);
 
-	if (!isset($_GET['delete'])) {
-		echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
-		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+echo '          <div class="db-card">
+                    <div class="db-card-header">
+                        <h3 class="db-card-title"><i class="fas fa-users"></i> ' . __('Client Classifications') . '</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>' . __('ID') . '</th>
+                                    <th>' . __('Type Name') . '</th>
+                                    <th style="width: 100px; text-align: right;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>';
+                            while ($MyRow = DB_fetch_array($Result)) {
+                                echo '<tr>
+                                        <td><span class="badge badge-emerald">ID #', $MyRow['typeid'], '</span></td>
+                                        <td style="font-weight: 700; color: #064e3b;">', $MyRow['typename'], '</td>
+                                        <td style="text-align: right; white-space: nowrap;">
+                                            <a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'), '?SelectedType=', $MyRow['typeid'], '" style="color:#059669; margin-right:12px;"><i class="fas fa-edit"></i></a>
+                                            <a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'), '?SelectedType=', $MyRow['typeid'], '&amp;delete=yes" style="color:#dc2626;" onclick="return confirm(\'' . __('Confirm delete?') . '\');"><i class="fas fa-trash-alt"></i></a>
+                                        </td>
+                                    </tr>';
+                            }
+echo '                      </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
 
-		if (isset($SelectedType) AND $SelectedType != '') {
-			$Res = DB_query("SELECT typeid, typename FROM debtortype WHERE typeid='" . $SelectedType . "'");
-			$MyRow = DB_fetch_array($Res);
-			$_POST['typeid'] = $MyRow['typeid'];
-			$_POST['TypeName'] = $MyRow['typename'];
+            <aside class="db-sidebar" style="min-width: 0;">';
+                if (isset($SelectedType)) {
+                    $Res = DB_query("SELECT * FROM debtortype WHERE typeid='" . $SelectedType . "'");
+                    $MyRow = DB_fetch_array($Res);
+                    $_POST['TypeName'] = $MyRow['typename'];
+                }
 
-			echo '<input type="hidden" name="SelectedType" value="' . $SelectedType . '" />
-				<input type="hidden" name="typeid" value="' . $_POST['typeid'] . '" />';
+echo '          <form id="cust-form" method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">
+                    <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+                    if (isset($SelectedType)) { echo '<input type="hidden" name="SelectedType" value="' . $SelectedType . '" />'; }
 
-			echo '<div class="card-v2">
-					<div class="card-header-v2">
-						<h3>
-							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-							' . __('Edit Customer Type') . ': ' . $_POST['typeid'] . '
-						</h3>
-					</div>
-					<div class="db-card-body">
-						<div class="db-grid db-grid-2">
-							<div class="db-field">
-								<label class="db-label">' . __('Type ID') . '</label>
-								<input type="text" class="db-input" value="' . $_POST['typeid'] . '" disabled />
-							</div>';
+echo '              <div class="db-card">
+                        <div class="db-card-header">
+                            <h3 class="db-card-title"><i class="fas fa-plus-circle"></i> ' . (isset($SelectedType) ? __('Edit Classification') : __('New Classification')) . '</h3>
+                        </div>
+                        <div class="db-card-body">
+                            <field>
+                                <label>' . __('Type Name') . '</label>
+                                <input type="text" name="TypeName" required maxlength="100" autofocus value="' . ($_POST['TypeName'] ?? '') . '" placeholder="' . __('e.g. Retail Customer') . '" />
+                                <span class="fieldhelp">' . __('Categorize customers for reporting and pricing logic') . '</span>
+                            </field>
 
-		} else {
-			echo '<div class="card-v2">
-					<div class="card-header-v2">
-						<h3>
-							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 5v14M5 12h14"></path></svg>
-							' . __('Create New Customer Type') . '
-						</h3>
-					</div>
-					<div class="db-card-body">
-						<div class="db-grid db-grid-2">';
-		}
-
-		if (!isset($_POST['TypeName'])) {
-			$_POST['TypeName'] = '';
-		}
-
-		echo '<div class="db-field">
-				<label class="db-label">' . __('Type Name') . '</label>
-				<input type="text" name="TypeName" class="db-input" required maxlength="100" value="' . $_POST['TypeName'] . '" autofocus />
-			</div>
-		</div></div>'; // End db-grid & db-card-body
-
-		echo '<div class="db-card-actions" style="justify-content: center; padding: 2rem; background: var(--surface-alt); border-top: 1px solid var(--border-color);">
-				<button type="submit" name="submit" class="db-btn db-btn-primary db-btn-large">
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:10px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-					' . __('Save Customer Type') . '
-				</button>
-			</div>
-		</div></form>'; // End card-v2 & form
-	}
-
-	echo '</div>'; // End db-page
+                            <button type="submit" name="submit" class="architect-btn" style="width: 100%; margin-top:10px;">
+                                <i class="fas fa-check-circle"></i> ' . (isset($SelectedType) ? __('Update Type') : __('Save Type')) . '
+                            </button>
+                            ' . (isset($SelectedType) ? '<div style="text-align:center; margin-top:15px;"><a href="CustomerTypes.php" style="font-size:0.8rem; color:#64748b; font-weight:700; text-decoration:none;">' . __('Cancel Edit') . '</a></div>' : '') . '
+                        </div>
+                    </div>
+                </form>
+            </aside>
+        </div>
+    </div>';
 
 include(__DIR__ . '/includes/footer.php');
