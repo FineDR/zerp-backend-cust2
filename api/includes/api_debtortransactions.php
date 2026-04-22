@@ -74,40 +74,50 @@ function ConvertToSQLDate($DateEntry) {
  * target webERP company */
 
 function VerifyInvoiceTransactionDate($TranDate, $i, $Errors) {
-	$SQL="SELECT confvalue FROM config where confname='DefaultDateFormat'";
-	$Result = DB_query($SQL);
-	$MyRow=DB_fetch_array($Result);
-	$DateFormat=$MyRow[0];
-	if (mb_strstr('/',$PeriodEnd)) {
-		$Date_Array = explode('/',$PeriodEnd);
-	} elseif (mb_strstr('.',$PeriodEnd)) {
-		$Date_Array = explode('.',$PeriodEnd);
-	}
-	if ($DateFormat=='d/m/Y') {
-		$Day=$DateArray[0];
-		$Month=$DateArray[1];
-		$Year=$DateArray[2];
-	} elseif ($DateFormat=='m/d/Y') {
-		$Day=$DateArray[1];
-		$Month=$DateArray[0];
-		$Year=$DateArray[2];
-	} elseif ($DateFormat=='Y/m/d') {
-		$Day=$DateArray[2];
-		$Month=$DateArray[1];
-		$Year=$DateArray[0];
-	} elseif ($DateFormat=='Y-m-d') {
-		$Day=$DateArray[2];
-		$Month=$DateArray[1];
-		$Year=$DateArray[0];
-	} elseif ($DateFormat=='d.m.Y') {
-		$Day=$DateArray[0];
-		$Month=$DateArray[1];
-		$Year=$DateArray[2];
-	}
-	if (!checkdate(intval($Month), intval($Day), intval($Year))) {
-		$Errors[$i] = InvalidSupplierSinceDate;
-	}
-	return $Errors;
+    $SQL = "SELECT confvalue FROM config where confname='DefaultDateFormat'";
+    $Result = DB_query($SQL);
+    $MyRow = DB_fetch_array($Result);
+    $DateFormat = $MyRow[0];
+
+    // Fix 1: Use $TranDate (the actual parameter), not undefined $PeriodEnd
+    // Fix 2: Correct mb_strstr argument order: mb_strstr($haystack, $needle)
+    // Fix 3: Add '-' delimiter support for formats like Y-m-d
+    if (mb_strstr($TranDate, '/')) {
+        $DateArray = explode('/', $TranDate);
+    } elseif (mb_strstr($TranDate, '.')) {
+        $DateArray = explode('.', $TranDate);
+    } elseif (mb_strstr($TranDate, '-')) {
+        $DateArray = explode('-', $TranDate);
+    }
+
+    // Fix 4: Use consistent variable name $DateArray (no underscore)
+    if ($DateFormat == 'd/m/Y') {
+        $Day   = $DateArray[0];
+        $Month = $DateArray[1];
+        $Year  = $DateArray[2];
+    } elseif ($DateFormat == 'm/d/Y') {
+        $Day   = $DateArray[1];
+        $Month = $DateArray[0];
+        $Year  = $DateArray[2];
+    } elseif ($DateFormat == 'Y/m/d') {
+        $Day   = $DateArray[2];
+        $Month = $DateArray[1];
+        $Year  = $DateArray[0];
+    } elseif ($DateFormat == 'Y-m-d') {
+        $Day   = $DateArray[2];
+        $Month = $DateArray[1];
+        $Year  = $DateArray[0];
+    } elseif ($DateFormat == 'd.m.Y') {
+        $Day   = $DateArray[0];
+        $Month = $DateArray[1];
+        $Year  = $DateArray[2];
+    }
+
+    if (!checkdate(intval($Month), intval($Day), intval($Year))) {
+        $Errors[$i] = InvalidSupplierSinceDate;
+    }
+
+    return $Errors;
 }
 
 /** Check that the transaction date is a valid date. The date
