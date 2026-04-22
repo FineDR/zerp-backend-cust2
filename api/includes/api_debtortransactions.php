@@ -1343,8 +1343,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
             return ['error' => 'debtortrans INSERT failed', 'sql' => $SQL, 'err' => DB_error_msg()];
         }
         $SQL = "UPDATE systypes SET typeno='" . $InvoiceDetails['transno'] . "' WHERE typeid=10";
-       			return 'hapaje: '.$SQL;
-
+       			
 		$Result = DB_query($SQL);
         $SQL = "INSERT INTO salesorders (orderno,debtorno,branchcode,orddate,ordertype,salesperson,deliverydate,fromstkloc,shipvia) 
                 VALUES ('" . $InvoiceDetails['transno'] ."',
@@ -1357,6 +1356,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
                         '" . $SalesArea ."',
                         '" . $InvoiceDetails['shipvia'] ."')";
         // REMOVED: return $SQL;
+		return 'hapaje: '.$SQL;
         $Result = DB_query($SQL);
         if (DB_error_no() != 0) {
             DB_Txn_Rollback();
