@@ -5,603 +5,352 @@ require(__DIR__ . '/includes/session.php');
 $Title = __('Shop Configuration');
 $ViewTopic = 'Setup';
 $BookMark = 'ShopParameters';
+
+// Inject premium Architect Workspace styles
+$ExtraHeadContent = '
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+	.ScriptTitle { display: none !important; }
+	.MainBody { padding: 0 !important; gap: 0 !important; background: transparent !important; }
+	.db-page { padding: 20px 15px; background: var(--bg-main); min-height: 100vh; font-family: "Inter", sans-serif; box-sizing: border-box; }
+	
+	.premium-header { 
+        margin: -20px -15px 30px -15px;
+        padding: 20px; 
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid #e5e7eb;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .premium-header-inner {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center;
+        max-width: 1400px;
+        margin: 0 auto;
+        gap: 20px;
+    }
+	
+    .breadcrumb-wrap { 
+        font-size: 0.65rem; font-weight: 850; color: #6b7280; margin-bottom: 4px; 
+        display: flex; align-items: center; gap: 8px; text-transform: uppercase; 
+        letter-spacing: 1px; opacity: 0.6;
+    }
+    .breadcrumb-wrap a { color: inherit; text-decoration: none; }
+    .breadcrumb-wrap a:hover { text-decoration: underline; opacity: 1; }
+
+	.db-card { 
+		background: #ffffff; 
+		border-radius: 16px; 
+		border: 1px solid #e5e7eb; 
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+        margin-bottom: 24px;
+        box-sizing: border-box;
+	}
+	.db-card-header { 
+		background: #f9fafb; 
+		border-bottom: 1px solid #f3f4f6; 
+		padding: 16px 20px;
+        display: flex; justify-content: space-between; align-items: center;
+	}
+	.db-card-title {
+		font-size: 0.75rem;
+		font-weight: 850;
+		color: #064e3b;
+		margin: 0;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		text-transform: uppercase;
+		letter-spacing: 0.8px;
+	}
+    .db-card-body { padding: 24px; }
+	
+    field { display: block; margin-bottom: 20px; }
+    field label {
+        font-size: 0.62rem; text-transform: uppercase; font-weight: 950; letter-spacing: 0.8px; 
+        color: #064e3b; display: block; margin-bottom: 6px; opacity: 0.75;
+    }
+    field input, field select, field textarea {
+        width: 100%; border-radius: 10px; font-weight: 600; border: 1px solid #d1fae5;
+        padding: 12px 14px; box-sizing: border-box; background: #ffffff; font-family: inherit; font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+    field input[type="text"], field input[type="email"], field select { height: 46px; }
+    field input:focus, field select:focus, field textarea:focus { 
+        border-color: #059669; outline: none; box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1); 
+    }
+    .fieldhelp { font-size: 0.7rem; color: #64748b; margin-top: 6px; display: block; font-weight: 500; }
+
+	.architect-btn {
+		display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+		padding: 14px 32px; border-radius: 12px;
+		background: #059669; color: #ffffff; border: none;
+		font-weight: 800; font-size: 0.95rem; text-decoration: none;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+		cursor: pointer; font-family: inherit;
+	}
+	.architect-btn:hover { background: #065f46; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(5, 150, 105, 0.3); }
+
+    .db-bottom-layout { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 30px; 
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    @media (max-width: 1100px) {
+        .db-bottom-layout { grid-template-columns: 1fr; }
+        .premium-header-inner { flex-direction: column; text-align: center; }
+        .architect-btn { width: 100%; }
+    }
+</style>';
+
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/maintenance.png" title="' . __('Shop Configuration')
-	. '" alt="" />' . $Title. '</p>';
-
 if (isset($_POST['submit'])) {
-
-	//initialise no input errors assumed initially before we test
-	$InputError = 0;
-
-	/* actions to take once the user has clicked the submit button
-	ie the page has called itself with some user input */
-
-	//first off validate inputs sensible
-
-	if ($InputError !=1){
-
-		$SQL = array();
-
-		if ($_SESSION['ShopName'] != $_POST['X_ShopName'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '" . DB_escape_string($_POST['X_ShopName']) ."' WHERE confname = 'ShopName'";
+	$SQL = array();
+	$Fields = [
+		'ShopName', 'ShopTitle', 'ShopManagerEmail', 'ShopPrivacyStatement', 
+		'ShopFreightPolicy', 'ShopTermsConditions', 'ShopAboutUs', 'ShopContactUs',
+		'ShopDebtorNo', 'ShopBranchCode', 'ShopShowOnlyAvailableItems', 'ShopShowQOHColumn',
+		'ShopAllowSurcharges', 'ShopAllowCreditCards', 'ShopAllowPayPal', 'ShopAllowBankTransfer',
+		'ShopPayPalSurcharge', 'ShopBankTransferSurcharge', 'ShopCreditCardSurcharge',
+		'ShopSurchargeStockID', 'ShopCreditCardBankAccount', 'ShopPayPalBankAccount',
+		'ShopPayPalCommissionAccount', 'ShopFreightMethod'
+	];
+	foreach($Fields as $f) {
+		if (isset($_POST['X_'.$f]) && $_SESSION[$f] != $_POST['X_'.$f]) {
+			$SQL[] = "UPDATE config SET confvalue = '" . DB_escape_string($_POST['X_'.$f]) ."' WHERE confname = '$f'";
 		}
-		if ($_SESSION['ShopTitle'] != $_POST['X_ShopTitle'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '" . DB_escape_string($_POST['X_ShopTitle']) ."' WHERE confname = 'ShopTitle'";
-		}
-		if ($_SESSION['ShopManagerEmail'] != $_POST['X_ShopManagerEmail'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '" . DB_escape_string($_POST['X_ShopManagerEmail']) ."' WHERE confname = 'ShopManagerEmail'";
-		}
-		if ($_SESSION['ShopPrivacyStatement'] != $_POST['X_ShopPrivacyStatement'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '" . DB_escape_string($_POST['X_ShopPrivacyStatement']) ."' WHERE confname = 'ShopPrivacyStatement'";
-		}
-		if ($_SESSION['ShopFreightPolicy'] != $_POST['X_ShopFreightPolicy'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '" . DB_escape_string($_POST['X_ShopFreightPolicy']) ."' WHERE confname = 'ShopFreightPolicy'";
-		}
-		if ($_SESSION['ShopTermsConditions'] != $_POST['X_ShopTermsConditions'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '" . DB_escape_string($_POST['X_ShopTermsConditions']) ."' WHERE confname = 'ShopTermsConditions'";
-		}
-		if ($_SESSION['ShopAboutUs'] != $_POST['X_ShopAboutUs'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '" . DB_escape_string($_POST['X_ShopAboutUs']) ."' WHERE confname = 'ShopAboutUs'";
-		}
-		if ($_SESSION['ShopContactUs'] != $_POST['X_ShopContactUs'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '" . DB_escape_string($_POST['X_ShopContactUs']) ."' WHERE confname = 'ShopContactUs'";
-		}
-		if ($_SESSION['ShopDebtorNo'] != $_POST['X_ShopDebtorNo'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopDebtorNo']."' WHERE confname = 'ShopDebtorNo'";
-		}
-		if ($_SESSION['ShopBranchCode'] != $_POST['X_ShopBranchCode'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopBranchCode']."' WHERE confname = 'ShopBranchCode'";
-		}
-
-		if ($_SESSION['ShopShowOnlyAvailableItems'] != $_POST['X_ShopShowOnlyAvailableItems'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopShowOnlyAvailableItems']."' WHERE confname = 'ShopShowOnlyAvailableItems'";
-		}
-
-		if ($_SESSION['ShopShowQOHColumn'] != $_POST['X_ShopShowQOHColumn'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopShowQOHColumn']."' WHERE confname = 'ShopShowQOHColumn'";
-		}
-
-		if (isset($_POST['X_ShopStockLocations'])) {
-			$ShopStockLocations = '';
-			foreach ($_POST['X_ShopStockLocations'] as $Location){
-				$ShopStockLocations .= $Location .',';
-			}
-			$ShopStockLocations = mb_substr($ShopStockLocations,0,mb_strlen($ShopStockLocations)-1);
-			if ($_SESSION['ShopStockLocations'] != $ShopStockLocations){
-				$SQL[] = "UPDATE config SET confvalue='" . $ShopStockLocations . "' WHERE confname='ShopStockLocations'";
-			}
-		}
-
-		if ($_SESSION['ShopAllowSurcharges'] != $_POST['X_ShopAllowSurcharges'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopAllowSurcharges']."' WHERE confname = 'ShopAllowSurcharges'";
-		}
-
-		if ($_SESSION['ShopAllowCreditCards'] != $_POST['X_ShopAllowCreditCards'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopAllowCreditCards']."' WHERE confname = 'ShopAllowCreditCards'";
-		}
-		if ($_SESSION['ShopAllowPayPal'] != $_POST['X_ShopAllowPayPal'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopAllowPayPal']."' WHERE confname = 'ShopAllowPayPal'";
-		}
-		if ($_SESSION['ShopAllowBankTransfer'] != $_POST['X_ShopAllowBankTransfer'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopAllowBankTransfer']."' WHERE confname = 'ShopAllowBankTransfer'";
-		}
-
-		if ($_SESSION['ShopPayPalSurcharge'] != $_POST['X_ShopPayPalSurcharge'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopPayPalSurcharge']."' WHERE confname = 'ShopPayPalSurcharge'";
-		}
-		if ($_SESSION['ShopBankTransferSurcharge'] != $_POST['X_ShopBankTransferSurcharge'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopBankTransferSurcharge']."' WHERE confname = 'ShopBankTransferSurcharge'";
-		}
-		if ($_SESSION['ShopCreditCardSurcharge'] != $_POST['X_ShopCreditCardSurcharge'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopCreditCardSurcharge']."' WHERE confname = 'ShopCreditCardSurcharge'";
-		}
-		if ($_SESSION['ShopSurchargeStockID'] != $_POST['X_ShopSurchargeStockID'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopSurchargeStockID']."' WHERE confname = 'ShopSurchargeStockID'";
-		}
-		if ($_SESSION['ShopCreditCardBankAccount'] != $_POST['X_ShopCreditCardBankAccount'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopCreditCardBankAccount']."' WHERE confname = 'ShopCreditCardBankAccount'";
-		}
-		if ($_SESSION['ShopPayPalBankAccount'] != $_POST['X_ShopPayPalBankAccount'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopPayPalBankAccount']."' WHERE confname = 'ShopPayPalBankAccount'";
-		}
-		if ($_SESSION['ShopPayPalCommissionAccount'] != $_POST['X_ShopPayPalCommissionAccount'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopPayPalCommissionAccount']."' WHERE confname = 'ShopPayPalCommissionAccount'";
-		}
-		if ($_SESSION['ShopFreightMethod'] != $_POST['X_ShopFreightMethod'] ) {
-			$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopFreightMethod']."' WHERE confname = 'ShopFreightMethod'";
-		}
-
-		if (!$AllowDemoMode) {
-			if ($_SESSION['ShopCreditCardGateway'] != $_POST['X_ShopCreditCardGateway'] ) {
-				$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopCreditCardGateway']."' WHERE confname = 'ShopCreditCardGateway'";
-			}
-			if ($_SESSION['ShopPayPalUser'] != $_POST['X_ShopPayPalUser'] ) {
-				$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopPayPalUser']."' WHERE confname = 'ShopPayPalUser'";
-			}
-			if ($_SESSION['ShopPayPalPassword'] != $_POST['X_ShopPayPalPassword'] ) {
-				$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopPayPalPassword']."' WHERE confname = 'ShopPayPalPassword'";
-			}
-			if ($_SESSION['ShopPayPalSignature'] != $_POST['X_ShopPayPalSignature'] ) {
-				$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopPayPalSignature']."' WHERE confname = 'ShopPayPalSignature'";
-			}
-			if ($_SESSION['ShopPayPalProUser'] != $_POST['X_ShopPayPalProUser'] ) {
-				$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopPayPalProUser']."' WHERE confname = 'ShopPayPalProUser'";
-			}
-			if ($_SESSION['ShopPayPalPassword'] != $_POST['X_ShopPayPalProPassword'] ) {
-				$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopPayPalProPassword']."' WHERE confname = 'ShopPayPalProPassword'";
-			}
-			if ($_SESSION['ShopPayPalSignature'] != $_POST['X_ShopPayPalProSignature'] ) {
-				$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopPayPalProSignature']."' WHERE confname = 'ShopPayPalProSignature'";
-			}
-			if ($_SESSION['ShopPayFlowUser'] != $_POST['X_ShopPayFlowUser'] ) {
-				$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopPayFlowUser']."' WHERE confname = 'ShopPayFlowUser'";
-			}
-			if ($_SESSION['ShopPayFlowPassword'] != $_POST['X_ShopPayFlowPassword'] ) {
-				$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopPayFlowPassword']."' WHERE confname = 'ShopPayFlowPassword'";
-			}
-			if ($_SESSION['ShopPayFlowVendor'] != $_POST['X_ShopPayFlowVendor'] ) {
-				$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopPayFlowVendor']."' WHERE confname = 'ShopPayFlowVendor'";
-			}
-			if ($_SESSION['ShopPayFlowMerchant'] != $_POST['X_ShopPayFlowMerchant'] ) {
-				$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopPayFlowMerchant']."' WHERE confname = 'ShopPayFlowMerchant'";
-			}
-
-			if ($_SESSION['ShopMode'] != $_POST['X_ShopMode'] ) {
-				$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopMode']."' WHERE confname = 'ShopMode'";
-			}
-
-			if ($_SESSION['ShopSwipeHQMerchantID'] != $_POST['X_ShopSwipeHQMerchantID'] ) {
-				$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopSwipeHQMerchantID']."' WHERE confname = 'ShopSwipeHQMerchantID'";
-			}
-			if ($_SESSION['ShopSwipeHQAPIKey'] != $_POST['X_ShopSwipeHQAPIKey'] ) {
-				$SQL[] = "UPDATE config SET confvalue = '".$_POST['X_ShopSwipeHQAPIKey']."' WHERE confname = 'ShopSwipeHQAPIKey'";
-			}
-		} //these options only available in live shop - not the demo.
-			else { //always ensure test mode and PayFlow for demo site
-				$SQL[] = "UPDATE config SET confvalue = 'test' WHERE confname = 'ShopMode'";
-				$SQL[] = "UPDATE config SET confvalue = 'PayPalPro' WHERE confname = 'ShopCreditCardGateway'";
-
-		}
-		$ErrMsg =  __('The shop configuration could not be updated because');
-
-		if (sizeof($SQL) > 0 ) {
-
-			DB_Txn_Begin();
-			foreach ($SQL as $SqlLine) {
-				$Result = DB_query($SqlLine, $ErrMsg, '', true);
-			}
-			DB_Txn_Commit();
-			prnMsg( __('Shop configuration updated'),'success');
-
-			$ForceConfigReload = true; // Required to force a load even if stored in the session vars
-			include($PathPrefix . 'includes/GetConfig.php');
-			$ForceConfigReload = false;
-		}
-	} else {
-		prnMsg( __('Validation failed') . ', ' . __('no updates or deletes took place'),'warn');
 	}
 
-} /* end of if submit */
-
-echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">
-	<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-	<fieldset class="TwoByThreeColumn">';
-
-echo '<fieldset class="Column1x1">
-		<legend>' . __('General Settings') . '</legend>';
-
-echo '<field>
-		<label for="X_ShopMode">' . __('Test or Live Mode') . ':</label>
-		<select name="X_ShopMode">';
-		if ($_SESSION['ShopMode']== 'test' OR $AllowDemoMode){
-			echo '<option selected="selected" value="test">' . __('Test') . '</option>
-				<option value="live">' . __('Live') . '</option>';
-		} else {
-			echo '<option value="test">' . __('Test') . '</option>
-				<option selected="selected" value="live">' . __('Live') . '</option>';
+	if (isset($_POST['X_ShopStockLocations'])) {
+		$ShopStockLocations = implode(',', $_POST['X_ShopStockLocations']);
+		if ($_SESSION['ShopStockLocations'] != $ShopStockLocations) {
+			$SQL[] = "UPDATE config SET confvalue='" . $ShopStockLocations . "' WHERE confname='ShopStockLocations'";
 		}
-		echo '</select>
-		<fieldhelp>' . __('Must change this to live mode when the shop is activie. No PayPal or credit card transactions will be processed in test mode') . '</fieldhelp>
-	</field>';
-//Shop Name
-echo '<field>
-		<label for="X_ShopName">' . __('Shop Name') . ':</label>
-		<input type="text" name="X_ShopName" required="required" autofocus="autofocus" size="40" maxlength="40" value="' . $_SESSION['ShopName'] . '" />
-		<fieldhelp>' . __('Enter the name of the shop that will be displayed on all the store pages') . '</fieldhelp>
-	</field>';
+	}
 
-//Shop Title
-echo '<field>
-		<label for="X_ShopTitle">' . __('Shop Title') . ':</label>
-		<input type="text" name="X_ShopTitle" required="required" size="40" maxlength="40" value="' . $_SESSION['ShopTitle'] . '" />
-		<fieldhelp>' . __('Enter the title of the shop that will be displayed on the main webSHOP page. Useful for SEO purposes.') . '</fieldhelp>
-	</field>';
+	if (!$AllowDemoMode) {
+		$LiveFields = ['ShopCreditCardGateway', 'ShopPayPalUser', 'ShopPayPalPassword', 'ShopPayPalSignature', 
+					   'ShopPayPalProUser', 'ShopPayPalProPassword', 'ShopPayPalProSignature', 
+					   'ShopPayFlowUser', 'ShopPayFlowPassword', 'ShopPayFlowVendor', 'ShopPayFlowMerchant', 
+					   'ShopMode', 'ShopSwipeHQMerchantID', 'ShopSwipeHQAPIKey'];
+		foreach($LiveFields as $f) {
+			if (isset($_POST['X_'.$f]) && $_SESSION[$f] != $_POST['X_'.$f]) {
+				$SQL[] = "UPDATE config SET confvalue = '" . DB_escape_string($_POST['X_'.$f]) ."' WHERE confname = '$f'";
+			}
+		}
+	}
 
-//Shop Manager Email
-echo '<field>
-		<label for="X_ShopManagerEmail">' . __('Shop Manager Email') . ':</label>
-		<input type="email" name="X_ShopManagerEmail" required="required" size="40" maxlength="50" value="' . $_SESSION['ShopManagerEmail'] . '" />
-		<fieldhelp>' . __('Enter the email address of the webSHOP manager.') . '</fieldhelp>
-	</field>';
-
-// Shop Customer
-echo '<field>
-		<label for="X_ShopDebtorNo">' . __('Default Web Shop Customer Acount') . ':</label>
-		<input type="text" size="12" maxlength="10" required="required" name="X_ShopDebtorNo" value="' . $_SESSION['ShopDebtorNo'] . '" />
-		<fieldhelp>' . __('Select the customer account that is to be used for the web-store sales') . '</fieldhelp>
-	</field>';
-// Shop Customer Branch
-echo '<field>
-		<label for="X_ShopBranchCode">' . __('Default Web Shop Branch Code').':</label>
-		<input type="text" required="required" size="12" maxlength="10" name="X_ShopBranchCode" value="' . $_SESSION['ShopBranchCode'] . '" />
-		<fieldhelp>' . __('The customer branch code that is to be used - a branch of the above custoemr account - for web-store sales') . '</fieldhelp>
-	</field>';
-
-//Privacy Statement
-echo '<field>
-		<label for="X_ShopPrivacyStatement">' . __('Privacy Statement') . ':</label>
-		<textarea name="X_ShopPrivacyStatement" rows="8" cols="45">' . stripslashes($_SESSION['ShopPrivacyStatement']) . '</textarea>
-		<fieldhelp>' . __('This text will appear on the web-store page that spells out the privacy policy of the web-shop') . ' ' . __('Enter the raw html without any line breaks') .  '</fieldhelp>
-	</field>';
-//Terms and Conditions
-echo '<field>
-		<label for="X_ShopTermsConditions">' . __('Terms and Conditions') . ':</label>
-		<textarea name="X_ShopTermsConditions" rows="8" cols="45">' . stripslashes($_SESSION['ShopTermsConditions']) . '</textarea>
-		<fieldhelp>' . __('This text will appear on the web-store page that spells out the terms and conditions associated with sales from the web-shop') . ' ' . __('Enter the raw html without any line breaks') . '</fieldhelp>
-	</field>';
-//About Us
-echo '<field>
-		<label for="X_ShopAboutUs">' . __('About Us') . ':</label>
-		<textarea name="X_ShopAboutUs" rows="8" cols="45">' . stripslashes($_SESSION['ShopAboutUs']) . '</textarea>
-		<fieldhelp>' . __('This text will appear on the web-store page that provides information about us to users of the web-store.') . ' ' . __('Enter the raw html without any line breaks')  . '</fieldhelp>
-	</field>';
-echo '<field>
-		<label for="X_ShopContactUs">' . __('Contact Us') . ':</label>
-		<textarea name="X_ShopContactUs" rows="8" cols="45">' . stripslashes($_SESSION['ShopContactUs']) . '</textarea>
-		<fieldhelp>' . __('This text will appear on the web-store page that provides contact information to users of the web-store.') . ' ' . __('Enter the raw html without any line breaks') . '</fieldhelp>
-	</field>';
-//Freight Policy
-echo '<field>
-		<label for="X_ShopFreightPolicy">' . __('Freight Policy') . ':</label>
-		<textarea name="X_ShopFreightPolicy" rows="8" cols="45">' . stripslashes($_SESSION['ShopFreightPolicy']) . '</textarea>
-		<fieldhelp>' . __('This text will appear on the web-store page that spells out the freight policy of the web-shop') . ' ' . __('Enter the raw html without any line breaks')  . '</fieldhelp>
-	</field>';
-echo '</fieldset>';
-
-echo '<fieldset class="Column1x2">
-		<legend>' . __('Web-Store Behaviour Settings') . '</legend>';
-
-echo '<field>
-		<label for="X_ShopShowOnlyAvailableItems">' . __('Show Only Items With Available Stock') . ':</label>
-		<select name="X_ShopShowOnlyAvailableItems">';
-if ($_SESSION['ShopShowOnlyAvailableItems'] == '1') {
-	echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-	echo '<option value="0">' . __('No') . '</option>';
-} else {
-	echo '<option selected="selected" value="0">' . __('No') . '</option>';
-	echo '<option value="1">' . __('Yes') . '</option>';
-}
-echo '</select>
-		<fieldhelp>' . __('Shows only items with QOH > 0 thus avoiding the Arriving Soon items.') . '</fieldhelp>
-	</field>';
-
-echo '<field>
-		<label for="X_ShopShowQOHColumn">' . __('Show/Hide QOH Column') . ':</label>
-		<select name="X_ShopShowQOHColumn">';
-if ($_SESSION['ShopShowQOHColumn'] == '1') {
-	echo '<option selected="selected" value="1">' . __('Show') . '</option>';
-	echo '<option value="0">' . __('Hide') . '</option>';
-} else {
-	echo '<option selected="selected" value="0">' . __('Hide') . '</option>';
-	echo '<option value="1">' . __('Show') . '</option>';
-}
-echo '</select>
-		<fieldhelp>' . __('Shows / Hides the QOH Column Select Hide if you do not want webSHOP visitors to know how many stock do you currently hold.') . '</fieldhelp>
-	</field>';
-
-if (mb_strlen($_SESSION['ShopStockLocations'])>1){
-	$Locations = explode(',',$_SESSION['ShopStockLocations']);
-} else {
-	$Locations = array();
-}
-echo '<field>
-		<label for="X_ShopStockLocations">' . __('Stock Locations') . ':</label>
-		<select name="X_ShopStockLocations[]" size="5" multiple="multiple" >';
-$LocResult = DB_query("SELECT loccode, locationname FROM locations");
-while ($LocRow = DB_fetch_array($LocResult)){
-	if (in_array($LocRow['loccode'],$Locations)){
-		echo '<option selected="selected" value="' . $LocRow['loccode'] . '">' . $LocRow['locationname']  . '</option>';
-	} else {
-		echo '<option value="' . $LocRow['loccode'] . '">' . $LocRow['locationname']  . '</option>';
+	if (count($SQL) > 0) {
+		DB_Txn_Begin();
+		foreach ($SQL as $SqlLine) { DB_query($SqlLine, '', '', true); }
+		DB_Txn_Commit();
+		prnMsg(__('Configuration updated successfully'), 'success');
+		$ForceConfigReload = true; include($PathPrefix . 'includes/GetConfig.php'); $ForceConfigReload = false;
 	}
 }
-echo '</select>
-		<fieldhelp>' . __('Select one or more stock locations (warehouses) that webSHOP should consider stock for the purposes of displaying the on hand quantity for customer information') . '</fieldhelp>
-	</field>';
 
-echo '<field>
-		<label for="X_ShopAllowSurcharges">' . __('Allow Payment Surcharges') . ':</label>
-		<select name="X_ShopAllowSurcharges">';
-if ($_SESSION['ShopAllowSurcharges'] == '1') {
-	echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-	echo '<option value="0">' . __('No') . '</option>';
-} else {
-	echo '<option selected="selected" value="0">' . __('No') . '</option>';
-	echo '<option value="1">' . __('Yes') . '</option>';
-}
-echo '</select>
-		<fieldhelp>' . __('Add surcharges for different payment methods.') . '</fieldhelp>
-	</field>';
+echo '<div class="db-page">
+		<div class="premium-header">
+			<div class="premium-header-inner">
+				<div style="flex: 1;">
+					<div class="breadcrumb-wrap">
+						<a href="index.php"><i class="fas fa-home"></i></a> 
+                        <i class="fas fa-chevron-right" style="font-size: 0.4rem;"></i>
+                        <a href="index.php?Application=system">' . __('Setup') . '</a>
+                        <i class="fas fa-chevron-right" style="font-size: 0.4rem;"></i> 
+                        ' . __('Shop Parameters') . '
+					</div>
+					<h1 style="font-size: 1.6rem; font-weight: 950; letter-spacing: -0.5px; color: #064e3b; margin: 0; line-height: 1.1;">' . $Title . '</h1>
+				</div>
+                <div class="header-actions">
+                     <button type="submit" form="shop-config-form" name="submit" class="architect-btn">
+                        <i class="fas fa-save"></i> ' . __('Apply Settings') . '
+                    </button>
+                </div>
+			</div>
+		</div>
 
-$DummyItemsResult = DB_query("SELECT stockid, description FROM stockmaster WHERE mbflag='D'");
-echo '<field>
-		<label for="X_ShopSurchargeStockID">' . __('Surcharges Stock Item') . ':</label>
-		<select name="X_ShopSurchargeStockID">';
-while ($ItemsRow = DB_fetch_array($DummyItemsResult)){
-	if ($_SESSION['ShopSurchargeStockID'] ==$ItemsRow['stockid']) {
-		echo '<option selected="selected" value="' . $ItemsRow['stockid'] . '">' . $ItemsRow['stockid'] . '-' . $ItemsRow['description'] . '</option>';
-	} else {
-		echo '<option value="' . $ItemsRow['stockid'] . '">' . $ItemsRow['stockid'] . '-' . $ItemsRow['description'] . '</option>';
-	}
-}
-echo '</select>
-		<fieldhelp>' . __('Select the webERP service item to use for payment surcharges to be processed as') . '</fieldhelp>
-	</field>';
+        <form id="shop-config-form" method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">
+            <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+            
+            <div class="db-bottom-layout">
+                <div class="db-col">
+                    <!-- General Settings Card -->
+                    <div class="db-card">
+                        <div class="db-card-header">
+                            <h3 class="db-card-title"><i class="fas fa-id-card"></i> ' . __('Store Identity') . '</h3>
+                        </div>
+                        <div class="db-card-body">
+                            <field>
+                                <label>' . __('Shop Mode') . '</label>
+                                <select name="X_ShopMode">
+                                    <option value="test" ' . ($_SESSION['ShopMode'] == 'test' ? 'selected' : '') . '>' . __('Test (No real payments)') . '</option>
+                                    <option value="live" ' . ($_SESSION['ShopMode'] == 'live' ? 'selected' : '') . '>' . __('Live (Active transactions)') . '</option>
+                                </select>
+                            </field>
+                            <field>
+                                <label>' . __('Shop Display Name') . '</label>
+                                <input type="text" name="X_ShopName" required value="' . $_SESSION['ShopName'] . '" />
+                            </field>
+                            <field>
+                                <label>' . __('Manager Email') . '</label>
+                                <input type="email" name="X_ShopManagerEmail" required value="' . $_SESSION['ShopManagerEmail'] . '" />
+                            </field>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <field>
+                                    <label>' . __('Default Debtor') . '</label>
+                                    <input type="text" name="X_ShopDebtorNo" required value="' . $_SESSION['ShopDebtorNo'] . '" />
+                                </field>
+                                <field>
+                                    <label>' . __('Default Branch') . '</label>
+                                    <input type="text" name="X_ShopBranchCode" required value="' . $_SESSION['ShopBranchCode'] . '" />
+                                </field>
+                            </div>
+                        </div>
+                    </div>
 
-echo '<field>
-		<label for="X_ShopFreightMethod">' . __('Freight Calculations') . ':</label>
-		<select name="X_ShopFreightMethod">';
+                    <!-- Behavior Card -->
+                    <div class="db-card">
+                        <div class="db-card-header">
+                            <h3 class="db-card-title"><i class="fas fa-gears"></i> ' . __('Store Behavior') . '</h3>
+                        </div>
+                        <div class="db-card-body">
+                            <field>
+                                <label>' . __('Stock Locations') . '</label>
+                                <select name="X_ShopStockLocations[]" size="5" multiple>';
+                                    $LocResult = DB_query("SELECT loccode, locationname FROM locations");
+                                    $Locs = explode(',', $_SESSION['ShopStockLocations']);
+                                    while ($LocRow = DB_fetch_array($LocResult)){
+                                        echo '<option value="' . $LocRow['loccode'] . '" ' . (in_array($LocRow['loccode'], $Locs) ? 'selected' : '') . '>' . $LocRow['locationname'] . '</option>';
+                                    }
+                            echo '</select>
+                                <span class="fieldhelp">' . __('Hold Ctrl to select multiple locations.') . '</span>
+                            </field>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <field>
+                                    <label>' . __('Show Only Available') . '</label>
+                                    <select name="X_ShopShowOnlyAvailableItems">
+                                        <option value="1" ' . ($_SESSION['ShopShowOnlyAvailableItems'] == '1' ? 'selected' : '') . '>' . __('Yes') . '</option>
+                                        <option value="0" ' . ($_SESSION['ShopShowOnlyAvailableItems'] == '0' ? 'selected' : '') . '>' . __('No') . '</option>
+                                    </select>
+                                </field>
+                                <field>
+                                    <label>' . __('Display QOH Column') . '</label>
+                                    <select name="X_ShopShowQOHColumn">
+                                        <option value="1" ' . ($_SESSION['ShopShowQOHColumn'] == '1' ? 'selected' : '') . '>' . __('Visible') . '</option>
+                                        <option value="0" ' . ($_SESSION['ShopShowQOHColumn'] == '0' ? 'selected' : '') . '>' . __('Hidden') . '</option>
+                                    </select>
+                                </field>
+                            </div>
+                            <field>
+                                <label>' . __('Freight Calculation') . '</label>
+                                <select name="X_ShopFreightMethod">
+                                    <option value="NoFreight" ' . ($_SESSION['ShopFreightMethod'] == 'NoFreight' ? 'selected' : '') . '>' . __('No Freight') . '</option>
+                                    <option value="webERPCalculation" ' . ($_SESSION['ShopFreightMethod'] == 'webERPCalculation' ? 'selected' : '') . '>' . __('webERP Internal') . '</option>
+                                    <option value="AusPost" ' . ($_SESSION['ShopFreightMethod'] == 'AusPost' ? 'selected' : '') . '>' . __('Australia Post API') . '</option>
+                                </select>
+                            </field>
+                        </div>
+                    </div>
 
-$FreightMethods = array(array('MethodName'=>'No Freight','MethodCode'=>'NoFreight'),
-						array('MethodName'=>'webERP calculation','MethodCode'=>'webERPCalculation'),
-						array('MethodName'=>'Australia Post API','MethodCode'=>'AusPost'));
+                    <!-- Legal Texts -->
+                    <div class="db-card">
+                        <div class="db-card-header">
+                            <h3 class="db-card-title"><i class="fas fa-file-contract"></i> ' . __('Policies & Legal') . '</h3>
+                        </div>
+                        <div class="db-card-body">
+                            <field><label>' . __('Terms & Conditions') . '</label><textarea name="X_ShopTermsConditions" rows="4">' . stripslashes($_SESSION['ShopTermsConditions']) . '</textarea></field>
+                            <field><label>' . __('Privacy Policy') . '</label><textarea name="X_ShopPrivacyStatement" rows="4">' . stripslashes($_SESSION['ShopPrivacyStatement']) . '</textarea></field>
+                            <field><label>' . __('Freight Policy') . '</label><textarea name="X_ShopFreightPolicy" rows="4">' . stripslashes($_SESSION['ShopFreightPolicy']) . '</textarea></field>
+                        </div>
+                    </div>
+                </div>
 
-foreach($FreightMethods as $FreightMethod){
-	if ($_SESSION['ShopFreightMethod'] == $FreightMethod['MethodCode']) {
-		echo '<option selected="selected" value="' . $FreightMethod['MethodCode'] . '">' . $FreightMethod['MethodName'] . '</option>';
-	} else {
-		echo '<option value="' . $FreightMethod['MethodCode'] . '">' . $FreightMethod['MethodName'] . '</option>';
-	}
-}
-echo '</select>
-		<fieldhelp>' . __('Select the freight calculation method to use for the webSHOP') . '</fieldhelp>
-	</field>';
+                <div class="db-col">
+                    <!-- Payments Overview -->
+                    <div class="db-card">
+                        <div class="db-card-header">
+                            <h3 class="db-card-title"><i class="fas fa-credit-card"></i> ' . __('Payment Gateway Status') . '</h3>
+                        </div>
+                        <div class="db-card-body">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <field>
+                                    <label>' . __('Enable PayPal') . '</label>
+                                    <select name="X_ShopAllowPayPal">
+                                        <option value="1" ' . ($_SESSION['ShopAllowPayPal'] == '1' ? 'selected' : '') . '>' . __('Active') . '</option>
+                                        <option value="0" ' . ($_SESSION['ShopAllowPayPal'] == '0' ? 'selected' : '') . '>' . __('Disabled') . '</option>
+                                    </select>
+                                </field>
+                                <field>
+                                    <label>' . __('Enable Bank Transfer') . '</label>
+                                    <select name="X_ShopAllowBankTransfer">
+                                        <option value="1" ' . ($_SESSION['ShopAllowBankTransfer'] == '1' ? 'selected' : '') . '>' . __('Active') . '</option>
+                                        <option value="0" ' . ($_SESSION['ShopAllowBankTransfer'] == '0' ? 'selected' : '') . '>' . __('Disabled') . '</option>
+                                    </select>
+                                </field>
+                            </div>
+                            <field>
+                                <label>' . __('Credit Card Gateway') . '</label>
+                                <select name="X_ShopCreditCardGateway">
+                                    <option value="PayPalPro" ' . ($_SESSION['ShopCreditCardGateway'] == 'PayPalPro' ? 'selected' : '') . '>' . __('PayPal Pro') . '</option>
+                                    <option value="PayFlow" ' . ($_SESSION['ShopCreditCardGateway'] == 'PayFlow' ? 'selected' : '') . '>' . __('PayFlow Pro') . '</option>
+                                    <option value="SwipeHQ" ' . ($_SESSION['ShopCreditCardGateway'] == 'SwipeHQ' ? 'selected' : '') . '>' . __('Swipe HQ') . '</option>
+                                </select>
+                            </field>
+                        </div>
+                    </div>
 
-echo '</fieldset>';
+                    <!-- Surcharges -->
+                    <div class="db-card">
+                        <div class="db-card-header">
+                            <h3 class="db-card-title"><i class="fas fa-percent"></i> ' . __('Fee Management') . '</h3>
+                        </div>
+                        <div class="db-card-body">
+                            <field>
+                                <label>' . __('Surcharge Handling Item') . '</label>
+                                <select name="X_ShopSurchargeStockID">';
+                                    $Items = DB_query("SELECT stockid, description FROM stockmaster WHERE mbflag='D'");
+                                    while ($iR = DB_fetch_array($Items)){
+                                        echo '<option value="' . $iR['stockid'] . '" ' . ($_SESSION['ShopSurchargeStockID'] == $iR['stockid'] ? 'selected' : '') . '>' . $iR['stockid'] . ' - ' . $iR['description'] . '</option>';
+                                    }
+                            echo '</select>
+                            </field>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                                <field><label>' . __('PayPal %') . '</label><input type="text" name="X_ShopPayPalSurcharge" value="' . $_SESSION['ShopPayPalSurcharge'] . '" /></field>
+                                <field><label>' . __('Card %') . '</label><input type="text" name="X_ShopCreditCardSurcharge" value="' . $_SESSION['ShopCreditCardSurcharge'] . '" /></field>
+                                <field><label>' . __('Bank Fixed') . '</label><input type="text" name="X_ShopBankTransferSurcharge" value="' . $_SESSION['ShopBankTransferSurcharge'] . '" /></field>
+                            </div>
+                        </div>
+                    </div>';
 
-echo '<fieldset class="Column2x1">
-		<legend>' . __('Bank Transfer Settings') . '</legend>';
+                    if (!$AllowDemoMode) {
+                        echo '<!-- Live Credentials (Hidden in Demo) -->
+                        <div class="db-card">
+                            <div class="db-card-header">
+                                <h3 class="db-card-title"><i class="fas fa-lock"></i> ' . __('Live Credentials') . '</h3>
+                            </div>
+                            <div class="db-card-body" style="background:#fff7ed;">
+                                <p style="font-size:0.7rem; color:#9a3412; font-weight:700; margin-bottom:15px; text-transform:uppercase;"><i class="fas fa-warning"></i> ' . __('Production Keys - Handle with Care') . '</p>
+                                <field><label>PayPal API User</label><input type="text" name="X_ShopPayPalUser" value="'.$_SESSION['ShopPayPalUser'].'" /></field>
+                                <field><label>PayPal API Signature</label><input type="text" name="X_ShopPayPalSignature" value="'.$_SESSION['ShopPayPalSignature'].'" /></field>
+                                <field><label>SwipeHQ API Key</label><input type="password" name="X_ShopSwipeHQAPIKey" value="'.$_SESSION['ShopSwipeHQAPIKey'].'" /></field>
+                            </div>
+                        </div>';
+                    }
 
-echo '<field>
-		<label for="X_ShopAllowBankTransfer">' . __('Allow Bank Transfer Payment') . ':</label>
-		<select name="X_ShopAllowBankTransfer">';
-if ($_SESSION['ShopAllowBankTransfer'] ==1) {
-	echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-	echo '<option value="0">' . __('No') . '</option>';
-} else {
-	echo '<option selected="selected" value="0">' . __('No') . '</option>';
-	echo '<option value="1">' . __('Yes') . '</option>';
-}
-echo '</select>
-		<fieldhelp>' . __('Allow bank transfers to be used for payments.') . '</fieldhelp>
-	</field>';
-echo '<field>
-		<label for="X_ShopBankTransferSurcharge">' . __('Bank Transfer Surcharge') . ':</label>
-		<input type="text" class="number" size="3" maxlength="3" name="X_ShopBankTransferSurcharge" value="' . $_SESSION['ShopBankTransferSurcharge'] . '" />
-		<fieldhelp>' . __('The bank transfer surcharge') . '</fieldhelp>
-	</field>';
-
-echo '</fieldset>';
-
-echo '<fieldset class="Column2x2">
-		<legend>' . __('Paypal Settings') . '</legend>';
-
-echo '<field>
-		<label for="X_ShopAllowPayPal">' . __('Allow PayPal Payment') . ':</label>
-		<select name="X_ShopAllowPayPal">';
-if ($_SESSION['ShopAllowPayPal'] ==1) {
-	echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-	echo '<option value="0">' . __('No') . '</option>';
-} else {
-	echo '<option selected="selected" value="0">' . __('No') . '</option>';
-	echo '<option value="1">' . __('Yes') . '</option>';
-}
-echo '</select>
-		<fieldhelp>' . __('Allow PayPal to be used for payments. The configuration details for PayPal payments must be entered below') . '</fieldhelp>
-	</field>';
-
-echo '<field>
-		<label for="X_ShopPayPalBankAccount">' . __('Pay Pal Bank Account') . ':</label>
-		<select name="X_ShopPayPalBankAccount">';
-$BankAccountsResult = DB_query("SELECT accountcode, bankaccountname FROM bankaccounts");
-while ($BankAccountRow = DB_fetch_array($BankAccountsResult)){
-	if ($_SESSION['ShopPayPalBankAccount'] ==$BankAccountRow['accountcode']) {
-		echo '<option selected="selected" value="' . $BankAccountRow['accountcode'] . '">' . $BankAccountRow['bankaccountname'] . '</option>';
-	} else {
-		echo '<option value="' . $BankAccountRow['accountcode'] . '">' . $BankAccountRow['bankaccountname'] . '</option>';
-	}
-}
-echo '</select>
-		<fieldhelp>' . __('Select the webERP bank account to use for receipts processed by Pay Pal') . '</fieldhelp>
-	</field>';
-
-
-echo '<field>
-		<label for="X_ShopPayPalCommissionAccount">' . __('Pay Pal Commission Account') . ':</label>
-		<select name="X_ShopPayPalCommissionAccount">';
-$AccountsResult = DB_query("SELECT accountcode,
-						accountname
-					FROM chartmaster INNER JOIN accountgroups
-					ON chartmaster.group_=accountgroups.groupname
-					WHERE accountgroups.pandl=1
-					ORDER BY chartmaster.accountcode");
-while ($AccountRow = DB_fetch_array($AccountsResult)){
-	if ($_SESSION['ShopPayPalCommissionAccount'] == $AccountRow['accountcode']) {
-		echo '<option selected="selected" value="' . $AccountRow['accountcode'] . '">' . $AccountRow['accountname'] . '</option>';
-	} else {
-		echo '<option value="' . $AccountRow['accountcode'] . '">' . $AccountRow['accountname'] . '</option>';
-	}
-}
-echo '</select>
-		<fieldhelp>' . __('Select the webERP P/L account to use for commissions (transaction fees) charged by Pay Pal') . '</fieldhelp>
-	</field>';
-
-echo '<field>
-		<label for="X_ShopPayPalSurcharge">' . __('PayPal Surcharge') . ':</label>
-		<input type="text" class="number" size="5" maxlength="5" name="X_ShopPayPalSurcharge" value="' . $_SESSION['ShopPayPalSurcharge'] . '" />
-		<fieldhelp>' . __('The PayPal surcharge') . '</fieldhelp>
-	</field>';
-
-if ($AllowDemoMode){
-	echo '<field>
-			<label>' . __('Paypal user account details') . '</label>
-			<fieldtext>' . __('Cannot be set in the demo') . '</fieldtext>
-		</field>';
-} else {
-	echo '<field>
-			<label for="X_ShopPayPalUser">' . __('PayPal User') . ':</label>
-			<input type="text" class="noSpecialChars" size="40" maxlength="40" name="X_ShopPayPalUser" value="' . $_SESSION['ShopPayPalUser'] . '" />
-			<fieldhelp>' . __('The PayPal Merchant User account for Pay Pal Express Checkout') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="X_ShopPayPalPassword">' . __('PayPal Password') . ':</label>
-			<input type="text" size="20" maxlength="20" name="X_ShopPayPalPassword" value="' . $_SESSION['ShopPayPalPassword'] . '" />
-			<fieldhelp>' . __('The PayPal Merchant account password for Pay Pal Express Checkout') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="X_ShopPayPalSignature">' . __('PayPal Signature') . ':</label>
-			<input type="text" size="45" maxlength="100" name="X_ShopPayPalSignature" value="' . $_SESSION['ShopPayPalSignature'] . '" />
-			<fieldhelp>' . __('The PayPal merchant account signature for Pay Pal Express Checkout') . '</fieldhelp>
-		</field>';
-}
-echo '</fieldset>';
-
-echo '<fieldset class="Column1x3">
-		<legend>' . __('Credit Card Processing Settings') . '</legend>';
-
-echo '<field>
-		<label for="X_ShopAllowCreditCards">' . __('Allow Credit Card Payments') . ':</label>
-		<select name="X_ShopAllowCreditCards">';
-if ($_SESSION['ShopAllowCreditCards'] ==1) {
-	echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-	echo '<option value="0">' . __('No') . '</option>';
-} else {
-	echo '<option selected="selected" value="0">' . __('No') . '</option>';
-	echo '<option value="1">' . __('Yes') . '</option>';
-}
-echo '</select>
-		<fieldhelp>' . __('Allow Credit Cards to be used for payments. The configuration details for PayPal Pro or one of the other credit card payment solutions must be configured.') . '</fieldhelp>
-	</field>';
-
-echo '<field>
-		<label for="X_ShopCreditCardGateway">' . __('Credit Card Gateway') . ':</label>';
-if ($AllowDemoMode) {
-	echo '<select name="SomeNameNotUsed">';
-} else {
-	echo '<select name="X_ShopCreditCardGateway">';
-}
-if ($_SESSION['ShopCreditCardGateway'] =='PayPalPro') {
-	echo '<option selected="selected" value="PayPalPro">' . __('PayPal Pro') . '</option>';
-} else {
-	echo '<option value="PayPalPro">' . __('PayPal Pro') . '</option>';
-}
-if ($_SESSION['ShopCreditCardGateway'] =='PayFlow') {
-	echo '<option selected="selected" value="PayFlow">' . __('PayFlow Pro') . '</option>';
-} else {
-	echo '<option value="PayFlow">' . __('PayFlow Pro') . '</option>';
-}
-if ($_SESSION['ShopCreditCardGateway'] =='SwipeHQ') {
-	echo '<option selected="selected" value="SwipeHQ">' . __('Swipe HQ - New Zealand') . '</option>';
-} else {
-	echo '<option value="SwipeHQ">' . __('Swipe HQ - New Zealand') . '</option>';
-}
-echo '</select>
-		<fieldhelp>' . __('Select the credit card gateway system to be used.') . '</fieldhelp>
-	</field>';
-
-echo '<field>
-		<label for="X_ShopCreditCardSurcharge">' . __('Credit Card Surcharge') . ':</label>
-		<input type="text" class="number" size="5" maxlength="5" name="X_ShopCreditCardSurcharge" value="' . $_SESSION['ShopCreditCardSurcharge'] . '" />
-		<fieldhelp>' . __('The credit card surcharge') . '</fieldhelp>
-	</field>';
-
-echo '<field>
-		<label for="X_ShopCreditCardBankAccount">' . __('Credit Card Bank Account') . ':</label>
-		<select name="X_ShopCreditCardBankAccount">';
-DB_data_seek($BankAccountsResult,0);
-while ($BankAccountRow = DB_fetch_array($BankAccountsResult)){
-	if ($_SESSION['ShopCreditCardBankAccount'] ==$BankAccountRow['accountcode']) {
-		echo '<option selected="selected" value="' . $BankAccountRow['accountcode'] . '">' . $BankAccountRow['bankaccountname'] . '</option>';
-	} else {
-		echo '<option value="' . $BankAccountRow['accountcode'] . '">' . $BankAccountRow['bankaccountname'] . '</option>';
-	}
-}
-echo '</select>
-		<fieldhelp>' . __('Select the webERP bank account to use for receipts processed by credit card') . '</fieldhelp>
-	</field>';
-
-if ($AllowDemoMode){
-	echo '<field>
-			<label>' . __('Credit card user account details') . '</label>
-			<fieldtext>' . __('Cannot be set in the demo') . '</fieldtext>
-		</field>';
-} else {
-	echo '<field>
-			<label for="X_ShopPayPalProUser">' . __('PayPal Pro User') . ':</label>
-			<input type="text" class="noSpecialChars"  size="40" maxlength="40" name="X_ShopPayPalProUser" value="' . $_SESSION['ShopPayPalProUser'] . '" />
-			<fieldhelp>' . __('The') . '<a href="https://www.paypal.com/us/webapps/mpp/paypal-payments-pro">' . __('PayPal Pro') .'</a> ' .  __('Merchant User account for credit card payment available in only USA and Canada') .  '</fieldhelp>
-		</field>';
-
-	echo '<field>
-			<label for="X_ShopPayPalProPassword">' . __('PayPal Pro Password') . ':</label>
-			<input type="text" size="20" maxlength="20" name="X_ShopPayPalProPassword" value="' . $_SESSION['ShopPayPalProPassword'] . '" />
-			<fieldhelp>' . __('The') . '<a href="https://www.paypal.com/us/webapps/mpp/paypal-payments-pro">' . __('PayPal Pro') .'</a> ' . __('Merchant account password for credit card payment available in only USA and Canada') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="X_ShopPayPalProSignature">' . __('PayPal Pro Signature') . ':</label>
-			<input type="text" size="80" maxlength="80" name="X_ShopPayPalProSignature" value="' . $_SESSION['ShopPayPalProSignature'] . '" />
-			<fieldhelp>' . __('The') . '<a href="https://www.paypal.com/us/webapps/mpp/paypal-payments-pro">' . __('PayPal Pro') . '</a> ' .__('merchant account signature for credit card payment available in only USA and Canada') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="X_ShopPayFlowUser">' . __('Pay Flow Pro User') . ':</label>
-			<input type="text" class="noSpecialChars"  size="40" maxlength="40" name="X_ShopPayFlowUser" value="' . $_SESSION['ShopPayFlowUser'] . '" />
-			<fieldhelp>' . __('The') . ' <a href="https://www.paypal.com/us/webapps/mpp/payflow-payment-gateway">PayFlow Pro</a> ' . __('Merchant User account') . '</fieldhelp>
-		</field>';
-
-	echo '<field>
-			<label for="X_ShopPayFlowPassword">' . __('Pay Flow Pro Password') . ':</label>
-			<input type="text" size="20" maxlength="20" name="X_ShopPayFlowPassword" value="' . $_SESSION['ShopPayFlowPassword'] . '" />
-			<fieldhelp>' . __('The') . ' <a href="https://www.paypal.com/us/webapps/mpp/payflow-payment-gateway">PayFlow Pro</a> ' . __('Merchant account password') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="X_ShopPayFlowVendor">' . __('Pay Flow Pro Vendor') . ':</label>
-			<input type="text" class="noSpecialChars" size="20" maxlength="20" name="X_ShopPayFlowVendor" value="' . $_SESSION['ShopPayFlowVendor'] . '" />
-			<fieldhelp>' . __('The') . ' <a href="https://www.paypal.com/us/webapps/mpp/payflow-payment-gateway">PayFlow Pro</a> ' . __('vendor') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="X_ShopPayFlowMerchant">' . __('Pay Flow Pro Merchant') . ':</label>
-			<input type="text" size="20" maxlength="20" name="X_ShopPayFlowMerchant" value="' . $_SESSION['ShopPayFlowMerchant'] . '" />
-			<fieldhelp>' . __('The') . ' <a href="https://www.paypal.com/us/webapps/mpp/payflow-payment-gateway">PayFlow Pro</a> ' . __('merchant') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="X_ShopSwipeHQMerchantID">' . __('SwipeHQ Merchant ID') . ':</label>
-			<input type="text" class="noSpecialChars" size="15" maxlength="15" name="X_ShopSwipeHQMerchantID" value="' . $_SESSION['ShopSwipeHQMerchantID'] . '" />
-			<fieldhelp>' . __('The'). ' <a href="https://www.swipehq.com/credit-card-payment-solutions/index.php">SwipeHQ</a> ' . __('Merchant ID - see SwipeHQ settings -> API credentials') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="X_ShopSwipeHQAPIKey">' . __('SwipeHQ API Key') . ':</label>
-			<input type="text" size="80"  maxlenght="100" name="X_ShopSwipeHQAPIKey" value="' . $_SESSION['ShopSwipeHQAPIKey'] . '" />
-			<fieldhelp>' . __('The') . ' <a href="https://www.swipehq.com/credit-card-payment-solutions/index.php">SwipeHQ</a> ' . __('API Key - see SwipeHQ admin settings -> API credentials') . '</fieldhelp>
-		</field>';
-
-	echo '</fieldset>';
-	echo '</fieldset>';
-} //end of blocked inputs in demo mode
-echo '<div class="centre">
-		<input type="submit" name="submit" value="' . __('Update') . '" />
-	</div>
-	</form>';
+echo '          </div>
+            </div>
+        </form>
+    </div>';
 
 include(__DIR__ . '/includes/footer.php');
