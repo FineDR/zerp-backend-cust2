@@ -1278,7 +1278,8 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
     $InvoiceDetails['trandate']=$InvoiceDetails['trandate'];
     //$Errors=VerifyDateFormat($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
     $Errors=VerifyInvoiceTransactionDate($InvoiceDetails['trandate'], sizeof($Errors), $Errors);
-    if (isset($InvoiceDetails['settled'])){
+    return 'hapaje';
+	if (isset($InvoiceDetails['settled'])){
         $Errors=VerifySettled($InvoiceDetails['settled'], sizeof($Errors), $Errors);
     }
     if (isset($InvoiceDetails['reference'])){
