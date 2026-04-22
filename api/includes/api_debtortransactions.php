@@ -1356,7 +1356,6 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
                         '" . $SalesArea ."',
                         '" . $InvoiceDetails['shipvia'] ."')";
         // REMOVED: return $SQL;
-		return 'hapaje: '.$SQL;
         $Result = DB_query($SQL);
         if (DB_error_no() != 0) {
             DB_Txn_Rollback();
@@ -1375,6 +1374,7 @@ function InsertSalesInvoice($InvoiceDetails, $user, $password) {
                         '" . $InvoiceDetails['ovamount'] . "',
                         '" . $InvoiceDetails['jobref'] . "')";
         // REMOVED: return $SQL;
+		return 'hapaje: '.$SQL;
         $Result = api_DB_query($SQL);
         if (DB_error_no() != 0) {
             DB_Txn_Rollback();
