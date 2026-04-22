@@ -5,11 +5,95 @@ require(__DIR__ . '/includes/session.php');
 $Title = __('Maintenance Of Petty Cash Tabs');
 $ViewTopic = 'PettyCash';
 $BookMark = 'PCTabSetup';
+include(__DIR__ . '/includes/SQL_CommonFunctions.php');
+
+// --- Architect Workspace Styling ---
+$ExtraHeadContent = '
+<style>
+    :root {
+        --primary: #059669;
+        --primary-hover: #047857;
+        --rose: #e11d48;
+        --slate: #64748b;
+        --bg-main: #f8fafc;
+        --card-bg: #ffffff;
+        --border-color: #e2e8f0;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+    }
+    body { background-color: var(--bg-main) !important; color: var(--text-main); font-family: "Inter", sans-serif; -webkit-font-smoothing: antialiased; }
+    .db-page { padding: 30px; max-width: 1600px; margin: 0 auto; box-sizing: border-box; }
+    
+    /* Header */
+    .premium-header {
+        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color);
+        margin: -30px -30px 30px -30px; padding: 20px 30px; position: sticky; top: 0; z-index: 1000;
+    }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .breadcrumb { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .page-title { font-size: 1.75rem; font-weight: 900; color: #0f172a; letter-spacing: -0.04em; }
+
+    /* Layout */
+    .db-grid { display: grid; grid-template-columns: 450px 1fr; gap: 30px; align-items: start; }
+
+    /* Cards */
+    .db-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 25px; }
+    .db-card-header { padding: 18px 24px; border-bottom: 1px solid var(--border-color); background: #fcfcfd; display: flex; align-items: center; justify-content: space-between; }
+    .db-card-title { font-size: 0.95rem; font-weight: 800; color: #334155; }
+    .db-card-body { padding: 24px; }
+    
+    /* Forms */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 6px; }
+    .form-control { width: 100%; padding: 11px; border-radius: 9px; border: 1px solid #cbd5e1; font-size: 0.95rem; transition: all 0.2s; box-sizing: border-box; background: #fff; }
+    .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1); outline: none; }
+    .form-section-title { font-size: 0.75rem; font-weight: 800; color: var(--slate); text-transform: uppercase; letter-spacing: 0.05em; margin: 25px 0 15px 0; padding-top: 15px; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 8px; }
+
+    .btn-architect { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; border: none; text-decoration: none; box-sizing: border-box; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-outline { background: transparent; border: 1px solid #d1d5db; color: #475569; }
+
+    /* Table Styling */
+    .table-container { overflow-x: auto; background: white; border-radius: 12px; border: 1px solid var(--border-color); }
+    table.premium-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; white-space: nowrap; }
+    table.premium-table th { background: #f8fafc; padding: 14px 18px; text-align: left; font-weight: 700; color: #64748b; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color); }
+    table.premium-table td { padding: 14px 18px; border-bottom: 1px dotted #e2e8f0; color: #334155; }
+    table.premium-table tr:hover td { background-color: #f8fafc; }
+
+    .badge-code { font-family: "JetBrains Mono", monospace; background: #f1f5f9; padding: 3px 6px; border-radius: 5px; font-weight: 600; color: #475569; font-size: 0.85rem; }
+    .amount-field { font-family: "JetBrains Mono", monospace; font-weight: 700; color: var(--primary); }
+
+    /* Action Links */
+    .action-link { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-decoration: none; margin-right: 12px; }
+    .action-link:hover { text-decoration: underline; }
+    .action-delete { color: var(--rose); }
+
+    /* Responsive Scaling - Forced Overrides */
+    @media (max-width: 1200px) {
+        .db-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 767px) {
+        .db-page { padding: 15px !important; margin-left: 0 !important; width: 100% !important; }
+        .premium-header { margin: -15px -15px 20px -15px !important; padding: 15px !important; width: calc(100% + 30px) !important; border-radius: 0 !important; }
+        .page-title { font-size: 1.4rem !important; }
+        .db-card-body { padding: 15px !important; }
+        .btn-architect { width: 100% !important; margin-bottom: 8px !important; }
+    }
+</style>';
+
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text">
-		<img src="', $RootPath, '/css/', $_SESSION['Theme'], '/images/money_add.png" title="', __('Payment Entry'), '" alt="" />', ' ', $Title, '
-	</p>';
+echo '<div class="db-page">
+    <div class="premium-header">
+        <div class="header-inner">
+            <div>
+                <div class="breadcrumb">' . __('Setup') . ' / ' . __('Petty Cash') . '</div>
+                <div class="page-title">' . $Title . '</div>
+            </div>
+        </div>
+    </div>
+    <div class="db-grid">';
 
 if (isset($_POST['SelectedTab'])) {
 	$SelectedTab = mb_strtoupper($_POST['SelectedTab']);
@@ -138,98 +222,17 @@ if (isset($_POST['Submit'])) {
 	unset($SelectedTab);
 	unset($_GET['delete']);
 }
-if (!isset($SelectedTab)) {
-	/* It could still be the second time the page has been run and a record has been selected for modification - SelectedTab will exist because it was sent with the new call. If its the first time the page has been displayed with no parameters
-	then none of the above are true and the list of sales types will be displayed with
-	links to delete or edit each. These will call the same page again and allow update/input
-	or deletion of the records*/
-	$SQL = "SELECT tabcode,
-					usercode,
-					typetabdescription,
-					currabrev,
-					tablimit,
-					assigner,
-					authorizer,
-					authorizerexpenses,
-					glaccountassignment,
-					glaccountpcash,
-					currencies.decimalplaces,
-					chartmaster1.accountname AS glactassigntname,
-					chartmaster2.accountname AS glactpcashname,
-					taxgroupdescription
-				FROM pctabs
-				INNER JOIN currencies
-					ON pctabs.currency=currencies.currabrev
-				INNER JOIN pctypetabs
-					ON pctabs.typetabcode=pctypetabs.typetabcode
-				INNER JOIN chartmaster AS chartmaster1 ON
-					pctabs.glaccountassignment = chartmaster1.accountcode
-				INNER JOIN chartmaster AS chartmaster2 ON
-					pctabs.glaccountpcash = chartmaster2.accountcode
-				INNER JOIN taxgroups
-					ON pctabs.taxgroupid=taxgroups.taxgroupid
-				ORDER BY tabcode";
-	$Result = DB_query($SQL);
-	if (DB_num_rows($Result) > 0) {
-		echo '<table class="selection">
-				<tr>
-					<th>', __('Tab Code'), '</th>
-					<th>', __('User Name'), '</th>
-					<th>', __('Type Of Tab'), '</th>
-					<th>', __('Currency'), '</th>
-					<th>', __('Limit'), '</th>
-					<th>', __('Cash Assigner'), '</th>
-					<th>', __('Authoriser - Cash'), '</th>
-					<th>', __('Authoriser - Expenses'), '</th>
-					<th>', __('GL Account For Cash Assignment'), '</th>
-					<th>', __('GL Account Petty Cash Tab'), '</th>
-					<th>', __('Tax Group'), '</th>
-				</tr>';
+	// Left Column: Entry Form Card
+	echo '<div class="db-card">
+			<div class="db-card-header">
+				<div class="db-card-title">', (isset($SelectedTab) ? __('Amend Petty Cash Tab') : __('Create Petty Cash Tab')), '</div>
+			</div>
+			<div class="db-card-body">
+				<form method="post" action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '">
+					<input type="hidden" name="FormID" value="', $_SESSION['FormID'], '" />';
 
-		while ($MyRow = DB_fetch_array($Result)) {
-			echo '<tr class="striped_row">
-					<td>', $MyRow['tabcode'], '</td>
-					<td>', $MyRow['usercode'], '</td>
-					<td>', $MyRow['typetabdescription'], '</td>
-					<td>', $MyRow['currabrev'], '</td>
-					<td class="number">', locale_number_format($MyRow['tablimit'], $MyRow['decimalplaces']), '</td>
-					<td>', $MyRow['assigner'], '</td>
-					<td>', $MyRow['authorizer'], '</td>
-					<td>', $MyRow['authorizerexpenses'], '</td>
-					<td>', $MyRow['glaccountassignment'] . ' - ' . $MyRow['glactassigntname'], '</td>
-					<td>', $MyRow['glaccountpcash'] . ' - ' . $MyRow['glactpcashname'], '</td>
-					<td>', $MyRow['taxgroupdescription'], '</td>
-					<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '?SelectedTab=', $MyRow['tabcode'], '">' . __('Edit') . '</a></td>
-					<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '?SelectedTab=', $MyRow['tabcode'], '&amp;delete=yes" onclick=\' return confirm("' . __('Are you sure you wish to delete this tab code?') . '", \'Confirm Delete\', this);\'>' . __('Delete') . '</a></td>
-				</tr>';
-		}
-		//END WHILE LIST LOOP
-		echo '</table>';
-	} //if there are tabs to show
-}
-//end of ifs and buts!
-if (isset($SelectedTab)) {
-	echo '<div class="centre">
-			<a href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '">', __('Show All Tabs Defined'), '</a>
-		</div>';
-}
-if (!isset($_GET['delete'])) {
-	echo '<form method="post" action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '">';
-	echo '<input type="hidden" name="FormID" value="', $_SESSION['FormID'], '" />';
 	if (isset($SelectedTab) and $SelectedTab != '') {
-		$SQL = "SELECT tabcode,
-						usercode,
-						typetabcode,
-						currency,
-						tablimit,
-						assigner,
-						authorizer,
-						authorizerexpenses,
-						glaccountassignment,
-						glaccountpcash,
-						taxgroupid
-					FROM pctabs
-				WHERE tabcode='" . $SelectedTab . "'";
+		$SQL = "SELECT tabcode, usercode, typetabcode, currency, tablimit, assigner, authorizer, authorizerexpenses, glaccountassignment, glaccountpcash, taxgroupid FROM pctabs WHERE tabcode='" . $SelectedTab . "'";
 		$Result = DB_query($SQL);
 		$MyRow = DB_fetch_array($Result);
 		$_POST['TabCode'] = $MyRow['tabcode'];
@@ -243,192 +246,192 @@ if (!isset($_GET['delete'])) {
 		$_POST['GLAccountCash'] = $MyRow['glaccountassignment'];
 		$_POST['GLAccountPcashTab'] = $MyRow['glaccountpcash'];
 		$_POST['TaxGroup'] = $MyRow['taxgroupid'];
-		echo '<input type="hidden" name="SelectedTab" value="', $SelectedTab, '" />';
-		echo '<input type="hidden" name="TabCode" value="', $_POST['TabCode'], '" />';
-		echo '<fieldset>
-				<legend>', __('Amend Petty Cash Type'), '</legend>
-				<field>
-					<label for="TabCode">', __('Tab Code'), ':</label>
-					<fieldtext>', $_POST['TabCode'], '</fieldtext>
-				</field>';
+		
+		echo '<input type="hidden" name="SelectedTab" value="', $SelectedTab, '" />
+			  <input type="hidden" name="TabCode" value="', $_POST['TabCode'], '" />
+			  <div class="form-group">
+				  <label class="form-label">', __('Tab Code'), '</label>
+				  <div class="badge-code" style="display:inline-block; margin-top:5px;">', $_POST['TabCode'], '</div>
+			  </div>';
 	} else {
-		// This is a new type so the user may volunteer a type code
-		echo '<fieldset>
-				<legend>', __('Create Petty Cash Type'), '</legend>
-				<field>
-					<label for="TabCode">', __('Tab Code'), ':</label>
-					<input type="text" required="required" maxlength="20" name="TabCode" />
-				</field>';
+		echo '<div class="form-group">
+				  <label class="form-label">', __('Tab Code'), '</label>
+				  <input type="text" class="form-control" required="required" maxlength="20" name="TabCode" placeholder="e.g. TAB01" />
+			  </div>';
 	}
-	if (!isset($_POST['typetabdescription'])) {
-		$_POST['typetabdescription'] = '';
-	}
-	echo '<field>
-			<label for="SelectUser">', __('User Name'), ':</label>
-			<select required="required" name="SelectUser">';
-	$SQL = "SELECT userid,
-					realname
-			FROM www_users ORDER BY userid";
+
+	echo '<div class="form-section-title">', __('General Configuration'), '</div>';
+
+	echo '<div class="form-group">
+			<label class="form-label">', __('Primary User'), '</label>
+			<select required="required" name="SelectUser" class="form-control">';
+	$SQL = "SELECT userid, realname FROM www_users ORDER BY userid";
 	$Result = DB_query($SQL);
 	while ($MyRow = DB_fetch_array($Result)) {
-		if (isset($_POST['SelectUser']) and $MyRow['userid'] == $_POST['SelectUser']) {
-			echo '<option selected="selected" value="', $MyRow['userid'], '">', $MyRow['userid'], ' - ', $MyRow['realname'], '</option>';
-		} else {
-			echo '<option value="', $MyRow['userid'], '">', $MyRow['userid'], ' - ', $MyRow['realname'], '</option>';
-		}
-	} //end while loop get user
-	echo '</select>
-		</field>';
-	echo '<field>
-			<label for="SelectTabs">', __('Type Of Tab'), ':</label>
-			<select required="required" name="SelectTabs">';
-	$SQL = "SELECT typetabcode,
-					typetabdescription
-			FROM pctypetabs
-			ORDER BY typetabcode";
+		echo '<option ', (isset($_POST['SelectUser']) && $MyRow['userid'] == $_POST['SelectUser'] ? 'selected="selected"' : ''), ' value="', $MyRow['userid'], '">', $MyRow['userid'], ' - ', $MyRow['realname'], '</option>';
+	}
+	echo '</select></div>';
+
+	echo '<div class="form-group">
+			<label class="form-label">', __('Tab Type'), '</label>
+			<select required="required" name="SelectTabs" class="form-control">';
+	$SQL = "SELECT typetabcode, typetabdescription FROM pctypetabs ORDER BY typetabcode";
 	$Result = DB_query($SQL);
 	while ($MyRow = DB_fetch_array($Result)) {
-		if (isset($_POST['SelectTabs']) and $MyRow['typetabcode'] == $_POST['SelectTabs']) {
-			echo '<option selected="selected" value="', $MyRow['typetabcode'], '">', $MyRow['typetabcode'], ' - ', $MyRow['typetabdescription'], '</option>';
-		} else {
-			echo '<option value="', $MyRow['typetabcode'], '">', $MyRow['typetabcode'], ' - ', $MyRow['typetabdescription'], '</option>';
-		}
-	} //end while loop get type of tab
-	echo '</select>
-		</field>';
-	echo '<field>
-			<label for="SelectCurrency">', __('Currency'), ':</label>
-			<select required="required" name="SelectCurrency">';
+		echo '<option ', (isset($_POST['SelectTabs']) && $MyRow['typetabcode'] == $_POST['SelectTabs'] ? 'selected="selected"' : ''), ' value="', $MyRow['typetabcode'], '">', $MyRow['typetabcode'], ' - ', $MyRow['typetabdescription'], '</option>';
+	}
+	echo '</select></div>';
+
+	echo '<div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+			<div class="form-group">
+				<label class="form-label">', __('Currency'), '</label>
+				<select required="required" name="SelectCurrency" class="form-control">';
 	$SQL = "SELECT currency, currabrev FROM currencies";
 	$Result = DB_query($SQL);
 	while ($MyRow = DB_fetch_array($Result)) {
-		if (isset($_POST['SelectCurrency']) and $MyRow['currabrev'] == $_POST['SelectCurrency']) {
-			echo '<option selected="selected" value="', $MyRow['currabrev'], '">', $MyRow['currency'], '</option>';
-		} else {
-			echo '<option value="', $MyRow['currabrev'], '">', $MyRow['currency'], '</option>';
-		}
-	} //end while loop get type of tab
-	echo '</select>
-		</field>';
-	if (!isset($_POST['TabLimit'])) {
-		$_POST['TabLimit'] = 0;
+		echo '<option ', (isset($_POST['SelectCurrency']) && $MyRow['currabrev'] == $_POST['SelectCurrency'] ? 'selected="selected"' : ''), ' value="', $MyRow['currabrev'], '">', $MyRow['currency'], '</option>';
 	}
-	echo '<field>
-			<label for="TabLimit">', __('Limit Of Tab'), ':</label>
-			<input type="text" class="number" name="TabLimit" size="12" required="required" maxlength="11" value="', $_POST['TabLimit'], '" />
-		</field>';
-	echo '<field>
-			<label for="SelectAssigner">', __('Cash Assigner'), ':</label>
-			<select required="required" name="SelectAssigner">';
-	$SQL = "SELECT userid,
-					realname
-			FROM www_users
-			ORDER BY userid";
-	$Result = DB_query($SQL);
-	while ($MyRow = DB_fetch_array($Result)) {
-		if (isset($_POST['SelectAssigner']) and $MyRow['userid'] == $_POST['SelectAssigner']) {
-			echo '<option selected="selected" value="', $MyRow['userid'], '">', $MyRow['userid'], ' - ', $MyRow['realname'], '</option>';
-		} else {
-			echo '<option value="', $MyRow['userid'], '">', $MyRow['userid'], ' - ', $MyRow['realname'], '</option>';
-		}
-	} //end while loop get assigner
-	echo '</select>
-		</field>';
-	echo '<field>
-			<label for="SelectAuthoriserCash">', __('Authoriser - Cash'), ':</label>
-			<select required="required" name="SelectAuthoriserCash">';
-	$SQL = "SELECT userid,
-					realname
-			FROM www_users
-			ORDER BY userid";
-	$Result = DB_query($SQL);
-	while ($MyRow = DB_fetch_array($Result)) {
-		if (isset($_POST['SelectAuthoriserCash']) and $MyRow['userid'] == $_POST['SelectAuthoriserCash']) {
-			echo '<option selected="selected" value="', $MyRow['userid'], '">', $MyRow['userid'], ' - ', $MyRow['realname'], '</option>';
-		} else {
-			echo '<option value="', $MyRow['userid'], '">', $MyRow['userid'], ' - ', $MyRow['realname'], '</option>';
-		}
-	} //end while loop get authoriser
-	echo '</select>
-		</field>';
-	echo '<field>
-			<label for="SelectAuthoriserExpenses">', __('Authoriser - Expenses'), ':</label>
-			<select required="required" name="SelectAuthoriserExpenses">';
-	$SQL = "SELECT userid,
-					realname
-			FROM www_users
-			ORDER BY userid";
-	$Result = DB_query($SQL);
-	while ($MyRow = DB_fetch_array($Result)) {
-		if (isset($_POST['SelectAuthoriserExpenses']) and $MyRow['userid'] == $_POST['SelectAuthoriserExpenses']) {
-			echo '<option selected="selected" value="', $MyRow['userid'], '">', $MyRow['userid'], ' - ', $MyRow['realname'], '</option>';
-		} else {
-			echo '<option value="', $MyRow['userid'], '">', $MyRow['userid'], ' - ', $MyRow['realname'], '</option>';
-		}
-	} //end while loop get authoriser
-	echo '</select>
-		</field>';
-	echo '<field>
-			<label for="GLAccountCash">', __('GL Account Cash Assignment'), ':</label>
-			<select required="required" name="GLAccountCash">';
-	$SQL = "SELECT chartmaster.accountcode,
-					chartmaster.accountname
-			FROM chartmaster
-			INNER JOIN bankaccounts
-				ON chartmaster.accountcode = bankaccounts.accountcode
-			ORDER BY chartmaster.accountcode";
-	$Result = DB_query($SQL);
-	while ($MyRow = DB_fetch_array($Result)) {
-		if (isset($_POST['GLAccountCash']) and $MyRow['accountcode'] == $_POST['GLAccountCash']) {
-			echo '<option selected="selected" value="', $MyRow['accountcode'], '">', $MyRow['accountcode'], ' - ', htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false), '</option>';
-		} else {
-			echo '<option value="', $MyRow['accountcode'], '">', $MyRow['accountcode'], ' - ', htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false), '</option>';
-		}
-	} //end while loop
-	echo '</select>
-		</field>';
-	echo '<field>
-			<label for="GLAccountPcashTab">', __('GL Account Petty Cash Tab'), ':</label>
-			<select required="required" name="GLAccountPcashTab">';
-	$SQL = "SELECT accountcode,
-					accountname
-				FROM chartmaster
-				ORDER BY accountcode";
-	$Result = DB_query($SQL);
-	while ($MyRow = DB_fetch_array($Result)) {
-		if (isset($_POST['GLAccountPcashTab']) and $MyRow['accountcode'] == $_POST['GLAccountPcashTab']) {
-			echo '<option selected="selected" value="', $MyRow['accountcode'], '">', $MyRow['accountcode'], ' - ', htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false), '</option>';
-		} else {
-			echo '<option value="', $MyRow['accountcode'], '">', $MyRow['accountcode'], ' - ', htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false), '</option>';
-		}
-	} //end while loop
-	echo '</select>
-		</field>';
+	echo '</select></div>';
 
-	//Select the tax
-	$SQL = "SELECT taxgroupid,
-					taxgroupdescription
-			FROM taxgroups
-			ORDER BY taxgroupdescription";
+	if (!isset($_POST['TabLimit'])) { $_POST['TabLimit'] = 0; }
+	echo '<div class="form-group">
+				<label class="form-label">', __('Tab Limit'), '</label>
+				<input type="text" class="form-control number" name="TabLimit" required="required" maxlength="11" value="', $_POST['TabLimit'], '" />
+			</div>
+		  </div>';
+
+	echo '<div class="form-group">
+			<label class="form-label">', __('Tax Group'), '</label>
+			<select name="TaxGroup" class="form-control">';
+	$SQL = "SELECT taxgroupid, taxgroupdescription FROM taxgroups ORDER BY taxgroupdescription";
 	$Result = DB_query($SQL);
-	echo '<field>
-			<label for="TaxGroup">', __('Tax Group'), ':</label>
-			<select name="TaxGroup">';
 	while ($MyRow = DB_fetch_array($Result)) {
-		if (isset($_POST['TaxGroup']) and $_POST['TaxGroup'] == $MyRow['taxgroupid']) {
-			echo '<option selected="selected" value="', $MyRow['taxgroupid'], '">', $MyRow['taxgroupid'], ' - ', $MyRow['taxgroupdescription'], '</option>';
-		} else {
-			echo '<option value="', $MyRow['taxgroupid'], '">', $MyRow['taxgroupid'], ' - ', $MyRow['taxgroupdescription'], '</option>';
-		}
+		echo '<option ', (isset($_POST['TaxGroup']) && $_POST['TaxGroup'] == $MyRow['taxgroupid'] ? 'selected="selected"' : ''), ' value="', $MyRow['taxgroupid'], '">', $MyRow['taxgroupdescription'], '</option>';
 	}
-	echo '</select>
-		</field>';
-	// End select tax
-	echo '</fieldset>'; // close main table
-	echo '<div class="centre">
-			<input type="submit" name="Submit" value="', __('Accept'), '" />
-			<input type="reset" name="Cancel" value="', __('Cancel'), '" />
-		</div>';
-	echo '</form>';
-} // end if user wish to delete
+	echo '</select></div>';
+
+	echo '<div class="form-section-title">', __('Workflow & Authorizations'), '</div>';
+
+	echo '<div class="form-group">
+			<label class="form-label">', __('Cash Assigner'), '</label>
+			<select required="required" name="SelectAssigner" class="form-control">';
+	$SQL = "SELECT userid, realname FROM www_users ORDER BY userid"; $Result = DB_query($SQL);
+	while ($MyRow = DB_fetch_array($Result)) {
+		echo '<option ', (isset($_POST['SelectAssigner']) && $MyRow['userid'] == $_POST['SelectAssigner'] ? 'selected="selected"' : ''), ' value="', $MyRow['userid'], '">', $MyRow['userid'], ' - ', $MyRow['realname'], '</option>';
+	}
+	echo '</select></div>';
+
+	echo '<div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+			<div class="form-group">
+				<label class="form-label">', __('Authorizer (Cash)'), '</label>
+				<select required="required" name="SelectAuthoriserCash" class="form-control">';
+	$SQL = "SELECT userid, realname FROM www_users ORDER BY userid"; $Result = DB_query($SQL);
+	while ($MyRow = DB_fetch_array($Result)) {
+		echo '<option ', (isset($_POST['SelectAuthoriserCash']) && $MyRow['userid'] == $_POST['SelectAuthoriserCash'] ? 'selected="selected"' : ''), ' value="', $MyRow['userid'], '">', $MyRow['userid'], ' - ', $MyRow['realname'], '</option>';
+	}
+	echo '</select></div>';
+
+	echo '<div class="form-group">
+				<label class="form-label">', __('Authorizer (Exp)'), '</label>
+				<select required="required" name="SelectAuthoriserExpenses" class="form-control">';
+	$SQL = "SELECT userid, realname FROM www_users ORDER BY userid"; $Result = DB_query($SQL);
+	while ($MyRow = DB_fetch_array($Result)) {
+		echo '<option ', (isset($_POST['SelectAuthoriserExpenses']) && $MyRow['userid'] == $_POST['SelectAuthoriserExpenses'] ? 'selected="selected"' : ''), ' value="', $MyRow['userid'], '">', $MyRow['userid'], ' - ', $MyRow['realname'], '</option>';
+	}
+	echo '</select></div>
+		  </div>';
+
+	echo '<div class="form-section-title">', __('GL Integration'), '</div>';
+
+	echo '<div class="form-group">
+			<label class="form-label">', __('GL Account Assignment'), '</label>
+			<select required="required" name="GLAccountCash" class="form-control">';
+	$SQL = "SELECT chartmaster.accountcode, chartmaster.accountname FROM chartmaster INNER JOIN bankaccounts ON chartmaster.accountcode = bankaccounts.accountcode ORDER BY chartmaster.accountcode";
+	$Result = DB_query($SQL);
+	while ($MyRow = DB_fetch_array($Result)) {
+		echo '<option ', (isset($_POST['GLAccountCash']) && $MyRow['accountcode'] == $_POST['GLAccountCash'] ? 'selected="selected"' : ''), ' value="', $MyRow['accountcode'], '">', $MyRow['accountcode'], ' - ', htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false), '</option>';
+	}
+	echo '</select></div>';
+
+	echo '<div class="form-group">
+			<label class="form-label">', __('GL Account Petty Cash'), '</label>
+			<select required="required" name="GLAccountPcashTab" class="form-control">';
+	$SQL = "SELECT accountcode, accountname FROM chartmaster ORDER BY accountcode";
+	$Result = DB_query($SQL);
+	while ($MyRow = DB_fetch_array($Result)) {
+		echo '<option ', (isset($_POST['GLAccountPcashTab']) && $MyRow['accountcode'] == $_POST['GLAccountPcashTab'] ? 'selected="selected"' : ''), ' value="', $MyRow['accountcode'], '">', $MyRow['accountcode'], ' - ', htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false), '</option>';
+	}
+	echo '</select></div>';
+
+	echo '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:30px;">
+			  <button type="submit" name="Submit" class="btn-architect btn-primary">', __('Save Changes'), '</button>
+			  <button type="submit" name="Cancel" class="btn-architect btn-outline">', __('Reset Form'), '</button>
+		  </div>';
+
+	if (isset($SelectedTab)) {
+		echo '<div style="margin-top:20px; text-align:center;">
+				<a href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" class="action-link" style="margin-right:0;">' . __('Cancel Edit & Show All') . '</a>
+			  </div>';
+	}
+	
+	echo '		</form>
+			</div>
+		</div>
+	</div>'; // End Left Card
+
+	// Right Column: Data Table Card
+	echo '<div>
+			<div class="db-card">
+				<div class="db-card-header">
+					<div class="db-card-title">', __('Active Petty Cash Tabs'), '</div>
+				</div>
+				<div class="db-card-body">
+					<div class="table-container">
+						<table class="premium-table">
+							<thead>
+								<tr>
+									<th>', __('Code'), '</th>
+									<th>', __('User'), '</th>
+									<th>', __('Type'), '</th>
+									<th>', __('Currency'), '</th>
+									<th>', __('Limit'), '</th>
+									<th>', __('Assigner'), '</th>
+									<th>', __('Auth (C)'), '</th>
+									<th>', __('Auth (E)'), '</th>
+									<th>', __('Tax Group'), '</th>
+									<th style="width:100px;">', __('Actions'), '</th>
+								</tr>
+							</thead>
+							<tbody>';
+
+	$SQL = "SELECT tabcode, usercode, typetabdescription, currabrev, tablimit, assigner, authorizer, authorizerexpenses, taxgroupdescription, currencies.decimalplaces FROM pctabs INNER JOIN currencies ON pctabs.currency=currencies.currabrev INNER JOIN pctypetabs ON pctabs.typetabcode=pctypetabs.typetabcode INNER JOIN taxgroups ON pctabs.taxgroupid=taxgroups.taxgroupid ORDER BY tabcode";
+	$Result = DB_query($SQL);
+
+	while ($MyRow = DB_fetch_array($Result)) {
+		echo '<tr>
+				<td><span class="badge-code">', $MyRow['tabcode'], '</span></td>
+				<td>', $MyRow['usercode'], '</td>
+				<td>', $MyRow['typetabdescription'], '</td>
+				<td>', $MyRow['currabrev'], '</td>
+				<td class="amount-field">', locale_number_format($MyRow['tablimit'], $MyRow['decimalplaces']), '</td>
+				<td>', $MyRow['assigner'], '</td>
+				<td>', $MyRow['authorizer'], '</td>
+				<td>', $MyRow['authorizerexpenses'], '</td>
+				<td>', $MyRow['taxgroupdescription'], '</td>
+				<td>
+					<a class="action-link" href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedTab=', $MyRow['tabcode'], '">' . __('Edit') . '</a>
+					<a class="action-link action-delete" href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedTab=', $MyRow['tabcode'], '&amp;delete=yes" onclick=\'return confirm("' . __('Are you sure you wish to delete this tab code?') . '");\'>' . __('Delete') . '</a>
+				</td>
+			</tr>';
+	}
+
+	echo '				</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>'; // End Right Card
+
+echo '</div></div>'; // Close db-grid and db-page
+
 include(__DIR__ . '/includes/footer.php');

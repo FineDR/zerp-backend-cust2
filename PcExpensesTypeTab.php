@@ -6,11 +6,92 @@ $Title = __('Maintenance Of Petty Cash Expenses For a Type Tab');
 /* webERP manual links before header.php */
 $ViewTopic = 'PettyCash';
 $BookMark = 'PCTabTypes';
+include(__DIR__ . '/includes/SQL_CommonFunctions.php');
+
+// --- Architect Workspace Styling ---
+$ExtraHeadContent = '
+<style>
+    :root {
+        --primary: #059669;
+        --primary-hover: #047857;
+        --rose: #e11d48;
+        --slate: #64748b;
+        --bg-main: #f8fafc;
+        --card-bg: #ffffff;
+        --border-color: #e2e8f0;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+    }
+    body { background-color: var(--bg-main) !important; color: var(--text-main); font-family: "Inter", sans-serif; -webkit-font-smoothing: antialiased; }
+    .db-page { padding: 30px; max-width: 1600px; margin: 0 auto; box-sizing: border-box; }
+    
+    /* Header */
+    .premium-header {
+        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color);
+        margin: -30px -30px 30px -30px; padding: 20px 30px; position: sticky; top: 0; z-index: 1000;
+    }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .breadcrumb { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .page-title { font-size: 1.75rem; font-weight: 900; color: #0f172a; letter-spacing: -0.04em; }
+
+    /* Layout */
+    .db-grid { display: grid; grid-template-columns: 450px 1fr; gap: 30px; align-items: start; }
+
+    /* Cards */
+    .db-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 25px; }
+    .db-card-header { padding: 18px 24px; border-bottom: 1px solid var(--border-color); background: #fcfcfd; display: flex; align-items: center; justify-content: space-between; }
+    .db-card-title { font-size: 0.95rem; font-weight: 800; color: #334155; }
+    .db-card-body { padding: 24px; }
+    
+    /* Forms */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 8px; }
+    .form-control { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 1rem; transition: all 0.2s; box-sizing: border-box; }
+    .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1); outline: none; }
+
+    .btn-architect { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; border: none; text-decoration: none; box-sizing: border-box; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-outline { background: transparent; border: 1px solid #d1d5db; color: #475569; }
+
+    /* Table Styling */
+    .table-container { overflow-x: auto; background: white; border-radius: 12px; border: 1px solid var(--border-color); }
+    table.premium-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    table.premium-table th { background: #f8fafc; padding: 14px 20px; text-align: left; font-weight: 700; color: #64748b; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color); }
+    table.premium-table td { padding: 16px 20px; border-bottom: 1px dotted #e2e8f0; color: #334155; }
+    table.premium-table tr:hover td { background-color: #f1f5f9; }
+
+    .badge-code { font-family: "JetBrains Mono", monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: 600; color: #475569; }
+
+    /* Action Links */
+    .action-link { font-size: 0.85rem; font-weight: 700; color: var(--primary); text-decoration: none; margin-right: 15px; }
+    .action-link:hover { text-decoration: underline; }
+    .action-delete { color: var(--rose); }
+
+    /* Responsive Scaling - Forced Overrides */
+    @media (max-width: 1200px) {
+        .db-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 767px) {
+        .db-page { padding: 15px !important; margin-left: 0 !important; width: 100% !important; overflow-x: hidden !important; }
+        .premium-header { margin: -15px -15px 20px -15px !important; padding: 15px !important; width: calc(100% + 30px) !important; border-radius: 0 !important; }
+        .page-title { font-size: 1.4rem !important; }
+        .db-card-body { padding: 15px !important; }
+        .btn-architect { width: 100% !important; margin-bottom: 8px !important; }
+    }
+</style>';
+
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text">
-		<img src="', $RootPath, '/css/', $_SESSION['Theme'], '/images/money_add.png" title="', __('Payment Entry'), '" alt="" />', ' ', $Title, '
-	</p>';
+echo '<div class="db-page">
+    <div class="premium-header">
+        <div class="header-inner">
+            <div>
+                <div class="breadcrumb">' . __('Setup') . ' / ' . __('Petty Cash') . '</div>
+                <div class="page-title">' . $Title . '</div>
+            </div>
+        </div>
+    </div>';
 
 if (isset($_POST['SelectedCode'])) {
 	$SelectedCode = mb_strtoupper($_POST['SelectedCode']);
@@ -87,101 +168,105 @@ if (isset($_POST['submit'])) {
 	prnMsg(__('Expense code') . ' ' . $SelectedCode . ' ' . __('for type of tab') . ' ' . $SelectedTab . ' ' . __('has been deleted'), 'success');
 	unset($_GET['delete']);
 }
-if (!isset($SelectedTab)) {
-	/* It could still be the second time the page has been run and a record has been selected for modification - SelectedCode will exist because it was sent with the new call. If its the first time the page has been displayed with no parameters
-	then none of the above are true and the list of sales types will be displayed with
-	links to delete or edit each. These will call the same page again and allow update/input
-	or deletion of the records*/
-	echo '<form method="post" action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '">';
-	echo '<input type="hidden" name="FormID" value="', $_SESSION['FormID'], '" />';
-	echo '<fieldset>'; //Main table
-	echo '<field>
-			<label for="SelectedTab">', __('Select Type of Tab'), ':</label>
-			<select required="required" name="SelectedTab">';
-	$SQL = "SELECT typetabcode,
-					typetabdescription
-			FROM pctypetabs";
+if (!isset($SelectedTab) or $SelectedTab == '') {
+	// First step: Select Tab Type
+	echo '<div class="db-card" style="max-width:600px; margin: 40px auto;">
+			<div class="db-card-header">
+				<div class="db-card-title">', __('Select Type of Tab to Maintain'), '</div>
+			</div>
+			<div class="db-card-body">
+				<form method="post" action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '">
+					<input type="hidden" name="FormID" value="', $_SESSION['FormID'], '" />
+					<div class="form-group">
+						<label class="form-label">', __('Petty Cash Tab Type'), '</label>
+						<select required="required" name="SelectedTab" class="form-control">';
+	$SQL = "SELECT typetabcode, typetabdescription FROM pctypetabs ORDER BY typetabcode";
 	$Result = DB_query($SQL);
 	echo '<option value="">', __('Not Yet Selected'), '</option>';
 	while ($MyRow = DB_fetch_array($Result)) {
-		if (isset($SelectedTab) and $MyRow['typetabcode'] == $SelectedTab) {
-			echo '<option selected="selected" value="', $MyRow['typetabcode'], '">', $MyRow['typetabcode'], ' - ', $MyRow['typetabdescription'], '</option>';
-		} else {
-			echo '<option value="', $MyRow['typetabcode'], '">', $MyRow['typetabcode'], ' - ', $MyRow['typetabdescription'], '</option>';
-		}
-	} //end while loop
-	echo '</select>
-		</field>';
-	echo '</fieldset>'; // close main table
-	echo '<div class="centre">
-			<input type="submit" name="Process" value="', __('Accept'), '" />
-			<input type="reset" name="Cancel" value="', __('Cancel'), '" />
+		echo '<option value="', $MyRow['typetabcode'], '">', $MyRow['typetabcode'], ' - ', $MyRow['typetabdescription'], '</option>';
+	}
+	echo '		</select>
+					</div>
+					<div style="margin-top:30px;">
+						<button type="submit" name="Process" class="btn-architect btn-primary" style="width:100%;">', __('Continue to Expenses'), '</button>
+					</div>
+				</form>
+			</div>
 		</div>';
-	echo '</form>';
-}
-//end of ifs and buts!
-if (isset($_POST['process']) or isset($SelectedTab)) {
-	echo '<div class="centre">
-			<a href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '">', __('Expense Codes for Type of Tab '), ' ', $SelectedTab, '</a>
-		</div>';
-	echo '<form method="post" action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '">';
-	echo '<input type="hidden" name="FormID" value="', $_SESSION['FormID'], '" />';
-	echo '<input type="hidden" name="SelectedTab" value="', $SelectedTab, '" />';
-	$SQL = "SELECT pctabexpenses.codeexpense,
-					pcexpenses.description
-				FROM pctabexpenses
-				INNER JOIN pcexpenses
-					ON pctabexpenses.codeexpense=pcexpenses.codeexpense
-				WHERE pctabexpenses.typetabcode='" . $SelectedTab . "'
-				ORDER BY pctabexpenses.codeexpense ASC";
+} else {
+	// Second step: Main mapping interface
+	echo '<div class="db-grid">
+			<div class="db-card">
+				<div class="db-card-header">
+					<div class="db-card-title">', __('Add Expense to Tab'), '</div>
+				</div>
+				<div class="db-card-body">
+					<form method="post" action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '">
+						<input type="hidden" name="FormID" value="', $_SESSION['FormID'], '" />
+						<input type="hidden" name="SelectedTab" value="', $SelectedTab, '" />
+						
+						<div class="form-group">
+							<label class="form-label">', __('Current Tab Type'), '</label>
+							<div class="badge-code">', $SelectedTab, '</div>
+						</div>
+
+						<div class="form-group">
+							<label class="form-label">', __('Select Expense Code'), '</label>
+							<select required="required" name="SelectedExpense" class="form-control">';
+	$SQL = "SELECT codeexpense, description FROM pcexpenses ORDER BY codeexpense";
 	$Result = DB_query($SQL);
-	echo '<table class="selection">
-			<tr>
-				<th colspan="3">
-					<h3>', __('Expense Codes for Type of Tab '), ' ', $SelectedTab, '</h3>
-				</th>
-			</tr>
-			<tr>
-				<th>', __('Expense Code'), '</th>
-				<th>', __('Description'), '</th>
-			</tr>';
+	echo '<option value="">', __('Not Yet Selected'), '</option>';
+	while ($MyRow = DB_fetch_array($Result)) {
+		echo '<option value="', $MyRow['codeexpense'], '">', $MyRow['codeexpense'], ' - ', $MyRow['description'], '</option>';
+	}
+	echo '			</select>
+						</div>
+
+						<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:30px;">
+							<button type="submit" name="submit" class="btn-architect btn-primary">', __('Add Expense'), '</button>
+							<button type="submit" name="Cancel" class="btn-architect btn-outline">', __('Back'), '</button>
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<div class="db-card">
+				<div class="db-card-header">
+					<div class="db-card-title">', __('Expenses mapped to'), ' ', $SelectedTab, '</div>
+				</div>
+				<div class="db-card-body">
+					<div class="table-container">
+						<table class="premium-table">
+							<thead>
+								<tr>
+									<th>', __('Expense Code'), '</th>
+									<th>', __('Description'), '</th>
+									<th style="width:100px;">', __('Actions'), '</th>
+								</tr>
+							</thead>
+							<tbody>';
+
+	$SQL = "SELECT pctabexpenses.codeexpense, pcexpenses.description FROM pctabexpenses INNER JOIN pcexpenses ON pctabexpenses.codeexpense=pcexpenses.codeexpense WHERE pctabexpenses.typetabcode='" . $SelectedTab . "' ORDER BY pctabexpenses.codeexpense ASC";
+	$Result = DB_query($SQL);
 
 	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<tr class="striped_row">
-			<td>', $MyRow['codeexpense'], '</td>
-			<td>', $MyRow['description'], '</td>
-			<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '?SelectedCode=', $MyRow['codeexpense'], '&amp;delete=yes&amp;SelectedTab=', $SelectedTab, '" onclick="return confirm(\'' . __('Are you sure you wish to delete this expense code?') . '\', \'Confirm Delete\', this);">' . __('Delete') . '</a></td>
-		</tr>';
+		echo '<tr>
+				<td><span class="badge-code">', $MyRow['codeexpense'], '</span></td>
+				<td style="font-weight:500;">', $MyRow['description'], '</td>
+				<td>
+					<a class="action-link action-delete" href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '?SelectedCode=', $MyRow['codeexpense'], '&amp;delete=yes&amp;SelectedTab=', $SelectedTab, '" onclick="return confirm(\'' . __('Are you sure you wish to delete this expense code?') . '\');">' . __('Delete') . '</a>
+				</td>
+			</tr>';
 	}
-	//END WHILE LIST LOOP
-	echo '</table>';
-	if (!isset($_GET['delete'])) {
-		echo '<fieldset>'; //Main table
-		echo '<field>
-				<label for="SelectedExpense">', __('Select Expense Code'), ':</td>
-				<select required="required" name="SelectedExpense">';
-		$SQL = "SELECT codeexpense,
-						description
-				FROM pcexpenses";
-		$Result = DB_query($SQL);
-		if (!isset($_POST['SelectedExpense'])) {
-			echo '<option selected="selected" value="">', __('Not Yet Selected'), '</option>';
-		}
-		while ($MyRow = DB_fetch_array($Result)) {
-			if (isset($_POST['SelectedExpense']) and $MyRow['codeexpense'] == $_POST['SelectedExpense']) {
-				echo '<option selected="selected" value="', $MyRow['codeexpense'], '">', $MyRow['codeexpense'], ' - ', $MyRow['description'], '</option>';
-			} else {
-				echo '<option value="', $MyRow['codeexpense'], '">', $MyRow['codeexpense'], ' - ', $MyRow['description'], '</option>';
-			}
-		} //end while loop
-		echo '</select>
-			</field>';
-		echo '</fieldset>'; // close main table
-		echo '<div class="centre">
-				<input type="submit" name="submit" value="', __('Accept'), '" />
-				<input type="reset" name="Cancel" value="', __('Cancel'), '" />
-			</div>';
-		echo '</form>';
-	} // end if user wish to delete
+
+	echo '				</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>'; // End db-grid
 }
+
+echo '</div>'; // End db-page
 include(__DIR__ . '/includes/footer.php');

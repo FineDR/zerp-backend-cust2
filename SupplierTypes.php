@@ -2,9 +2,142 @@
 
 require(__DIR__ . '/includes/session.php');
 
-$Title = __('Supplier Types') . ' / ' . __('Maintenance');
+$Title = __('Supplier Types Maintenance');
 $ViewTopic = 'Setup';
 $BookMark = '';
+
+// Inject premium Architect Workspace styles
+$ExtraHeadContent = '
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+	.ScriptTitle { display: none !important; }
+	.MainBody { padding: 0 !important; gap: 0 !important; background: transparent !important; }
+	.db-page { padding: 20px 15px; background: var(--bg-main); min-height: 100vh; font-family: "Inter", sans-serif; box-sizing: border-box; }
+	
+	.premium-header { 
+        margin: -20px -15px 30px -15px;
+        padding: 20px; 
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid #e5e7eb;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .premium-header-inner {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center;
+        max-width: 100%;
+        margin: 0 auto;
+        gap: 20px;
+    }
+	
+    .breadcrumb-wrap { 
+        font-size: 0.65rem; font-weight: 850; color: #6b7280; margin-bottom: 4px; 
+        display: flex; align-items: center; gap: 8px; text-transform: uppercase; 
+        letter-spacing: 1px; opacity: 0.6;
+    }
+    .breadcrumb-wrap a { color: inherit; text-decoration: none; }
+    .breadcrumb-wrap a:hover { text-decoration: underline; opacity: 1; }
+
+	.db-card { 
+		background: #ffffff; 
+		border-radius: 16px; 
+		border: 1px solid #e5e7eb; 
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+        margin-bottom: 30px;
+        width: 100%;
+        box-sizing: border-box;
+	}
+	.db-card-header { 
+		background: #f9fafb; 
+		border-bottom: 1px solid #f3f4f6; 
+		padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+	}
+	.db-card-title {
+		font-size: 0.8rem;
+		font-weight: 850;
+		color: #064e3b;
+		margin: 0;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		text-transform: uppercase;
+		letter-spacing: 0.8px;
+	}
+    .db-card-body { padding: 25px; }
+	
+    field {
+        display: block;
+        margin-bottom: 18px;
+    }
+    field label {
+        font-size: 0.62rem; 
+        text-transform: uppercase; 
+        font-weight: 900; 
+        letter-spacing: 0.8px; 
+        color: #064e3b; 
+        display: block; 
+        margin-bottom: 6px;
+        opacity: 0.7;
+    }
+    field input, field select {
+        width: 100%; border-radius: 10px; height: 44px; font-weight: 600; border: 1px solid #d1fae5;
+        padding: 0 14px; box-sizing: border-box; background: #ffffff; font-family: inherit; font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+    field input:focus, field select:focus { 
+        border-color: #059669; outline: none; box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1); 
+    }
+    .fieldhelp { font-size: 0.75rem; color: #64748b; margin-top: 6px; display: block; font-weight: 500; }
+
+	.architect-btn {
+		display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+		padding: 12px 24px; border-radius: 10px;
+		background: #059669; color: #ffffff; border: none;
+		font-weight: 700; font-size: 0.85rem; text-decoration: none;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+		cursor: pointer;
+        font-family: inherit;
+        white-space: nowrap;
+	}
+	.architect-btn-outline { background: transparent; color: #059669; border: 1.5px solid #d1fae5; box-shadow: none; }
+	.architect-btn-outline:hover { background: #f0fdf4; border-color: #059669; }
+	.architect-btn:hover { background: #065f46; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(5, 150, 105, 0.3); }
+	
+    .db-bottom-layout { 
+        display: grid; 
+        grid-template-columns: 1fr 340px; 
+        gap: 30px; 
+        align-items: start; 
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table.modern-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    table.modern-table th, table.modern-table td { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; color: #334155; vertical-align: middle; }
+    table.modern-table th { text-align: left; background: #f8fafc; font-size: 0.65rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; color: #64748b; border-bottom: 2px solid #edf2f7; }
+    
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; }
+    .badge-emerald { background: #d1fae5; color: #065f46; }
+
+    @media (max-width: 1200px) {
+        .db-bottom-layout { grid-template-columns: 1fr; gap: 20px; }
+        .premium-header-inner { flex-direction: column; align-items: stretch; text-align: center; }
+        .architect-btn { width: 100%; }
+        .db-bottom-layout aside { order: 2; }
+        .db-bottom-layout main { order: 1; }
+    }
+</style>';
+
 include(__DIR__ . '/includes/header.php');
 
 if (isset($_POST['SelectedType'])){
@@ -15,218 +148,141 @@ if (isset($_POST['SelectedType'])){
 
 $Errors = array();
 
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/maintenance.png" title="' . __('Supplier Types')
-	. '" alt="" />' . __('Supplier Type Setup') . '</p>
-	<div class="page_help_text">' . __('Add/edit/delete Supplier Types') . '</div>';
-
 if (isset($_POST['submit'])) {
-
-	//initialise no input errors assumed initially before we test
 	$InputError = 0;
-
-	/* actions to take once the user has clicked the submit button
-	ie the page has called itself with some user input */
-
-	//first off validate inputs sensible
-	$i=1;
-	if (mb_strlen($_POST['TypeName']) >100) {
+	if (mb_strlen($_POST['TypeName']) > 100 || mb_strlen(trim($_POST['TypeName'])) == 0) {
 		$InputError = 1;
-		prnMsg(__('The supplier type name description must be 100 characters or less long'),'error');
-		$Errors[$i] = 'SupplierType';
-		$i++;
+		prnMsg(__('The supplier type name must be between 1 and 100 characters'),'error');
 	}
 
-	if (mb_strlen(trim($_POST['TypeName']))==0) {
-		$InputError = 1;
-		prnMsg(__('The supplier type name description must contain at least one character'),'error');
-		$Errors[$i] = 'SupplierType';
-		$i++;
-	}
-
-	$CheckSQL = "SELECT count(*)
-		     FROM suppliertype
-		     WHERE typename = '" . $_POST['TypeName'] . "'";
-	$CheckResult = DB_query($CheckSQL);
-	$CheckRow = DB_fetch_row($CheckResult);
-	if ($CheckRow[0]>0 and !isset($_POST['Edit'])) {
+	$CheckSQL = "SELECT count(*) FROM suppliertype WHERE typename = '" . $_POST['TypeName'] . "'";
+	if (DB_fetch_row(DB_query($CheckSQL))[0] > 0 and !isset($_POST['Edit'])) {
 		$InputError = 1;
 		prnMsg(__('You already have a supplier type called').' '.$_POST['TypeName'],'error');
-		$Errors[$i] = 'SupplierName';
-		$i++;
 	}
 
-	if (isset($_POST['Edit']) AND $InputError !=1) {
-
-		$SQL = "UPDATE suppliertype
-			SET typename = '" . $_POST['TypeName'] . "'
-			WHERE typeid = '" . $SelectedType . "'";
-
-		prnMsg(__('The supplier type') . ' ' . $SelectedType . ' ' .  __('has been updated'),'success');
-	} elseif ($InputError !=1){
-		// Add new record on submit
-
-		$SQL = "INSERT INTO suppliertype
-					(typename)
-				VALUES ('" . $_POST['TypeName'] . "')";
-
-
+	if (isset($_POST['Edit']) AND $InputError != 1) {
+		$SQL = "UPDATE suppliertype SET typename = '" . $_POST['TypeName'] . "' WHERE typeid = '" . $SelectedType . "'";
+		$Msg = __('The supplier type has been updated');
+	} elseif ($InputError != 1){
+		$SQL = "INSERT INTO suppliertype (typename) VALUES ('" . $_POST['TypeName'] . "')";
 		$Msg = __('Supplier type') . ' ' . $_POST['TypeName'] .  ' ' . __('has been created');
-		$CheckSQL = "SELECT count(typeid) FROM suppliertype";
-		$Result = DB_query($CheckSQL);
-		$Row = DB_fetch_row($Result);
 	}
 
-	if ( $InputError !=1) {
-	//run the SQL from either of the above possibilities
-		$Result = DB_query($SQL);
-
-	// Fetch the default supplier type
-		$SQL = "SELECT confvalue
-					FROM config
-					WHERE confname='DefaultSupplierType'";
-		$Result = DB_query($SQL);
-		$SupplierTypeRow = DB_fetch_row($Result);
-		$DefaultSupplierType = $SupplierTypeRow[0];
-
-	// Does it exist
-		$CheckSQL = "SELECT count(*)
-			     FROM suppliertype
-			     WHERE typeid = '" . $DefaultSupplierType . "'";
-		$CheckResult = DB_query($CheckSQL);
-		$CheckRow = DB_fetch_row($CheckResult);
-
-	// If it doesnt then update config with newly created one.
-		if ($CheckRow[0] == 0) {
-			$SQL = "UPDATE config
-					SET confvalue='" . $_POST['TypeID'] . "'
-					WHERE confname='DefaultSupplierType'";
-			$Result = DB_query($SQL);
-			$_SESSION['DefaultSupplierType'] = $_POST['TypeID'];
+	if ($InputError != 1) {
+		DB_query($SQL);
+		if (!isset($_POST['Edit'])) {
+			$newID = DB_Last_Insert_ID('suppliertype', 'typeid');
+			$CheckConf = DB_query("SELECT count(*) FROM suppliertype WHERE typeid = (SELECT confvalue FROM config WHERE confname='DefaultSupplierType')");
+			if (DB_fetch_row($CheckConf)[0] == 0) {
+				DB_query("UPDATE config SET confvalue='" . $newID . "' WHERE confname='DefaultSupplierType'");
+			}
 		}
-
-		unset($SelectedType);
-		unset($_POST['TypeID']);
-		unset($_POST['TypeName']);
+		prnMsg($Msg,'success');
+		unset($SelectedType); unset($_POST['TypeName']); unset($_POST['Edit']);
 	}
-
-} elseif ( isset($_GET['delete']) ) {
-
+} elseif (isset($_GET['delete'])) {
 	$SQL = "SELECT COUNT(*) FROM suppliers WHERE supptype='" . $SelectedType . "'";
-
-	$ErrMsg = __('The number of suppliers using this Type record could not be retrieved because');
-	$Result = DB_query($SQL, $ErrMsg);
-	$MyRow = DB_fetch_row($Result);
-	if ($MyRow[0]>0) {
-		prnMsg(__('Cannot delete this type because suppliers are currently set up to use this type') . '<br />' .
-			__('There are') . ' ' . $MyRow[0] . ' ' . __('suppliers with this type code'));
+	if (DB_fetch_row(DB_query($SQL))[0] > 0) {
+		prnMsg(__('Cannot delete this type because suppliers are currently set up to use it'),'warn');
 	} else {
-
-		$SQL="DELETE FROM suppliertype WHERE typeid='" . $SelectedType . "'";
-		$ErrMsg = __('The Type record could not be deleted because');
-		$Result = DB_query($SQL, $ErrMsg);
-		prnMsg(__('Supplier type') . $SelectedType  . ' ' . __('has been deleted') ,'success');
-
+		DB_query("DELETE FROM suppliertype WHERE typeid='" . $SelectedType . "'");
+		prnMsg(__('Supplier type deleted'),'success');
 		unset ($SelectedType);
-		unset($_GET['delete']);
-
 	}
 }
 
-if (!isset($SelectedType)){
+echo '<div class="db-page">
+		<div class="premium-header">
+			<div class="premium-header-inner">
+				<div style="flex: 1;">
+					<div class="breadcrumb-wrap">
+						<a href="index.php"><i class="fas fa-home"></i></a> 
+                        <i class="fas fa-chevron-right" style="font-size: 0.4rem;"></i>
+                        <a href="index.php?Application=system">' . __('Setup') . '</a>
+                        <i class="fas fa-chevron-right" style="font-size: 0.4rem;"></i> 
+                        ' . __('Supplier Types') . '
+					</div>
+					<h1 style="font-size: 1.6rem; font-weight: 950; letter-spacing: -0.5px; color: #064e3b; margin: 0; line-height: 1.1;">' . $Title . '</h1>
+				</div>
+                <div class="header-actions">
+                     <button type="submit" form="supp-form" name="submit" class="architect-btn">
+                        <i class="fas fa-save"></i> ' . (isset($SelectedType) ? __('Update Type') : __('Create Type')) . '
+                    </button>
+                </div>
+			</div>
+		</div>
 
-/* It could still be the second time the page has been run and a record has been selected for modification - SelectedType will
- *  exist because it was sent with the new call. If its the first time the page has been displayed with no parameters then
- * none of the above are true and the list of sales types will be displayed with links to delete or edit each. These will call
- * the same page again and allow update/input or deletion of the records
- */
+        <div class="db-bottom-layout">
+            <main class="db-main" style="min-width: 0;">';
+                
+                $SQL = "SELECT * FROM suppliertype ORDER BY typeid";
+                $Result = DB_query($SQL);
 
-	$SQL = "SELECT typeid, typename FROM suppliertype";
-	$Result = DB_query($SQL);
+echo '          <div class="db-card">
+                    <div class="db-card-header">
+                        <h3 class="db-card-title"><i class="fas fa-truck"></i> ' . __('Supplier Classifications') . '</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>' . __('ID') . '</th>
+                                    <th>' . __('Type Name') . '</th>
+                                    <th style="width: 100px; text-align: right;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>';
+                            while ($MyRow = DB_fetch_array($Result)) {
+                                echo '<tr>
+                                        <td><span class="badge badge-emerald">#', $MyRow['typeid'], '</span></td>
+                                        <td style="font-weight: 700; color: #064e3b;">', $MyRow['typename'], '</td>
+                                        <td style="text-align: right; white-space: nowrap;">
+                                            <a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'), '?SelectedType=', $MyRow['typeid'], '" style="color:#059669; margin-right:12px;"><i class="fas fa-edit"></i></a>
+                                            <a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'), '?SelectedType=', $MyRow['typeid'], '&amp;delete=yes" style="color:#dc2626;" onclick="return confirm(\'' . __('Confirm delete?') . '\');"><i class="fas fa-trash-alt"></i></a>
+                                        </td>
+                                    </tr>';
+                            }
+echo '                      </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
 
-	echo '<table class="selection">
-			<thead>
-				<tr>
-					<th class="SortedColumn" >' . __('Type ID') . '</th>
-					<th class="SortedColumn" >' . __('Type Name') . '</th>
-					<th></th>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody>';
+            <aside class="db-sidebar" style="min-width: 0;">';
+                if (isset($SelectedType)) {
+                    $Res = DB_query("SELECT * FROM suppliertype WHERE typeid='" . $SelectedType . "'");
+                    $MyRow = DB_fetch_array($Res);
+                    $_POST['TypeName'] = $MyRow['typename'];
+                }
 
-while ($MyRow = DB_fetch_row($Result)) {
+echo '          <form id="supp-form" method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">
+                    <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+                    if (isset($SelectedType)) { 
+                        echo '<input type="hidden" name="Edit" value="' . $SelectedType . '" />';
+                        echo '<input type="hidden" name="SelectedType" value="' . $SelectedType . '" />';
+                    }
 
-	echo '<tr class="striped_row">
-			<td>', $MyRow[0], '</td>
-			<td>', $MyRow[1], '</td>
-			<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedType=', $MyRow[0], '">' . __('Edit') . '</a></td>
-			<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedType=', $MyRow[0], '&amp;delete=yes" onclick="return confirm(\'' .
-				__('Are you sure you wish to delete this Supplier Type?') . '\');">' . __('Delete') . '</a></td>
-		</tr>';
-	}
-	//END WHILE LIST LOOP
-	echo '</tbody>
-		</table>';
-}
+echo '              <div class="db-card">
+                        <div class="db-card-header">
+                            <h3 class="db-card-title"><i class="fas fa-plus-circle"></i> ' . (isset($SelectedType) ? __('Edit Type') : __('New Type')) . '</h3>
+                        </div>
+                        <div class="db-card-body">
+                            <field>
+                                <label>' . __('Classification Name') . '</label>
+                                <input type="text" name="TypeName" required maxlength="100" autofocus value="' . ($_POST['TypeName'] ?? '') . '" placeholder="' . __('e.g. Local Supplier') . '" />
+                                <span class="fieldhelp">' . __('Enter a descriptive name for this type') . '</span>
+                            </field>
 
-//end of ifs and buts!
-if (isset($SelectedType)) {
-
-	echo '<div class="centre">
-			<p><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">' . __('Show All Types Defined') . '</a></p>
-		</div>';
-}
-if (! isset($_GET['delete'])) {
-
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	echo '<fieldset>'; //Main table
-
-	// The user wish to EDIT an existing type
-	if ( isset($SelectedType) AND $SelectedType!='' ) {
-
-		$SQL = "SELECT typeid,
-			       typename
-		        FROM suppliertype
-		        WHERE typeid='" . $SelectedType . "'";
-
-		$Result = DB_query($SQL);
-		$MyRow = DB_fetch_array($Result);
-
-		$_POST['TypeID'] = $MyRow['typeid'];
-		$_POST['TypeName']  = $MyRow['typename'];
-
-		echo '<input type="hidden" name="Edit" value="' . $SelectedType . '" />';
-		echo '<input type="hidden" name="SelectedType" value="' . $SelectedType . '" />';
-		echo '<input type="hidden" name="TypeID" value="' . $_POST['TypeID'] . '" />';
-
-		// We dont allow the user to change an existing type code
-
-		echo '<legend>', __('Edit Supplier Type'), '</legend>
-				<field>
-					<label for="TypeID">' .__('Type ID') . ': </label>
-					<fieldtext>' . $_POST['TypeID'] . '</fieldtext>
-				</field>';
-	} else {
-		echo '<legend>', __('Create Supplier Type'), '</legend>';
-	}
-	if (!isset($_POST['TypeName'])) {
-		$_POST['TypeName']='';
-	}
-	echo '<field>
-			<label for="TypeName">' . __('Type Name') . ':</label>
-			<input type="text"  required="true" pattern="(?!^\s+$)[^<>+-]{1,100}" title="" name="TypeName" placeholder="'.__('less than 100 characters').'" value="' . $_POST['TypeName'] . '" />
-			<fieldhelp>'.__('The input should not be over 100 characters and contains illegal characters') . ' ' . '" \' - &amp; or a space'.'</fieldhelp>
-		</field>';
-
-	echo '</fieldset>';
-
-	echo '<div class="centre">
-			<input type="submit" name="submit" value="' . __('Accept') . '" />
-		</div>';
-
-	echo '</form>';
-
-} // end if user wish to delete
+                            <button type="submit" name="submit" class="architect-btn" style="width: 100%; margin-top:10px;">
+                                <i class="fas fa-check-circle"></i> ' . (isset($SelectedType) ? __('Update Type') : __('Save Type')) . '
+                            </button>
+                            ' . (isset($SelectedType) ? '<div style="text-align:center; margin-top:15px;"><a href="SupplierTypes.php" style="font-size:0.8rem; color:#64748b; font-weight:700; text-decoration:none;">' . __('Cancel Edit') . '</a></div>' : '') . '
+                        </div>
+                    </div>
+                </form>
+            </aside>
+        </div>
+    </div>';
 
 include(__DIR__ . '/includes/footer.php');

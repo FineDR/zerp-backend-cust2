@@ -6,6 +6,59 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 
+// --- Architect Workspace Styling ---
+$ExtraHeadContent = '
+<style>
+    :root {
+        --primary: #059669;
+        --primary-hover: #047857;
+        --rose: #e11d48;
+        --slate: #64748b;
+        --bg-main: #f8fafc;
+        --card-bg: #ffffff;
+        --border-color: #e2e8f0;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+    }
+    body { background-color: var(--bg-main) !important; color: var(--text-main); font-family: "Inter", sans-serif; -webkit-font-smoothing: antialiased; }
+    .db-page { padding: 30px; max-width: 1600px; margin: 0 auto; }
+    
+    /* Header */
+    .premium-header {
+        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color);
+        margin: -30px -30px 30px -30px; padding: 20px 30px; position: sticky; top: 0; z-index: 1000;
+    }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .breadcrumb { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .page-title { font-size: 1.75rem; font-weight: 900; color: #0f172a; letter-spacing: -0.04em; }
+
+    /* Cards */
+    .db-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 25px; }
+    .db-card-header { padding: 18px 24px; border-bottom: 1px solid var(--border-color); background: #fcfcfd; display: flex; align-items: center; justify-content: space-between; }
+    .db-card-title { font-size: 0.95rem; font-weight: 800; color: #334155; }
+    .db-card-body { padding: 24px; }
+    
+    /* Forms */
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 8px; }
+    .form-control { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 1rem; transition: all 0.2s; }
+    .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1); outline: none; }
+
+    .btn-architect { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; border: none; text-decoration: none; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+    /* Responsive Scaling - Forced Overrides */
+    @media (max-width: 767px) {
+        .db-page { padding: 15px !important; margin-left: 0 !important; width: 100% !important; overflow-x: hidden !important; }
+        .premium-header { margin: -15px -15px 20px -15px !important; padding: 15px !important; width: calc(100% + 30px) !important; border-radius: 0 !important; }
+        .page-title { font-size: 1.4rem !important; }
+        .db-card-body { padding: 15px !important; }
+        .responsive-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+        .btn-architect { width: 100% !important; margin-bottom: 8px !important; }
+    }
+</style>';
+
 if (isset($_POST['FromDate'])){$_POST['FromDate'] = ConvertSQLDate($_POST['FromDate']);}
 if (isset($_POST['ToDate'])){$_POST['ToDate'] = ConvertSQLDate($_POST['ToDate']);}
 
@@ -258,60 +311,66 @@ if (isset($_POST['submit'])) {
 	$BookMark = 'top';// Anchor's id in the manual's html document.
 	include(__DIR__ . '/includes/header.php');
 
-	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+	echo '<div class="db-page">
+		<div class="premium-header">
+			<div class="header-inner">
+				<div>
+					<div class="breadcrumb">' . __('Petty Cash') . ' / ' . __('Exports') . '</div>
+					<div class="page-title">' . $Title . '</div>
+				</div>
+			</div>
+		</div>
 
-	echo '<p class="page_title_text">
-			<img src="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/images/magnifier.png" title="' . __('Excel file for Petty Cash Tab Expenses List') . '" alt="" />' . ' ' . __('Excel file for Petty Cash Tab Expenses List') . '
-		</p>';
+		<div style="max-width: 600px; margin: 40px auto;">
+			<div class="db-card">
+				<div class="db-card-header">
+					<div class="db-card-title">' . __('Excel Export Settings') . '</div>
+				</div>
+				<div class="db-card-body">
+					<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
+						<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+						
+						<div class="form-group">
+							<label class="form-label">' . __('Select Petty Cash Tab') . '</label>
+							<select name="Tabs" class="form-control">';
+								$SQL = "SELECT tabcode FROM pctabs ORDER BY tabcode";
+								$CatResult = DB_query($SQL);
+								while ($MyRow = DB_fetch_array($CatResult)) {
+									echo '<option value="' . $MyRow['tabcode'] . '">' . $MyRow['tabcode'] . '</option>';
+								}
+							echo '</select>
+						</div>
 
-	# Sets default date range for current month
-	if (!isset($_POST['FromDate'])){
-		$_POST['FromDate'] = date($_SESSION['DefaultDateFormat'], mktime(0,0,0,date('m'),1,date('Y')));
-	}
-	if (!isset($_POST['ToDate'])){
-		$_POST['ToDate'] = date($_SESSION['DefaultDateFormat']);
-	}
+						<div class="responsive-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+							<div class="form-group">
+								<label class="form-label">' . __('From Date') . '</label>
+								<input type="date" name="FromDate" class="form-control" value="' . FormatDateForSQL($_POST['FromDate']) . '" />
+							</div>
+							<div class="form-group">
+								<label class="form-label">' . __('To Date') . '</label>
+								<input type="date" name="ToDate" class="form-control" value="' . FormatDateForSQL($_POST['ToDate']) . '" />
+							</div>
+						</div>
 
-	echo '<fieldset>
-			<legend>', __('Select Criteria'), '</legend>';
+						<div class="form-group">
+							<label class="form-label">' . __('Output Format') . '</label>
+							<select name="Format" class="form-control">
+								<option value="xlsx">' . __('Excel Format (.xlsx)') . '</option>
+								<option value="ods" selected="selected">' . __('Open Document Format (.ods)') . '</option>
+							</select>
+						</div>
 
-	echo '<field>
-			<label for="Tabs">' . __('For Petty Cash Tab') . ':</label>
-			<select name="Tabs">';
-
-	$SQL = "SELECT tabcode
-			FROM pctabs
-			ORDER BY tabcode";
-	$CatResult = DB_query($SQL);
-
-	while ($MyRow = DB_fetch_array($CatResult)){
-		echo '<option value="' . $MyRow['tabcode'] . '">' . $MyRow['tabcode'] . '</option>';
-	}
-	echo '</select>
-		</field>';
-
-	echo '<field>
-			<label>' . __('Date Range') . ':</label>
-			<input type="date" name="FromDate" size="11" maxlength="10" value="' . FormatDateForSQL($_POST['FromDate']) . '" />
-				' . __('To') . ':<input type="date" name="ToDate" size="11" maxlength="10" value="' . FormatDateForSQL($_POST['ToDate']) . '" />
-		</field>';
-
-	echo '<field>
-			<label for="Format">', __('Output Format'), '</label>
-			<select name="Format">
-				<option value="xlsx">', __('Excel Format (.xlsx)'), '</option>
-				<option value="ods" selected="selected">', __('Open Document Format (.ods)'), '</option>
-			</select>
-		</field>';
-
-	echo '</fieldset>';
-
-	echo '<div class="centre">
-			<input type="submit" name="submit" value="' . __('Create Petty Cash Tab Expenses List Excel File') . '" />
-		</div>';
-
-	echo '</form>';
+						<div style="margin-top: 30px;">
+							<button type="submit" name="submit" class="btn-architect btn-primary">
+								<svg style="width:20px; height:20px; margin-right:8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+								' . __('Generate Export File') . '
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>';
 	include(__DIR__ . '/includes/footer.php');
 }
 
