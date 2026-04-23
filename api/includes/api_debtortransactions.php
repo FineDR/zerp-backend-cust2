@@ -531,7 +531,6 @@ function InsertDebtorReceipt($Receipt, $User, $Password) {
 	$SQL = "UPDATE debtorsmaster SET lastpaiddate = '" . $Receipt['trandate'] . "',
 					lastpaid='" . $Receipt['amountfx'] ."'
 				WHERE debtorsmaster.debtorno='" . $Receipt['debtorno'] . "'";
-	return $SQL;
 
 	$Result = api_DB_query($SQL,'', '', true);
 
