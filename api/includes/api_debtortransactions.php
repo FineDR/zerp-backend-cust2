@@ -446,7 +446,7 @@ function InsertDebtorReceipt($Receipt, $User, $Password) {
 
 	$Result = api_DB_query($SQL,'', '', true);
 
-return 'Mlekwa Umeona Bank imepita? '.$SQL;
+return $SQL;
 
 	if ($CompanyRecord['gllink_debtors']==1) {
 	/* Now Credit Debtors account with receipts */
