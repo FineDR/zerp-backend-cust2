@@ -341,7 +341,7 @@ function GetDebtorsGLCode() {
 }
 
 function InsertDebtorReceipt($Receipt, $User, $Password) {
-	 return 'Mlekwa Umeona?';
+return 'Mlekwa Umeona?';
 
 //return $User.' '.$Password;
 	/*
