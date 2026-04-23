@@ -10,10 +10,28 @@ include(__DIR__ . '/includes/header.php');
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/ImageFunctions.php');
 
-echo '<a href="' . $RootPath . '/SelectAsset.php">' . __('Back to Select') . '</a><br />' . "\n";
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div class="db-header-left">
+				<div class="db-page-title">
+					<i class="fas fa-cube"></i> ' . $Title . '
+				</div>
+				<div class="db-page-subtitle">' . (isset($AssetID) && $AssetID != '' ? __('Modify and manage details for asset') . ': ' . $AssetID : __('Create a new record in the fixed asset register')) . '</div>
+			</div>
+			<div class="db-header-actions">
+				<a href="' . $RootPath . '/SelectAsset.php" class="db-btn db-btn-secondary">
+					<i class="fas fa-search"></i> ' . __('Search Assets') . '
+				</a>
+				<button type="button" onclick="document.getElementById(\'AssetForm\').elements[\'submit\'].click();" class="db-btn db-btn-primary">
+					<i class="fas fa-save"></i> ' . (isset($AssetID) && $AssetID != '' ? __('Update Asset') : __('Save Asset')) . '
+				</button>
+			</div>
+		</div>';
 
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/money_add.png" title="' .
-		__('Fixed Asset Items') . '" alt="" />' . ' ' . $Title . '</p>';
+echo '<form id="AssetForm" enctype="multipart/form-data" method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
+echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+echo '<div class="db-centered-container" style="max-width: 900px; margin: 0 auto; padding: 20px;">
+		<div class="db-main-content">';
 
 /* If this form is called with the AssetID then it is assumed that the asset is to be modified  */
 if (isset($_GET['AssetID'])){
@@ -385,17 +403,9 @@ if (isset($_POST['submit'])) {
 } /* end if delete asset */
 DB_Txn_Commit();
 
-echo '<form id="AssetForm" enctype="multipart/form-data" method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-echo '<fieldset>';
-
 if (!isset($AssetID) OR $AssetID=='') {
-
-/*If the page was called without $AssetID passed to page then assume a new asset is to be entered other wise the form showing the fields with the existing entries against the asset will show for editing with a hidden AssetID field. New is set to flag that the page may have called itself and still be entering a new asset, in which case the page needs to know not to go looking up details for an existing asset*/
-
 	$New = 1;
-	echo '<tr><td><input type="hidden" name="New" value="" /></td></tr>';
-
+	echo '<input type="hidden" name="New" value="" />';
 	$_POST['LongDescription'] = '';
 	$_POST['Description'] = '';
 	$_POST['AssetCategoryID']  = '';
@@ -404,11 +414,7 @@ if (!isset($AssetID) OR $AssetID=='') {
 	$_POST['DepnType']  = 0;
 	$_POST['BarCode']  = '';
 	$_POST['DepnRate']  = 0;
-
-	echo '<legend>', __('Create New Asset Details'), '</legend>';
-
-} elseif ($InputError!=1) { // Must be modifying an existing item and no changes made yet - need to lookup the details
-
+} elseif ($InputError!=1) {
 	$SQL = "SELECT assetid,
 				description,
 				longdescription,
@@ -437,93 +443,63 @@ if (!isset($AssetID) OR $AssetID=='') {
 	$_POST['DepnType']  = $AssetRow['depntype'];
 	$_POST['BarCode']  = $AssetRow['barcode'];
 	$_POST['DepnRate']  = locale_number_format($AssetRow['depnrate'],2);
+}
 
-	echo '<legend>', __('Edit Asset Details'), '</legend>';
+// Start Main Content Cards
+echo '<div class="db-card">
+		<div class="db-card-header">
+			<div class="db-card-title"><i class="fas fa-file-alt"></i> ' . __('Asset Information') . '</div>
+		</div>
+		<div class="db-card-body">';
 
-	echo '<field>
-			<label for="AssetID">' . __('Asset Code') . ':</label>
-			<fieldtext>' . $AssetID . '</fieldtext>
-		</field>';
-	echo '<field><td><input type="hidden" name="AssetID" value="'.$AssetID.'"/></td></field>';
-
-} else { // some changes were made to the data so don't re-set form variables to DB ie the code above
-	echo '<field>
-			<label for="AssetID">' . __('Asset Code') . ':</label>
-			<fieldtext>' . $AssetID . '</fieldtext>
-		</field>';
-	echo '<field><td><input type="hidden" name="AssetID" value="' . $AssetID . '"/></td></field>';
+if (isset($AssetID) && $AssetID != '') {
+	echo '<input type="hidden" name="AssetID" value="' . $AssetID . '"/>';
 }
 
 if (isset($AssetRow['disposaldate']) AND $AssetRow['disposaldate'] !='1000-01-01'){
-	echo '<field>
-			<label for="disposaldate">' . __('Asset Already disposed on') . ':</label>
-			<fieldtext>' . ConvertSQLDate($AssetRow['disposaldate']) . '</fieldtext>
-		</field>';
+	echo '<div class="db-alert db-alert-warning" style="margin-bottom: 20px;">
+			<i class="fas fa-exclamation-triangle db-alert-icon"></i>
+			<div>
+				<strong>' . __('Asset Disposed') . '</strong>: ' . __('This asset was already disposed on') . ' ' . ConvertSQLDate($AssetRow['disposaldate']) . '
+			</div>
+		  </div>';
 }
 
 $Description = $_POST['Description'] ?? '';
-
-echo '<field>
-		<label for="Description">' . __('Asset Description') . ' (' . __('short') . '):</label>
-		<input ' . (in_array('Description',$Errors) ?  'class="inputerror"' : '' ) .' type="text" required="required" title="" name="Description" size="52" maxlength="50" value="' . $Description . '" />
-		<fieldhelp>' . __('Enter the description of the item. Up to 50 characters can be used.') . '</fieldhelp>
-	</field>';
+echo '<div class="db-form-group">
+		<label class="db-label" for="Description">' . __('Short Description') . ':</label>
+		<input class="db-input ' . (in_array('Description',$Errors) ?  'inputerror' : '' ) .'" type="text" required="required" name="Description" maxlength="50" value="' . $Description . '" placeholder="' . __('e.g. Dell Latitude Laptop') . '" />
+		<div class="db-field-help">' . __('Up to 50 characters allowed.') . '</div>
+	</div>';
 
 if (isset($_POST['LongDescription'])) {
 	$LongDescription = AddCarriageReturns($_POST['LongDescription']);
 } else {
 	$LongDescription ='';
 }
-echo '<field>
-		<label for="LongDescription">' . __('Asset Description') . ' (' . __('long') . '):</label>
-		<textarea ' . (in_array('LongDescription',$Errors) ?  'class="texterror"' : '' ) .'  name="LongDescription" required="required" title="" cols="40" rows="4">' . stripslashes($LongDescription) . '</textarea>
-		<fieldhelp>' . __('Enter the lond description of the asset including specs etc. Up to 255 characters are allowed.') . '</fieldhelp>
-	</field>';
+echo '<div class="db-form-group">
+		<label class="db-label" for="LongDescription">' . __('Full Specifications') . ' / ' . __('Long Description') . ':</label>
+		<textarea class="db-input ' . (in_array('LongDescription',$Errors) ?  'texterror' : '' ) .'"  name="LongDescription" required="required" rows="4" placeholder="' . __('Enter detailed specs, serial numbers, hardware details etc.') . '">' . stripslashes($LongDescription) . '</textarea>
+	</div>';
 
-if (!isset($New) ) { //ie not new at all!
+echo '</div>
+	</div>'; // End Card 1
 
-	echo '<field>
-			<label for="ItemPicture">' .  __('Image File (' . implode(", ", $SupportedImgExt) . ')') . ':</label>
-			<input type="file" id="ItemPicture" name="ItemPicture" />
-		</field>
-		<field>
-			<label for"ClearImage">'.__('Clear Image').'</label>
-			<input type="checkbox" name="ClearImage" id="ClearImage" value="1" > ';
-    $Glob = (glob($_SESSION['part_pics_dir'] . '/ASSET_' . $AssetID . '.{' . implode(",", $SupportedImgExt) . '}', GLOB_BRACE));
-	$ImageFile = reset($Glob);
-	$AssetImgLink = GetImageLink($ImageFile, 'ASSET_' . $AssetID, 64, 64, "", "");
-	if ($AssetImgLink!=__('No Image')) {
-		echo '<td>' . __('Image') . '<br />' . $AssetImgLink . '</td></field>';
-	} else {
-		echo '</td></field>';
-	}
-
-	// EOR Add Image upload for New Item  - by Ori
-} //only show the add image if the asset already exists - otherwise AssetID will not be set - and the image needs the AssetID to save
-
-if (isset($_POST['ClearImage']) ) {
-	foreach ($SupportedImgExt as $Ext) {
-		$File = $_SESSION['part_pics_dir'] . '/ASSET_' . $AssetID . '.' . $Ext;
-		if (file_exists ($File) ) {
-			//workaround for many variations of permission issues that could cause unlink fail
-			@unlink($File);
-			if (is_file($ImageFile)) {
-               prnMsg(__('You do not have access to delete this item image file.'),'error');
-			} else {
-				$AssetImgLink = __('No Image');
-			}
-		}
-	}
-}
-
-echo '<field>
-		<label for="AssetCategoryID">' . __('Asset Category') . ':</label>
-		<select name="AssetCategoryID">';
+echo '<div class="db-card" style="margin-top: 20px;">
+		<div class="db-card-header">
+			<div class="db-card-title"><i class="fas fa-th-large"></i> ' . __('Categorization & Identity') . '</div>
+		</div>
+		<div class="db-card-body">
+			<div class="db-grid db-grid-2">
+				<div class="db-form-group">
+					<label class="db-label" for="AssetCategoryID">' . __('Asset Category') . ':</label>
+					<div class="db-input-group-mobile" style="display: flex; gap: 8px; align-items: center;">
+						<select name="AssetCategoryID" class="db-select">';
 
 $SQL = "SELECT categoryid, categorydescription FROM fixedassetcategories";
 $ErrMsg = __('The asset categories could not be retrieved because');
 $Result = DB_query($SQL, $ErrMsg);
-
+$Category = '';
 while ($MyRow=DB_fetch_array($Result)){
 	if (!isset($_POST['AssetCategoryID']) or $MyRow['categoryid']==$_POST['AssetCategoryID']){
 		echo '<option selected="selected" value="'. $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
@@ -532,26 +508,23 @@ while ($MyRow=DB_fetch_array($Result)){
 	}
 	$Category=$MyRow['categoryid'];
 }
-echo '</select><a target="_blank" href="'. $RootPath . '/FixedAssetCategories.php">' . ' ' . __('Add or Modify Asset Categories') . '</a></field>';
+echo '					</select>
+						<a target="_blank" href="'. $RootPath . '/FixedAssetCategories.php" class="db-btn db-btn-secondary db-btn-sm" title="' . __('Manage Categories') . '"><i class="fas fa-cog"></i></a>
+					</div>
+				</div>';
+
 if (!isset($_POST['AssetCategoryID'])) {
 	$_POST['AssetCategoryID']=$Category;
-}
-
-if (isset($AssetRow) AND ($AssetRow['datepurchased']!='1000-01-01' AND $AssetRow['datepurchased']!='')){
-	echo '<field>
-			<label for="datepurchased">' . __('Date Purchased') . ':</label>
-			<fieldtext>' . ConvertSQLDate($AssetRow['datepurchased']) . '</fieldtext>
-		</field>';
 }
 
 $SQL = "SELECT locationid, locationdescription FROM fixedassetlocations";
 $ErrMsg = __('The asset locations could not be retrieved because');
 $Result = DB_query($SQL, $ErrMsg);
 
-echo '<field>
-		<label for="AssetLocation">' . __('Asset Location') . ':</label>
-		<select name="AssetLocation">';
-
+echo '			<div class="db-form-group">
+					<label class="db-label" for="AssetLocation">' . __('Storage Location') . ':</label>
+					<div class="db-input-group-mobile" style="display: flex; gap: 8px; align-items: center;">
+						<select name="AssetLocation" class="db-select">';
 while ($MyRow=DB_fetch_array($Result)){
 	if ($_POST['AssetLocation']==$MyRow['locationid']){
 		echo '<option selected="selected" value="' . $MyRow['locationid'] .'">' . $MyRow['locationdescription'] . '</option>';
@@ -559,108 +532,162 @@ while ($MyRow=DB_fetch_array($Result)){
 		echo '<option value="' . $MyRow['locationid'] .'">' . $MyRow['locationdescription'] . '</option>';
 	}
 }
-echo '</select>
-	<a target="_blank" href="'. $RootPath . '/FixedAssetLocations.php">' . ' ' . __('Add Asset Location') . '</a>
-	</field>';
+echo '					</select>
+						<a target="_blank" href="'. $RootPath . '/FixedAssetLocations.php" class="db-btn db-btn-secondary db-btn-sm" title="' . __('Manage Locations') . '"><i class="fas fa-cog"></i></a>
+					</div>
+				</div>
+			</div>'; // End Grid 1
 
-echo '<field>
-		<label for="BarCode">' . __('Bar Code') . ':</label>
-		<input ' . (in_array('BarCode',$Errors) ?  'class="inputerror"' : '' ) .'  type="text" name="BarCode" size="22" maxlength="20" value="' . $_POST['BarCode'] . '" />
-	</field>
-	<field>
-		<label for="SerialNo">' . __('Serial Number') . ':</label>
-		<input ' . (in_array('SerialNo',$Errors) ?  'class="inputerror"' : '' ) .'  type="text" name="SerialNo" size="32" maxlength="30" value="' . $_POST['SerialNo'] . '" />
-	</field>
-	<field>
-		<label for="DepnType">' . __('Depreciation Type') . ':</label>
-		<select name="DepnType">';
+echo '		<div class="db-grid db-grid-2" style="margin-top: 15px;">
+				<div class="db-form-group">
+					<label class="db-label" for="BarCode">' . __('Bar Code') . ':</label>
+					<input class="db-input ' . (in_array('BarCode',$Errors) ?  'inputerror' : '' ) .'" type="text" name="BarCode" maxlength="20" value="' . $_POST['BarCode'] . '" />
+				</div>
+				<div class="db-form-group">
+					<label class="db-label" for="SerialNo">' . __('Serial Number') . ':</label>
+					<input class="db-input ' . (in_array('SerialNo',$Errors) ?  'inputerror' : '' ) .'" type="text" name="SerialNo" maxlength="30" value="' . $_POST['SerialNo'] . '" />
+				</div>
+			</div>
+		</div>
+	</div>'; // End Card 2
 
-if (!isset($_POST['DepnType'])){
-	$_POST['DepnType'] = 0; //0 = Straight line - 1 = Diminishing Value
+// Financial Stats (If existing)
+if (isset($AssetRow)) {
+	echo '<div class="db-card-group" style="margin-top: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+			<div class="db-card" style="box-shadow: none; border: 1px solid var(--border-soft);">
+				<div class="db-card-body" style="padding: 15px; text-align: center;">
+					<div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 5px;">' . __('Historical Cost') . '</div>
+					<div style="font-size: 1.25rem; font-weight: 700;">' . locale_number_format($AssetRow['cost'],$_SESSION['CompanyRecord']['decimalplaces']) . '</div>
+				</div>
+			</div>
+			<div class="db-card" style="box-shadow: none; border: 1px solid var(--border-soft);">
+				<div class="db-card-body" style="padding: 15px; text-align: center;">
+					<div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 5px;">' . __('Accumulated Depn') . '</div>
+					<div style="font-size: 1.25rem; font-weight: 700;">' . locale_number_format($AssetRow['accumdepn'],$_SESSION['CompanyRecord']['decimalplaces']) . '</div>
+				</div>
+			</div>
+			<div class="db-card" style="box-shadow: none; border: 1px solid var(--border-soft); background: var(--bg-workspace);">
+				<div class="db-card-body" style="padding: 15px; text-align: center;">
+					<div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 5px;">' . __('Net Book Value') . '</div>
+					<div style="font-size: 1.25rem; font-weight: 900;">' . locale_number_format($AssetRow['cost']-$AssetRow['accumdepn'],$_SESSION['CompanyRecord']['decimalplaces']) . '</div>
+				</div>
+			</div>
+		  </div>';
 }
-if ($_POST['DepnType']==0){ //straight line
+
+echo '<div class="db-card" style="margin-top: 20px;">
+		<div class="db-card-header">
+			<div class="db-card-title"><i class="fas fa-chart-line"></i> ' . __('Depreciation Policy') . '</div>
+		</div>
+		<div class="db-card-body">
+			<div class="db-grid db-grid-2">
+				<div class="db-form-group">
+					<label class="db-label" for="DepnType">' . __('Depreciation Method') . ':</label>
+					<select name="DepnType" class="db-select">';
+if (!isset($_POST['DepnType'])){
+	$_POST['DepnType'] = 0;
+}
+if ($_POST['DepnType']==0){
 	echo '<option selected="selected" value="0">' . __('Straight Line') . '</option>';
 	echo '<option value="1">' . __('Diminishing Value') . '</option>';
 } else {
 	echo '<option value="0">' . __('Straight Line') . '</option>';
 	echo '<option selected="selected" value="1">' . __('Diminishing Value') . '</option>';
 }
-
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label for="DepnRate">' . __('Depreciation Rate') . ':</label>
-		<input ' . (in_array('DepnRate',$Errors) ?  'class="inputerror number"' : 'class="number"' ) .'  type="text" name="DepnRate" size="4" maxlength="4" value="' . $_POST['DepnRate'] . '" />%
-	</field>
-	</fieldset>';
-
-if (isset($AssetRow)){
-	echo '<table>
-		<tr>
-			<th colspan="2">' . __('Asset Financial Summary') . '</th>
-		</tr>
-		<tr>
-			<td>' . __('Accumulated Costs') . ':</td>
-			<td class="number">' . locale_number_format($AssetRow['cost'],$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		</tr>
-		<tr>
-			<td>' . __('Accumulated Depreciation') . ':</td>
-			<td class="number">' . locale_number_format($AssetRow['accumdepn'],$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		</tr>';
-	if ($AssetRow['disposaldate'] != '1000-01-01'){
-		echo'<tr>
-			<td>' . __('Net Book Value at disposal date') . ':</td>
-			<td class="number">' . locale_number_format($AssetRow['cost']-$AssetRow['accumdepn'],$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		</tr>';
-		echo'<tr>
-			<td>' . __('Disposal Proceeds') . ':</td>
-			<td class="number">' . locale_number_format($AssetRow['disposalproceeds'],$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		</tr>';
-		echo'<tr>
-			<td>' . __('P/L after disposal') . ':</td>
-			<td class="number">' . locale_number_format(-$AssetRow['cost']+$AssetRow['accumdepn']+$AssetRow['disposalproceeds'],$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		</tr>';
-
-	} else {
-		echo'<tr>
-			<td>' . __('Net Book Value') . ':</td>
-			<td class="number">' . locale_number_format($AssetRow['cost']-$AssetRow['accumdepn'],$_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		</tr>';
-	}
-	/*Get the last period depreciation (depn is transtype =44) was posted for */
-	$Result = DB_query("SELECT periods.lastdate_in_period,
-								max(fixedassettrans.periodno)
-					FROM fixedassettrans INNER JOIN periods
-					ON fixedassettrans.periodno=periods.periodno
-					WHERE transtype=44
-					GROUP BY periods.lastdate_in_period
-					ORDER BY periods.lastdate_in_period DESC");
-
-	$LastDepnRun = DB_fetch_row($Result);
-	if (DB_num_rows($Result)==0){
-		$LastRunDate = __('Not Yet Run');
-	} else {
-		$LastRunDate = ConvertSQLDate($LastDepnRun[0]);
-	}
-	echo '<tr>
-			<td>' . __('Depreciation last run') . ':</td>
-			<td>' . $LastRunDate . '</td>
-		</tr>
-		</table>';
-}
-
-if (isset($New)) {
-	echo '<div class="centre">
-			<input type="submit" name="submit" value="' . __('Insert New Fixed Asset') . '" />';
-} else {
-	echo '<div class="centre">
-			<input type="submit" name="submit" value="' . __('Update') . '" />
-		</div>';
-	echo '<div class="centre">
-			<input type="reset" name="delete" value="' . __('Delete This Asset') . '" onclick="return confirm(\'' . __('Are You Sure? Only assets with a zero book value can be deleted.') . '\');" />';
-}
+echo '				</select>
+				</div>
+				<div class="db-form-group">
+					<label class="db-label" for="DepnRate">' . __('Annual Rate (%)') . ':</label>
+					<div style="display: flex; align-items: center; gap: 10px;">
+						<input class="db-input ' . (in_array('DepnRate',$Errors) ?  'inputerror number' : 'number' ) .'" type="text" name="DepnRate" size="4" maxlength="4" value="' . $_POST['DepnRate'] . '" style="max-width: 100px; font-weight: 700; text-align: center;" />
+						<span class="db-badge">%</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>'; // End Card 3
 
 echo '</div>
-	</form>';
+	</div>'; // End Card 3
+
+// Asset Image (Minimalist placement after policy)
+if (!isset($New)) {
+	echo '<div class="db-card" style="margin-top: 25px;">
+			<div class="db-card-header">
+				<div class="db-card-title"><i class="fas fa-camera"></i> ' . __('Asset Image') . '</div>
+			</div>
+			<div class="db-card-body">
+				<div style="display: flex; gap: 30px; align-items: start; flex-wrap: wrap;">';
+	
+	$Glob = (glob($_SESSION['part_pics_dir'] . '/ASSET_' . $AssetID . '.{' . implode(",", $SupportedImgExt) . '}', GLOB_BRACE));
+	$ImageFile = reset($Glob);
+	$AssetImgLink = GetImageLink($ImageFile, 'ASSET_' . $AssetID, 120, 120, "", "");
+	
+	if ($AssetImgLink!=__('No Image')) {
+		echo '<div style="flex-shrink: 0; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-soft); background: var(--bg-workspace); width: 120px; height: 120px; display: flex; align-items: center; justify-content: center;">
+				' . $AssetImgLink . '
+			  </div>';
+	} else {
+		echo '<div style="flex-shrink: 0; width: 120px; height: 120px; border-radius: var(--radius-sm); border: 2px dashed var(--border); background: var(--bg-workspace); color: var(--text-muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;">
+				<i class="fas fa-image" style="font-size: 1.5rem; opacity: 0.3;"></i>
+				<span style="font-size: 0.65rem;">' . __('No image') . '</span>
+			  </div>';
+	}
+
+	echo '		<div style="flex-grow: 1; min-width: 250px;">
+					<div class="db-form-group">
+						<label class="db-label" for="ItemPicture">' .  __('Upload New Image') . ' (' . implode(", ", $SupportedImgExt) . '):</label>
+						<input class="db-input" type="file" id="ItemPicture" name="ItemPicture" />
+					</div>';
+	
+	if ($AssetImgLink!=__('No Image')) {
+		echo '		<label style="display: flex; align-items: center; gap: 8px; margin-top: 10px; cursor: pointer; font-size: 0.85rem; color: var(--danger);">
+						<input type="checkbox" name="ClearImage" id="ClearImage" value="1"> ' . __('Delete current image') . '
+					</label>';
+	}
+
+	echo '		</div>
+				</div>
+			</div>
+		  </div>';
+}
+
+// Final Action Bar (Persistent at bottom)
+echo '<div class="db-action-footer db-footer-stack" style="margin-top: 40px; padding: 20px; border-top: 1px solid var(--border); display: flex; justify-content: center; gap: 15px; background: var(--surface);">
+		<a href="' . $RootPath . '/SelectAsset.php" class="db-btn db-btn-secondary" style="min-width: 150px; justify-content: center;">
+			<i class="fas fa-times"></i> ' . __('Cancel') . '
+		</a>';
+
+if (isset($New)) {
+	echo '	<button type="submit" name="submit" class="db-btn db-btn-primary" style="min-width: 200px; justify-content: center; padding: 12px 30px;">
+				<i class="fas fa-plus-circle"></i> ' . __('Create Fixed Asset') . '
+			</button>';
+} else {
+	echo '	<button type="submit" name="delete" value="' . __('Delete This Asset') . '" class="db-btn db-btn-danger" style="justify-content: center;" onclick="return confirm(\'' . __('Are You Sure? Only assets with a zero book value can be deleted.') . '\');">
+				<i class="fas fa-trash-alt"></i> ' . __('Delete') . '
+			</button>';
+	echo '	<button type="submit" name="submit" value="' . __('Update') . '" class="db-btn db-btn-primary" style="min-width: 200px; justify-content: center; padding: 12px 30px;">
+				<i class="fas fa-save"></i> ' . __('Save Changes') . '
+			</button>';
+}
+
+echo '</div>'; 
+
+echo '		</div>
+	</div> 
+</form>';
+
+echo '<style>
+.db-field-help { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; font-style: italic; }
+.db-action-footer { border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--border); position: sticky; bottom: 20px; z-index: 10; }
+
+@media (max-width: 768px) {
+	.db-input-group-mobile { flex-direction: column; align-items: stretch !important; gap: 10px; }
+	.db-input-group-mobile .db-btn { width: 100%; justify-content: center; height: auto; padding: 12px; }
+	.db-footer-stack { flex-direction: column; padding: 15px !important; }
+	.db-footer-stack .db-btn, .db-footer-stack a.db-btn { width: 100% !important; min-width: 0 !important; margin: 0 !important; }
+}
+</style>';
+
+echo '</div>'; // End db-page
 include(__DIR__ . '/includes/footer.php');
