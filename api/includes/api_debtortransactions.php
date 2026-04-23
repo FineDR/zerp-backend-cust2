@@ -341,7 +341,6 @@ function GetDebtorsGLCode() {
 }
 
 function InsertDebtorReceipt($Receipt, $User, $Password) {
-return 'Mlekwa Umeona?';
 
 //return $User.' '.$Password;
 	/*
@@ -400,6 +399,7 @@ return 'Mlekwa Umeona?';
 	if (DB_error_no() != 0) {
 		$Errors[] = InvalidBankAccount;
 	}
+return 'Mlekwa Umeona?';
 
 	$BankActRow = DB_fetch_array($BankActResult);
 
