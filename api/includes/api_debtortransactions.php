@@ -500,6 +500,7 @@ function InsertDebtorReceipt($Receipt, $User, $Password) {
 					'" . $Receipt['bankaccount'] . "',
 					'" . mb_substr($Receipt['reference'], 0, 200) . "',
 					'" . round($Receipt['amountfx'] / $CustCurrRow['rate'],4) . "')";
+ return $SQL;
 
 		$Result = api_DB_query($SQL,'', '', true);
 
@@ -527,7 +528,6 @@ function InsertDebtorReceipt($Receipt, $User, $Password) {
 						'" . -$Receipt['amountfx'] . "',
 						'" . -$Receipt['discountfx'] . "',
 						'" . $Receipt['paymentmethod'] . "')";
- return $SQL;
 	$Result = api_DB_query($SQL,'', '', true);
 
 	$SQL = "UPDATE debtorsmaster SET lastpaiddate = '" . $Receipt['trandate'] . "',
