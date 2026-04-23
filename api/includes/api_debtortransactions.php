@@ -462,7 +462,6 @@ function InsertDebtorReceipt($Receipt, $User, $Password) {
 					'". $CompanyRecord['debtorsact'] . "',
 					'" . mb_substr($Receipt['reference'], 0, 200) . "',
 					'" . round((-$Receipt['amountfx']-$Receipt['discountfx']) / $CustCurrRow['rate'],4) . "')";
-return $SQL;
 		$Result = api_DB_query($SQL,'', '', true);
 
 		if ($Receipt['discountfx']!=0){
@@ -480,6 +479,7 @@ return $SQL;
 					'". $CompanyRecord['pytdiscountact'] . "',
 					'" . mb_substr($Receipt['reference'], 0, 200) . "',
 					'" . round($Receipt['discountfx'] / $CustCurrRow['rate'],4) . "')";
+return $SQL;
 
 			$Result = api_DB_query($SQL,'', '', true);
 		}
