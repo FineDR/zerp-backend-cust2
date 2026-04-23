@@ -527,7 +527,6 @@ function InsertDebtorReceipt($Receipt, $User, $Password) {
 						'" . -$Receipt['amountfx'] . "',
 						'" . -$Receipt['discountfx'] . "',
 						'" . $Receipt['paymentmethod'] . "')";
-return $SQL;
 	$Result = api_DB_query($SQL,'', '', true);
 
 	$SQL = "UPDATE debtorsmaster SET lastpaiddate = '" . $Receipt['trandate'] . "',
