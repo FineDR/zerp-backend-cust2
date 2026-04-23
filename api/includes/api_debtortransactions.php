@@ -446,8 +446,6 @@ function InsertDebtorReceipt($Receipt, $User, $Password) {
 
 	$Result = api_DB_query($SQL,'', '', true);
 
-return $SQL;
-
 	if ($CompanyRecord['gllink_debtors']==1) {
 	/* Now Credit Debtors account with receipts */
 		$SQL="INSERT INTO gltrans ( type,
@@ -464,7 +462,7 @@ return $SQL;
 					'". $CompanyRecord['debtorsact'] . "',
 					'" . mb_substr($Receipt['reference'], 0, 200) . "',
 					'" . round((-$Receipt['amountfx']-$Receipt['discountfx']) / $CustCurrRow['rate'],4) . "')";
-
+return $SQL;
 		$Result = api_DB_query($SQL,'', '', true);
 
 		if ($Receipt['discountfx']!=0){
