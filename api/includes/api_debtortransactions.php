@@ -506,7 +506,7 @@ function InsertDebtorReceipt($Receipt, $User, $Password) {
 	$SQL = "INSERT INTO debtortrans (transno,
 									type,
 									debtorno,
-									debtorno,
+									branchcode,
 									trandate,
 									inputdate,
 									prd,
