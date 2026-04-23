@@ -341,7 +341,8 @@ function GetDebtorsGLCode() {
 }
 
 function InsertDebtorReceipt($Receipt, $User, $Password) {
-	
+	 return 'Mlekwa Umeona?';
+
 //return $User.' '.$Password;
 	/*
 	This function inserts a debtors receipt into a bank account/GL Postings
@@ -500,7 +501,6 @@ function InsertDebtorReceipt($Receipt, $User, $Password) {
 					'" . $Receipt['bankaccount'] . "',
 					'" . mb_substr($Receipt['reference'], 0, 200) . "',
 					'" . round($Receipt['amountfx'] / $CustCurrRow['rate'],4) . "')";
- return $SQL;
 
 		$Result = api_DB_query($SQL,'', '', true);
 
