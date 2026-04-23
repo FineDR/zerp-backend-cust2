@@ -506,6 +506,7 @@ function InsertDebtorReceipt($Receipt, $User, $Password) {
 	$SQL = "INSERT INTO debtortrans (transno,
 									type,
 									debtorno,
+									debtorno,
 									trandate,
 									inputdate,
 									prd,
@@ -516,6 +517,7 @@ function InsertDebtorReceipt($Receipt, $User, $Password) {
 									invtext)
 				VALUES ('" . $ReceiptNo . "',
 						12,
+						'" . $Receipt['debtorno'] . "',
 						'" . $Receipt['debtorno'] . "',
 						'" . $Receipt['trandate'] . "',
 						'" . date('Y-m-d H-i-s') . "',
