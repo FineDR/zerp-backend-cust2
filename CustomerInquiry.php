@@ -11,7 +11,17 @@ include(__DIR__ . '/includes/header.php');
 
 echo '<div class="db-page">';
 
-if (isset($_POST['TransAfterDate'])){$_POST['TransAfterDate'] = ConvertSQLDate($_POST['TransAfterDate']);}
+if (isset($_POST['TransAfterDate'])) {
+	$_POST['TransAfterDate'] = ConvertSQLDate($_POST['TransAfterDate']);
+}
+
+if (isset($_GET['FromDate'])) {
+	if (Is_Date($_GET['FromDate'])) {
+		$_POST['TransAfterDate'] = $_GET['FromDate'];
+	} elseif (EnsureSQLDateFormat($_GET['FromDate'])) {
+		$_POST['TransAfterDate'] = ConvertSQLDate($_GET['FromDate']);
+	}
+}
 
 // always figure out the SQL required from the inputs available
 
@@ -30,7 +40,6 @@ if (!isset($_GET['CustomerID']) and !isset($_SESSION['CustomerID'])) {
 if ($_SESSION['SalesmanLogin'] !=  '') {
 	$ViewAllowed = false;
 	$SQL = "SELECT salesman FROM custbranch WHERE debtorno = '" . $CustomerID . "'";
-	echo 'SQL1 ->'.$SQL;
 	$ErrMsg = __('Failed to retrieve sales data');
 	$Result = DB_query($SQL, $ErrMsg);
 	if (DB_num_rows($Result)>0) {
@@ -68,7 +77,7 @@ if (isset($_GET['Status'])) {
 	$_POST['Status'] = '';
 }
 
-if (!isset($_POST['TransAfterDate'])) {
+if (!isset($_POST['TransAfterDate']) OR !Is_Date($_POST['TransAfterDate'])) {
 	$_POST['TransAfterDate'] = date($_SESSION['DefaultDateFormat'], mktime(0, 0, 0, date('m') - $_SESSION['NumberOfMonthMustBeShown'], date('d'), date('Y')));
 }
 
@@ -113,13 +122,13 @@ $SQL = "SELECT debtorsmaster.name,
 	 		AND debtorsmaster.debtorno = debtortrans.debtorno
 			GROUP BY debtorsmaster.name,
 			currencies.currency,
+			currencies.decimalplaces,
 			paymentterms.terms,
 			paymentterms.daysbeforedue,
 			paymentterms.dayinfollowingmonth,
 			debtorsmaster.creditlimit,
 			holdreasons.dissallowinvoices,
 			holdreasons.reasondescription";
-echo 'SQL2 ->'.$SQL;
 $ErrMsg = __('The customer details could not be retrieved by the SQL because');
 $CustomerResult = DB_query($SQL, $ErrMsg);
 
@@ -144,7 +153,6 @@ if (DB_num_rows($CustomerResult) == 0) {
 			INNER JOIN holdreasons
 			ON debtorsmaster.holdreason = holdreasons.reasoncode
 			WHERE debtorsmaster.debtorno = '" . $CustomerID . "'";
-echo 'SQL3 ->'.$SQL;
 	$ErrMsg = __('The customer details could not be retrieved by the SQL because');
 	$CustomerResult = DB_query($SQL, $ErrMsg);
 
@@ -285,15 +293,8 @@ $SQL = "SELECT systypes.typename,
 				AND debtortrans.trandate >= '" . $DateAfterCriteria . "'
 				ORDER BY debtortrans.trandate,
 					debtortrans.id";
-echo 'SQL4 ->'.$SQL;
 $ErrMsg = __('No transactions were returned by the SQL because');
 $TransResult = DB_query($SQL, $ErrMsg);
-
-if (DB_num_rows($TransResult) == 0) {
-	echo '<div class="centre">', __('There are no transactions to display since'), ' ', $_POST['TransAfterDate'], '</div>';
-	include(__DIR__ . '/includes/footer.php');
-	exit();
-}
 
 /* Show a table of the invoices returned by the SQL. */
 
@@ -322,6 +323,10 @@ if (DB_num_rows($TransResult) == 0) {
 							</tr>
 						</thead>
 						<tbody>';
+	
+	if (DB_num_rows($TransResult) == 0) {
+		echo '<tr><td colspan="10" style="padding: var(--space-12); text-align: center; color: var(--text-muted); font-size: 0.875rem;">' . __('No transactions found for the selected period.') . '</td></tr>';
+	} else {
 
 	while ($MyRow = DB_fetch_array($TransResult)) {
 
@@ -394,9 +399,8 @@ if (DB_num_rows($TransResult) == 0) {
 				</td>
 			</tr>';
 
-	}
-
-//end of while loop
+	} //end of while loop
+} // end of else
 
 	echo '</tbody></table></div></div></div></div>'; // Close db-table, db-table-wrapper, db-card-body, card-v2, db-page
 	include(__DIR__ . '/includes/footer.php');
