@@ -247,7 +247,8 @@ $SQL = "SELECT supptrans.id,
 			supptrans.transtext,
 			supptrans.ovamount + supptrans.ovgst AS totalamount,
 			supptrans.alloc,
-			supptrans.hold
+			supptrans.hold,
+			supptrans.supplierno
 		FROM supptrans
 		INNER JOIN systypes ON supptrans.type = systypes.typeid
 		WHERE supptrans.supplierno = '" . $SupplierID . "'
@@ -278,7 +279,7 @@ if (DB_num_rows($TransResult) == 0) {
 				</td>
 				<td style="font-size: 0.8125rem; color: var(--text-muted); max-width: 320px; font-weight: 500; line-height: 1.4;">' . (empty($MyRow['transtext']) ? '<span style="opacity:0.5; font-style:italic;">' . __('Ref') . ': ' . $MyRow['suppreference'] . '</span>' : htmlspecialchars($MyRow['transtext'], ENT_QUOTES, 'UTF-8')) . '</td>
 				<td class="text-right" style="font-weight: 800; font-size: 0.875rem; color: var(--text-main);">' . locale_number_format($MyRow['totalamount'], $SupplierRecord['currdecimalplaces']) . '</td>
-				<td class="text-right" style="font-size: 0.8125rem; color: var(--text-muted); font-weight: 600;">' . locale_number_format($MyRow['allocated'], $SupplierRecord['currdecimalplaces']) . '</td>
+				<td class="text-right" style="font-size: 0.8125rem; color: var(--text-muted); font-weight: 600;">' . locale_number_format($MyRow['alloc'], $SupplierRecord['currdecimalplaces']) . '</td>
 				<td class="text-right">';
 		
 		if ($IsOutstanding) {
@@ -300,7 +301,7 @@ if (DB_num_rows($TransResult) == 0) {
 		}
 
 		if ($MyRow['type'] == 20) { // Invoice
-			if ($MyRow['totalamount'] == $MyRow['alloc']) {
+			if (abs($MyRow['totalamount'] - $MyRow['alloc']) < 0.01) {
 				echo '<a href="' . $RootPath . '/PaymentAllocations.php?SuppID=' . $MyRow['supplierno'] . '&amp;InvID=' . $MyRow['suppreference'] . '" class="db-btn-icon" style="background: var(--surface-alt); border-radius: 8px; color: var(--success);" title="' . __('View Payments') . '"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></a>';
 			} else {
 				$HoldValue = ($MyRow['hold'] == 1) ? __('Release') : __('Hold');
