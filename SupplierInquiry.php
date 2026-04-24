@@ -11,9 +11,16 @@ include(__DIR__ . '/includes/header.php');
 
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 
-if (isset($_POST['TransAfterDate'])){$_POST['TransAfterDate'] = ConvertSQLDate($_POST['TransAfterDate']);}
+if (isset($_GET['HoldType']) AND isset($_GET['HoldTrans']) AND isset($_GET['HoldStatus'])) {
+	$HoldStatus = ($_GET['HoldStatus'] == __('Hold')) ? 1 : 0;
+	$SQL = "UPDATE supptrans SET hold = '" . $HoldStatus . "' WHERE type = '" . $_GET['HoldType'] . "' AND transno = '" . $_GET['HoldTrans'] . "'";
+	$ErrMsg = __('The transaction hold status could not be updated because');
+	DB_query($SQL, $ErrMsg);
+}
 
-// always figure out the SQL required from the inputs available
+if (isset($_POST['TransAfterDate'])) {
+	$_POST['TransAfterDate'] = ConvertSQLDate($_POST['TransAfterDate']);
+}
 
 if (!isset($_GET['SupplierID']) AND !isset($_SESSION['SupplierID'])) {
 	echo '<br />' . __('To display the enquiry a Supplier must first be selected from the Supplier selection screen') .
@@ -31,7 +38,11 @@ if (!isset($_GET['SupplierID']) AND !isset($_SESSION['SupplierID'])) {
 }
 
 if (isset($_GET['FromDate'])) {
-	$_POST['TransAfterDate']=$_GET['FromDate'];
+	if (Is_Date($_GET['FromDate'])) {
+		$_POST['TransAfterDate'] = $_GET['FromDate'];
+	} elseif (EnsureSQLDateFormat($_GET['FromDate'])) {
+		$_POST['TransAfterDate'] = ConvertSQLDate($_GET['FromDate']);
+	}
 }
 if (!isset($_POST['TransAfterDate']) OR !Is_Date($_POST['TransAfterDate'])) {
 	$_POST['TransAfterDate'] = date($_SESSION['DefaultDateFormat'],mktime(0,0,0,date('m')-24,date('d'),date('Y')));
@@ -72,11 +83,12 @@ $SQL = "SELECT suppliers.suppname,
      	ON suppliers.supplierid = supptrans.supplierno
 		WHERE suppliers.supplierid = '" . $SupplierID . "'
 		GROUP BY suppliers.suppname,
-      			currencies.currency,
-      			currencies.decimalplaces,
-      			paymentterms.terms,
-      			paymentterms.daysbeforedue,
-      			paymentterms.dayinfollowingmonth";
+				suppliers.currcode,
+				currencies.currency,
+				currencies.decimalplaces,
+				paymentterms.terms,
+				paymentterms.daysbeforedue,
+				paymentterms.dayinfollowingmonth";
 $ErrMsg = __('The supplier details could not be retrieved by the SQL because');
 $SupplierResult = DB_query($SQL, $ErrMsg);
 
@@ -115,8 +127,6 @@ if ($NIL_BALANCE == true) {
 }
 include(__DIR__ . '/includes/CurrenciesArray.php'); // To get the currency name from the currency code.
 
-include(__DIR__ . '/includes/CurrenciesArray.php'); // To get the currency name from the currency code.
-
 echo '<style>
 	#Header_SubBreadcrumb { display: none !important; }
 	.db-page { 
@@ -150,10 +160,7 @@ echo '<style>
 	}
 </style>';
 
-$SupplierNameSQL = "SELECT suppname FROM suppliers WHERE supplierid = '" . $SupplierID . "'";
-$SupplierNameResult = DB_query($SupplierNameSQL);
-$SupplierNameRow = DB_fetch_array($SupplierNameResult);
-$SupplierName = $SupplierNameRow['suppname'];
+$SupplierName = $SupplierRecord['suppname'];
 
 echo '<div class="db-page">';
 echo '<div class="db-page-header" style="padding: var(--space-6) var(--space-6) var(--space-4); background: var(--surface); border-bottom: 1px solid var(--border-soft);">
@@ -239,7 +246,7 @@ $SQL = "SELECT supptrans.id,
 			supptrans.suppreference,
 			supptrans.transtext,
 			supptrans.ovamount + supptrans.ovgst AS totalamount,
-			supptrans.allocated,
+			supptrans.alloc,
 			supptrans.hold
 		FROM supptrans
 		INNER JOIN systypes ON supptrans.type = systypes.typeid
@@ -253,7 +260,7 @@ if (DB_num_rows($TransResult) == 0) {
 	echo '<tr><td colspan="8" style="padding: var(--space-12); text-align: center; color: var(--text-muted); font-size: 0.875rem;">' . __('No transactions found for the selected period.') . '</td></tr>';
 } else {
 	while ($MyRow = DB_fetch_array($TransResult)) {
-		$Outstanding = $MyRow['totalamount'] - $MyRow['allocated'];
+		$Outstanding = $MyRow['totalamount'] - $MyRow['alloc'];
 		$IsOutstanding = ($Outstanding != 0);
 		$StatusClass = ($MyRow['hold'] == 1) ? 'style="background: rgba(239, 68, 68, 0.03);"' : '';
 
@@ -293,7 +300,7 @@ if (DB_num_rows($TransResult) == 0) {
 		}
 
 		if ($MyRow['type'] == 20) { // Invoice
-			if ($MyRow['totalamount'] == $MyRow['allocated']) {
+			if ($MyRow['totalamount'] == $MyRow['alloc']) {
 				echo '<a href="' . $RootPath . '/PaymentAllocations.php?SuppID=' . $MyRow['supplierno'] . '&amp;InvID=' . $MyRow['suppreference'] . '" class="db-btn-icon" style="background: var(--surface-alt); border-radius: 8px; color: var(--success);" title="' . __('View Payments') . '"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></a>';
 			} else {
 				$HoldValue = ($MyRow['hold'] == 1) ? __('Release') : __('Hold');
