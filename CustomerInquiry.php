@@ -30,7 +30,6 @@ if (!isset($_GET['CustomerID']) and !isset($_SESSION['CustomerID'])) {
 if ($_SESSION['SalesmanLogin'] !=  '') {
 	$ViewAllowed = false;
 	$SQL = "SELECT salesman FROM custbranch WHERE debtorno = '" . $CustomerID . "'";
-	echo 'SQL1 ->'.$SQL;
 	$ErrMsg = __('Failed to retrieve sales data');
 	$Result = DB_query($SQL, $ErrMsg);
 	if (DB_num_rows($Result)>0) {
@@ -119,7 +118,6 @@ $SQL = "SELECT debtorsmaster.name,
 			debtorsmaster.creditlimit,
 			holdreasons.dissallowinvoices,
 			holdreasons.reasondescription";
-echo 'SQL2 ->'.$SQL;
 $ErrMsg = __('The customer details could not be retrieved by the SQL because');
 $CustomerResult = DB_query($SQL, $ErrMsg);
 
@@ -144,7 +142,6 @@ if (DB_num_rows($CustomerResult) == 0) {
 			INNER JOIN holdreasons
 			ON debtorsmaster.holdreason = holdreasons.reasoncode
 			WHERE debtorsmaster.debtorno = '" . $CustomerID . "'";
-echo 'SQL3 ->'.$SQL;
 	$ErrMsg = __('The customer details could not be retrieved by the SQL because');
 	$CustomerResult = DB_query($SQL, $ErrMsg);
 
@@ -285,7 +282,6 @@ $SQL = "SELECT systypes.typename,
 				AND debtortrans.trandate >= '" . $DateAfterCriteria . "'
 				ORDER BY debtortrans.trandate,
 					debtortrans.id";
-echo 'SQL4 ->'.$SQL;
 $ErrMsg = __('No transactions were returned by the SQL because');
 $TransResult = DB_query($SQL, $ErrMsg);
 
