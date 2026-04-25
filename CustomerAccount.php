@@ -82,7 +82,6 @@ if ($_SESSION['Show_Settled_LastMonth']==1) {
 				AND debtortrans.debtorno='" . $CustomerID . "'
 				AND debtortrans.settled=1
 				ORDER BY debtortrans.id";
-echo 'SQL1 ->'.$SQL;
 	$SetldTrans=DB_query($SQL, $ErrMsg);
 	$NumberOfRecordsReturned = DB_num_rows($SetldTrans);
 	while ($MyRow=DB_fetch_array($SetldTrans)) {
@@ -111,7 +110,6 @@ $SQL = "SELECT debtortrans.id,
 			ON debtortrans.type=systypes.typeid
 		WHERE debtortrans.debtorno='" . $CustomerID . "'
 		AND debtortrans.settled=0";
-echo 'SQL2 ->'.$SQL;
 if ($_SESSION['SalesmanLogin'] != '') {
 	$SQL .= " AND debtortrans.salesperson='" . $_SESSION['SalesmanLogin'] . "'";
 }
@@ -183,7 +181,6 @@ $SQL = "SELECT debtorsmaster.name,
 			ON debtorsmaster.debtorno = debtortrans.debtorno
 		WHERE
 			debtorsmaster.debtorno = '" . $CustomerID . "'";
-echo 'SQL3 ->'.$SQL;
 if ($_SESSION['SalesmanLogin'] != '') {
 	$SQL .= " AND debtortrans.salesperson='" . $_SESSION['SalesmanLogin'] . "'";
 }
@@ -204,7 +201,6 @@ $SQL .= " GROUP BY
 			debtorsmaster.creditlimit,
 			holdreasons.dissallowinvoices,
 			holdreasons.reasondescription";
-echo 'SQL4 ->'.$SQL;
 $ErrMsg = __('The customer details could not be retrieved by the SQL because');
 $CustomerResult = DB_query($SQL, $ErrMsg);
 
