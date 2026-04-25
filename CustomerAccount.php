@@ -1,5 +1,4 @@
 <?php
-
 /* Shows customer account/statement on screen rather than PDF. */
 
 require(__DIR__ . '/includes/session.php');

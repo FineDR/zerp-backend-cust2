@@ -1,6 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 
 // NB: these classes are not autoloaded, and their definition has to be included before the session is started (in session.php)
 include(__DIR__ . '/includes/DefineCartClass.php');
@@ -10,6 +8,9 @@ require(__DIR__ . '/includes/session.php');
 
 if (isset($_GET['NewOrder'])) {
 	$identifier = date('U');
+	$_SESSION['ExistingOrder' . $identifier] = 0;
+	$_SESSION['Items' . $identifier] = new Cart;
+	
 	$RedirectURL = $RootPath . '/SelectOrderItems.php?identifier=' . $identifier;
 	if (isset($_GET['SelectedCustomer'])) {
 		$RedirectURL .= '&DebtorNo=' . urlencode($_GET['SelectedCustomer']);
@@ -551,6 +552,17 @@ if (isset($_POST['ChangeCustomer']) AND $_POST['ChangeCustomer']!=''){
 		$_SESSION['RequireCustomerSelection']=1;
 	} else {
 		prnMsg(__('The customer the order is for cannot be modified once some of the order has been invoiced'),'warn');
+	}
+}
+
+// Pick up DebtorNo from URL if we are in customer selection mode and starting a new flow
+if (!isset($SelectedCustomer) AND isset($_GET['DebtorNo']) AND isset($_SESSION['Items' . $identifier]) AND ($_SESSION['Items' . $identifier]->DebtorNo == '' OR $_SESSION['RequireCustomerSelection'] == 1)) {
+	$SelectedCustomer = $_GET['DebtorNo'];
+	// Try to find the first branch for this customer if none specified
+	$SQL = "SELECT branchcode FROM custbranch WHERE debtorno='" . DB_escape_string($SelectedCustomer) . "' AND disabletrans=0 LIMIT 1";
+	$Result = DB_query($SQL);
+	if ($MyRow = DB_fetch_array($Result)) {
+		$SelectedBranch = $MyRow['branchcode'];
 	}
 }
 
