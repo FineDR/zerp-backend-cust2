@@ -133,11 +133,18 @@ AddConstraint('salesorders', 'salesorders_ibfk_1', 'debtorno,branchcode', 'custb
 
 
 
-// -- Final verify
-SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
-FROM information_schema.COLUMNS
-WHERE TABLE_SCHEMA = 'zerp_backend'
-AND COLUMN_NAME = 'debtorno'
-ORDER BY CHARACTER_MAXIMUM_LENGTH, TABLE_NAME;
+// -- Final verify debtorno
+// SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+// FROM information_schema.COLUMNS
+// WHERE TABLE_SCHEMA = 'zerp_backend'
+// AND COLUMN_NAME = 'debtorno'
+// ORDER BY CHARACTER_MAXIMUM_LENGTH, TABLE_NAME;
+
+// -- Final verify branchcode
+// SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+// FROM information_schema.COLUMNS
+// WHERE TABLE_SCHEMA = 'zerp_backend'
+// AND COLUMN_NAME = 'branchcode'
+// ORDER BY CHARACTER_MAXIMUM_LENGTH, TABLE_NAME;
 
 UpdateDBNo(basename(__FILE__, '.php'), __('Increase the size of debtorsmaster.debtorno'));
