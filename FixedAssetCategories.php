@@ -5,11 +5,58 @@ require(__DIR__ . '/includes/session.php');
 $Title = __('Fixed Asset Category Maintenance');
 $ViewTopic = 'FixedAssets';
 $BookMark = 'AssetCategories';
+
+// Force Load FontAwesome and Modern Fonts for High-Fidelity UI
+$ExtraHeadContent = '
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+	:root {
+		--db-primary: #2563eb;
+		--db-secondary: #64748b;
+		--db-danger: #ef4444;
+		--db-surface-alt: #f8fafc;
+	}
+	
+	/* High-Fidelity Button System */
+	.db-btn {
+		display: inline-flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		padding: 10px 18px !important;
+		border-radius: 10px !important;
+		font-weight: 700 !important;
+		font-size: 0.85rem !important;
+		text-decoration: none !important;
+		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+		border: none !important;
+		cursor: pointer !important;
+		line-height: 1 !important;
+		box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+	}
+	.db-btn:active { transform: translateY(1px) !important; }
+	
+	.db-btn-secondary { background: #f1f5f9 !important; color: #475569 !important; border: 1px solid #e2e8f0 !important; }
+	.db-btn-secondary:hover { background: #e2e8f0 !important; color: #1e293b !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1) !important; }
+	
+	.db-btn-danger { background: #fef2f2 !important; color: #b91c1c !important; border: 1px solid #fee2e2 !important; }
+	.db-btn-danger:hover { background: #fee2e2 !important; color: #991b1b !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1) !important; }
+	
+	.db-btn i { font-size: 0.9rem !important; }
+</style>';
+
 include(__DIR__ . '/includes/header.php');
 
-echo '<p class="page_title_text">
-		<img src="'.$RootPath.'/css/'.$Theme.'/images/money_add.png" title="' . __('Fixed Asset Categories') . '" alt="" />' . ' ' . $Title . '
-	</p>';
+echo '<div class="db-page" style="width: 100%; max-width: 100vw; overflow-x: hidden;">
+		<div class="db-page-header">
+			<div class="db-header-left">
+				<div class="db-page-title">
+					<i class="fas fa-tags"></i> ' . $Title . '
+				</div>
+				<div class="db-page-subtitle">' . __('Manage your asset categories and GL mappings') . '</div>
+			</div>
+		</div>';
 
 if (isset($_GET['SelectedCategory'])){
 	$SelectedCategory = mb_strtoupper($_GET['SelectedCategory']);
@@ -18,15 +65,7 @@ if (isset($_GET['SelectedCategory'])){
 }
 
 if (isset($_POST['submit'])) {
-
-	//initialise no input errors assumed initially before we test
 	$InputError = 0;
-
-	/* actions to take once the user has clicked the submit button
-	ie the page has called itself with some user input */
-
-	//first off validate inputs sensible
-
 	$_POST['CategoryID'] = mb_strtoupper($_POST['CategoryID']);
 
 	if (mb_strlen($_POST['CategoryID']) > 6) {
@@ -46,37 +85,26 @@ if (isset($_POST['submit'])) {
 			OR $_POST['AccumDepnAct'] == $_SESSION['CompanyRecord']['creditorsact']
 			OR $_POST['CostAct'] == $_SESSION['CompanyRecord']['grnact']
 			OR $_POST['AccumDepnAct'] == $_SESSION['CompanyRecord']['grnact']){
-
 		prnMsg(__('The accounts selected to post cost or accumulated depreciation to cannot be either of the debtors control account, creditors control account or GRN suspense accounts'),'error');
 		$InputError =1;
 	}
-	/*Make an array of the defined bank accounts */
-	$SQL = "SELECT bankaccounts.accountcode
-			FROM bankaccounts INNER JOIN chartmaster
-			ON bankaccounts.accountcode=chartmaster.accountcode";
+
+	$SQL = "SELECT bankaccounts.accountcode FROM bankaccounts INNER JOIN chartmaster ON bankaccounts.accountcode=chartmaster.accountcode";
 	$Result = DB_query($SQL);
 	$BankAccounts = array();
-	$i=0;
-
 	while ($Act = DB_fetch_row($Result)){
-		$BankAccounts[$i]= $Act[0];
-		$i++;
+		$BankAccounts[]= $Act[0];
 	}
 	if (in_array($_POST['CostAct'], $BankAccounts)) {
-		prnMsg(__('The asset cost account selected is a bank account - bank accounts are protected from having any other postings made to them. Select another balance sheet account for the asset cost'),'error');
+		prnMsg(__('The asset cost account selected is a bank account'),'error');
 		$InputError=1;
 	}
 	if (in_array($_POST['AccumDepnAct'], $BankAccounts)) {
-		prnMsg( __('The accumulated depreciation account selected is a bank account - bank accounts are protected from having any other postings made to them. Select another balance sheet account for the asset accumulated depreciation'),'error');
+		prnMsg( __('The accumulated depreciation account selected is a bank account'),'error');
 		$InputError=1;
 	}
 
 	if (isset($SelectedCategory) AND $InputError != 1) {
-
-		/*SelectedCategory could also exist if submit had not been clicked this code
-		would not run in this case cos submit is false of course  see the
-		delete code below*/
-
 		$SQL = "UPDATE fixedassetcategories
 					SET categorydescription = '" . $_POST['CategoryDescription'] . "',
 						costact = '" . $_POST['CostAct'] . "',
@@ -84,254 +112,266 @@ if (isset($_POST['submit'])) {
 						disposalact = '" . $_POST['DisposalAct'] . "',
 						accumdepnact = '" . $_POST['AccumDepnAct'] . "'
 				WHERE categoryid = '".$SelectedCategory . "'";
-
-		$ErrMsg = __('Could not update the fixed asset category') . $_POST['CategoryDescription'] . __('because');
-		$Result = DB_query($SQL, $ErrMsg);
-
-		prnMsg(__('Updated the fixed asset category record for') . ' ' . $_POST['CategoryDescription'],'success');
-
+		DB_query($SQL);
+		prnMsg(__('Updated category') . ': ' . $_POST['CategoryDescription'],'success');
 	} elseif ($InputError != 1) {
-
-		$SQL = "INSERT INTO fixedassetcategories (categoryid,
-												categorydescription,
-												costact,
-												depnact,
-												disposalact,
-												accumdepnact)
-								VALUES ('" . $_POST['CategoryID'] . "',
-										'" . $_POST['CategoryDescription'] . "',
-										'" . $_POST['CostAct'] . "',
-										'" . $_POST['DepnAct'] . "',
-										'" . $_POST['DisposalAct'] . "',
-										'" . $_POST['AccumDepnAct'] . "')";
-		$ErrMsg = __('Could not insert the new fixed asset category') . $_POST['CategoryDescription'] . __('because');
-		$Result = DB_query($SQL, $ErrMsg);
-		prnMsg(__('A new fixed asset category record has been added for') . ' ' . $_POST['CategoryDescription'],'success');
-
+		$SQL = "INSERT INTO fixedassetcategories (categoryid, categorydescription, costact, depnact, disposalact, accumdepnact)
+								VALUES ('" . $_POST['CategoryID'] . "', '" . $_POST['CategoryDescription'] . "', '" . $_POST['CostAct'] . "', '" . $_POST['DepnAct'] . "', '" . $_POST['DisposalAct'] . "', '" . $_POST['AccumDepnAct'] . "')";
+		DB_query($SQL);
+		prnMsg(__('Created new category') . ': ' . $_POST['CategoryDescription'],'success');
 	}
-	//run the SQL from either of the above possibilites
-
-	unset($_POST['CategoryID']);
-	unset($_POST['CategoryDescription']);
-	unset($_POST['CostAct']);
-	unset($_POST['DepnAct']);
-	unset($_POST['DisposalAct']);
-	unset($_POST['AccumDepnAct']);
+	unset($_POST['CategoryID'], $_POST['CategoryDescription'], $_POST['CostAct'], $_POST['DepnAct'], $_POST['DisposalAct'], $_POST['AccumDepnAct'], $SelectedCategory);
 
 } elseif (isset($_GET['delete'])) {
-//the link to delete a selected record was clicked instead of the submit button
-
-// PREVENT DELETES IF DEPENDENT RECORDS IN 'fixedassets'
-
-	$SQL= "SELECT COUNT(*) FROM fixedassets WHERE fixedassets.assetcategoryid='" . $SelectedCategory . "'";
+	$SQL= "SELECT COUNT(*) FROM fixedassets WHERE assetcategoryid='" . $SelectedCategory . "'";
 	$Result = DB_query($SQL);
 	$MyRow = DB_fetch_row($Result);
 	if ($MyRow[0]>0) {
-		prnMsg(__('Cannot delete this fixed asset category because fixed assets have been created using this category') .
-			'<br /> ' . __('There are') . ' ' . $MyRow[0] . ' ' . __('fixed assets referring to this category code'),'warn');
-
+		prnMsg(__('Cannot delete category') . ' - ' . $MyRow[0] . ' ' . __('assets refer to it'),'warn');
 	} else {
 		$SQL="DELETE FROM fixedassetcategories WHERE categoryid='" . $SelectedCategory . "'";
-		$Result = DB_query($SQL);
-		prnMsg(__('The fixed asset category') . ' ' . $SelectedCategory . ' ' . __('has been deleted'),'success');
+		DB_query($SQL);
+		prnMsg(__('Category deleted') . ': ' . $SelectedCategory,'success');
 		unset ($SelectedCategory);
-	} //end if stock category used in debtor transactions
-}
-
-if (!isset($SelectedCategory) or isset($_POST['submit'])) {
-
-/* It could still be the second time the page has been run and a record has been selected for modification - SelectedCategory will exist because it was sent with the new call. If its the first time the page has been displayed with no parameters
-then none of the above are true and the list of stock categorys will be displayed with
-links to delete or edit each. These will call the same page again and allow update/input
-or deletion of the records*/
-
-	$SQL = "SELECT categoryid,
-				categorydescription,
-				costact,
-				depnact,
-				disposalact,
-				accumdepnact
-			FROM fixedassetcategories";
-	$Result = DB_query($SQL);
-
-	echo '<table class="selection">';
-	echo '<tr>
-			<th>' . __('Cat Code') . '</th>
-			<th>' . __('Description') . '</th>
-			<th>' . __('Cost GL') . '</th>
-			<th>' . __('P &amp; L Depn GL') . '</th>
-			<th>' . __('Disposal GL') . '</th>
-			<th>' . __('Accum Depn GL') . '</th>
-			<th colspan="2"></th>
-		  </tr>';
-
-	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<tr class="striped_row">
-				<td>', $MyRow['categoryid'], '</td>
-				<td>', $MyRow['categorydescription'], '</td>
-				<td class="number">', $MyRow['costact'], '</td>
-				<td class="number">', $MyRow['depnact'], '</td>
-				<td class="number">', $MyRow['disposalact'], '</td>
-				<td class="number">', $MyRow['accumdepnact'], '</td>
-				<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedCategory=', $MyRow['categoryid'], '">' . __('Edit') . '</a></td>
-				<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedCategory=', $MyRow['categoryid'], '&amp;delete=yes" onclick="return confirm(\'' . __('Are you sure you wish to delete this fixed asset category? Additional checks will be performed before actual deletion to ensure data integrity is not compromised.') . '\');">' . __('Delete') . '</a></td>
-			</tr>';
 	}
-	//END WHILE LIST LOOP
-	echo '</table>';
 }
 
-//end of ifs and buts!
+echo '<div class="db-centered-container" style="width: 100%; max-width: 1400px; margin: 0 auto; padding: 0 20px; box-sizing: border-box;">
+		<div class="db-main-layout" style="width: 100%; display: grid; grid-template-columns: 400px 1fr; gap: 30px; box-sizing: border-box;">';
 
-if (isset($SelectedCategory)) {
-	echo '<div class="centre"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">' .__('Show All Fixed Asset Categories') . '</a></div>';
-}
-
-echo '<form id="CategoryForm" method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
+// LEFT COLUMN: FORM
+echo '<div class="db-layout-left">';
 if (isset($SelectedCategory) and !isset($_POST['submit'])) {
-	//editing an existing fixed asset category
-		$SQL = "SELECT categoryid,
-					categorydescription,
-					costact,
-					depnact,
-					disposalact,
-					accumdepnact
-				FROM fixedassetcategories
-				WHERE categoryid='" . $SelectedCategory . "'";
-
-		$Result = DB_query($SQL);
-		$MyRow = DB_fetch_array($Result);
-
+	$SQL = "SELECT * FROM fixedassetcategories WHERE categoryid='" . $SelectedCategory . "'";
+	$Result = DB_query($SQL);
+	$MyRow = DB_fetch_array($Result);
 	$_POST['CategoryID'] = $MyRow['categoryid'];
 	$_POST['CategoryDescription']  = $MyRow['categorydescription'];
 	$_POST['CostAct']  = $MyRow['costact'];
 	$_POST['DepnAct']  = $MyRow['depnact'];
 	$_POST['DisposalAct']  = $MyRow['disposalact'];
 	$_POST['AccumDepnAct']  = $MyRow['accumdepnact'];
-
-	echo '<input type="hidden" name="SelectedCategory" value="' . $SelectedCategory . '" />';
-	echo '<input type="hidden" name="CategoryID" value="' . $_POST['CategoryID'] . '" />';
-	echo '<fieldset>
-			<legend>', __('Amend Category Details'), '</legend>
-			<field>
-				<label for="CategoryID">' . __('Category Code') . ':</label>
-				<fieldtext>' . $_POST['CategoryID'] . '</fieldtext>
-			</field>';
-
-} else { //end of if $SelectedCategory only do the else when a new record is being entered
-	if (!isset($_POST['CategoryID'])) {
-		$_POST['CategoryID'] = '';
-	}
-	echo '<fieldset>
-			<legend>', __('Create Category Details'), '</legend>
-			<field>
-				<label for="CategoryID">' . __('Category Code') . ':</label>
-				<input type="text" name="CategoryID" required="required" title="" data-type="no-illegal-chars" size="7" maxlength="6" value="' . $_POST['CategoryID'] . '" />
-				<fieldhelp>' . __('Enter the asset category code. Up to 6 alpha-numeric characters are allowed') . '</fieldhelp>
-			</field>';
 }
 
-//SQL to poulate account selection boxes
-$SQL = "SELECT accountcode,
-				 accountname
-		FROM chartmaster INNER JOIN accountgroups
-		ON chartmaster.group_=accountgroups.groupname
-		WHERE accountgroups.pandl=0
-		ORDER BY accountcode";
-
+$SQL = "SELECT accountcode, accountname FROM chartmaster INNER JOIN accountgroups ON chartmaster.group_=accountgroups.groupname WHERE accountgroups.pandl=0 ORDER BY accountcode";
 $BSAccountsResult = DB_query($SQL);
-
-$SQL = "SELECT accountcode,
-				 accountname
-		FROM chartmaster INNER JOIN accountgroups
-		ON chartmaster.group_=accountgroups.groupname
-		WHERE accountgroups.pandl!= 0
-		ORDER BY accountcode";
-
+$SQL = "SELECT accountcode, accountname FROM chartmaster INNER JOIN accountgroups ON chartmaster.group_=accountgroups.groupname WHERE accountgroups.pandl!= 0 ORDER BY accountcode";
 $PnLAccountsResult = DB_query($SQL);
 
-if (!isset($_POST['CategoryDescription'])) {
-	$_POST['CategoryDescription'] = '';
+if (!isset($_POST['CategoryDescription'])) $_POST['CategoryDescription'] = '';
+if (!isset($_POST['CategoryID'])) $_POST['CategoryID'] = '';
+
+echo '<form id="CategoryForm" method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">
+		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+if (isset($SelectedCategory)) echo '<input type="hidden" name="SelectedCategory" value="' . $SelectedCategory . '" />';
+
+echo '<div class="db-card" style="border: none; box-shadow: var(--shadow-lg);">
+		<div class="db-card-header">
+			<div class="db-card-title"><i class="fas fa-edit"></i> ' . (isset($SelectedCategory) ? __('Amend Category') : __('Create Category')) . '</div>
+		</div>
+		<div class="db-card-body" style="padding: 25px;">';
+
+if (isset($SelectedCategory)) {
+	echo '<div class="db-form-group">
+			<label class="db-label">' . __('Category Code') . '</label>
+			<input type="hidden" name="CategoryID" value="' . $_POST['CategoryID'] . '" />
+			<div class="db-font-bold" style="padding: 10px; background: var(--surface-alt); border-radius: 8px;">' . $_POST['CategoryID'] . '</div>
+		  </div>';
+} else {
+	echo '<div class="db-form-group">
+			<label class="db-label">' . __('Category Code') . '</label>
+			<input type="text" name="CategoryID" required="required" class="db-input" maxlength="6" value="' . $_POST['CategoryID'] . '" />
+		  </div>';
 }
 
-echo '<field>
-		<label for="CategoryDescription">' . __('Category Description') . ':</label>
-		<input type="text" name="CategoryDescription" required="required" title="" size="22" maxlength="20" value="' . $_POST['CategoryDescription'] . '" />
-		<fieldhelp>' . __('Enter the asset category description up to 20 characters') . '</fieldhelp>
-	</field>
-	<field>
-		<label for="CostAct">' . __('Fixed Asset Cost GL Code') . ':</label>
-		<select name="CostAct" required="required" title="" >';
+echo '<div class="db-form-group">
+		<label class="db-label">' . __('Description') . '</label>
+		<input type="text" name="CategoryDescription" required="required" class="db-input" maxlength="20" value="' . $_POST['CategoryDescription'] . '" />
+	  </div>';
 
-while ($MyRow = DB_fetch_array($BSAccountsResult)){
+echo '<div class="db-form-group">
+		<label class="db-label">' . __('Cost GL Account') . '</label>
+		<select name="CostAct" required="required" class="db-select">';
+while ($ActRow = DB_fetch_array($BSAccountsResult)){
+	$sel = (isset($_POST['CostAct']) && $ActRow['accountcode']==$_POST['CostAct']) ? 'selected="selected"' : '';
+	echo '<option '.$sel.' value="'.$ActRow['accountcode'] . '">' . htmlspecialchars($ActRow['accountname'],ENT_QUOTES,'UTF-8',false) . ' ('.$ActRow['accountcode'].')</option>';
+}
+echo '</select></div>';
 
-	if (isset($_POST['CostAct']) and $MyRow['accountcode']==$_POST['CostAct']) {
-		echo '<option selected="selected" value="'.$MyRow['accountcode'] . '">' . htmlspecialchars($MyRow['accountname'],ENT_QUOTES,'UTF-8',false) . ' ('.$MyRow['accountcode'].')</option>';
-	} else {
-		echo '<option value="'.$MyRow['accountcode'] . '">' . htmlspecialchars($MyRow['accountname'],ENT_QUOTES,'UTF-8',false) . ' ('.$MyRow['accountcode'].')</option>';
-	}
-} //end while loop
-echo '</select>
-	<fieldhelp>' . __('Select the general ledger account where the cost of assets of this category should be posted to. Only balance sheet accounts can be selected') . '</fieldhelp>
-</field>';
-
-echo '<field>
-		<label for="DepnAct">' . __('Profit and Loss Depreciation GL Code') . ':</label>
-		<select name="DepnAct" required="required" title="" >';
-
-while ($MyRow = DB_fetch_array($PnLAccountsResult)) {
-	if (isset($_POST['DepnAct']) and $MyRow['accountcode']==$_POST['DepnAct']) {
-		echo '<option selected="selected" value="'.$MyRow['accountcode'] . '">' . htmlspecialchars($MyRow['accountname'],ENT_QUOTES,'UTF-8',false) . ' ('.$MyRow['accountcode'].')</option>';
-	} else {
-		echo '<option value="'.$MyRow['accountcode'] . '">' . htmlspecialchars($MyRow['accountname'],ENT_QUOTES,'UTF-8',false) . ' ('.$MyRow['accountcode'].')</option>';
-	}
-} //end while loop
-echo '</select>
-	<fieldhelp>' . __('Select the general ledger account where the depreciation of assets of this category should be posted to. Only profit and loss accounts can be selected') . '</fieldhelp>
-</field>';
+DB_data_seek($PnLAccountsResult, 0);
+echo '<div class="db-form-group">
+		<label class="db-label">' . __('Depreciation (P&L)') . '</label>
+		<select name="DepnAct" required="required" class="db-select">';
+while ($ActRow = DB_fetch_array($PnLAccountsResult)) {
+	$sel = (isset($_POST['DepnAct']) && $ActRow['accountcode']==$_POST['DepnAct']) ? 'selected="selected"' : '';
+	echo '<option '.$sel.' value="'.$ActRow['accountcode'] . '">' . htmlspecialchars($ActRow['accountname'],ENT_QUOTES,'UTF-8',false) . ' ('.$ActRow['accountcode'].')</option>';
+}
+echo '</select></div>';
 
 DB_data_seek($PnLAccountsResult,0);
-echo '<field>
-		<label for="DisposalAct">' .  __('Profit or Loss on Disposal GL Code') . ':</label>
-		<select name="DisposalAct" required="required" title="" >';
-while ($MyRow = DB_fetch_array($PnLAccountsResult)) {
-	if (isset($_POST['DisposalAct']) and $MyRow['accountcode']==$_POST['DisposalAct']) {
-		echo '<option selected="selected" value="'.$MyRow['accountcode'] . '">' . htmlspecialchars($MyRow['accountname'],ENT_QUOTES,'UTF-8',false) . ' ('.$MyRow['accountcode'].')' . '</option>';
-	} else {
-		echo '<option value="'.$MyRow['accountcode'] . '">' . htmlspecialchars($MyRow['accountname'],ENT_QUOTES,'UTF-8',false) . ' ('.$MyRow['accountcode'].')' . '</option>';
-	}
-} //end while loop
-echo '</select>
-	<fieldhelp>' . __('Select the general ledger account where the profit or loss on disposal on assets of this category should be posted to. Only profit and loss accounts can be selected') . '</fieldhelp>
-</field>';
+echo '<div class="db-form-group">
+		<label class="db-label">' . __('Disposal GL') . '</label>
+		<select name="DisposalAct" required="required" class="db-select">';
+while ($ActRow = DB_fetch_array($PnLAccountsResult)) {
+	$sel = (isset($_POST['DisposalAct']) && $ActRow['accountcode']==$_POST['DisposalAct']) ? 'selected="selected"' : '';
+	echo '<option '.$sel.' value="'.$ActRow['accountcode'] . '">' . htmlspecialchars($ActRow['accountname'],ENT_QUOTES,'UTF-8',false) . ' ('.$ActRow['accountcode'].')' . '</option>';
+}
+echo '</select></div>';
 
 DB_data_seek($BSAccountsResult,0);
-echo '<field>
-		<label for="AccumDepnAct">' . __('Balance Sheet Accumulated Depreciation GL Code') . ':</label>
-		<select name="AccumDepnAct" required="required" title="" >';
+echo '<div class="db-form-group">
+		<label class="db-label">' . __('Accum. Depn (BS)') . '</label>
+		<select name="AccumDepnAct" required="required" class="db-select">';
+while ($ActRow = DB_fetch_array($BSAccountsResult)) {
+	$sel = (isset($_POST['AccumDepnAct']) && $ActRow['accountcode']==$_POST['AccumDepnAct']) ? 'selected="selected"' : '';
+	echo '<option '.$sel.' value="'.$ActRow['accountcode'] . '">' . htmlspecialchars($ActRow['accountname'],ENT_QUOTES,'UTF-8',false) . ' ('.$ActRow['accountcode'].')' . '</option>';
+}
+echo '</select></div>';
 
-while ($MyRow = DB_fetch_array($BSAccountsResult)) {
-
-	if (isset($_POST['AccumDepnAct']) and $MyRow['accountcode']==$_POST['AccumDepnAct']) {
-		echo '<option selected="selected" value="'.$MyRow['accountcode'] . '">' . htmlspecialchars($MyRow['accountname'],ENT_QUOTES,'UTF-8',false) . ' ('.$MyRow['accountcode'].')' . '</option>';
-	} else {
-		echo '<option value="'.$MyRow['accountcode'] . '">' . htmlspecialchars($MyRow['accountname'],ENT_QUOTES,'UTF-8',false) . ' ('.$MyRow['accountcode'].')' . '</option>';
-	}
-
-} //end while loop
-
-
-echo '</select>
-	<fieldhelp>' . __('Select the general ledger account where the accumulated depreciation on assets of this category should be posted to. Only balance sheet accounts can be selected') . '</fieldhelp>
-</field>';
-
-echo '</fieldset>';
-
-echo '<div class="centre">
-		<input type="submit" name="submit" value="' . __('Enter Information') . '" />
+echo '</div>
+		<div class="db-card-footer" style="padding: 20px; background: var(--surface-alt); display: flex; flex-direction: column; gap: 10px;">
+			<button type="submit" name="submit" class="db-btn db-btn-primary">
+				<i class="fas fa-save"></i> ' . (isset($SelectedCategory) ? __('Update Category') : __('Create Category')) . '
+			</button>';
+if (isset($SelectedCategory)) {
+	echo '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" class="db-btn db-btn-secondary" style="justify-content: center;">
+			<i class="fas fa-times"></i> ' . __('Cancel Edit') . '
+		  </a>';
+}
+echo '	</div>
 	</div>
-</form>';
+</form>
+</div>';
+
+// RIGHT COLUMN: TABLE
+echo '<div class="db-layout-right">';
+$SQL = "SELECT * FROM fixedassetcategories";
+$Result = DB_query($SQL);
+echo '<div class="db-card" style="border: none; box-shadow: var(--shadow-md); overflow: hidden;">
+			<div class="db-table-wrap" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+				<table class="db-table monochromatic-table" style="width: 100%; min-width: 800px;">
+					<thead>
+						<tr>
+							<th style="padding-left: 20px;">' . __('Code') . '</th>
+							<th>' . __('Description') . '</th>
+							<th class="number">' . __('Cost GL') . '</th>
+							<th class="number">' . __('Depn GL') . '</th>
+							<th class="number">' . __('Accum GL') . '</th>
+							<th style="padding-right: 20px; text-align: center;">' . __('Actions') . '</th>
+						</tr>
+					</thead>
+					<tbody>';
+
+	while ($MyRow = DB_fetch_array($Result)) {
+		$isSelStyle = (isset($SelectedCategory) && $SelectedCategory == $MyRow['categoryid']) ? 'style="background: var(--surface-alt);"' : '';
+		echo '<tr class="db-table-row" '.$isSelStyle.'>
+			<td data-label="' . __('Category Code') . '">' . $MyRow['categoryid'] . '</td>
+			<td data-label="' . __('Description') . '">' . $MyRow['categorydescription'] . '</td>
+			<td data-label="' . __('Cost GL Code') . '">' . $MyRow['costact'] . '</td>
+			<td data-label="' . __('Depn GL Code') . '">' . $MyRow['depnact'] . '</td>
+			<td data-label="' . __('Accum Depn GL Code') . '">' . $MyRow['accumdepnact'] . '</td>
+			<td class="db-table-actions" data-label="' . __('Actions') . '" style="padding-right: 20px; white-space: nowrap; text-align: center;">
+				<div style="display: flex; gap: 8px; justify-content: flex-end;">
+					<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedCategory=' . urlencode($MyRow['categoryid']) . '" class="db-btn db-btn-secondary db-btn-sm" style="width: auto !important;">
+						<i class="fas fa-edit"></i> <span class="db-btn-text-mobile">' . __('Edit') . '</span>
+					</a>
+					<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?SelectedCategory=' . urlencode($MyRow['categoryid']) . '&delete=1" class="db-btn db-btn-danger db-btn-sm" style="width: auto !important;" onclick="return confirm(\'' . __('Are you sure you wish to delete this category?') . '\');">
+						<i class="fas fa-trash"></i> <span class="db-btn-text-mobile">' . __('Del') . '</span>
+					</a>
+				</div>
+			</td>
+		</tr>';
+	}
+echo '			</tbody>
+			</table>
+		</div>
+	  </div>
+</div>';
+
+echo '	</div>
+	  </div>'; // End centered-container/layout-grid
+
+echo '</div>'; // End db-page
+
+echo '<style>
+.monochromatic-table th { background: transparent !important; color: var(--text-main) !important; border-bottom: 2px solid var(--border) !important; }
+.db-page { width: 100% !important; max-width: 100vw !important; overflow-x: hidden !important; box-sizing: border-box !important; }
+.db-centered-container { width: 100% !important; max-width: 1400px !important; box-sizing: border-box !important; }
+.db-main-layout { width: 100% !important; box-sizing: border-box !important; min-width: 0 !important; }
+.db-card { width: 100% !important; box-sizing: border-box !important; margin-bottom: 20px; min-width: 0 !important; }
+
+/* Aggressive Legacy System Cleanout */
+@media (max-width: 1024px) {
+    #header, .header-container, #footer, .canvas, #Canvas, .ModuleList { 
+        display: none !important; 
+        max-width: 100vw !important; 
+        overflow: hidden !important; 
+        visibility: hidden !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    #logoutLink, #adminLink, .AdminLink, .LogoutLink { display: none !important; }
+    html, body { width: 100% !important; max-width: 100vw !important; overflow-x: hidden !important; margin: 0 !important; padding: 0 !important; }
+}
+
+.db-label { white-space: normal !important; width: 100% !important; display: block !important; }
+.db-input, .db-select, .db-form-group { width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; }
+
+.db-table-wrap { overflow-x: auto !important; width: 100% !important; display: block !important; -webkit-overflow-scrolling: touch; box-sizing: border-box !important; }
+.monochromatic-table td { border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+
+@media (max-width: 768px) {
+	.db-page-header { padding: 15px !important; }
+	.db-page-title { font-size: 1.25rem !important; }
+	.db-page-subtitle { white-space: normal !important; overflow: visible !important; font-size: 0.8rem !important; }
+	.db-table-wrap { border: none !important; }
+	.monochromatic-table, .monochromatic-table thead, .monochromatic-table tbody, .monochromatic-table th, .monochromatic-table td, .monochromatic-table tr { 
+		display: block !important; 
+		width: 100% !important;
+	}
+	.monochromatic-table thead tr { display: none !important; }
+	.monochromatic-table tr { 
+		border: 1px solid var(--border-soft) !important; 
+		border-radius: 12px !important; 
+		margin-bottom: 15px !important; 
+		padding: 15px !important; 
+		background: #fff !important; 
+		box-shadow: var(--shadow-sm) !important;
+	}
+	.monochromatic-table td { 
+		border: none !important; 
+		display: flex !important; 
+		justify-content: space-between !important; 
+		padding: 8px 0 !important; 
+		text-align: right !important;
+		font-size: 0.85rem !important;
+	}
+	.monochromatic-table td::before { 
+		content: attr(data-label); 
+		font-weight: 700 !important; 
+		color: var(--text-muted) !important; 
+		text-align: left !important;
+		flex: 1 !important;
+	}
+	.monochromatic-table td.db-table-actions {
+		border-top: 1px solid var(--border-soft) !important;
+		margin-top: 10px !important;
+		padding-top: 15px !important;
+		display: block !important;
+		text-align: center !important;
+	}
+	.monochromatic-table td.db-table-actions::before { display: none !important; }
+	.monochromatic-table td.db-table-actions div { justify-content: center !important; width: 100% !important; gap: 10px !important; }
+    
+	.db-card-body { padding: 20px !important; }
+	.db-btn:not(.db-btn-sm) { width: 100% !important; display: flex !important; justify-content: center !important; }
+	.db-btn-text-mobile { display: inline !important; margin-left: 5px; }
+}
+@media (min-width: 769px) {
+	.db-btn-text-mobile { display: none; }
+}
+</style>';
 
 include(__DIR__ . '/includes/footer.php');
+?>
