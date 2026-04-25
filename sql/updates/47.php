@@ -91,27 +91,27 @@ DropConstraint('salesorders', 'salesorders_ibfk_1');
 // ALTER TABLE stockmoves           MODIFY COLUMN branchcode VARCHAR(32) NOT NULL;
 
 // ChangeColumnSize($Column, $Table, $Type, $Null, $Default, $Size)
-ChangeColumnSize('debtorno', 'debtorsmaster', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('debtorno', 'contracts', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('debtorno', 'custbranch', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('debtorno', 'custcontacts', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('debtorno', 'custitem', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('debtorno', 'custnotes', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('debtorno', 'debtortrans', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('debtorno', 'orderdeliverydifferenceslog', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('debtorno', 'prices', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('debtorno', 'recurringsalesorders', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('debtorno', 'salesorders', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('debtorno', 'sellthroughsupport', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('debtorno', 'stockmoves', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('branchcode', 'custbranch', 'VARCHAR(34)', ' NOT NULL ', '', '32');
+ChangeColumnSize('debtorno', 'debtorsmaster', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('debtorno', 'contracts', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('debtorno', 'custbranch', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('debtorno', 'custcontacts', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('debtorno', 'custitem', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('debtorno', 'custnotes', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('debtorno', 'debtortrans', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('debtorno', 'orderdeliverydifferenceslog', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('debtorno', 'prices', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('debtorno', 'recurringsalesorders', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('debtorno', 'salesorders', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('debtorno', 'sellthroughsupport', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('debtorno', 'stockmoves', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('branchcode', 'custbranch', 'VARCHAR(34)', ' NOT NULL ', '', '34');
 ChangeColumnSize('branchcode', 'contracts', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('branchcode', 'recurringsalesorders', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('branchcode', 'prices', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('branchcode', 'salesorders', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('branchcode', 'debtortrans', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('branchcode', 'www_users', 'VARCHAR(34)', ' NOT NULL ', '', '32');
-ChangeColumnSize('branchcode', 'stockmoves', 'VARCHAR(34)', ' NOT NULL ', '', '32');
+ChangeColumnSize('branchcode', 'recurringsalesorders', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('branchcode', 'prices', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('branchcode', 'salesorders', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('branchcode', 'debtortrans', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('branchcode', 'www_users', 'VARCHAR(34)', ' NOT NULL ', '', '34');
+ChangeColumnSize('branchcode', 'stockmoves', 'VARCHAR(34)', ' NOT NULL ', '', '34');
 
 
 // 3. Recreate all FKs (Top-Down-Add aka TDA)
@@ -134,10 +134,10 @@ AddConstraint('salesorders', 'salesorders_ibfk_1', 'debtorno,branchcode', 'custb
 
 
 // -- Final verify
-// SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
-// FROM information_schema.COLUMNS
-// WHERE TABLE_SCHEMA = 'zerp_backend'
-// AND COLUMN_NAME = 'debtorno'
-// ORDER BY CHARACTER_MAXIMUM_LENGTH, TABLE_NAME;
+SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = 'zerp_backend'
+AND COLUMN_NAME = 'debtorno'
+ORDER BY CHARACTER_MAXIMUM_LENGTH, TABLE_NAME;
 
 UpdateDBNo(basename(__FILE__, '.php'), __('Increase the size of debtorsmaster.debtorno'));
