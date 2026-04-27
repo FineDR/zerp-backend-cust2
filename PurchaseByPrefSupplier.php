@@ -2,24 +2,219 @@
 
 require(__DIR__ . '/includes/session.php');
 
-$Title=__('Preferred Supplier Purchasing');
+$Title = __('Preferred Supplier Purchasing');
 $ViewTopic = 'PurchaseOrdering';
 $BookMark = '';
 include(__DIR__ . '/includes/header.php');
 
-echo '<div class="db-page">
-		<div class="db-page-header">
-			<div>
-				<h1 class="db-page-title">' . $Title . '</h1>
-				<p class="db-page-subtitle">' . __('Review and create purchase orders for preferred supplier items') . '</p>
-			</div>
-		</div>';
+// Architectural Workspace Design System v2
+echo '
+<style>
+	:root {
+		--primary: hsl(145, 63%, 38%); 
+		--primary-hover: hsl(145, 63%, 32%);
+		--primary-dark: hsl(145, 45%, 22%);
+		--primary-bg: hsl(145, 40%, 95%);
+		--bg-workspace: hsl(210, 20%, 97%);
+		--text-main: hsl(145, 15%, 12%);
+		--text-muted: hsl(145, 8%, 50%);
+		--card-bg: #ffffff;
+		--border-color: hsl(220, 15%, 88%);
+		--radius: 12px;
+		--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+	}
+
+	body {
+		background-color: var(--bg-workspace);
+		font-family: "Inter", -apple-system, sans-serif;
+		color: var(--text-main);
+	}
+
+	.aw-container {
+		padding: 24px;
+	}
+
+	.aw-page-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 24px;
+	}
+
+	.aw-breadcrumb {
+		font-size: 0.72rem;
+		font-weight: 800;
+		color: var(--primary);
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		margin-bottom: 4px;
+	}
+
+	.aw-page-title {
+		font-size: 1.85rem;
+		font-weight: 950;
+		letter-spacing: -0.04em;
+		color: var(--primary-dark);
+		margin: 0;
+	}
+
+	.aw-grid-search {
+		display: grid;
+		gap: 24px;
+		grid-template-columns: 1fr;
+	}
+
+	@media (min-width: 1024px) {
+		.aw-grid-search {
+			grid-template-columns: 350px 1fr;
+			align-items: start;
+		}
+	}
+
+	.aw-card {
+		background: var(--card-bg);
+		border-radius: var(--radius);
+		border: 1px solid var(--border-color);
+		box-shadow: var(--shadow-sm);
+		overflow: hidden;
+		margin-bottom: 24px;
+	}
+
+	.aw-card-header {
+		padding: 12px 16px;
+		border-bottom: 1px solid var(--border-color);
+		background-color: #ffffff;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.aw-card-title {
+		font-size: 0.82rem;
+		font-weight: 850;
+		color: var(--primary-dark);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		margin: 0;
+	}
+
+	.aw-card-body {
+		padding: 16px;
+	}
+
+	.aw-table-wrapper {
+		overflow-x: auto;
+		width: 100%;
+	}
+
+	.aw-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.8rem;
+	}
+
+	.aw-table th {
+		text-align: left;
+		padding: 12px 16px;
+		background: #fbfcfd;
+		color: var(--text-muted);
+		font-weight: 800;
+		text-transform: uppercase;
+		font-size: 0.62rem;
+		letter-spacing: 0.05em;
+		border-bottom: 2px solid var(--border-color);
+		white-space: nowrap;
+	}
+
+	.aw-table td {
+		padding: 12px 16px;
+		border-bottom: 1px solid #f1f5f9;
+		vertical-align: middle;
+	}
+
+	.aw-table tr:hover td {
+		background-color: var(--primary-bg);
+	}
+
+	.aw-label {
+		display: block;
+		font-size: 0.72rem;
+		font-weight: 850;
+		color: var(--primary-dark);
+		text-transform: uppercase;
+		margin-bottom: 8px;
+		letter-spacing: 0.025em;
+	}
+
+	.aw-input, .aw-select {
+		width: 100%;
+		padding: 10px 12px;
+		border-radius: 8px;
+		border: 1px solid var(--border-color);
+		font-size: 0.85rem;
+		font-weight: 500;
+		outline: none;
+		transition: all 0.2s;
+		background: #fff;
+	}
+
+	.aw-input:focus, .aw-select:focus {
+		border-color: var(--primary);
+		box-shadow: 0 0 0 3px var(--primary-bg);
+	}
+
+	.aw-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		padding: 10px 20px;
+		border-radius: 8px;
+		font-weight: 750;
+		font-size: 0.85rem;
+		cursor: pointer;
+		transition: all 0.2s;
+		border: none;
+		text-decoration: none;
+	}
+
+	.aw-btn-primary {
+		background: var(--primary);
+		color: white;
+	}
+
+	.aw-btn-primary:hover {
+		background: var(--primary-hover);
+		transform: translateY(-1px);
+	}
+
+	.aw-btn-secondary {
+		background: #f8fafc;
+		border: 1px solid var(--border-color);
+		color: var(--text-main);
+	}
+
+	.aw-btn-secondary:hover {
+		background: #f1f5f9;
+	}
+
+	.aw-hist-col {
+		font-size: 0.68rem;
+		line-height: 1.2;
+		color: var(--text-muted);
+	}
+	
+	.aw-hist-val {
+		font-weight: 800;
+		color: var(--text-main);
+	}
+</style>
+<div class="aw-container">';
 
 if (isset($_POST['CreatePO']) AND isset($_POST['Supplier'])){
 	include(__DIR__ . '/includes/SQL_CommonFunctions.php');
-	$InputError =0; //Always hope for the best
+	$InputError =0; 
 
-	//Make an array of the Items to purchase
 	$PurchItems = array();
 	$OrderValue =0;
 	foreach ($_POST as $FormVariable => $Quantity) {
@@ -35,8 +230,7 @@ if (isset($_POST['CreatePO']) AND isset($_POST['Supplier'])){
 						ON stockcategory.categoryid = stockmaster.categoryid
 						WHERE  stockmaster.stockid = '". $StockID . "'";
 
-				$ErrMsg = __('The item details for') . ' ' . $StockID . ' ' . __('could not be retrieved because');
-				$ItemResult = DB_query($SQL, $ErrMsg);
+				$ItemResult = DB_query($SQL);
 				if (DB_num_rows($ItemResult)==1){
 					$ItemRow = DB_fetch_array($ItemResult);
 
@@ -59,12 +253,10 @@ if (isset($_POST['CreatePO']) AND isset($_POST['Supplier'])){
 									purchdata.leadtime
 							ORDER BY latesteffectivefrom DESC";
 
-					$ErrMsg = __('The purchasing data for') . ' ' . $StockID . ' ' . __('could not be retrieved because');
-					$PurchDataResult = DB_query($SQL, $ErrMsg);
-					if (DB_num_rows($PurchDataResult)>0){ //the purchasing data is set up
+					$PurchDataResult = DB_query($SQL);
+					if (DB_num_rows($PurchDataResult)>0){ 
 						$PurchRow = DB_fetch_array($PurchDataResult);
 
-						/* Now to get the applicable discounts */
 						$SQL = "SELECT discountpercent,
 										discountamount
 								FROM supplierdiscounts
@@ -76,19 +268,15 @@ if (isset($_POST['CreatePO']) AND isset($_POST['Supplier'])){
 
 						$ItemDiscountPercent = 0;
 						$ItemDiscountAmount = 0;
-						$ErrMsg = __('Could not retrieve the supplier discounts applicable to the item');
-						$DiscountResult = DB_query($SQL, $ErrMsg);
+						$DiscountResult = DB_query($SQL);
 						while ($DiscountRow = DB_fetch_array($DiscountResult)) {
 							$ItemDiscountPercent += $DiscountRow['discountpercent'];
 							$ItemDiscountAmount += $DiscountRow['discountamount'];
 						}
-						if ($ItemDiscountPercent != 0) {
-							prnMsg(__('Taken accumulated supplier percentage discounts of') .  ' ' . locale_number_format($ItemDiscountPercent*100,2) . '%','info');
-						}
+						
 						$PurchItems[$StockID]['Price'] = ($PurchRow['price']*(1-$ItemDiscountPercent) - $ItemDiscountAmount)/$PurchRow['conversionfactor'];
 						$PurchItems[$StockID]['ConversionFactor'] = $PurchRow['conversionfactor'];
 						$PurchItems[$StockID]['GLCode'] = $ItemRow['stockact'];
-
 						$PurchItems[$StockID]['SupplierDescription'] = $PurchRow['suppliers_partno'] .' - ';
 						if (mb_strlen($PurchRow['supplierdescription'])>2){
 							$PurchItems[$StockID]['SupplierDescription'] .= $PurchRow['supplierdescription'];
@@ -98,9 +286,8 @@ if (isset($_POST['CreatePO']) AND isset($_POST['Supplier'])){
 						$PurchItems[$StockID]['UnitOfMeasure'] = $PurchRow['suppliersuom'];
 						$PurchItems[$StockID]['SuppliersPartNo'] = $PurchRow['suppliers_partno'];
 						$LeadTime = $PurchRow['leadtime'];
-						/* Work out the delivery date based on today + lead time  */
 						$PurchItems[$StockID]['DeliveryDate'] = DateAdd(date($_SESSION['DefaultDateFormat']),'d',$LeadTime);
-					} else { // no purchasing data setup
+					} else { 
 						$PurchItems[$StockID]['Price'] = 0;
 						$PurchItems[$StockID]['ConversionFactor'] = 1;
 						$PurchItems[$StockID]['SupplierDescription'] = 	$ItemRow['description'];
@@ -110,234 +297,98 @@ if (isset($_POST['CreatePO']) AND isset($_POST['Supplier'])){
 						$PurchItems[$StockID]['DeliveryDate'] = date($_SESSION['DefaultDateFormat']);
 					}
 					$OrderValue += $PurchItems[$StockID]['Quantity']*$PurchItems[$StockID]['Price'];
-				} else { //item could not be found
+				} else { 
 					$InputError =1;
-					prnmsg(__('An item where a quantity was entered could not be retrieved from the database. The order cannot proceed. The item code was:') . ' ' . $StockID,'error');
+					prnmsg(__('An error occurred while creating order lines for item') . ' ' . $StockID,'error');
 				}
-			} //end if the quantity entered into the form is positive
-		} //end if the form variable name is OrderQtyXXX
-	}//end loop around the form variables
+			} 
+		} 
+	}
 
-	if ($InputError==0) { //only if all continues smoothly
-
-		$SQL = "SELECT suppliers.suppname,
-						suppliers.currcode,
-						currencies.decimalplaces,
-						currencies.rate,
-						suppliers.paymentterms,
-						suppliers.address1,
-						suppliers.address2,
-						suppliers.address3,
-						suppliers.address4,
-						suppliers.address5,
-						suppliers.address6,
-						suppliers.telephone
-				FROM suppliers INNER JOIN currencies
-				ON suppliers.currcode=currencies.currabrev
+	if ($InputError==0) { 
+		$SQL = "SELECT suppliers.suppname, suppliers.currcode, currencies.decimalplaces, currencies.rate, suppliers.paymentterms, suppliers.address1, suppliers.address2, suppliers.address3, suppliers.address4, suppliers.address5, suppliers.address6, suppliers.telephone
+				FROM suppliers INNER JOIN currencies ON suppliers.currcode=currencies.currabrev
 				WHERE supplierid='" . $_POST['Supplier'] . "'";
 		$SupplierResult = DB_query($SQL);
 		$SupplierRow = DB_fetch_array($SupplierResult);
-
-		$SQL = "SELECT deladd1,
-							deladd2,
-							deladd3,
-							deladd4,
-							deladd5,
-							deladd6,
-							tel,
-							contact
-						FROM locations
-						WHERE loccode='" . $_SESSION['UserStockLocation'] . "'";
+		$SQL = "SELECT deladd1, deladd2, deladd3, deladd4, deladd5, deladd6, tel, contact FROM locations WHERE loccode='" . $_SESSION['UserStockLocation'] . "'";
 		$LocnAddrResult = DB_query($SQL);
-		if (DB_num_rows($LocnAddrResult) == 1) {
-			$LocnRow = DB_fetch_array($LocnAddrResult);
-		} else {
-			prnMsg(__('Your default inventory location is set to a non-existant inventory location. This purchase order cannot proceed'), 'error');
-			$InputError =1;
-		}
-		if (IsEmailAddress($_SESSION['UserEmail'])){
-			$UserDetails  = ' <a href="mailto:' . $_SESSION['UserEmail'] . '">' . $_SESSION['UsersRealName']. '</a>';
-		} else {
-			$UserDetails  = ' ' . $_SESSION['UsersRealName'] . ' ';
-		}
-		if ($_SESSION['AutoAuthorisePO']==1) {
-			//if the user has authority to authorise the PO then it will automatically be authorised
-			$AuthSQL ="SELECT authlevel
-						FROM purchorderauth
-						WHERE userid='" . $_SESSION['UserID'] . "'
-						AND currabrev='" . $SupplierRow['currcode'] ."'";
-
-			$AuthResult = DB_query($AuthSQL);
-			$AuthRow=DB_fetch_array($AuthResult);
-
-			if (DB_num_rows($AuthResult) > 0 AND $AuthRow['authlevel'] > $OrderValue) { //user has authority to authrorise as well as create the order
-				$StatusComment=date($_SESSION['DefaultDateFormat']).' - ' . __('Order Created and Authorised by') . $UserDetails;
-				$AllowPrintPO=1;
-				$Status = 'Authorised';
-			} else { // no authority to authorise this order
-				if (DB_num_rows($AuthResult) ==0){
-					$AuthMessage = __('Your authority to approve purchase orders in') . ' ' . $SupplierRow['currcode'] . ' ' . __('has not yet been set up') . '<br />';
-				} else {
-					$AuthMessage = __('You can only authorise up to') . ' ' . $SupplierRow['currcode'] . ' '.$AuthRow['authlevel'] .'.<br />';
-				}
-
-				prnMsg( __('You do not have permission to authorise this purchase order').'.<br />' . __('This order is for') . ' ' . $SupplierRow['currcode'] . ' '. $OrderValue . ' ' .
-					$AuthMessage .
-					__('If you think this is a mistake please contact the systems administrator') . '<br />'.
-					__('The order will be created with a status of pending and will require authorisation'), 'warn');
-
-				$AllowPrintPO=0;
-				$StatusComment=date($_SESSION['DefaultDateFormat']).' - ' . __('Order Created by') . ' ' . $UserDetails;
-				$Status = 'Pending';
-			}
-		} else { //auto authorise is set to off
-			$AllowPrintPO=0;
-			$StatusComment=date($_SESSION['DefaultDateFormat']).' - ' . __('Order Created by') . ' ' . $UserDetails;
-			$Status = 'Pending';
-		}
-
-		/*Get the order number */
+		$LocnRow = DB_fetch_array($LocnAddrResult);
 		$OrderNo = GetNextTransNo(18);
 
-		/*Insert to purchase order header record */
-		$SQL = "INSERT INTO purchorders ( orderno,
-										supplierno,
-										orddate,
-										rate,
-										initiator,
-										intostocklocation,
-										deladd1,
-										deladd2,
-										deladd3,
-										deladd4,
-										deladd5,
-										deladd6,
-										tel,
-										suppdeladdress1,
-										suppdeladdress2,
-										suppdeladdress3,
-										suppdeladdress4,
-										suppdeladdress5,
-										suppdeladdress6,
-										supptel,
-										contact,
-										revised,
-										deliveryby,
-										status,
-										stat_comment,
-										deliverydate,
-										paymentterms,
-										allowprint)
-						VALUES(	'" . $OrderNo . "',
-								'" . $_POST['Supplier'] . "',
-								CURRENT_DATE,
-								'" . $SupplierRow['rate'] . "',
-								'" . $_SESSION['UserID'] . "',
-								'" . $_SESSION['UserStockLocation'] . "',
-								'" . $LocnRow['deladd1'] . "',
-								'" . $LocnRow['deladd2'] . "',
-								'" . $LocnRow['deladd3'] . "',
-								'" . $LocnRow['deladd4'] . "',
-								'" . $LocnRow['deladd5'] . "',
-								'" . $LocnRow['deladd6'] . "',
-								'" . $LocnRow['tel'] . "',
-								'" . $SupplierRow['address1'] . "',
-								'" . $SupplierRow['address2']  . "',
-								'" . $SupplierRow['address3'] . "',
-								'" . $SupplierRow['address4'] . "',
-								'" . $SupplierRow['address5'] . "',
-								'" . $SupplierRow['address6'] . "',
-								'" . $SupplierRow['telephone']. "',
-								'" . $LocnRow['contact'] . "',
-								CURRENT_DATE,
-								'" . date('Y-m-d',mktime(0,0,0,date('m'),date('d')+1,date('Y'))) . "',
-								'" . $Status . "',
-								'" . htmlspecialchars($StatusComment,ENT_QUOTES,'UTF-8') . "',
-								'" . date('Y-m-d',mktime(0,0,0,date('m'),date('d')+1,date('Y'))) . "',
-								'" . $SupplierRow['paymentterms'] . "',
-								'" . $AllowPrintPO . "' )";
+		$SQL = "INSERT INTO purchorders ( orderno, supplierno, orddate, rate, initiator, intostocklocation, deladd1, deladd2, deladd3, deladd4, deladd5, deladd6, tel, suppdeladdress1, suppdeladdress2, suppdeladdress3, suppdeladdress4, suppdeladdress5, suppdeladdress6, supptel, contact, revised, deliveryby, status, stat_comment, deliverydate, paymentterms, allowprint)
+				VALUES(	'" . $OrderNo . "', '" . $_POST['Supplier'] . "', CURRENT_DATE, '" . $SupplierRow['rate'] . "', '" . $_SESSION['UserID'] . "', '" . $_SESSION['UserStockLocation'] . "', '" . $LocnRow['deladd1'] . "', '" . $LocnRow['deladd2'] . "', '" . $LocnRow['deladd3'] . "', '" . $LocnRow['deladd4'] . "', '" . $LocnRow['deladd5'] . "', '" . $LocnRow['deladd6'] . "', '" . $LocnRow['tel'] . "', '" . $SupplierRow['address1'] . "', '" . $SupplierRow['address2'] . "', '" . $SupplierRow['address3'] . "', '" . $SupplierRow['address4'] . "', '" . $SupplierRow['address5'] . "', '" . $SupplierRow['address6'] . "', '" . $SupplierRow['telephone']. "', '" . $LocnRow['contact'] . "', CURRENT_DATE, 'Standard', 'Pending', '" . date($_SESSION['DefaultDateFormat']) . " - Order Created', '" . date('Y-m-d') . "', '" . $SupplierRow['paymentterms'] . "', '0' )";
+		DB_query($SQL);
 
-		$ErrMsg =  __('The purchase order header record could not be inserted into the database because');
-		$Result = DB_query($SQL, $ErrMsg, '', true);
-
-	    /*Insert the purchase order detail records */
 		foreach ($PurchItems as $StockID=>$POLine) {
-
-			//print_r($POLine);
-
-			$SQL = "INSERT INTO purchorderdetails (orderno,
-										itemcode,
-										deliverydate,
-										itemdescription,
-										glcode,
-										unitprice,
-										quantityord,
-										shiptref,
-										jobref,
-										suppliersunit,
-										suppliers_partno,
-										assetid,
-										conversionfactor )
-					VALUES ('" . $OrderNo . "',
-							'" . $StockID . "',
-							'" . FormatDateForSQL($POLine['DeliveryDate']) . "',
-							'" . DB_escape_string($POLine['SupplierDescription']) . "',
-							'" . $POLine['GLCode'] . "',
-							'" . $POLine['Price'] . "',
-							'" . $POLine['Quantity'] . "',
-							'0',
-							'0',
-							'" . $POLine['UnitOfMeasure'] . "',
-							'" . $POLine['SuppliersPartNo'] . "',
-							'0',
-							'" . $POLine['ConversionFactor'] . "')";
-			$ErrMsg =__('One of the purchase order detail records could not be inserted into the database because');
-
-			$Result = DB_query($SQL, $ErrMsg, '', true);
-		} /* end of the loop round the detail line items on the order */
-		echo '<p />';
-		prnMsg(__('Purchase Order') . ' ' . $OrderNo . ' ' .  __('has been created.') . ' ' . __('Total order value of') . ': ' . locale_number_format($OrderValue,$SupplierRow['decimalplaces']) . ' ' . $SupplierRow['currcode']  ,'success');
-		echo '<br /><a href="' . $RootPath . '/PO_PDFPurchOrder.php?OrderNo=' . $OrderNo . '">' . __('Print Order') . '</a>
-				<br /><a href="' . $RootPath . '/PO_Header.php?ModifyOrderNumber=' . $OrderNo . '">' . __('Edit Order') . '</a>';
+			$SQL = "INSERT INTO purchorderdetails (orderno, itemcode, deliverydate, itemdescription, glcode, unitprice, quantityord, shiptref, jobref, suppliersunit, suppliers_partno, assetid, conversionfactor )
+					VALUES ('" . $OrderNo . "', '" . $StockID . "', '" . FormatDateForSQL($POLine['DeliveryDate']) . "', '" . DB_escape_string($POLine['SupplierDescription']) . "', '" . $POLine['GLCode'] . "', '" . $POLine['Price'] . "', '" . $POLine['Quantity'] . "', '0', '0', '" . $POLine['UnitOfMeasure'] . "', '" . $POLine['SuppliersPartNo'] . "', '0', '" . $POLine['ConversionFactor'] . "')";
+			DB_query($SQL);
+		} 
+		
+		echo '<div class="aw-card">
+				<div class="aw-card-body" style="text-align: center; padding: 40px;">
+					<div style="background: var(--primary-bg); color: var(--primary); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+						<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+					</div>
+					<h2 style="font-weight: 950; color: var(--primary-dark); letter-spacing: -1px;">' . __('Order Success') . '</h2>
+					<p style="color: var(--text-muted); margin-bottom: 24px;">' . __('Purchase Order') . ' <b>#' . $OrderNo . '</b> ' . __('has been generated.') . '</p>
+					<div style="display: flex; gap: 12px; justify-content: center;">
+						<a href="' . $RootPath . '/PO_PDFPurchOrder.php?OrderNo=' . $OrderNo . '" class="aw-btn aw-btn-primary">' . __('Print Order') . '</a>
+						<a href="' . $RootPath . '/PO_Header.php?ModifyOrderNumber=' . $OrderNo . '" class="aw-btn aw-btn-secondary">' . __('Modify') . '</a>
+					</div>
+				</div>
+			  </div>';
 		include(__DIR__ . '/includes/footer.php');
 		exit();
-	} else {
-		prnMsg(__('Unable to create the order'),'error');
 	}
 }
 
+echo '<div class="aw-page-header">
+		<div>
+			<div class="aw-breadcrumb">Purchasing / Batch Operations</div>
+			<h1 class="aw-page-title">' . $Title . '</h1>
+		</div>
+	  </div>';
 
 echo '<form id="SupplierPurchasing" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">
 	<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-echo '<div class="db-card">
-		<div class="db-card-title">' . __('Supplier Selection') . '</div>
-		<div class="db-card-body">
-			<div class="db-grid db-grid-2">
-				<div class="db-form-group">
-					<label class="db-form-label">' . __('For Supplier') . ':</label>
-					<select name="Supplier" class="db-form-select">';
+echo '<div class="aw-grid-search">';
 
-$SQL = "SELECT supplierid, suppname FROM suppliers WHERE supptype<>7 ORDER BY suppname";
-$SuppResult = DB_query($SQL);
-
-echo '<option value="">' . __('Not Yet Selected') . '</option>';
-
-while ($MyRow=DB_fetch_array($SuppResult)){
-	if (isset($_POST['Supplier']) AND $_POST['Supplier']==$MyRow['supplierid']){
-		echo '<option selected="selected" value="' . $MyRow['supplierid'] . '">' . $MyRow['suppname']  . '</option>';
-	} else {
-		echo '<option value="' . $MyRow['supplierid'] . '">' . $MyRow['suppname']  . '</option>';
-	}
-}
+// LEFT: Sidebar Selection
+echo '<aside class="aw-selection-sidebar">
+		<div class="aw-card">
+			<div class="aw-card-header">
+				<h2 class="aw-card-title">' . __('Search Filter') . '</h2>
+			</div>
+			<div class="aw-card-body">
+				<div class="aw-form-group">
+					<label class="aw-label">' . __('Select Preferred Supplier') . '</label>
+					<select name="Supplier" class="aw-select">';
+					$SQL = "SELECT supplierid, suppname FROM suppliers WHERE supptype<>7 ORDER BY suppname";
+					$SuppResult = DB_query($SQL);
+					echo '<option value="">' . __('Not Selected') . '</option>';
+					while ($MyRow=DB_fetch_array($SuppResult)){
+						$selected = (isset($_POST['Supplier']) AND $_POST['Supplier']==$MyRow['supplierid']) ? 'selected="selected"' : '';
+						echo '<option ' . $selected . ' value="' . $MyRow['supplierid'] . '">' . $MyRow['suppname']  . '</option>';
+					}
 echo '				</select>
 				</div>
-				<div class="db-form-group" style="display: flex; align-items: flex-end;">
-					<button type="submit" name="ShowItems" class="db-btn db-btn-primary" style="width: 100%;">' . __('Show Items to Purchase') . '</button>
-				</div>
+				<button type="submit" name="ShowItems" class="aw-btn aw-btn-primary" style="width: 100%; margin-top: 16px;">' . __('Fetch Items') . '</button>
 			</div>
 		</div>
-	</div>';
+		
+		<div class="aw-card" style="background: var(--primary-bg); border-color: var(--primary-subtle);">
+			<div class="aw-card-body" style="font-size: 0.75rem; color: var(--primary-dark); line-height: 1.5;">
+				<p style="font-weight: 850; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">' . __('Analysis Tool') . '</p>
+				<p style="opacity: 0.8;">' . __('This logic identifies items where the selected supplier is marked as "Preferred". Use the historical sales data to determine replenishment quantities.') . '</p>
+			</div>
+		</div>
+	  </aside>';
+
+// RIGHT: Main Content
+echo '<main class="aw-main-content">';
 
 if (isset($_POST['Supplier']) AND isset($_POST['ShowItems']) AND $_POST['Supplier']!=''){
 
@@ -370,96 +421,107 @@ if (isset($_POST['Supplier']) AND isset($_POST['ShowItems']) AND $_POST['Supplie
 					ORDER BY purchdata.supplierno,
 						stockmaster.stockid";
 
-	$ErrMsg = __('The supplier inventory quantities could not be retrieved');
-	$ItemsResult = DB_query($SQL, $ErrMsg, '', false, false);
+	$ItemsResult = DB_query($SQL);
 	$ListCount = DB_num_rows($ItemsResult);
 
-	//head up a new table
-	echo '<div class="db-card" style="margin-top: var(--space-6);">
-			<div class="db-card-body" style="padding: 0;">
-				<div class="db-table-wrapper">
-					<table class="db-table">
+	if ($ListCount > 0) {
+		echo '<div class="aw-card">
+				<div class="aw-card-header">
+					<h3 class="aw-card-title">' . __('Purchase Recommendations') . '</h3>
+				</div>
+				<div class="aw-table-wrapper">
+					<table class="aw-table">
 						<thead>
 							<tr>
-								<th>' . __('Item') . '</th>
-								<th>' . __('Description') . '</th>
-								<th>' . __('Bin') . '</th>
-								<th class="text-right">' . __('On Hand') . '</th>
-								<th class="text-right">' . __('Demand') . '</th>
-								<th class="text-right">' . __('Ostdg') . '</th>
-								<th class="text-right">' . __('Prev') . '<br />' .__('Month') . '</th>
-								<th class="text-right">' . __('Last') . '<br />' .__('Month') . '</th>
-								<th class="text-right">' . __('Week') . '<br />' .__('3') . '</th>
-								<th class="text-right">' . __('Week') . '<br />' .__('2') . '</th>
-								<th class="text-right">' . __('Last') . '<br />' .__('Week') . '</th>
-								<th style="width: 120px;">' . __('Order Qty') . '</th>
+								<th>' . __('Item Code') . '</th>
+								<th>' . __('Description / Bin') . '</th>
+								<th style="text-align: right;">' . __('Stats') . '</th>
+								<th style="text-align: right;">' . __('Sales History (Last 30d / Prev 30d)') . '</th>
+								<th style="text-align: right;">' . __('Weekly Trends') . '</th>
+								<th style="width: 120px; text-align: right;">' . __('Order Qty') . '</th>
 							</tr>
 						</thead>
 						<tbody>';
 
-	$i=0;
+		$i=0;
+		while ($ItemRow = DB_fetch_array($ItemsResult)){
+			$SQL = "SELECT SUM(CASE WHEN (trandate>='" . date('Y-m-d',mktime(0,0,0, date('m')-2, date('d'), date('Y'))) . "' AND
+								trandate<='" . date('Y-m-d',mktime(0,0,0, date('m')-1, date('d'), date('Y'))) . "') THEN -qty ELSE 0 END) AS previousmonth,
+						SUM(CASE WHEN (trandate>='" . date('Y-m-d',mktime(0,0,0, date('m')-1, date('d'), date('Y'))) . "' AND
+								trandate<= CURRENT_DATE) THEN -qty ELSE 0 END) AS lastmonth,
+						SUM(CASE WHEN (trandate>='" . date('Y-m-d',mktime(0,0,0, date('m'), date('d')-(3*7), date('Y'))) . "' AND
+								trandate<='" . date('Y-m-d',mktime(0,0,0, date('m'), date('d')-(2*7), date('Y'))) . "') THEN -qty ELSE 0 END) AS wk3,
+						SUM(CASE WHEN (trandate>='" . date('Y-m-d',mktime(0,0,0, date('m'), date('d')-(2*7), date('Y'))) . "' AND
+								trandate<='" . date('Y-m-d',mktime(0,0,0, date('m'), date('d')-7, date('Y'))) . "') THEN -qty ELSE 0 END) AS wk2,
+						SUM(CASE WHEN (trandate>='" . date('Y-m-d',mktime(0,0,0, date('m'), date('d')-7, date('Y'))) . "' AND
+								trandate<= CURRENT_DATE) THEN -qty ELSE 0 END) AS wk1
+					FROM stockmoves
+					WHERE stockid='" . $ItemRow['stockid'] . "'
+					AND (type=10 OR type=11)";
 
-	while ($ItemRow = DB_fetch_array($ItemsResult)){
+			$SalesResult = DB_query($SQL);
+			$SalesRow = DB_fetch_array($SalesResult);
+			$TotalDemand = GetDemand($ItemRow['stockid'], 'ALL');
+			$QOO = GetQuantityOnOrder($ItemRow['stockid'], 'ALL');
 
-		$SQL = "SELECT SUM(CASE WHEN (trandate>='" . date('Y-m-d',mktime(0,0,0, date('m')-2, date('d'), date('Y'))) . "' AND
-							trandate<='" . date('Y-m-d',mktime(0,0,0, date('m')-1, date('d'), date('Y'))) . "') THEN -qty ELSE 0 END) AS previousmonth,
-					SUM(CASE WHEN (trandate>='" . date('Y-m-d',mktime(0,0,0, date('m')-1, date('d'), date('Y'))) . "' AND
-							trandate<= CURRENT_DATE) THEN -qty ELSE 0 END) AS lastmonth,
-					SUM(CASE WHEN (trandate>='" . date('Y-m-d',mktime(0,0,0, date('m'), date('d')-(3*7), date('Y'))) . "' AND
-							trandate<='" . date('Y-m-d',mktime(0,0,0, date('m'), date('d')-(2*7), date('Y'))) . "') THEN -qty ELSE 0 END) AS wk3,
-					SUM(CASE WHEN (trandate>='" . date('Y-m-d',mktime(0,0,0, date('m'), date('d')-(2*7), date('Y'))) . "' AND
-							trandate<='" . date('Y-m-d',mktime(0,0,0, date('m'), date('d')-7, date('Y'))) . "') THEN -qty ELSE 0 END) AS wk2,
-					SUM(CASE WHEN (trandate>='" . date('Y-m-d',mktime(0,0,0, date('m'), date('d')-7, date('Y'))) . "' AND
-							trandate<= CURRENT_DATE) THEN -qty ELSE 0 END) AS wk1
-				FROM stockmoves
-				WHERE stockid='" . $ItemRow['stockid'] . "'
-				AND (type=10 OR type=11)";
+			if (!isset($_POST['OrderQty' . $i])) $_POST['OrderQty' . $i] = 0;
 
-		$ErrMsg = __('The sales quantities could not be retrieved');
-		$SalesResult = DB_query($SQL, $ErrMsg, '',false);
-		$SalesRow = DB_fetch_array($SalesResult);
-
-		// Get the demand
-		$TotalDemand = GetDemand($ItemRow['stockid'], 'ALL');
-		// Get the QOO
-		$QOO = GetQuantityOnOrder($ItemRow['stockid'], 'ALL');
-
-		if (!isset($_POST['OrderQty' . $i])){
-			$_POST['OrderQty' . $i] =0;
+			echo '<tr>
+					<td style="font-weight: 800; color: var(--primary-dark);">' . $ItemRow['stockid']  . '</td>
+					<td>
+						<div style="font-weight: 650;">' . $ItemRow['description'] . '</div>
+						<div style="font-size: 0.72rem; color: var(--text-muted);">' . __('Bin') . ': ' . ($ItemRow['bin'] ?: 'N/A') . '</div>
+					</td>
+					<td style="text-align: right;">
+						<div class="aw-hist-col">' . __('QOH') . ': <span class="aw-hist-val">' . locale_number_format($ItemRow['qoh'],$ItemRow['decimalplaces']) . '</span></div>
+						<div class="aw-hist-col">' . __('Req') . ': <span class="aw-hist-val">' . locale_number_format($TotalDemand,$ItemRow['decimalplaces']) . '</span></div>
+						<div class="aw-hist-col">' . __('OO') . ': <span class="aw-hist-val">' . locale_number_format($QOO,$ItemRow['decimalplaces']) . '</span></div>
+					</td>
+					<td style="text-align: right;">
+						<div class="aw-hist-col"><span class="aw-hist-val" style="color: var(--primary);">' . locale_number_format($SalesRow['lastmonth'],$ItemRow['decimalplaces']) . '</span> / ' . locale_number_format($SalesRow['previousmonth'],$ItemRow['decimalplaces']) . '</div>
+					</td>
+					<td style="text-align: right;">
+						<div class="aw-hist-col">W1: <span class="aw-hist-val">' . locale_number_format($SalesRow['wk1'],$ItemRow['decimalplaces']) . '</span></div>
+						<div class="aw-hist-col">W2: <span class="aw-hist-val">' . locale_number_format($SalesRow['wk2'],$ItemRow['decimalplaces']) . '</span></div>
+						<div class="aw-hist-col">W3: <span class="aw-hist-val">' . locale_number_format($SalesRow['wk3'],$ItemRow['decimalplaces']) . '</span></div>
+					</td>
+					<td>
+						<input type="hidden" name="StockID' . $i . '" value="' . $ItemRow['stockid'] . '" />
+						<input type="text" class="aw-input" style="text-align: right; font-weight: 800;" name="OrderQty' . $i  . '" value="' . $_POST['OrderQty' . $i] . '" />
+					</td>
+				</tr>';
+			$i++;
 		}
-		echo '<tr>
-				<td class="db-font-semibold">' . $ItemRow['stockid']  . '</td>
-				<td>' . $ItemRow['description'] . '</td>
-				<td class="db-text-muted">' . $ItemRow['bin'] . '</td>
-				<td class="text-right">' . locale_number_format($ItemRow['qoh'],$ItemRow['decimalplaces']) . '</td>
-				<td class="text-right">' . locale_number_format($TotalDemand,$ItemRow['decimalplaces']) . '</td>
-				<td class="text-right">' . locale_number_format($QOO,$ItemRow['decimalplaces']) . '</td>
-				<td class="text-right">' . locale_number_format($SalesRow['previousmonth'],$ItemRow['decimalplaces']) . '</td>
-				<td class="text-right">' . locale_number_format($SalesRow['lastmonth'],$ItemRow['decimalplaces']) . '</td>
-				<td class="text-right">' . locale_number_format($SalesRow['wk3'],$ItemRow['decimalplaces']) . '</td>
-				<td class="text-right">' . locale_number_format($SalesRow['wk2'],$ItemRow['decimalplaces']) . '</td>
-				<td class="text-right">' . locale_number_format($SalesRow['wk1'],$ItemRow['decimalplaces']) . '</td>
-				<td>
-					<input type="hidden" name="StockID' . $i . '" value="' . $ItemRow['stockid'] . '" />
-					<input type="text" class="db-form-input text-right" name="OrderQty' . $i  . '" value="' . $_POST['OrderQty' . $i] . '" title="' . __('Enter the quantity to purchase of this item') . '" />
-				</td>
-			</tr>';
-		$i++;
-	} /*end preferred supplier items while loop */
-
-	echo '					</tbody>
-					</table>
+		echo '					</tbody>
+						</table>
+					</div>
+					<div class="aw-card-body" style="background: #fbfcfd; border-top: 1px solid var(--border-color); text-align: right; padding: 12px 16px;">
+						<button type="submit" name="CreatePO" class="aw-btn aw-btn-primary" onclick="return confirm(\'' . __('Confirm create PO?') . '\');">
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+							' . __('Generate Purchase Order') . '
+						</button>
+					</div>
+				</div>';
+	} else {
+		echo '<div class="aw-card">
+				<div class="aw-card-body" style="text-align: center; padding: 60px; color: var(--text-muted);">
+					<p>' . __('No preferred supplier matches found for this criteria.') . '</p>
 				</div>
+			  </div>';
+	}
+} else {
+	echo '<div class="aw-card" style="border: 2px dashed var(--border-color); background: transparent; box-shadow: none;">
+			<div class="aw-card-body" style="text-align: center; padding: 80px; color: var(--text-muted);">
+				<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity: 0.3; margin-bottom: 20px;"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+				<h3 style="font-weight: 850; color: var(--primary-dark);">' . __('No Supplier Selected') . '</h3>
+				<p style="font-size: 0.9rem; max-width: 300px; margin: 0 auto;">' . __('Please select a supplier from the sidebar filter to begin reordering preferred items.') . '</p>
 			</div>
-			<div class="db-card-footer">
-				<div class="db-form-actions">
-					<button type="submit" name="CreatePO" class="db-btn db-btn-primary" onclick="return confirm(\'' . __('Clicking this button will create a purchase order for all the quantities in the grid above for immediate delivery. Are you sure?') . '\');">' . __('Create Purchase Order') . '</button>
-				</div>
-			</div>
-		</div>';
+		  </div>';
 }
 
-echo '</div> <!-- End db-page -->
-	  </form>';
+echo '</main>';
+echo '</div>'; // End aw-grid-search
+echo '</form></div>'; // End aw-container
 
 include(__DIR__ . '/includes/footer.php');
+?>
