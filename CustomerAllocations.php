@@ -130,7 +130,7 @@ if (isset($_POST['UpdateDatabase'])) {
 			$Settled = (abs($NewAllocTotal - $AllocnItem->TransAmount) < CurrencyTolerance($_SESSION['Alloc']->Currency)) ? 1 : 0;
 
 			$SQL = "UPDATE debtortrans
-					SET diffonexch='" . $AllocnItem->DiffOnExch . "',
+					SET diffonexch='" . ($AllocnItem->DiffOnExch + $AllocnItem->PrevDiffOnExch) . "',
 					alloc = '" . $NewAllocTotal . "',
 					settled = '" . $Settled . "'
 					WHERE id = '" . $AllocnItem->ID . "'";
@@ -160,7 +160,7 @@ if (isset($_POST['UpdateDatabase'])) {
 		if ($MovtInDiffOnExch != 0) {
 			if ($_SESSION['CompanyRecord']['gllink_debtors'] == 1) {
 				$PeriodNo = GetPeriod($_SESSION['Alloc']->TransDate);
-				$_SESSION['Alloc']->TransDate = FormatDateForSQL($_SESSION['Alloc']->TransDate);
+				$SQLTransDate = FormatDateForSQL($_SESSION['Alloc']->TransDate);
 
 				$SQL = "INSERT INTO gltrans (
 								type,
@@ -173,7 +173,7 @@ if (isset($_POST['UpdateDatabase'])) {
 							) VALUES (
 								'" . $_SESSION['Alloc']->TransType . "',
 								'" . $_SESSION['Alloc']->TransNo . "',
-								'" . $_SESSION['Alloc']->TransDate . "',
+								'" . $SQLTransDate . "',
 								'" . $PeriodNo . "',
 								'" . $_SESSION['CompanyRecord']['salesexchangediffact'] . "',
 								'',
@@ -262,7 +262,7 @@ if (isset($_GET['AllocTrans'])) {
 	$_SESSION['Alloc']->DebtorNo = $MyRow['debtorno'];
 	$_SESSION['Alloc']->CustomerName = $MyRow['name'];
 	$_SESSION['Alloc']->TransType = $MyRow['type'];
-	$_SESSION['Alloc']->TransTypeName = $MyRow['typename'];//= __($MyRow['typename']); **********
+	$_SESSION['Alloc']->TransTypeName = __($MyRow['typename']);
 	$_SESSION['Alloc']->TransNo = $MyRow['transno'];
 	$_SESSION['Alloc']->TransExRate = $MyRow['rate'];
 	$_SESSION['Alloc']->TransAmt = $MyRow['total'];
@@ -296,7 +296,7 @@ if (isset($_GET['AllocTrans'])) {
 	while ($MyRow = DB_fetch_array($Result)) {
 		$_SESSION['Alloc']->add_to_AllocsAllocn(
 			$MyRow['id'],
-			$MyRow['typename'],//__($MyRow['typename']), **********
+			__($MyRow['typename']),
 			$MyRow['transno'],
 			ConvertSQLDate($MyRow['trandate']),
 			0,
@@ -340,7 +340,7 @@ if (isset($_GET['AllocTrans'])) {
 		$DiffOnExchThisOne = ($MyRow['amt'] / $MyRow['rate']) - ($MyRow['amt'] / $_SESSION['Alloc']->TransExRate);
 		$_SESSION['Alloc']->add_to_AllocsAllocn(
 			$MyRow['id'],
-			$MyRow['typename'],//__($MyRow['typename']), **********
+			__($MyRow['typename']),
 			$MyRow['transno'],
 			ConvertSQLDate($MyRow['trandate']),
 			$MyRow['amt'],
@@ -526,6 +526,7 @@ if (isset($_POST['AllocTrans'])) {
 
 	echo '		</tbody>
 				</table>
+				<input type="hidden" name="TotalNumberOfAllocs" value="' . $Counter . '" />
 			</div>
 		</div>
 	</main>

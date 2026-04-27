@@ -13,6 +13,91 @@ include(__DIR__ . '/includes/SetDomPDFOptions.php');
 
 $Title = __('Trial Balance');
 
+// Architect Workspace UI: Core assets
+$ExtraHeadContent = '
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+	:root {
+		--db-primary: #059669; /* Specific user requirement */
+		--db-secondary: #6b7280;
+		--db-danger: #ef4444;
+		--db-surface-alt: #f9fafb;
+		--db-border: #e5e7eb;
+		--db-text-main: #111827;
+		--db-text-muted: #6b7280;
+		--db-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+		--db-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+	}
+	html, body { width: 100% !important; max-width: 100vw !important; overflow-x: hidden !important; }
+	#body_wrap_wrapper, .canvas { width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; overflow: hidden !important; }
+	
+	body { font-family: "Inter", sans-serif !important; background-color: var(--db-surface-alt) !important; color: var(--db-text-main) !important; margin: 0; padding: 0; }
+	
+	.db-page { width: 100% !important; max-width: 100vw !important; overflow-x: hidden !important; box-sizing: border-box !important; padding: 20px; }
+	.db-centered-container { width: 100% !important; max-width: 1000px !important; margin: 0 auto; box-sizing: border-box !important; }
+	
+	/* Page Header */
+	.db-page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+	.db-header-left { display: flex; flex-direction: column; }
+	.db-page-title { font-size: 1.5rem; font-weight: 700; color: var(--db-text-main); display: flex; align-items: center; gap: 10px; margin: 0; }
+	.db-page-subtitle { font-size: 0.875rem; color: var(--db-text-muted); margin-top: 4px; }
+	
+	/* Layout & Cards */
+	.db-main-layout { display: grid; gap: 24px; box-sizing: border-box !important; min-width: 0 !important; }
+	.db-card { background: #ffffff; border-radius: 12px; box-shadow: var(--db-shadow-sm); border: 1px solid var(--db-border); overflow: hidden; width: 100% !important; box-sizing: border-box !important; margin-bottom: 24px; min-width: 0 !important; }
+	.db-card-header { padding: 16px 20px; border-bottom: 1px solid var(--db-border); display: flex; justify-content: space-between; align-items: center; background: #ffffff; }
+	.db-card-title { font-size: 1.1rem; font-weight: 600; color: var(--db-text-main); margin: 0; }
+	.db-card-body { padding: 20px; }
+	
+	/* Forms */
+	.db-form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 16px; }
+	.db-form-group { display: flex; flex-direction: column; gap: 6px; }
+	.db-label { font-size: 0.875rem; font-weight: 500; color: #374151; }
+	.db-input, .db-select, input[type="text"], input[type="date"], select { 
+		width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; 
+		padding: 10px 14px !important; border: 1px solid #d1d5db !important; border-radius: 6px !important; font-size: 0.9rem !important; transition: border-color 0.15s ease !important; background: #fff !important; 
+	}
+	.db-input:focus, .db-select:focus, input[type="text"]:focus, select:focus { border-color: var(--db-primary) !important; outline: none !important; box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1) !important; }
+	.fieldhelp { font-size: 0.75rem; color: var(--db-text-muted); margin-top: 4px; }
+	
+	/* Buttons */
+	.db-btn { display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; padding: 10px 18px !important; border-radius: 6px !important; font-weight: 600 !important; font-size: 0.875rem !important; transition: all 0.2s ease !important; border: none !important; cursor: pointer !important; text-decoration: none !important; }
+	.db-btn-primary { background: var(--db-primary) !important; color: #ffffff !important; box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important; }
+	.db-btn-primary:hover { background: #047857 !important; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1) !important; }
+	.db-btn-secondary { background: #ffffff !important; color: #374151 !important; border: 1px solid #d1d5db !important; box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important; }
+	.db-btn-secondary:hover { background: #f3f4f6 !important; color: #111827 !important; }
+	
+	/* Enhanced Tables */
+	.db-table-wrap { width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; box-sizing: border-box !important; border-radius: 8px; border: 1px solid var(--db-border); background: #fff; margin-top: 15px; }
+	.monochromatic-table { width: 100%; border-collapse: collapse; text-align: left; }
+	.monochromatic-table th, .monochromatic-table thead td { background: #f9fafb !important; color: #4b5563 !important; padding: 12px 16px !important; font-weight: 600 !important; font-size: 0.85rem !important; text-transform: uppercase !important; letter-spacing: 0.05em !important; border-bottom: 2px solid var(--db-border) !important; }
+	.monochromatic-table td { padding: 14px 16px !important; border-bottom: 1px solid var(--db-border) !important; font-size: 0.9rem !important; color: #111827 !important; vertical-align: middle; }
+	.monochromatic-table tr:last-child td { border-bottom: none !important; }
+	.monochromatic-table tr:nth-child(even) { background-color: #f9fafb !important; }
+	.monochromatic-table .number { text-align: right !important; }
+	
+	/* Responsiveness */
+	@media (max-width: 1024px) {
+		#header, #footer { display: none !important; } /* Caging legacy elements */
+	}
+	@media (max-width: 768px) {
+		.db-page { padding: 12px; }
+		.db-card-header { padding: 14px 16px; }
+		.db-card-body { padding: 16px; }
+		.db-btn { width: 100% !important; justify-content: center !important; margin-bottom: 8px; }
+		
+		.monochromatic-table, .monochromatic-table thead, .monochromatic-table tbody, .monochromatic-table th, .monochromatic-table td, .monochromatic-table tr { display: block !important; width: 100% !important; }
+		.monochromatic-table thead tr { display: none !important; }
+		.monochromatic-table tr { border: 1px solid var(--db-border) !important; border-radius: 8px !important; margin-bottom: 12px !important; background: #fff !important; }
+		.monochromatic-table td { border: none !important; display: flex !important; justify-content: space-between !important; padding: 10px 14px !important; text-align: right !important; border-bottom: 1px solid #f3f4f6 !important; }
+		.monochromatic-table tr:nth-child(even) { background-color: #fff !important; }
+		.monochromatic-table td::before { content: attr(data-label); font-weight: 600 !important; color: #6b7280 !important; text-align: left !important; flex: 1; padding-right: 12px; }
+	}
+</style>
+';
+
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/AccountSectionsDef.php'); //this reads in the Accounts Sections array
 
@@ -398,11 +483,20 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsh
 	} else {
 		$Title = __('General Ledger Trial Balance');
 		include(__DIR__ . '/includes/header.php');
-		echo '<p class="page_title_text">
-				<img src="' . $RootPath . '/css/' . $Theme . '/images/gl.png" title="' . __('Trial Balance Report') . '" alt="" />
-				' . __('Trial Balance Report') . '
-			</p>';
+		echo '<div class="db-page">
+				<div class="db-centered-container">
+					<div class="db-page-header">
+						<div class="db-header-left">
+							<h1 class="db-page-title"><i class="fas fa-balance-scale"></i> ' . __('Trial Balance Report') . '</h1>
+						</div>
+					</div>
+					<div class="db-card">
+						<div class="db-card-body" style="overflow-x: auto;">';
 		echo $HTML;
+		echo '			</div>
+					</div>
+				</div>
+			</div>';
 		include(__DIR__ . '/includes/footer.php');
 	}
 
@@ -411,9 +505,15 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsh
 	$ViewTopic = 'GeneralLedger';
 	$BookMark = 'TrialBalance';
 	include(__DIR__ . '/includes/header.php');
-	echo '<p class="page_title_text">
-			<img src="', $RootPath, '/css/', $_SESSION['Theme'], '/images/gl.png" title="', __('Trial Balance'), '" alt="', __('Print'), '" />', ' ', __('Trial Balance Report'), '
-		</p>';
+	echo '<div class="db-page">
+			<div class="db-centered-container">
+				<div class="db-page-header">
+					<div class="db-header-left">
+						<h1 class="db-page-title"><i class="fas fa-balance-scale"></i> ' . __('Trial Balance Report') . '</h1>
+					</div>
+				</div>
+				<div class="db-main-layout">';
+
 	echo '<form method="post" action="', htmlspecialchars(basename(__FILE__), ENT_QUOTES, 'UTF-8'), '" target="_blank">';
 	echo '<input type="hidden" name="FormID" value="', $_SESSION['FormID'], '" />';
 
@@ -429,11 +529,13 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsh
 	$NotUsedPeriodNo = GetPeriod($FromDate);
 
 	/*Show a form to allow input of criteria for TB to show */
-	echo '<fieldset>
-			<legend>', __('Input criteria for Trial Balance'), '</legend>
-			<field>
-				<label for="PeriodFrom">', __('Select Period From'), ':</label>
-				<select name="PeriodFrom" autofocus="autofocus">';
+	echo '<div class="db-card">
+			<div class="db-card-header"><h3 class="db-card-title">', __('Input criteria for Trial Balance'), '</h3></div>
+			<div class="db-card-body">
+				<div class="db-form-row">
+					<div class="db-form-group">
+						<label class="db-label" for="PeriodFrom">', __('Select Period From'), '</label>
+						<select class="db-select" name="PeriodFrom" autofocus="autofocus">';
 	$NextYear = date('Y-m-d', strtotime('+1 Year'));
 	$SQL = "SELECT periodno,
 					lastdate_in_period
@@ -458,8 +560,8 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsh
 		}
 	}
 	echo '</select>
-		<fieldhelp>', __('Select the starting period for this report'), '</fieldhelp>
-	</field>';
+		<div class="fieldhelp">', __('Select the starting period for this report'), '</div>
+	</div>';
 
 	if (!isset($_POST['PeriodTo']) or $_POST['PeriodTo'] == '') {
 		$DefaultPeriodTo = GetPeriod(date($_SESSION['DefaultDateFormat'], mktime(0, 0, 0, date('m') + 1, 0, date('Y'))));
@@ -467,9 +569,9 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsh
 		$DefaultPeriodTo = $_POST['PeriodTo'];
 	}
 
-	echo '<field>
-			<label for="PeriodTo">', __('Select Period To'), ':</label>
-			<select name="PeriodTo">';
+	echo '<div class="db-form-group">
+			<label class="db-label" for="PeriodTo">', __('Select Period To'), '</label>
+			<select class="db-select" name="PeriodTo">';
 
 	DB_data_seek($Periods, 0);
 
@@ -482,29 +584,29 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsh
 		}
 	}
 	echo '</select>
-		<fieldhelp>', __('Select the end period for this report'), '</fieldhelp>
-	</field>';
+		<div class="fieldhelp">', __('Select the end period for this report'), '</div>
+	</div></div>';
 
-	echo '<h3>', __('OR'), '</h3>';
+	echo '<h3 class="db-card-title" style="margin: 15px 0; text-align: center;">', __('OR'), '</h3><div class="db-form-row">';
 
 	if (!isset($_POST['Period'])) {
 		$_POST['Period'] = '';
 	}
 
-	echo '<field>
-			<label for="Period">', __('Select Period'), ':</label>
+	echo '<div class="db-form-group">
+			<label class="db-label" for="Period">', __('Select Period'), '</label>
 			', ReportPeriodList($_POST['Period'], array('l', 't')), '
-			<fieldhelp>', __('Select a predefined period from this list. If a selection is made here it will override anything selected in the From and To options above.'), '</fieldhelp>
-		</field>';
+			<div class="fieldhelp">', __('Select a predefined period from this list. If a selection is made here it will override anything selected in the From and To options above.'), '</div>
+		</div>';
 
 	$SQL = "SELECT `id`,
 					`name`,
 					`current`
 				FROM glbudgetheaders";
 	$Result = DB_query($SQL);
-	echo '<field>
-			<label for="SelectedBudget">', __('Budget To Show Comparisons With'), '</label>
-			<select name="SelectedBudget">';
+	echo '<div class="db-form-group">
+			<label class="db-label" for="SelectedBudget">', __('Budget To Show Comparisons With'), '</label>
+			<select class="db-select" name="SelectedBudget">';
 	while ($MyRow = DB_fetch_array($Result)) {
 		if (!isset($_POST['SelectedBudget']) and $MyRow['current'] == 1) {
 			$_POST['SelectedBudget'] = $MyRow['id'];
@@ -515,18 +617,20 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsh
 			echo '<option value="', $MyRow['id'], '">', $MyRow['name'], '</option>';
 		}
 	}
-	echo '<fieldhelp>', __('Select the budget to make comparisons with.'), '</fieldhelp>
+	echo '<div class="fieldhelp">', __('Select the budget to make comparisons with.'), '</div>
 		</select>
-	</field>';
+	</div>';
 
-	echo '</fieldset>';
+	echo '</div></div> <!-- close db-form-row and db-card-body -->
+	</div>'; // close db-card
 
-	echo '<div class="centre">
-				<input type="submit" name="PrintPDF" title="Produce PDF Report" value="' . __('Print PDF') . '" />
-				<input type="submit" name="View" title="View Report" value="' . __('View') . '" />
-				<input type="submit" name="Spreadsheet" title="Spreadsheet" value="' . __('Spreadsheet') . '" />
+	echo '<div class="centre" style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+				<button type="submit" name="PrintPDF" class="db-btn db-btn-secondary" title="Produce PDF Report" value="' . __('Print PDF') . '"><i class="fas fa-file-pdf"></i> ' . __('Print PDF') . '</button>
+				<button type="submit" name="View" class="db-btn db-btn-primary" title="View Report" value="' . __('View') . '"><i class="fas fa-eye"></i> ' . __('View') . '</button>
+				<button type="submit" name="Spreadsheet" class="db-btn db-btn-secondary" title="Spreadsheet" value="' . __('Spreadsheet') . '"><i class="fas fa-file-excel"></i> ' . __('Spreadsheet') . '</button>
 		</div>';
 
-	echo '</form>';
+	echo '</form>
+		</div></div></div>'; // end main layout, center container, page
 	include(__DIR__ . '/includes/footer.php');
 }

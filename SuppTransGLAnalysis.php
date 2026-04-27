@@ -61,12 +61,12 @@ echo '<div class="db-page">';
 		</div>
 		<div class="db-header-actions">';
 	if ($_SESSION['SuppTrans']->InvoiceOrCredit == 'Invoice') {
-		echo '<a href="' . $RootPath . '/SupplierInvoice.php" class="db-btn db-btn-secondary">
+		echo '<a href="' . $RootPath . '/SupplierInvoice.php' . (isset($_GET['identifier']) ? '?identifier=' . $_GET['identifier'] : '') . '" class="db-btn db-btn-secondary">
 				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"></path></svg>
 				' . __('Back to Invoice') . '
 			</a>';
 	} else {
-		echo '<a href="' . $RootPath . '/SupplierCredit.php" class="db-btn db-btn-secondary">
+		echo '<a href="' . $RootPath . '/SupplierCredit.php' . (isset($_GET['identifier']) ? '?identifier=' . $_GET['identifier'] : '') . '" class="db-btn db-btn-secondary">
 				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"></path></svg>
 				' . __('Back to Credit') . '
 			</a>';
@@ -214,11 +214,11 @@ echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-
 				</div>
 				<div style="margin-top: var(--space-6);">';
 	if ($_SESSION['SuppTrans']->InvoiceOrCredit == 'Invoice') {
-		echo '<a href="' . $RootPath . '/SupplierInvoice.php" class="db-btn db-btn-primary" style="width: 100%; height: 44px; justify-content: center; font-size: 1rem;">
+		echo '<a href="' . $RootPath . '/SupplierInvoice.php' . (isset($_GET['identifier']) ? '?identifier=' . $_GET['identifier'] : '') . '" class="db-btn db-btn-primary" style="width: 100%; height: 44px; justify-content: center; font-size: 1rem;">
 				<i class="fas fa-arrow-left"></i> ' . __('Back to Invoice') . '
 			</a>';
 	} else {
-		echo '<a href="' . $RootPath . '/SupplierCredit.php" class="db-btn db-btn-primary" style="width: 100%; height: 44px; justify-content: center; font-size: 1rem;">
+		echo '<a href="' . $RootPath . '/SupplierCredit.php' . (isset($_GET['identifier']) ? '?identifier=' . $_GET['identifier'] : '') . '" class="db-btn db-btn-primary" style="width: 100%; height: 44px; justify-content: center; font-size: 1rem;">
 				<i class="fas fa-arrow-left"></i> ' . __('Back to Credit') . '
 			</a>';
 	}

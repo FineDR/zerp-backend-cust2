@@ -557,42 +557,41 @@ if (isset($_POST['ExRate'])) {
 
 	$_SESSION['SuppTrans']->DueDate = CalcDueDate($_SESSION['SuppTrans']->TranDate, $DayInFollowingMonth, $DaysBeforeDue);
 
-	$_SESSION['SuppTrans']->SuppReference = $_POST['SuppReference'];
+	if (isset($_POST['SuppReference'])) {
+		$_SESSION['SuppTrans']->SuppReference = $_POST['SuppReference'];
+	}
 
 	if ($_SESSION['SuppTrans']->GLLink_Creditors == 1) {
-
-		/*The link to GL from creditors is active so the total should be built up from GLPostings and GRN entries
-		 if the link is not active then OvAmount must be entered manually. */
-
-		$_SESSION['SuppTrans']->OvAmount = 0; /* for starters */
+		/* Recalculate OvAmount from session components */
+		$calcAmount = 0;
 		if (count($_SESSION['SuppTrans']->GRNs) > 0) {
 			foreach ($_SESSION['SuppTrans']->GRNs as $GRN) {
-				$_SESSION['SuppTrans']->OvAmount += ($GRN->This_QuantityInv * $GRN->ChgPrice);
+				$calcAmount += ($GRN->This_QuantityInv * $GRN->ChgPrice);
 			}
 		}
 		if (count($_SESSION['SuppTrans']->GLCodes) > 0) {
 			foreach ($_SESSION['SuppTrans']->GLCodes as $GLLine) {
-				$_SESSION['SuppTrans']->OvAmount += $GLLine->Amount;
+				$calcAmount += $GLLine->Amount;
 			}
 		}
 		if (count($_SESSION['SuppTrans']->Shipts) > 0) {
 			foreach ($_SESSION['SuppTrans']->Shipts as $ShiptLine) {
-				$_SESSION['SuppTrans']->OvAmount += $ShiptLine->Amount;
+				$calcAmount += $ShiptLine->Amount;
 			}
 		}
 		if (count($_SESSION['SuppTrans']->Contracts) > 0) {
 			foreach ($_SESSION['SuppTrans']->Contracts as $Contract) {
-				$_SESSION['SuppTrans']->OvAmount += $Contract->Amount;
+				$calcAmount += $Contract->Amount;
 			}
 		}
 		if (count($_SESSION['SuppTrans']->Assets) > 0) {
 			foreach ($_SESSION['SuppTrans']->Assets as $FixedAsset) {
-				$_SESSION['SuppTrans']->OvAmount += $FixedAsset->Amount;
+				$calcAmount += $FixedAsset->Amount;
 			}
 		}
-		$_SESSION['SuppTrans']->OvAmount = round($_SESSION['SuppTrans']->OvAmount, $_SESSION['SuppTrans']->CurrDecimalPlaces);
+		$_SESSION['SuppTrans']->OvAmount = round($calcAmount, $_SESSION['SuppTrans']->CurrDecimalPlaces);
 	}
-	else {
+	elseif (isset($_POST['OvAmount'])) {
 		/*OvAmount must be entered manually */
 		$_SESSION['SuppTrans']->OvAmount = round(filter_number_format($_POST['OvAmount']) , $_SESSION['SuppTrans']->CurrDecimalPlaces);
 	}
@@ -602,38 +601,38 @@ if (!isset($_POST['PostInvoice'])) {
 
 	if (isset($_POST['GRNS']) AND $_POST['GRNS'] == __('Purchase Orders')) {
 		/*This ensures that any changes in the page are stored in the session before calling the grn page */
-		echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath . '/SuppInvGRNs.php">';
-		echo '<div class="centre">' . __('You should automatically be forwarded to the entry of invoices against goods received page') . '. ' . __('If this does not happen') . ' (' . __('if the browser does not support META Refresh') . ') ' . '<a href="' . $RootPath . '/SuppInvGRNs.php">' . __('click here') . '</a> ' . __('to continue') . '</div>
+		echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath . '/SuppInvGRNs.php' . (isset($identifier) ? '?identifier=' . $identifier : '') . '">';
+		echo '<div class="centre">' . __('You should automatically be forwarded to the entry of invoices against goods received page') . '. ' . __('If this does not happen') . ' (' . __('if the browser does not support META Refresh') . ') ' . '<a href="' . $RootPath . '/SuppInvGRNs.php' . (isset($identifier) ? '?identifier=' . $identifier : '') . '">' . __('click here') . '</a> ' . __('to continue') . '</div>
 			<br />';
 		include(__DIR__ . '/includes/footer.php');
 		exit();
 	}
 	if (isset($_POST['Shipts']) AND $_POST['Shipts'] == __('Shipments')) {
 		/*This ensures that any changes in the page are stored in the session before calling the shipments page */
-		echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath . '/SuppShiptChgs.php">';
-		echo '<div class="centre">' . __('You should automatically be forwarded to the entry of invoices against shipments page') . '. ' . __('If this does not happen') . ' (' . __('if the browser does not support META Refresh') . ') ' . '<a href="' . $RootPath . '/SuppShiptChgs.php">' . __('click here') . '</a> ' . __('to continue') . '.</div><br />';
+		echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath . '/SuppShiptChgs.php' . (isset($identifier) ? '?identifier=' . $identifier : '') . '">';
+		echo '<div class="centre">' . __('You should automatically be forwarded to the entry of invoices against shipments page') . '. ' . __('If this does not happen') . ' (' . __('if the browser does not support META Refresh') . ') ' . '<a href="' . $RootPath . '/SuppShiptChgs.php' . (isset($identifier) ? '?identifier=' . $identifier : '') . '">' . __('click here') . '</a> ' . __('to continue') . '.</div><br />';
 		include(__DIR__ . '/includes/footer.php');
 		exit();
 	}
 	if (isset($_POST['GL']) AND $_POST['GL'] == __('General Ledger')) {
 		/*This ensures that any changes in the page are stored in the session before calling the shipments page */
-		echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath . '/SuppTransGLAnalysis.php">';
-		echo '<div class="centre">' . __('You should automatically be forwarded to the entry of invoices against the general ledger page') . '. ' . __('If this does not happen') . ' (' . __('if the browser does not support META Refresh') . ') ' . '<a href="' . $RootPath . '/SuppTransGLAnalysis.php">' . __('click here') . '</a> ' . __('to continue') . '.</div><br />';
+		echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath . '/SuppTransGLAnalysis.php' . (isset($identifier) ? '?identifier=' . $identifier : '') . '">';
+		echo '<div class="centre">' . __('You should automatically be forwarded to the entry of invoices against the general ledger page') . '. ' . __('If this does not happen') . ' (' . __('if the browser does not support META Refresh') . ') ' . '<a href="' . $RootPath . '/SuppTransGLAnalysis.php' . (isset($identifier) ? '?identifier=' . $identifier : '') . '">' . __('click here') . '</a> ' . __('to continue') . '.</div><br />';
 		include(__DIR__ . '/includes/footer.php');
 		exit();
 	}
 	if (isset($_POST['Contracts']) AND $_POST['Contracts'] == __('Contracts')) {
 		/*This ensures that any changes in the page are stored in the session before calling the shipments page */
-		echo '<meta http-equiv="refresh" content="0; url=' . $RootPath . '/SuppContractChgs.php">';
-		echo '<div class="centre">' . __('You should automatically be forwarded to the entry of invoices against contracts page') . '. ' . __('If this does not happen') . ' (' . __('if the browser does not support META Refresh') . ') ' . '<a href="' . $RootPath . '/SuppContractChgs.php">' . __('click here') . '</a> ' . __('to continue') . '.</div>
+		echo '<meta http-equiv="refresh" content="0; url=' . $RootPath . '/SuppContractChgs.php' . (isset($identifier) ? '?identifier=' . $identifier : '') . '">';
+		echo '<div class="centre">' . __('You should automatically be forwarded to the entry of invoices against contracts page') . '. ' . __('If this does not happen') . ' (' . __('if the browser does not support META Refresh') . ') ' . '<a href="' . $RootPath . '/SuppContractChgs.php' . (isset($identifier) ? '?identifier=' . $identifier : '') . '">' . __('click here') . '</a> ' . __('to continue') . '.</div>
 			<br />';
 		include(__DIR__ . '/includes/footer.php');
 		exit();
 	}
 	if (isset($_POST['FixedAssets']) AND $_POST['FixedAssets'] == __('Fixed Assets')) {
 		/*This ensures that any changes in the page are stored in the session before calling the shipments page */
-		echo '<meta http-equiv="refresh" content="0; url=' . $RootPath . '/SuppFixedAssetChgs.php">';
-		echo '<div class="centre">' . __('You should automatically be forwarded to the entry of invoice amounts against fixed assets page') . '. ' . __('If this does not happen') . ' (' . __('if the browser does not support META Refresh') . ') ' . '<a href="' . $RootPath . '/SuppFixedAssetChgs.php">' . __('click here') . '</a> ' . __('to continue') . '.</DIV><br />';
+		echo '<meta http-equiv="refresh" content="0; url=' . $RootPath . '/SuppFixedAssetChgs.php' . (isset($identifier) ? '?identifier=' . $identifier : '') . '">';
+		echo '<div class="centre">' . __('You should automatically be forwarded to the entry of invoice amounts against fixed assets page') . '. ' . __('If this does not happen') . ' (' . __('if the browser does not support META Refresh') . ') ' . '<a href="' . $RootPath . '/SuppFixedAssetChgs.php' . (isset($identifier) ? '?identifier=' . $identifier : '') . '">' . __('click here') . '</a> ' . __('to continue') . '.</DIV><br />';
 		include(__DIR__ . '/includes/footer.php');
 		exit();
 	}
@@ -1980,16 +1979,21 @@ if (!isset($_POST['PostInvoice'])) {
 		DB_Txn_Commit();
 
 		prnMsg(__('Supplier invoice number') . ' ' . $InvoiceNo . ' ' . __('has been processed') , 'success');
-		echo '<br />
-				<div class="centre">
-					<a href="' . $RootPath . '/SupplierInvoice.php?&SupplierID=' . $_SESSION['SuppTrans']->SupplierID . '">' . __('Enter another Invoice for this Supplier') . '</a>
-					<br />
-					<a href="' . $RootPath . '/Payments.php?&SupplierID=' . $_SESSION['SuppTrans']->SupplierID . '&amp;Amount=' . ($_SESSION['SuppTrans']->OvAmount + $TaxTotal) . '">' . __('Enter payment') . '</a>
-				</div>';
+		echo '<div class="db-card" style="max-width: 600px; margin: 40px auto; text-align: center;">';
+		echo '<div class="db-card-body" style="padding: 40px;">';
+		echo '<div style="font-size: 3rem; color: var(--db-primary); margin-bottom: 20px;"><i class="fas fa-check-circle"></i></div>';
+		echo '<h2 style="margin-bottom: 15px;">' . __('Invoice Completed') . '</h2>';
+		echo '<p style="color: var(--text-muted); margin-bottom: 30px;">' . __('The invoice has been successfully recorded in the system.') . '</p>';
+		echo '<div style="display: flex; gap: 15px; justify-content: center;">';
+		echo '<a href="' . $RootPath . '/SupplierInquiry.php?SupplierID=' . $_SESSION['SuppTrans']->SupplierID . '" class="db-btn db-btn-primary">' . __('Supplier Inquiry') . '</a>';
+		echo '<a href="' . $RootPath . '/Payments.php?SupplierID=' . $_SESSION['SuppTrans']->SupplierID . '&Amount=' . ($_SESSION['SuppTrans']->OvAmount + $TaxTotal) . '" class="db-btn db-btn-secondary">' . __('Enter Payment') . '</a>';
+		echo '</div></div></div>';
+
 		unset($_SESSION['SuppTrans']->GRNs);
 		unset($_SESSION['SuppTrans']->Shipts);
 		unset($_SESSION['SuppTrans']->GLCodes);
 		unset($_SESSION['SuppTrans']->Contracts);
+		unset($_SESSION['SuppTrans']->Assets);
 		unset($_SESSION['SuppTrans']);
 	}
 

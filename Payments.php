@@ -1249,7 +1249,7 @@ $AccountsResults = DB_query($SQL, $ErrMsg);
 
 echo '<div class="db-form-group">
 		<label class="db-form-label">', __('Bank Account') , '</label>
-		<select class="db-form-select" autofocus="autofocus" name="BankAccount" onchange="ReloadForm(UpdateHeader)" required="required">';
+		<select class="db-form-select" name="BankAccount" id="BankAccount" onchange="ReloadForm(UpdateHeader)">';
 
 if (DB_num_rows($AccountsResults) == 0) {
 	echo '</select></div>';
@@ -1270,7 +1270,7 @@ if (DB_num_rows($AccountsResults) == 0) {
 echo '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
 		<div class="db-form-group">
 			<label class="db-form-label">', __('Date of Payment') , '</label>
-			<input class="db-form-input" type="date" name="DatePaid" required="required" value="', FormatDateForSQL($_SESSION['PaymentDetail' . $identifier]->DatePaid), '" />
+			<input class="db-form-input" type="date" name="DatePaid" value="', FormatDateForSQL($_SESSION['PaymentDetail' . $identifier]->DatePaid), '" />
 		</div>
 		<div class="db-form-group">
 			<label class="db-form-label">', __('Payment Currency') , '</label>';
@@ -1282,7 +1282,7 @@ if (DB_num_rows($Result) == 0) {
 } else {
 	include(__DIR__ . '/includes/CurrenciesArray.php');
 	if ($_SESSION['PaymentDetail' . $identifier]->SupplierID == '') {
-		echo '<select class="db-form-select" name="Currency" onchange="ReloadForm(UpdateHeader)" required="required">';
+		echo '<select class="db-form-select" name="Currency" onchange="ReloadForm(UpdateHeader)">';
 		while ($MyRow = DB_fetch_array($Result)) {
 			$selected = ($_SESSION['PaymentDetail' . $identifier]->Currency == $MyRow['currabrev']) ? 'selected="selected" ' : '';
 			echo '<option ' . $selected . ' value="', $MyRow['currabrev'], '">', $CurrencyName[$MyRow['currabrev']], '</option>';
@@ -1311,7 +1311,7 @@ if ($_SESSION['PaymentDetail' . $identifier]->AccountCurrency != $_SESSION['Comp
 	echo '<div class="db-form-group">
 			<label class="db-form-label">', __('Functional Rate (Functional vs Bank)') , '</label>
 			<div style="display: flex; gap: var(--space-3); align-items: center;">
-				<input class="db-form-input number" style="width: 140px;" name="FunctionalExRate" required="required" type="text" value="', $_POST['FunctionalExRate'], '" />
+				<input class="db-form-input number" style="width: 140px;" name="FunctionalExRate" type="text" value="', $_POST['FunctionalExRate'], '" />
 				<span style="font-size: 0.75rem; color: var(--text-muted); background: var(--surface-alt); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-soft);">' . __('Suggested') . ': ' . (isset($SuggestedFunctionalExRate) ? locale_number_format($SuggestedFunctionalExRate, 'Variable') : '1') . '</span>
 			</div>
 		</div>';
@@ -1331,7 +1331,7 @@ echo '<!-- TAB 2: EXECUTION & AUDIT -->
 echo '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
 		<div class="db-form-group">
 			<label class="db-form-label">' . __('Payment Method') . '</label>
-			<select class="db-form-select" name="Paymenttype" required="required">';
+			<select class="db-form-select" name="Paymenttype">';
 include(__DIR__ . '/includes/GetPaymentMethods.php');
 array_unshift($PaytTypes, '');
 foreach ($PaytTypes as $PaytType) {
@@ -1433,7 +1433,7 @@ if ($_SESSION['CompanyRecord']['gllink_creditors'] == 1 AND $_SESSION['PaymentDe
 
 	echo '<div class="db-form-group">
 			<label class="db-form-label">' . __('Local Amount') . ' (' . $_SESSION['PaymentDetail' . $identifier]->Currency . ')</label>
-			<input class="db-form-input number val-bold" type="text" required="required" name="GLAmount" value="' . (isset($_POST['GLAmount']) ? $_POST['GLAmount'] : '0') . '" style="color:var(--primary); font-size: 1.15rem;" />
+			<input class="db-form-input number val-bold" type="text" name="GLAmount" value="' . (isset($_POST['GLAmount']) ? $_POST['GLAmount'] : '0') . '" style="color:var(--primary); font-size: 1.15rem;" />
 		</div>';
 
 	echo '</div>

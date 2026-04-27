@@ -86,15 +86,65 @@ while ($MyRow = DB_fetch_array($Result)) {
 	$ManagerMailText .= "\n\n";
 }
 
+include(__DIR__ . '/includes/header.php');
+
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div class="db-header-left">
+				<div class="db-page-title">
+					<i class="fas fa-bell"></i> ' . $Title . '
+				</div>
+				<div class="db-page-subtitle">' . __('Background maintenance notification processing') . '</div>
+			</div>
+		</div>
+		
+		<div class="db-centered-container" style="max-width: 600px; margin: 0 auto; padding: 0 20px;">
+			<div class="db-card" style="border: none; box-shadow: var(--shadow-md);">
+				<div class="db-card-body db-card-mobile-padding" style="padding: 40px; text-align: center;">';
+
 if (DB_num_rows($Result) > 0) {
-	include(__DIR__ . '/includes/header.php');
 	if (IsEmailAddress($LastManagerEmail)) {
 		$SendResult = SendEmailFromWebERP($SysAdminEmail, $LastManagerEmail, 'Overdue Maintenance Tasks Reminder', $ManagerMailText);
-		prnMsg(__('Reminder sent to') . ' ' . $LastManagerEmail, 'success');
+		echo '<div class="db-indicator db-indicator-success" style="margin: 0 auto 20px;">
+				<i class="fas fa-check"></i>
+			  </div>
+			  <h2 class="db-card-title" style="font-size: 1.5rem; margin-bottom: 10px;">' . __('Reminders Processed') . '</h2>
+			  <p style="color: var(--text-muted);">' . __('Notifications have been successfully sent to relevant users and managers.') . '</p>
+			  <div class="db-badge db-badge-success" style="margin-top: 15px; font-size: 0.9rem; word-break: break-all;">' . __('Last sent to') . ': ' . $LastManagerEmail . '</div>';
+	} else {
+		echo '<div class="db-indicator db-indicator-info" style="margin: 0 auto 20px;">
+				<i class="fas fa-info-circle"></i>
+			  </div>
+			  <h2 class="db-card-title" style="font-size: 1.5rem; margin-bottom: 10px;">' . __('Processing Complete') . '</h2>
+			  <p style="color: var(--text-muted);">' . __('No emails were sent as no valid addresses were found for flagged tasks.') . '</p>';
 	}
-	include(__DIR__ . '/includes/footer.php');
 } else {
-	include(__DIR__ . '/includes/header.php');
-	prnMsg(__('There are no reminders to be sent'), 'info');
-	include(__DIR__ . '/includes/footer.php');
+	echo '<div class="db-indicator db-indicator-info" style="margin: 0 auto 20px;">
+			<i class="fas fa-calendar-alt"></i>
+		  </div>
+		  <h2 class="db-card-title" style="font-size: 1.5rem; margin-bottom: 10px;">' . __('Up to Date') . '</h2>
+		  <p style="color: var(--text-muted);">' . __('There are no pending maintenance reminders to be sent at this time.') . '</p>';
 }
+
+echo '				<div style="margin-top: 30px;">
+						<a href="' . $RootPath . '/index.php" class="db-btn db-btn-primary db-mobile-full" style="justify-content: center; width: 100%;">
+							<i class="fas fa-home"></i> ' . __('Return Home') . '
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	  </div>';
+
+echo '<style>
+@media (max-width: 768px) {
+	.db-page-header { padding: 15px !important; }
+	.db-page-title { font-size: 1.25rem !important; }
+	.db-page-subtitle { white-space: normal !important; overflow: visible !important; font-size: 0.8rem !important; }
+	.db-card-mobile-padding { padding: 25px !important; }
+	.db-mobile-full { width: 100% !important; display: flex !important; justify-content: center !important; }
+}
+</style>';
+
+include(__DIR__ . '/includes/footer.php');
+?>
