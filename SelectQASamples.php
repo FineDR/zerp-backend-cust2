@@ -3,8 +3,8 @@
 require(__DIR__ . '/includes/session.php');
 
 $Title = __('Select QA Samples');
-$ViewTopic = 'QualityAssurance';// Filename in ManualContents.php's TOC.
-$BookMark = 'QA_Samples';// Anchor's id in the manual's html document.
+$ViewTopic = 'QualityAssurance';
+$BookMark = 'QA_Samples';
 include(__DIR__ . '/includes/header.php');
 
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
@@ -13,576 +13,202 @@ if (isset($_POST['SampleDate'])){$_POST['SampleDate'] = ConvertSQLDate($_POST['S
 if (isset($_POST['FromDate'])){$_POST['FromDate'] = ConvertSQLDate($_POST['FromDate']);}
 if (isset($_POST['ToDate'])){$_POST['ToDate'] = ConvertSQLDate($_POST['ToDate']);}
 
-if (isset($_GET['SelectedSampleID'])){
-	$SelectedSampleID =mb_strtoupper($_GET['SelectedSampleID']);
-} elseif (isset($_POST['SelectedSampleID'])){
-	$SelectedSampleID =mb_strtoupper($_POST['SelectedSampleID']);
-}
-
-if (isset($_GET['SelectedStockItem'])) {
-	$SelectedStockItem = $_GET['SelectedStockItem'];
-} elseif (isset($_POST['SelectedStockItem'])) {
-	$SelectedStockItem = $_POST['SelectedStockItem'];
-}
-if (isset($_GET['LotNumber'])) {
-	$LotNumber = $_GET['LotNumber'];
-} elseif (isset($_POST['LotNumber'])) {
-	$LotNumber = $_POST['LotNumber'];
-}
-if (isset($_GET['SampleID'])) {
-	$SampleID = $_GET['SampleID'];
-} elseif (isset($_POST['SampleID'])) {
-	$SampleID = $_POST['SampleID'];
-}
-if (!isset($_POST['FromDate'])){
-	$_POST['FromDate']=date(($_SESSION['DefaultDateFormat']), mktime(0, 0, 0, date('m'), date('d')-15, date('Y')));
-}
-if (!isset($_POST['ToDate'])){
-	$_POST['ToDate'] = date($_SESSION['DefaultDateFormat']);
-}
-
-$Errors = array();
-
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/maintenance.png" title="' . __('Search') . '" alt="" />' . ' ' . $Title . '</p>';
-
-if (! isset($_GET['delete'])) {
-
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-	if (isset($SelectedSampleID)) {
-
-		$SQL = "SELECT prodspeckey,
-						lotkey,
-						identifier,
-						comments,
-						cert,
-						sampledate
-				FROM qasamples
-				WHERE sampleid='".$SelectedSampleID."'";
-
-		$Result = DB_query($SQL);
-		$MyRow = DB_fetch_array($Result);
-
-		$_POST['ProdSpecKey'] = $MyRow['prodspeckey'];
-		$_POST['LotKey'] = $MyRow['lotkey'];
-		$_POST['Identifier'] = $MyRow['identifier'];
-		$_POST['Comments'] = $MyRow['comments'];
-		$_POST['SampleDate'] = ConvertSQLDate($MyRow['sampledate']);
-		if (!isset($_POST['Cert'])) {$_POST['Cert'] = $MyRow['cert'];}
-		echo '<input type="hidden" name="SelectedSampleID" value="' . $SelectedSampleID . '" />';
-		echo '<fieldset>
-				<legend>', __('Edit QA Sample Details'), '</legend>
-				<field>
-					<label>' . __('Sample ID') . ':</label>
-					<fieldtext>' . str_pad($SelectedSampleID,10,'0',STR_PAD_LEFT)  . '</fieldtext>
-				</field>';
-
-		echo '<field>
-				<label>' . __('Specification') . ':</label>
-				<fieldtext>' . $_POST['ProdSpecKey']. '</fieldtext>
-			</field>
-			<field>
-				<label>' . __('Lot') . ':</label>
-				<fieldtext>' . $_POST['LotKey']. '</fieldtext>
-			</field>
-			<field>
-				<label>' . __('Identifier') . ':</label>
-				<input type="text" name="Identifier" size="10" maxlength="10" value="' . $_POST['Identifier']. '" />
-			</field>
-			<field>
-				<label>' . __('Comments') . ':</label>
-				<input type="text" name="Comments" size="30" maxlength="255" value="' . $_POST['Comments']. '" />
-			</field>
-			<field>
-				<label>' . __('Sample Date') . ':</label>
-				<input type="date" name="SampleDate" size="10" maxlength="10" value="' . FormatDateForSQL($_POST['SampleDate']). '" />
-			</field>
-			<field>
-				<label>' . __('Use for Cert?') . ':</label>
-				<select name="Cert">';
-		if ($_POST['Cert']==1){
-			echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-		} else {
-			echo '<option value="1">' . __('Yes') . '</option>';
-		}
-		if ($_POST['Cert']==0){
-			echo '<option selected="selected" value="0">' . __('No') . '</option>';
-		} else {
-			echo '<option value="0">' . __('No') . '</option>';
-		}
-		echo '</select>
-			</field>
-		</fieldset>
-			<div class="centre">
-				<input type="submit" name="submit" value="' . __('Enter Information') . '" />
-			</div>
-			</form>';
-
-	} else { //end of if $SelectedSampleID only do the else when a new record is being entered
-		if (!isset($_POST['Cert'])) {
-			$_POST['Cert']=0;
-		}
-		echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
-		echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-		echo '<fieldset>
-				<legend>', __('Create QA Sample Details'), '</legend>';
-		$SQLSpecSelect="SELECT DISTINCT(keyval),
-								description
-							FROM prodspecs LEFT OUTER JOIN stockmaster
-							ON stockmaster.stockid=prodspecs.keyval";
-
-		$ResultSelection=DB_query($SQLSpecSelect);
-		echo '<field>
-				<label for="ProdSpecKey">' . __('Specification') . ':</label>';
-		echo '<select name="ProdSpecKey">';
-		while ($MyRowSelection=DB_fetch_array($ResultSelection)){
-			echo '<option value="' . $MyRowSelection['keyval'] . '">' . $MyRowSelection['keyval'].' - ' .htmlspecialchars($MyRowSelection['description'], ENT_QUOTES,'UTF-8', false)  . '</option>';
-		}
-		echo '</select>
-			</field>
-			<field>
-				<label for="LotKey">' . __('Lot') . ':</label>
-				<input type="text" required="required" name="LotKey" size="25" maxlength="25" value="' . ($_POST['LotKey'] ?? '') . '" />
-			</field>
-			<field>
-				<label for="Identifier">' . __('Identifier') . ':</label>
-				<input type="text" name="Identifier" size="10" maxlength="10" value="' . ($_POST['Identifier'] ?? '') . '" />
-			</field>
-			<field>
-				<label for="Comments">' . __('Comments') . ':</label>
-				<input type="text" name="Comments" size="30" maxlength="255" value="' . ($_POST['Comments'] ?? '') . '" />
-			</field>
-			<field>
-				<label for="Cert">' . __('Use for Cert?') . ':</label>
-				<select name="Cert">';
-		if ($_POST['Cert']==1){
-			echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-		} else {
-			echo '<option value="1">' . __('Yes') . '</option>';
-		}
-		if ($_POST['Cert']==0){
-			echo '<option selected="selected" value="0">' . __('No') . '</option>';
-		} else {
-			echo '<option value="0">' . __('No') . '</option>';
-		}
-		echo '</select>
-			</field>';
-		echo '<field>
-				<label for="DuplicateOK">' . __('Duplicate for Lot OK?') . ':</label>
-				<select name="DuplicateOK">';
-		if ($_POST['DuplicateOK']==1){
-			echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-		} else {
-			echo '<option value="1">' . __('Yes') . '</option>';
-		}
-		if ($_POST['DuplicateOK']==0){
-			echo '<option selected="selected" value="0">' . __('No') . '</option>';
-		} else {
-			echo '<option value="0">' . __('No') . '</option>';
-		}
-		echo '</select>
-			</field>
-			</fieldset>
-			<div class="centre">
-				<input type="submit" name="submit" value="' . __('Enter Information') . '" />
-			</div>
-			</form>';
+echo '
+<style>
+	:root {
+		--primary: hsl(145, 63%, 38%); 
+		--primary-hover: hsl(145, 63%, 32%);
+		--primary-dark: hsl(145, 45%, 22%);
+		--primary-soft: hsl(145, 40%, 95%);
+		--bg-workspace: hsl(210, 20%, 97%);
+		--border-color: hsl(220, 15%, 88%);
+		--text-main: hsl(145, 15%, 12%);
+		--text-muted: hsl(145, 8%, 50%);
+		--card-bg: #ffffff;
+		--radius: 12px;
 	}
-} //end if record deleted no point displaying form to add record
+
+	body { background-color: var(--bg-workspace); font-family: "Inter", -apple-system, sans-serif; color: var(--text-main); }
+	.aw-container { padding: 2px 10px !important; max-width: none !important; width: 100% !important; margin: 0 !important; }
+	.MainBody { padding-left: 0 !important; padding-right: 0 !important; width: 100% !important; max-width: none !important; }
+	.aw-page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+	.aw-breadcrumb { font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px; }
+	.aw-page-title { font-size: 1.5rem; font-weight: 950; letter-spacing: -0.04em; color: var(--primary-dark); margin: 0; }
+
+	.aw-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px; }
+	@media (min-width: 1024px) { 
+		.aw-grid-layout { grid-template-columns: 1fr 350px; align-items: start; }
+	}
+
+	.aw-card { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 16px; }
+	.aw-card-header { padding: 10px 16px; border-bottom: 1px solid var(--border-color); background: #fff; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+	.aw-card-title { font-size: 0.78rem; font-weight: 850; color: var(--primary-dark); text-transform: uppercase; margin: 0; display: flex; align-items: center; gap: 8px; }
+	.aw-card-body { padding: 12px; }
+
+	.aw-table-wrapper { overflow-x: auto; width: 100%; }
+	.aw-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+	.aw-table th { text-align: left; padding: 10px 12px; background: #fbfcfd; color: var(--text-muted); font-weight: 800; text-transform: uppercase; font-size: 0.62rem; border-bottom: 1px solid var(--border-color); }
+	.aw-table td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+	.aw-table tr:hover td { background-color: #f8fafc; }
+
+	.aw-label { display: block; font-size: 0.7rem; font-weight: 850; color: var(--primary-dark); text-transform: uppercase; margin-bottom: 4px; }
+	.aw-input, .aw-select { width: 100%; border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 10px; font-size: 0.82rem; font-weight: 500; outline: none; transition: 0.2s; background: white; }
+	.aw-input:focus, .aw-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+
+	.aw-btn { display: inline-flex; align-items: center; justify-content: center; padding: 8px 16px; border-radius: 8px; font-weight: 750; font-size: 0.8rem; cursor: pointer; transition: 0.2s; border: none; gap: 8px; text-decoration: none; }
+	.aw-btn-primary { background: var(--primary); color: white; }
+	.aw-btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+	.aw-btn-secondary { background: #f8fafc; border: 1px solid var(--border-color); color: var(--text-main); }
+	.aw-btn-secondary:hover { background: #f1f5f9; }
+    .aw-btn-sm { padding: 4px 10px; font-size: 0.75rem; }
+
+    .aw-badge { padding: 2px 8px; border-radius: 99px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+    .aw-badge-success { background: #d1fae5; color: #059669; }
+</style>
+<div class="aw-container">';
+
+if (isset($_GET['SelectedSampleID'])){ $SelectedSampleID =mb_strtoupper($_GET['SelectedSampleID']); } elseif (isset($_POST['SelectedSampleID'])){ $SelectedSampleID =mb_strtoupper($_POST['SelectedSampleID']); }
+if (isset($_GET['SelectedStockItem'])) { $SelectedStockItem = $_GET['SelectedStockItem']; } elseif (isset($_POST['SelectedStockItem'])) { $SelectedStockItem = $_POST['SelectedStockItem']; }
+if (isset($_GET['LotNumber'])) { $LotNumber = $_GET['LotNumber']; } elseif (isset($_POST['LotNumber'])) { $LotNumber = $_POST['LotNumber']; }
+if (isset($_GET['SampleID'])) { $SampleID = $_GET['SampleID']; } elseif (isset($_POST['SampleID'])) { $SampleID = $_POST['SampleID']; }
+if (!isset($_POST['FromDate'])){ $_POST['FromDate']=date(($_SESSION['DefaultDateFormat']), mktime(0, 0, 0, date('m'), date('d')-15, date('Y'))); }
+if (!isset($_POST['ToDate'])){ $_POST['ToDate'] = date($_SESSION['DefaultDateFormat']); }
 
 if (isset($_POST['submit'])) {
-
-	//initialise no input errors assumed initially before we test
-	$InputError = 0;
-
-	/* actions to take once the user has clicked the submit button
-	ie the page has called itself with some user input */
-	$i=1;
-
-	//first off validate inputs sensible
-
-	if (isset($SelectedSampleID) AND $InputError !=1) {
-		//check to see all values are in spec or at least entered
-		$Result = DB_query("SELECT count(sampleid) FROM sampleresults
-							WHERE sampleid = '" . $SelectedSampleID . "'
-							AND showoncert='1'
-							AND testvalue=''");
-		$MyRow = DB_fetch_row($Result);
-		if ($MyRow[0]>0 AND $_POST['Cert']=='1') {
-			 $_POST['Cert']='0';
-			 $Msg = __('Test Results have not all been entered.  This Lot is not able to be used for a a Certificate of Analysis');
-			 prnMsg($Msg , 'error');
-		}
-		$Result = DB_query("SELECT count(sampleid) FROM sampleresults
-							WHERE sampleid = '".$SelectedSampleID."'
-							AND showoncert='1'
-							AND isinspec='0'");
-		$MyRow = DB_fetch_row($Result);
-		if ($MyRow[0]>0 AND $_POST['Cert']=='1') {
-			 $Msg = __('Some Results are out of Spec');
-			 prnMsg($Msg , 'warning');
-		}
-		$SQL = "UPDATE qasamples SET identifier='" . $_POST['Identifier'] . "',
-									comments='" . $_POST['Comments'] . "',
-									sampledate='" . FormatDateForSQL($_POST['SampleDate']) . "',
-									cert='" . $_POST['Cert'] . "'
-				WHERE sampleid = '" . $SelectedSampleID . "'";
-
-		$Msg = __('QA Sample record for') . ' ' . $SelectedSampleID  . ' ' .  __('has been updated');
-		$ErrMsg = __('The update of the QA Sample failed because');
-		$Result = DB_query($SQL, $ErrMsg);
-		prnMsg($Msg , 'success');
-		if ( $_POST['Cert']==1) {
-			$Result = DB_query("SELECT prodspeckey, lotkey FROM qasamples
-							WHERE sampleid = '".$SelectedSampleID."'");
-			$MyRow = DB_fetch_row($Result);
-			if ($MyRow[0]>'') {
-				$SQL = "UPDATE qasamples SET cert='0'
-						WHERE sampleid <> '".$SelectedSampleID . "'
-						AND prodspeckey='" . $MyRow[0] . "'
-						AND lotkey='" . $MyRow[1] . "'";
-				$Msg = __('All other samples for this Specification and Lot was marked as Cert=No');
-				$ErrMsg = __('The update of the QA Sample failed because');
-				$Result = DB_query($SQL, $ErrMsg);
-				prnMsg($Msg , 'success');
-			}
-		}
-
-	} else {
-		CreateQASample($_POST['ProdSpecKey'],$_POST['LotKey'], $_POST['Identifier'], $_POST['Comments'], $_POST['Cert'], $_POST['DuplicateOK']);
-		$SelectedSampleID=DB_Last_Insert_ID('qasamples','sampleid');
-		if ($SelectedSampleID > '') {
-			$Msg = __('Created New Sample');
-			prnMsg($Msg , 'success');
-		}
-	}
-	unset($SelectedSampleID);
-	unset($_POST['ProdSpecKey']);
-	unset($_POST['LotKey']);
-	unset($_POST['Identifier']);
-	unset($_POST['Comments']);
-	unset($_POST['Cert']);
+	if (isset($SelectedSampleID)) {
+		$ResultsNotEntered = DB_fetch_row(DB_query("SELECT count(sampleid) FROM sampleresults WHERE sampleid = '" . $SelectedSampleID . "' AND showoncert='1' AND testvalue=''"));
+		if ($ResultsNotEntered[0]>0 AND $_POST['Cert']=='1') { $_POST['Cert']='0'; prnMsg(__('Test Results incomplete. COA unavailable.'), 'error'); }
+		DB_query("UPDATE qasamples SET identifier='" . $_POST['Identifier'] . "', comments='" . $_POST['Comments'] . "', sampledate='" . FormatDateForSQL($_POST['SampleDate']) . "', cert='" . $_POST['Cert'] . "' WHERE sampleid = '" . $SelectedSampleID . "'");
+		prnMsg(__('QA Sample updated'), 'success');
+		if ($_POST['Cert']==1) { $SD = DB_fetch_row(DB_query("SELECT prodspeckey, lotkey FROM qasamples WHERE sampleid = '".$SelectedSampleID."'")); DB_query("UPDATE qasamples SET cert='0' WHERE sampleid <> '".$SelectedSampleID . "' AND prodspeckey='" . $SD[0] . "' AND lotkey='" . $SD[1] . "'"); }
+	} else { CreateQASample($_POST['ProdSpecKey'],$_POST['LotKey'], $_POST['Identifier'], $_POST['Comments'], $_POST['Cert'], $_POST['DuplicateOK']); prnMsg(__('New QA Sample Created'), 'success'); }
+	unset($SelectedSampleID, $_POST['ProdSpecKey'], $_POST['LotKey'], $_POST['Identifier'], $_POST['Comments'], $_POST['Cert']);
 } elseif (isset($_GET['delete'])) {
-//the link to delete a selected record was clicked instead of the submit button
-
-// PREVENT DELETES IF DEPENDENT RECORDS
-
-	$SQL= "SELECT COUNT(*) FROM sampleresults WHERE sampleresults.sampleid='".$SelectedSampleID."'
-											AND sampleresults.testvalue > ''";
-	$Result = DB_query($SQL);
-	$MyRow = DB_fetch_row($Result);
-	if ($MyRow[0]>0) {
-		prnMsg(__('Cannot delete this Sample ID because there are test results tied to it'),'error');
-	} else {
-		$SQL="DELETE FROM sampleresults WHERE sampleid='" . $SelectedSampleID . "'";
-		$ErrMsg = __('The sample results could not be deleted because');
-		$Result = DB_query($SQL, $ErrMsg);
-		$SQL="DELETE FROM qasamples WHERE sampleid='" . $SelectedSampleID ."'";
-		$ErrMsg = __('The QA Sample could not be deleted because');
-		$Result = DB_query($SQL, $ErrMsg);
-		echo $SQL;
-		prnMsg(__('QA Sample') . ' ' . $SelectedSampleID . __('has been deleted from the database'),'success');
-		unset ($SelectedSampleID);
-		unset($Delete);
-		unset ($_GET['delete']);
-	}
+	$ResultsExist = DB_fetch_row(DB_query("SELECT COUNT(*) FROM sampleresults WHERE sampleresults.sampleid='".$SelectedSampleID."' AND sampleresults.testvalue > ''"));
+	if ($ResultsExist[0]>0) { prnMsg(__('Cannot delete Sample with existing test results'),'error'); }
+	else { DB_query("DELETE FROM sampleresults WHERE sampleid='" . $SelectedSampleID . "'"); DB_query("DELETE FROM qasamples WHERE sampleid='" . $SelectedSampleID ."'"); prnMsg(__('QA Sample deleted'),'success'); unset($SelectedSampleID); }
 }
 
-if (!isset($SelectedSampleID)) {
+echo '<div class="aw-page-header">
+		<div>
+			<div class="aw-breadcrumb">Quality Control / Sample Management</div>
+			<h1 class="aw-page-title">' . $Title . '</h1>
+		</div>
+	  </div>';
 
-	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">
-		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	if (isset($_POST['ResetPart'])) {
-		unset($SelectedStockItem);
-	}
+echo '<div class="aw-grid aw-grid-layout">';
 
-	if (isset($SampleID) AND $SampleID != '') {
-		if (!is_numeric($SampleID)) {
-			prnMsg(__('The Sample ID entered') . ' <U>' . __('MUST') . '</U> ' . __('be numeric'), 'error');
-			unset($SampleID);
-		} else {
-			echo __('Sample ID') . ' - ' . $SampleID;
-		}
-	}
-	if (!Is_Date($_POST['FromDate'])) {
-		$InputError = 1;
-		prnMsg(__('Invalid From Date'),'error');
-		$_POST['FromDate']=date(($_SESSION['DefaultDateFormat']), mktime(0, 0, 0, date('m'), date('d')-15, date('Y')));
-	}
-	if (!Is_Date($_POST['ToDate'])) {
-		$InputError = 1;
-		prnMsg(__('Invalid To Date'),'error');
-		$_POST['ToDate'] = date($_SESSION['DefaultDateFormat']);
-	}
-	if (isset($_POST['SearchParts'])) {
-		if ($_POST['Keywords'] AND $_POST['StockCode']) {
-			prnMsg(__('Stock description keywords have been used in preference to the Stock code extract entered'), 'info');
-		}
-		if ($_POST['Keywords']) {
-			//insert wildcard characters in spaces
-			$SearchString = '%' . str_replace(' ', '%', $_POST['Keywords']) . '%';
-			$SQL = "SELECT stockmaster.stockid,
-					stockmaster.description,
-					stockmaster.decimalplaces,
-					SUM(locstock.quantity) as qoh,
-					stockmaster.units,
-				FROM stockmaster INNER JOIN locstock
-				ON stockmaster.stockid = locstock.stockid
-				INNER JOIN locationusers ON locationusers.loccode = locstock.loccode
-						AND locationusers.userid='" .  $_SESSION['UserID'] . "'
-						AND locationusers.canview=1
-				WHERE stockmaster.description " . LIKE  . " '" . $SearchString ."'
-				AND stockmaster.categoryid='" . $_POST['StockCat'] . "'
-				GROUP BY stockmaster.stockid,
-					stockmaster.description,
-					stockmaster.decimalplaces,
-					stockmaster.units
-				ORDER BY stockmaster.stockid";
-		} elseif ($_POST['StockCode']) {
-			$SQL = "SELECT stockmaster.stockid,
-					stockmaster.description,
-					stockmaster.decimalplaces,
-					SUM(locstock.quantity) AS qoh,
-					stockmaster.units
-				FROM stockmaster INNER JOIN locstock
-					ON stockmaster.stockid = locstock.stockid
-				INNER JOIN locationusers ON locationusers.loccode = locstock.loccode
-						AND locationusers.userid='" .  $_SESSION['UserID'] . "'
-						AND locationusers.canview=1
-				WHERE stockmaster.stockid " . LIKE  . " '%" . $_POST['StockCode'] . "%'
-				AND stockmaster.categoryid='" . $_POST['StockCat'] . "'
-				GROUP BY stockmaster.stockid,
-					stockmaster.description,
-					stockmaster.decimalplaces,
-					stockmaster.units
-				ORDER BY stockmaster.stockid";
-		} elseif (!$_POST['StockCode'] AND !$_POST['Keywords']) {
-			$SQL = "SELECT stockmaster.stockid,
-					stockmaster.description,
-					stockmaster.decimalplaces,
-					SUM(locstock.quantity) AS qoh,
-					stockmaster.units
-				FROM stockmaster INNER JOIN locstock ON stockmaster.stockid = locstock.stockid
-				INNER JOIN locationusers ON locationusers.loccode = locstock.loccode
-						AND locationusers.userid='" .  $_SESSION['UserID'] . "'
-						AND locationusers.canview =1
-				WHERE stockmaster.categoryid='" . $_POST['StockCat'] . "'
-				GROUP BY stockmaster.stockid,
-					stockmaster.description,
-					stockmaster.decimalplaces,
-					stockmaster.units
-				ORDER BY stockmaster.stockid";
-		}
+// MAIN AREA (Left)
+echo '<main class="aw-main-side">';
 
-		$ErrMsg = __('No stock items were returned by the SQL because');
-		$StockItemsResult = DB_query($SQL, $ErrMsg);
-	}
-
-	if (true or !isset($LotNumber) or $LotNumber == '') { //revisit later, right now always show all inputs
-		if (!isset($LotNumber)){
-			$LotNumber ='';
-		}
-		if (!isset($SampleID)){
-			$SampleID='';
-		}
-		if (isset($SelectedStockItem)) {
-			echo __('For the part') . ':<b>' . $SelectedStockItem . '</b> ' . __('and') . ' <input type="hidden" name="SelectedStockItem" value="' . $SelectedStockItem . '" />';
-		}
-		echo '<fieldset>
-				<legend class="search">', __('Search QA Samples'), '</legend>';
-
-		echo '<field>
-				<label for="LotNumber">', __('Lot Number') . ':</label>
-				<input name="LotNumber" autofocus="autofocus" maxlength="20" size="12" value="' . $LotNumber . '"/>
-			</field>
-			<field>
-				<label for="SampleID">' . __('Sample ID') . ':</label>
-				<input name="SampleID" maxlength="10" size="10" value="' . $SampleID . '"/>
-			</field>';
-		echo '<field>
-				<label>', __('From Sample Date') . ':</label>
-				<input name="FromDate" size="10" type="date" value="' . FormatDateForSQL($_POST['FromDate']) . '" />
-			</field>
-			<field' . __('To Sample Date') . ': <input name="ToDate" size="10" type="date" value="' . FormatDateForSQL($_POST['ToDate']) . '" /></field>
-			</fieldset>';
-		echo '<div class="centre">
-				<input type="submit" name="SearchSamples" value="' . __('Search Samples') . '" />
-			</div>';
-	}
-	$SQL = "SELECT categoryid,
-				categorydescription
-			FROM stockcategory
-			ORDER BY categorydescription";
-	$Result1 = DB_query($SQL);
-	echo '<fieldset>
-			<legend class="search">' . __('To search for QA Samples for a specific part use the part selection facilities below') . '</legend>
-			<field>
-				<label for="StockCat">' . __('Select a stock category') . ':</label>
-				<select name="StockCat">';
-	while ($MyRow1 = DB_fetch_array($Result1)) {
-		if (isset($_POST['StockCat']) and $MyRow1['categoryid'] == $_POST['StockCat']) {
-			echo '<option selected="selected" value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
-		} else {
-			echo '<option value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
-		}
-	}
-	echo '</select>
-		</field>
-		<field>
-			<label for="Keywords">' . __('Enter text extracts in the') . ' <b>' . __('description') . '</b>:</label>
-			<input type="text" name="Keywords" size="20" maxlength="25" />
-		</field>
-		<field>
-			<label for="StockCode">' .'<b>' . __('OR') . ' </b>' .  __('Enter extract of the') . '<b> ' . __('Stock Code') . '</b>:</label>
-			<input type="text" name="StockCode" size="20" maxlength="25" />
-		</field>
-		</fieldset>
-		<div class="centre">
-			<input type="submit" name="SearchParts" value="' . __('Search Parts Now') . '" />
-			<input type="submit" name="ResetPart" value="' . __('Show All') . '" />
-		</div>';
-
-	if (isset($StockItemsResult)) {
-		echo '<table class="selection">
-			<thead>
-				<tr>
-							<th class="SortedColumn">' . __('Code') . '</th>
-							<th class="SortedColumn">' . __('Description') . '</th>
-							<th class="SortedColumn">' . __('On Hand') . '</th>
-							<th class="SortedColumn">' . __('Units') . '</th>
-				</tr>
-			</thead>
-			<tbody>';
-
-		while ($MyRow = DB_fetch_array($StockItemsResult)) {
-			echo '<tr class="striped_row">
-				<td><input type="submit" name="SelectedStockItem" value="' . $MyRow['stockid'] . '"</td>
-				<td>' . $MyRow['description'] . '</td>
-				<td class="number">' . locale_number_format($MyRow['qoh'],$MyRow['decimalplaces']) . '</td>
-				<td>' . $MyRow['units'] . '</td>
-				</tr>';
-		}
-		//end of while loop
-		echo '</tbody></table>';
-	}
-	//end if stock search results to show
-	else {
-		$FromDate = FormatDateForSQL($_POST['FromDate']);
-		$ToDate = FormatDateForSQL($_POST['ToDate']);
-		if (isset($LotNumber) AND $LotNumber != '') {
-			$SQL = "SELECT sampleid,
-							prodspeckey,
-							description,
-							lotkey,
-							identifier,
-							createdby,
-							sampledate,
-							cert
-						FROM qasamples
-						LEFT OUTER JOIN stockmaster on stockmaster.stockid=qasamples.prodspeckey
-						WHERE lotkey='" . filter_number_format($LotNumber) . "'";
-		} elseif (isset($SampleID) AND $SampleID != '') {
-			$SQL = "SELECT sampleid,
-							prodspeckey,
-							description,
-							lotkey,
-							identifier,
-							createdby,
-							sampledate,
-							cert
-						FROM qasamples
-						LEFT OUTER JOIN stockmaster on stockmaster.stockid=qasamples.prodspeckey
-						WHERE sampleid='" . filter_number_format($SampleID) . "'";
-		} else {
-			if (isset($SelectedStockItem)) {
-				$SQL = "SELECT sampleid,
-							prodspeckey,
-							description,
-							lotkey,
-							identifier,
-							createdby,
-							sampledate,
-							cert
-						FROM qasamples
-						INNER JOIN stockmaster on stockmaster.stockid=qasamples.prodspeckey
-						WHERE stockid='" . $SelectedStockItem . "'
-						AND sampledate>='".$FromDate."'
-						AND sampledate <='".$ToDate."'";
+// CREATE / EDIT FORM
+echo '<div class="aw-card">
+		<div class="aw-card-header"><h3 class="aw-card-title">' . (isset($SelectedSampleID) ? __('Edit QA Sample Details') . ' #' . $SelectedSampleID : __('Create New QA Sample')) . '</h3></div>
+		<div class="aw-card-body">
+			<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">
+			<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+			if (isset($SelectedSampleID)) {
+				$MyRow = DB_fetch_array(DB_query("SELECT prodspeckey, lotkey, identifier, comments, cert, sampledate FROM qasamples WHERE sampleid='".$SelectedSampleID."'"));
+				echo '<input type="hidden" name="SelectedSampleID" value="' . $SelectedSampleID . '" />';
+				echo '<div class="aw-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+						<div><label class="aw-label">Specification</label><div style="font-weight:700;">'.$MyRow['prodspeckey'].'</div></div>
+						<div><label class="aw-label">Lot / Serial</label><div style="font-weight:700;">'.$MyRow['lotkey'].'</div></div>
+						<div><label class="aw-label">Identifier</label><input type="text" name="Identifier" class="aw-input" value="'.$MyRow['identifier'].'" /></div>
+						<div><label class="aw-label">Sample Date</label><input type="date" name="SampleDate" class="aw-input" value="'.FormatDateForSQL(ConvertSQLDate($MyRow['sampledate'])).'" /></div>
+						<div><label class="aw-label">Comments</label><input type="text" name="Comments" class="aw-input" value="'.$MyRow['comments'].'" /></div>
+						<div><label class="aw-label">Cert Allowed?</label><select name="Cert" class="aw-select"><option value="1" '.($MyRow['cert']==1?'selected':'').'>Yes</option><option value="0" '.($MyRow['cert']==0?'selected':'').'>No</option></select></div>
+					  </div>';
 			} else {
-				$SQL = "SELECT sampleid,
-							prodspeckey,
-							description,
-							lotkey,
-							identifier,
-							createdby,
-							sampledate,
-							comments,
-							cert
-						FROM qasamples
-						LEFT OUTER JOIN stockmaster on stockmaster.stockid=qasamples.prodspeckey
-						WHERE sampledate>='".$FromDate."'
-						AND sampledate <='".$ToDate."'";
-			} //no stock item selected
-		} //end no sample id selected
-		$ErrMsg = __('No QA samples were returned by the SQL because');
-		$SampleResult = DB_query($SQL, $ErrMsg);
-		if (DB_num_rows($SampleResult) > 0) {
+				echo '<div class="aw-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+						<div><label class="aw-label">Specification</label><select name="ProdSpecKey" class="aw-select">';
+						$SpecRes = DB_query("SELECT DISTINCT(keyval), description FROM prodspecs LEFT OUTER JOIN stockmaster ON stockmaster.stockid=prodspecs.keyval");
+						while ($R=DB_fetch_array($SpecRes)){ echo '<option value="' . $R['keyval'] . '">' . $R['keyval'].' - ' .$R['description']  . '</option>'; }
+				echo '	</select></div>
+						<div><label class="aw-label">Lot / Serial</label><input type="text" required name="LotKey" class="aw-input" /></div>
+						<div><label class="aw-label">Identifier</label><input type="text" name="Identifier" class="aw-input" /></div>
+						<div><label class="aw-label">Comments</label><input type="text" name="Comments" class="aw-input" /></div>
+						<div><label class="aw-label">Cert Allowed?</label><select name="Cert" class="aw-select"><option value="0">No</option><option value="1">Yes</option></select></div>
+                        <div><label class="aw-label">Allow Duplicate?</label><select name="DuplicateOK" class="aw-select"><option value="1">Yes</option><option value="0">No</option></select></div>
+					  </div>';
+			}
+			echo '<div style="margin-top:16px; text-align:right;"><button type="submit" name="submit" class="aw-btn aw-btn-primary">' . __('Save Sample Details') . '</button></div>';
+echo '		</form></div></div>';
 
-			echo '<table cellpadding="2" width="90%" class="selection">
-				<thead>
-					<tr>
-								<th class="SortedColumn">' . __('Enter Results') . '</th>
-								<th class="SortedColumn">' . __('Specification') . '</th>
-								<th class="SortedColumn">' . __('Description') . '</th>
-								<th class="SortedColumn">' . __('Lot / Serial') . '</th>
-								<th class="SortedColumn">' . __('Identifier') . '</th>
-								<th class="SortedColumn">' . __('Created By') . '</th>
-								<th class="SortedColumn">' . __('Sample Date') . '</th>
-								<th class="SortedColumn">' . __('Comments') . '</th>
-								<th class="SortedColumn">' . __('Cert Allowed') . '</th>
-					</tr>
-				</thead>
-				<tbody>';
-
-			while ($MyRow = DB_fetch_array($SampleResult)) {
-				$ModifySampleID = $RootPath . '/TestPlanResults.php?SelectedSampleID=' . $MyRow['sampleid'];
-				$Edit = '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedSampleID=' . $MyRow['sampleid'] .'">' . __('Edit') .'</a>';
-				$Delete = '<a href="' .htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8')  .'?delete=yes&amp;SelectedSampleID=' . $MyRow['sampleid'].'" onclick="return confirm(\'' . __('Are you sure you wish to delete this Sample ID ?') . '\');">' . __('Delete').'</a>';
-				$FormatedSampleDate = ConvertSQLDate($MyRow['sampledate']);
-
-				//echo '<div class="centre"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?CopyTest=yes&amp;SelectedSampleID=' .$SelectedSampleID .'">' . __('Copy These Results') . '</a></div>';
-				//echo '<div class="centre"><a target="_blank" href="'. $RootPath . '/PDFTestPlan.php?SelectedSampleID=' .$SelectedSampleID .'">' . __('Print Testing Worksheet') . '</a></div>';
-				if ($MyRow['cert']==1) {
-					$CertAllowed='<a target="_blank" href="'. $RootPath . '/PDFCOA.php?LotKey=' .$MyRow['lotkey'] .'&ProdSpec=' .$MyRow['prodspeckey'] .'">' . __('Yes') . '</a>';
-				} else {
-					$CertAllowed=__('No');
-				}
-
-				echo '<tr class="striped_row">
-						<td><a href="' . $ModifySampleID . '">' . str_pad($MyRow['sampleid'],10,'0',STR_PAD_LEFT) . '</a></td>
-						<td>' . $MyRow['prodspeckey'] . '</td>
-						<td>' . $MyRow['description'] . '</td>
-						<td>' . $MyRow['lotkey'] . '</td>
-						<td>' .  $MyRow['identifier']  . '</td>
-						<td>' .  $MyRow['createdby']  . '</td>
-						<td class="date">' . $FormatedSampleDate . '</td>
-						<td>' . $MyRow['comments'] . '</td>
-						<td>' . $CertAllowed . '</td>
-						<td>' . $Edit . '</td>
-						<td>' . $Delete . '</td>
-						</tr>';
-			} //end of while loop
-			echo '</tbody></table>';
-		} // end if Pick Lists to show
+// RESULTS TABLE
+if (!isset($SelectedSampleID)) {
+	$FromDate = FormatDateForSQL($_POST['FromDate']); $ToDate = FormatDateForSQL($_POST['ToDate']); $SQL = "SELECT qasamples.sampleid, prodspeckey, description, lotkey, identifier, createdby, sampledate, comments, cert FROM qasamples LEFT OUTER JOIN stockmaster on stockmaster.stockid=qasamples.prodspeckey WHERE 1=1";
+	if (isset($LotNumber) && $LotNumber != '') { $SQL .= " AND lotkey LIKE '%" . $LotNumber . "%'"; } elseif (isset($SampleID) && $SampleID != '') { $SQL .= " AND sampleid='" . $SampleID . "'"; } else {
+		if (isset($SelectedStockItem)) { $SQL .= " AND prodspeckey='" . $SelectedStockItem . "'"; }
+		$SQL .= " AND sampledate>='".$FromDate."' AND sampledate <='".$ToDate."'";
 	}
-	echo '</div>
-		  </form>';
-} //end of ifs and buts!
-
-if (isset($SelectedSampleID)) {
-	echo '<div class="centre"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">' . __('Show All Samples') . '</a></div>';
-
+	$SQL .= " ORDER BY sampleid DESC";
+	$Res = DB_query($SQL);
+	if (DB_num_rows($Res) > 0) {
+		echo '<div class="aw-card">
+				<div class="aw-card-header"><h3 class="aw-card-title">' . __('QA Sample Log') . '</h3></div>
+				<div class="aw-table-wrapper">
+					<table class="aw-table">
+						<thead><tr><th>ID</th><th>Spec</th><th>Description</th><th>Lot / Serial</th><th>Identifier</th><th>Sample Date</th><th>COA</th><th>Actions</th></tr></thead>
+						<tbody>';
+		while ($R = DB_fetch_array($Res)) {
+			$Cert = ($R['cert']==1) ? '<a href="'.$RootPath.'/PDFCOA.php?LotKey='.$R['lotkey'].'&ProdSpec='.$R['prodspeckey'].'" target="_blank" class="aw-badge aw-badge-success">'.__('Yes').'</a>' : '<span style="color:var(--text-muted);">No</span>';
+			echo '<tr>
+					<td style="font-weight:700;"><a href="'.$RootPath.'/TestPlanResults.php?SelectedSampleID='.$R['sampleid'].'" style="text-decoration:none; color:var(--primary);">' . str_pad($R['sampleid'],6,'0',STR_PAD_LEFT) . '</a></td>
+					<td>' . $R['prodspeckey'] . '</td>
+					<td style="font-size:0.7rem;">' . $R['description'] . '</td>
+					<td><div style="font-weight:700;">' . $R['lotkey'] . '</div></td>
+					<td>' . $R['identifier'] . '</td>
+					<td>' . ConvertSQLDate($R['sampledate']) . '</td>
+					<td style="text-align:center;">' . $Cert . '</td>
+					<td style="white-space:nowrap;">
+						<a href="'.htmlspecialchars($_SERVER['PHP_SELF']).'?SelectedSampleID='.$R['sampleid'].'" class="aw-btn aw-btn-secondary aw-btn-sm">Edit</a>
+						<a href="'.htmlspecialchars($_SERVER['PHP_SELF']).'?delete=yes&SelectedSampleID='.$R['sampleid'].'" class="aw-btn-sm" style="color:#e11d48; text-decoration:none;" onclick="return confirm(\'Delete Sample?\');">Delete</a>
+					</td>
+				  </tr>';
+		}
+		echo '</tbody></table></div></div>';
+	}
 }
+echo '</main>';
+
+// SIDEBAR (Search Filters)
+echo '<aside class="aw-sidebar-side">';
+
+echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">
+	  <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+
+echo '<div class="aw-card">
+		<div class="aw-card-header"><h3 class="aw-card-title">' . __('Quick Filters') . '</h3></div>
+		<div class="aw-card-body">
+			<div class="aw-form-group"><label class="aw-label">Lot / Serial Number</label><input type="text" name="LotNumber" class="aw-input" value="'.(isset($LotNumber)?$LotNumber:'').'" /></div>
+			<div class="aw-form-group" style="margin-top:12px;"><label class="aw-label">Sample ID</label><input type="text" name="SampleID" class="aw-input" value="'.(isset($SampleID)?$SampleID:'').'" /></div>
+			<div class="aw-form-group" style="margin-top:12px;"><label class="aw-label">From Date</label><input type="date" name="FromDate" class="aw-input" value="'.FormatDateForSQL($_POST['FromDate']).'" /></div>
+			<div class="aw-form-group" style="margin-top:12px;"><label class="aw-label">To Date</label><input type="date" name="ToDate" class="aw-input" value="'.FormatDateForSQL($_POST['ToDate']).'" /></div>
+			<button type="submit" class="aw-btn aw-btn-primary" style="width:100%; margin-top:20px;">' . __('Apply Filters') . '</button>
+		</div>
+	  </div>';
+
+echo '<div class="aw-card">
+		<div class="aw-card-header"><h3 class="aw-card-title">' . __('Item Library Search') . '</h3></div>
+		<div class="aw-card-body">
+			<div class="aw-form-group"><label class="aw-label">Category</label><select name="StockCat" class="aw-select">';
+				$CatRes = DB_query("SELECT categoryid, categorydescription FROM stockcategory ORDER BY categorydescription");
+				while ($C = DB_fetch_array($CatRes)) { echo '<option value="'.$C['categoryid'].'" '.((isset($_POST['StockCat'])&&$_POST['StockCat']==$C['categoryid'])?'selected':'').'>'.$C['categorydescription'].'</option>'; }
+echo '		</select></div>
+            <div class="aw-form-group" style="margin-top:10px;"><label class="aw-label">Keywords</label><input type="text" name="Keywords" class="aw-input" /></div>
+            <div style="display:flex; gap:4px; margin-top:16px;">
+                <button type="submit" name="SearchParts" class="aw-btn aw-btn-secondary" style="flex:1;">' . __('Find') . '</button>
+                <button type="submit" name="ResetPart" class="aw-btn aw-btn-secondary" style="flex:1;">' . __('All') . '</button>
+            </div>';
+            if (isset($SelectedStockItem)) { echo '<div class="aw-badge aw-badge-info" style="margin-top:12px; width:100%; justify-content:center;">' . __('Active Item') . ': ' . $SelectedStockItem . '</div><input type="hidden" name="SelectedStockItem" value="' . $SelectedStockItem . '" />'; }
+echo '		</div>
+	  </div>';
+echo '</form>';
+
+echo '</aside>';
+
+echo '</div>'; // End aw-grid-layout
+echo '</div>'; // End aw-container
 
 include(__DIR__ . '/includes/footer.php');
+?>
