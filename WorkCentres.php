@@ -104,190 +104,223 @@ if (isset($_POST['submit'])) {
 	} // end of BOM test
 }
 
-if (!isset($SelectedWC)) {
+echo '<style>
+    :root {
+        --db-primary: hsl(145, 63%, 38%);
+        --db-primary-hover: hsl(145, 63%, 32%);
+        --db-primary-dark: hsl(145, 45%, 22%);
+        --db-primary-soft: hsl(145, 40%, 95%);
+        --db-bg: hsl(210, 20%, 97%);
+        --db-card-bg: #ffffff;
+        --db-border: hsl(210, 14%, 89%);
+        --db-text-main: hsl(210, 24%, 16%);
+        --db-text-muted: hsl(210, 16%, 46%);
+        --radius-lg: 12px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .db-page { background: var(--db-bg); min-height: 100vh; padding: 2rem; font-family: "Inter", system-ui, sans-serif; color: var(--db-text-main); }
+    .db-centered { max-width: 1400px; margin: 0 auto; }
+    .db-page-header { margin-bottom: 2rem; }
+    .db-breadcrumb { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--db-primary); letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px; }
+    .db-page-title { font-size: 2.25rem; font-weight: 950; color: var(--db-primary-dark); margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
+    
+    .db-main-grid { display: grid; grid-template-columns: 1fr 400px; gap: 1.5rem; align-items: start; }
+    @media (max-width: 1100px) { .db-main-grid { grid-template-columns: 1fr; } }
+    
+    .db-card { background: var(--db-card-bg); border-radius: var(--radius-lg); border: 1px solid var(--db-border); shadow: var(--shadow-sm); overflow: hidden; }
+    .db-card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--db-border); display: flex; align-items: center; gap: 0.75rem; background: #fff; }
+    .db-card-title { font-size: 0.8125rem; font-weight: 700; color: var(--db-primary-dark); margin: 0; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 10px; }
+    .db-card-body { padding: 1.25rem; }
+    
+    .db-table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .db-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+    .db-table th { background: var(--db-primary-soft); color: var(--db-primary-dark); font-weight: 800; text-align: left; padding: 0.875rem 1rem; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; border-bottom: 2px solid var(--db-border); }
+    .db-table td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--db-border); }
+    .db-table tr:hover td { background: #f8fafc; }
+    .db-table .number { text-align: right; font-family: "JetBrains Mono", monospace; }
+    
+    .db-field { margin-bottom: 1rem; }
+    .db-label { font-size: 0.75rem; font-weight: 800; color: var(--db-primary-dark); text-transform: uppercase; margin-bottom: 0.375rem; display: block; }
+    .db-input, .db-select { 
+        padding: 0.625rem 0.875rem; border-radius: 8px; border: 1px solid var(--db-border); background: #fff; font-size: 0.875rem; transition: all 0.2s; width: 100%;
+    }
+    .db-input:focus, .db-select:focus { outline: none; border-color: var(--db-primary); box-shadow: 0 0 0 3px var(--db-primary-soft); }
+    .db-help { font-size: 0.7rem; color: var(--db-text-muted); margin-top: 0.25rem; font-style: italic; }
+    
+    .db-btn { 
+        display: inline-flex; align-items: center; justify-content: center; gap: 0.625rem; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; border: none; width: 100%;
+    }
+    .db-btn-primary { background: var(--db-primary); color: white; }
+    .db-btn-primary:hover { background: var(--db-primary-hover); transform: translateY(-1px); }
+    .db-btn-ghost { background: var(--db-primary-soft); color: var(--db-primary); }
+    .db-btn-ghost:hover { background: hsl(145, 40%, 90%); }
+    
+    .db-badge { padding: 3px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; background: var(--db-primary-soft); color: var(--db-primary); }
+    .link-action { color: var(--db-primary); font-weight: 700; text-decoration: none; font-size: 0.75rem; }
+    .link-action:hover { text-decoration: underline; }
+    .link-delete { color: hsl(0, 72%, 41%); }
+</style>
 
-/* It could still be the second time the page has been run and a record has been selected for modification - SelectedWC will exist because it was sent with the new call. If its the first time the page has been displayed with no parameters
-then none of the above are true and the list of work centres will be displayed with
-links to delete or edit each. These will call the same page again and allow update/input
-or deletion of the records*/
-	echo '<p class="page_title_text">
-			<img src="'.$RootPath.'/css/'.$Theme.'/images/maintenance.png" title="' . __('Search') . '" alt="" />' . ' ' . $Title . '
-		</p>';
+<div class="db-page">
+    <div class="db-centered">
+        <header class="db-page-header">
+            <div class="db-breadcrumb">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                ' . __('Manufacturing') . ' / ' . __('Configuration') . '
+            </div>
+            <h1 class="db-page-title">' . $Title . '</h1>
+        </header>
 
-	$SQL = "SELECT workcentres.code,
-				workcentres.description,
-				locations.locationname,
-				workcentres.overheadrecoveryact,
-				workcentres.overheadperhour
-			FROM workcentres,
-				locations
-			INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
-			WHERE workcentres.location = locations.loccode";
+        <div class="db-main-grid">
+            <!-- Left Column: Form -->
+            <div class="db-field-group">
+                <form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">
+                <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-	$Result = DB_query($SQL);
-	echo '<table class="selection">
-		<thead>
-			<tr>
-				<th class="SortedColumn">', __('WC Code'), '</th>
-				<th class="SortedColumn">', __('Description'), '</th>
-				<th class="SortedColumn">', __('Location'), '</th>
-				<th class="SortedColumn">', __('Overhead GL Account'), '</th>
-				<th class="SortedColumn">', __('Overhead Per Hour'), '</th>
-				<th colspan="2">&nbsp;</th>
-			</tr>
-		</thead>
-		<tbody>';
+                if (isset($SelectedWC)) {
+                    $SQL = "SELECT code, location, description, overheadrecoveryact, overheadperhour
+                            FROM workcentres
+                            INNER JOIN locationusers ON locationusers.loccode=workcentres.location AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canupd=1
+                            WHERE code='" . $SelectedWC . "'";
+                    $Result = DB_query($SQL);
+                    $MyRow = DB_fetch_array($Result);
+                    $_POST['Code'] = $MyRow['code'];
+                    $_POST['Location'] = $MyRow['location'];
+                    $_POST['Description'] = $MyRow['description'];
+                    $_POST['OverheadRecoveryAct']  = $MyRow['overheadrecoveryact'];
+                    $_POST['OverheadPerHour']  = $MyRow['overheadperhour'];
 
-	while ($MyRow = DB_fetch_array($Result)) {
+                    echo '<input type="hidden" name="SelectedWC" value="' . $SelectedWC . '" />
+                          <input type="hidden" name="Code" value="' . $_POST['Code'] . '" />';
+                    $cardTitle = __('Modify Work Centre');
+                } else {
+                    if (!isset($_POST['Code'])) $_POST['Code'] = '';
+                    $cardTitle = __('Register New Work Centre');
+                }
 
-		echo '<tr class="striped_row">
-				<td>', $MyRow['code'], '</td>
-				<td>', $MyRow['description'], '</td>
-				<td>', $MyRow['locationname'], '</td>
-				<td>', $MyRow['overheadrecoveryact'], '</td>
-				<td class="number">', $MyRow['overheadperhour'], '</td>
-				<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?&amp;SelectedWC=', $MyRow['code'], '">' . __('Edit') . '</a></td>
-				<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?&amp;SelectedWC=', $MyRow['code'], '&amp;delete=yes" onclick="return confirm(\'' . __('Are you sure you wish to delete this work centre?') . '\');">' . __('Delete')  . '</a></td>
-			</tr>';
-	}
+                echo '<div class="db-card">
+                        <div class="db-card-header">
+                            <h3 class="db-card-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path></svg>
+                                ' . $cardTitle . '
+                            </h3>
+                        </div>
+                        <div class="db-card-body">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">';
+                
+                if (isset($SelectedWC)) {
+                    echo '<div class="db-field">
+                            <label class="db-label">' .__('Work Centre Code') . '</label>
+                            <div style="padding: 0.625rem; background: var(--db-primary-soft); border-radius: 8px; font-weight: 700; color: var(--db-primary-dark);">' . $_POST['Code'] . '</div>
+                          </div>';
+                } else {
+                    echo '<div class="db-field">
+                            <label class="db-label">' . __('Work Centre Code') . '</label>
+                            <input type="text" name="Code" class="db-input" pattern="[^&+-]{2,}" required="required" autofocus="autofocus" maxlength="5" value="' . $_POST['Code'] . '" placeholder="'.__('Min 2 chars').'" />
+                            <div class="db-help">'.__('At least 2 characters, no illegal symbols').'</div>
+                          </div>';
+                }
 
-	//END WHILE LIST LOOP
-	echo '</tbody></table>';
-}
+                echo '<div class="db-field">
+                        <label class="db-label">' . __('Description') . '</label>
+                        <input type="text" name="Description" class="db-input" pattern="[^&+-]{3,}" required="required" size="21" maxlength="20" value="' . (isset($_POST['Description'])?$_POST['Description']:'') . '" placeholder="'.__('Min 3 chars').'" ' . (isset($SelectedWC)? 'autofocus="autofocus"': '') . ' />
+                      </div>
 
-//end of ifs and buts!
+                      <div class="db-field">
+                        <label class="db-label">' . __('Location') . '</label>
+                        <select name="Location" class="db-select">';
+                
+                $SQL_Loc = "SELECT locationname, locations.loccode FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canupd=1";
+                $Res_Loc = DB_query($SQL_Loc);
+                while ($LRow = DB_fetch_array($Res_Loc)) {
+                    $sel = (isset($_POST['Location']) and $LRow['loccode']==$_POST['Location']) ? 'selected="selected"' : '';
+                    echo '<option ' . $sel . ' value="' . $LRow['loccode'] . '">' . $LRow['locationname'] . '</option>';
+                }
+                echo '  </select>
+                      </div>
 
-if (isset($SelectedWC)) {
-	echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme,
-		'/images/maintenance.png" title="',// Icon image.
-		$Title, '" /> ',// Icon title.
-		$Title, '</p>';// Page title.
-	echo '<div class="centre"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">' . __('Show all Work Centres') . '</a></div>';
-}
+                      <div class="db-field">
+                        <label class="db-label">' . __('Recovery GL Account') . '</label>
+                        <select name="OverheadRecoveryAct" class="db-select">';
+                        
+                $SQL_GL = "SELECT accountcode, accountname FROM chartmaster INNER JOIN accountgroups ON chartmaster.group_=accountgroups.groupname WHERE accountgroups.pandl!=0 ORDER BY accountcode";
+                $Res_GL = DB_query($SQL_GL);
+                while ($GRow = DB_fetch_array($Res_GL)) {
+                    $sel = (isset($_POST['OverheadRecoveryAct']) and $GRow['accountcode']==$_POST['OverheadRecoveryAct']) ? 'selected="selected"' : '';
+                    echo '<option ' . $sel . ' value="' . $GRow['accountcode'] . '">' . $GRow['accountcode'] . ' - ' . htmlspecialchars($GRow['accountname'], ENT_QUOTES, 'UTF-8', false) . '</option>';
+                }
+                echo '  </select>
+                      </div>
 
-echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+                      <div class="db-field">
+                        <label class="db-label">' . __('Overhead Per Hour') . '</label>
+                        <input type="text" name="OverheadPerHour" class="db-input number" maxlength="6" value="' . (isset($_POST['OverheadPerHour'])?$_POST['OverheadPerHour']:0) . '" />
+                      </div>
+                    </div>
 
-if (isset($SelectedWC)) {
-	//editing an existing work centre
+                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                        <button type="submit" name="submit" class="db-btn db-btn-primary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            ' . __('Save Work Centre') . '
+                        </button>
+                        ' . (isset($SelectedWC) ? '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" class="db-btn db-btn-ghost">' . __('Cancel') . '</a>' : '') . '
+                    </div>
+                </div>
+              </div>
+              </form>
+            </div>
 
-	$SQL = "SELECT code,
-					location,
-					description,
-					overheadrecoveryact,
-					overheadperhour
-			FROM workcentres
-			INNER JOIN locationusers ON locationusers.loccode=workcentres.location AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canupd=1
-			WHERE code='" . $SelectedWC . "'";
+            <!-- Right Column: Listing -->
+            <div class="db-card">
+                <div class="db-card-header">
+                    <h3 class="db-card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                        ' . __('Existing Work Centres') . '
+                    </h3>
+                </div>
+                <div class="db-card-body" style="padding:0;">
+                    <div class="db-table-container">
+                        <table class="db-table">
+                            <thead>
+                                <tr>
+                                    <th>' . __('Code') . '</th>
+                                    <th>' . __('Description') . '</th>
+                                    <th>' . __('Action') . '</th>
+                                </tr>
+                            </thead>
+                            <tbody>';
 
-	$Result = DB_query($SQL);
-	$MyRow = DB_fetch_array($Result);
+                $SQL_List = "SELECT workcentres.code, workcentres.description, locations.locationname, workcentres.overheadrecoveryact, workcentres.overheadperhour
+                            FROM workcentres, locations
+                            INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
+                            WHERE workcentres.location = locations.loccode";
+                $Res_List = DB_query($SQL_List);
 
-	$_POST['Code'] = $MyRow['code'];
-	$_POST['Location'] = $MyRow['location'];
-	$_POST['Description'] = $MyRow['description'];
-	$_POST['OverheadRecoveryAct']  = $MyRow['overheadrecoveryact'];
-	$_POST['OverheadPerHour']  = $MyRow['overheadperhour'];
+                while ($LRow = DB_fetch_array($Res_List)) {
+                    $activeClass = (isset($SelectedWC) && $SelectedWC == $LRow['code']) ? 'style="background: var(--db-primary-soft);"' : '';
+                    echo '<tr ' . $activeClass . '>
+                            <td class="db-mono" style="font-weight:700;">' . $LRow['code'] . '</td>
+                            <td>' . $LRow['description'] . ' <br><small style="color:var(--db-text-muted);">' . $LRow['locationname'] . '</small></td>
+                            <td style="white-space:nowrap;">
+                                <a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedWC=' . $LRow['code'] . '" class="link-action">' . __('Edit') . '</a> | 
+                                <a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedWC=' . $LRow['code'] . '&delete=yes" class="link-action link-delete" onclick="return confirm(\'' . __('Are you sure?') . '\');">' . __('Del') . '</a>
+                            </td>
+                          </tr>';
+                }
 
-	echo '<input type="hidden" name="SelectedWC" value="' . $SelectedWC . '" />
-		<input type="hidden" name="Code" value="' . $_POST['Code'] . '" />
-		<fieldset>
-			<legend>', __('Edit Work Centre'), '</legend>
-			<field>
-				<label for="Code">' .__('Work Centre Code') . ':</label>
-				<fieldtext>' . $_POST['Code'] . '</fieldtext>
-			</field>';
+                echo '          </tbody>
+                        </table>
+                    </div>';
+                
+                if (DB_num_rows($Res_List) == 0) {
+                    echo '<div style="padding: 2rem; text-align: center; color: var(--db-text-muted);">' . __('No work centres defined') . '</div>';
+                }
 
-} else { //end of if $SelectedWC only do the else when a new record is being entered
-	if (!isset($_POST['Code'])) {
-		$_POST['Code'] = '';
-	}
-	echo '<fieldset>
-			<legend>', __('Create Work Centre'), '</legend>
-			<field>
-				<label for="Code">' . __('Work Centre Code') . ':</label>
-				<input type="text" name="Code" pattern="[^&+-]{2,}" required="required" autofocus="autofocus" title=""  size="6" maxlength="5" value="' . $_POST['Code'] . '" placeholder="'.__('More than 2 legal characters').'" />
-				<fieldhelp>'.__('The code should be at least 2 characters and no illegal characters allowed') . ' ' . '" \' - &amp; or a space'.'</fieldhelp>
-			</field>';
-}
+                echo '</div>
+            </div>
+        </div>
+    </div>
+</div>';
 
-$SQL = "SELECT locationname,
-				locations.loccode
-		FROM locations
-		INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canupd=1";
-$Result = DB_query($SQL);
-
-if (!isset($_POST['Description'])) {
-	$_POST['Description'] = '';
-}
-echo '<field>
-		<label for="Description">' . __('Work Centre Description') . ':</label>
-		<input type="text" pattern="[^&+-]{3,}" required="required" title="" name="Description" ' . (isset($SelectedWC)? 'autofocus="autofocus"': '') . ' size="21" maxlength="20" value="' . $_POST['Description'] . '" placeholder="'.__('More than 3 legal characters').'" />
-		<fieldhelp>'.__('The Work Center should be more than 3 characters and no illegal characters allowed').'</fieldhelp>
-	</field>';
-
-echo '<field>
-		<label for="Location">' . __('Location') . ':</label>
-		<select name="Location">';
-
-while ($MyRow = DB_fetch_array($Result)) {
-	if (isset($_POST['Location']) and $MyRow['loccode']==$_POST['Location']) {
-		echo '<option selected="selected" value="';
-	} else {
-		echo '<option value="';
-	}
-	echo $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-
-} //end while loop
-
-DB_free_result($Result);
-
-
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label for="OverheadRecoveryAct">' . __('Overhead Recovery GL Account') . ':</label>
-		<select name="OverheadRecoveryAct">';
-
-//SQL to poulate account selection boxes
-$SQL = "SELECT accountcode,
-				accountname
-		FROM chartmaster INNER JOIN accountgroups
-			ON chartmaster.group_=accountgroups.groupname
-		WHERE accountgroups.pandl!=0
-		ORDER BY accountcode";
-
-$Result = DB_query($SQL);
-
-while ($MyRow = DB_fetch_array($Result)) {
-	if (isset($_POST['OverheadRecoveryAct']) and $MyRow['accountcode']==$_POST['OverheadRecoveryAct']) {
-		echo '<option selected="selected" value="';
-	} else {
-		echo '<option value="';
-	}
-	echo $MyRow['accountcode'] . '">' . htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false) . '</option>';
-
-} //end while loop
-DB_free_result($Result);
-
-if (!isset($_POST['OverheadPerHour'])) {
-	$_POST['OverheadPerHour']=0;
-}
-
-echo '</select>
-	</field>';
-
-echo '<field>
-		<label for="OverheadPerHour">' . __('Overhead Per Hour') . ':</label>
-		<input type="text" class="number" name="OverheadPerHour" size="6" title="" maxlength="6" value="'.$_POST['OverheadPerHour'].'" />
-		<fieldhelp>'.__('The input must be numeric').'</fieldhelp>
-	</field>';
-
-echo '</fieldset>';
-
-echo '<div class="centre">
-		<input type="submit" name="submit" value="' . __('Enter Information') . '" />
-	</div>
-	</form>';
 include(__DIR__ . '/includes/footer.php');
+?>

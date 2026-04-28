@@ -15,508 +15,176 @@ if (isset($_GET['SelectedQATest'])){
 
 $Errors = array();
 
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/maintenance.png" title="' . __('Search') . '" alt="" />' . ' ' . $Title . '</p>';
-
 if (isset($_POST['submit'])) {
-
-	//initialise no input errors assumed initially before we test
 	$InputError = 0;
-
-	/* actions to take once the user has clicked the submit button
-	ie the page has called itself with some user input */
 	$i=1;
 
-	//first off validate inputs sensible
-
 	if (mb_strlen($_POST['QATestName']) > 50) {
-		$InputError = 1;
-		prnMsg(__('The QA Test name must be fifty characters or less long'),'error');
-		$Errors[$i] = 'QATestName';
-		$i++;
+		$InputError = 1; prnMsg(__('The QA Test name must be fifty characters or less long'),'error'); $Errors[$i++] = 'QATestName';
 	}
-
 	if (mb_strlen($_POST['Type']) =='') {
-		$InputError = 1;
-		prnMsg(__('The Type must not be blank'),'error');
-		$Errors[$i] = 'Type';
-		$i++;
+		$InputError = 1; prnMsg(__('The Type must not be blank'),'error'); $Errors[$i++] = 'Type';
 	}
-	$SQL= "SELECT COUNT(*) FROM qatests WHERE qatests.name='".$_POST['QATestName']."'
-										AND qatests.testid <> '" .$SelectedQATest. "'";
-	$Result = DB_query($SQL);
-	$MyRow = DB_fetch_row($Result);
-	if ($MyRow[0]>0) {
-		$InputError = 1;
-		prnMsg(__('The QA Test name already exists'),'error');
-		$Errors[$i] = 'QATestName';
-		$i++;
+	$SQL= "SELECT COUNT(*) FROM qatests WHERE qatests.name='".$_POST['QATestName']."' AND qatests.testid <> '" .($SelectedQATest ?? ''). "'";
+	$Result = DB_query($SQL); $MyRow = DB_fetch_row($Result);
+	if ($MyRow[0]>0) { $InputError = 1; prnMsg(__('The QA Test name already exists'),'error'); $Errors[$i++] = 'QATestName'; }
+
+	if (!$InputError) {
+		if (isset($SelectedQATest)) {
+			$SQL = "UPDATE qatests SET name='" . $_POST['QATestName'] . "', method='" . $_POST['Method'] . "', groupby='" . $_POST['GroupBy'] . "', units='" . $_POST['Units'] . "', type='" . $_POST['Type'] . "', defaultvalue='" . $_POST['DefaultValue'] . "', numericvalue='" . $_POST['NumericValue'] . "', showoncert='" . $_POST['ShowOnCert'] . "', showonspec='" . $_POST['ShowOnSpec'] . "', showontestplan='" . $_POST['ShowOnTestPlan'] . "', active='" . $_POST['Active'] . "' WHERE testid = '".$SelectedQATest."'";
+			$Msg = __('Updated');
+		} else {
+			$SQL = "INSERT INTO qatests (name, method, groupby, units, type, defaultvalue, numericvalue, showoncert, showonspec, showontestplan, active) VALUES ('" . $_POST['QATestName'] . "', '" . $_POST['Method'] . "', '" . $_POST['GroupBy'] . "', '" . $_POST['Units'] . "', '" .$_POST['Type'] . "', '" . $_POST['DefaultValue'] . "', '" . $_POST['NumericValue'] . "', '" . $_POST['ShowOnCert'] . "', '" . $_POST['ShowOnSpec'] . "', '" . $_POST['ShowOnTestPlan'] . "', '" . $_POST['Active'] . "')";
+			$Msg = __('Added');
+		}
+		DB_query($SQL); prnMsg($Msg . ' ' . $_POST['QATestName'], 'success');
+		unset($SelectedQATest, $_POST['QATestName'], $_POST['DefaultValue'], $_POST['NumericValue']);
 	}
-
-	if (isset($SelectedQATest) AND $InputError !=1) {
-
-		/*SelectedQATest could also exist if submit had not been clicked this code would not run in this case cos submit is false of course  see the delete code below*/
-
-		$SQL = "UPDATE qatests SET name='" . $_POST['QATestName'] . "',
-									method='" . $_POST['Method'] . "',
-									groupby='" . $_POST['GroupBy'] . "',
-									units='" . $_POST['Units'] . "',
-									type='" . $_POST['Type'] . "',
-									defaultvalue='" . $_POST['DefaultValue'] . "',
-									numericvalue='" . $_POST['NumericValue'] . "',
-									showoncert='" . $_POST['ShowOnCert'] . "',
-									showonspec='" . $_POST['ShowOnSpec'] . "',
-									showontestplan='" . $_POST['ShowOnTestPlan'] . "',
-									active='" . $_POST['Active'] . "'
-				WHERE qatests.testid = '".$SelectedQATest."'";
-
-		$Msg = __('QA Test record for') . ' ' . $_POST['QATestName'] . ' ' . __('has been updated');
-	} elseif ($InputError !=1) {
-
-	/*Selected group is null cos no item selected on first time round so must be adding a record must be submitting new entries in the new QA Test form */
-
-		$SQL = "INSERT INTO qatests (name,
-						method,
-						groupby,
-						units,
-						type,
-						defaultvalue,
-						numericvalue,
-						showoncert,
-						showonspec,
-						showontestplan,
-						active)
-				VALUES ('" . $_POST['QATestName'] . "',
-					'" . $_POST['Method'] . "',
-					'" . $_POST['GroupBy'] . "',
-					'" . $_POST['Units'] . "',
-					'" .$_POST['Type'] . "',
-					'" . $_POST['DefaultValue'] . "',
-					'" . $_POST['NumericValue'] . "',
-					'" . $_POST['ShowOnCert'] . "',
-					'" . $_POST['ShowOnSpec'] . "',
-					'" . $_POST['ShowOnTestPlan'] . "',
-					'" . $_POST['Active'] . "'
-					)";
-
-		$Msg = __('A new QA Test record has been added for') . ' ' . $_POST['QATestName'];
-	}
-	if ($InputError !=1) {
-		//run the SQL from either of the above possibilites
-		$ErrMsg = __('The insert or update of the QA Test failed because');
-		$Result = DB_query($SQL, $ErrMsg);
-
-		prnMsg($Msg , 'success');
-
-		unset($SelectedQATest);
-		unset($_POST['QATestName']);
-		//unset($_POST['Method']);
-		//unset($_POST['GroupBy']);
-		//unset($_POST['Units']);
-		//unset($_POST['Type']);
-		unset($_POST['DefaultValue']);
-		unset($_POST['NumericValue']);
-		//unset($_POST['ShowOnCert']);
-		//unset($_POST['ShowOnSpec']);
-		//unset($_POST['ShowOnTestPlan']);
-		//unset($_POST['Active']);
-	}
-
 } elseif (isset($_GET['delete'])) {
-//the link to delete a selected record was clicked instead of the submit button
-
-// PREVENT DELETES IF DEPENDENT RECORDS
-
-	$SQL= "SELECT COUNT(*) FROM prodspec WHERE  prodspec.testid='".$SelectedQATest."'";
-	//$Result = DB_query($SQL);
-	//$MyRow = DB_fetch_row($Result);
-	if ($MyRow[0]>0) {
-		prnMsg(__('Cannot delete this QA Test because Product Specs are using it'),'error');
-	} else {
-		$SQL = "DELETE FROM qatests WHERE testid='". $SelectedQATest."'";
-		$ErrMsg = __('The QA Test could not be deleted because');
-		$Result = DB_query($SQL, $ErrMsg);
-
-		prnMsg(__('QA Test') . ' ' . $SelectedQATest . ' ' . __('has been deleted from the database'),'success');
-		unset ($SelectedQATest);
-		unset($Delete);
-		unset ($_GET['delete']);
+	$SQL= "SELECT COUNT(*) FROM prodspec WHERE testid='".$SelectedQATest."'";
+	$Result = DB_query($SQL); $MyRow = DB_fetch_row($Result);
+	if ($MyRow[0]>0) { prnMsg(__('Cannot delete - Product Specs are using it'), 'error'); }
+	else {
+		DB_query("DELETE FROM qatests WHERE testid='". $SelectedQATest."'");
+		prnMsg(__('Deleted'), 'success'); unset($SelectedQATest);
 	}
 }
 
-if (isset($SelectedQATest)) {
-	echo '<div class="centre"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">' . __('Show All QA Tests') . '</a></div>';
-}
+echo '<style>
+    :root {
+        --db-primary: hsl(145, 63%, 38%);
+        --db-primary-hover: hsl(145, 63%, 32%);
+        --db-primary-dark: hsl(145, 45%, 22%);
+        --db-primary-soft: hsl(145, 40%, 95%);
+        --db-bg: hsl(210, 20%, 97%);
+        --radius-lg: 12px;
+        --db-border: hsl(210, 14%, 89%);
+        --db-text-main: hsl(210, 24%, 16%);
+    }
+    .db-page { background: var(--db-bg); min-height: 100vh; padding: 2rem; font-family: "Inter", sans-serif; color: var(--db-text-main); }
+    .db-centered { max-width: 1600px; margin: 0 auto; }
+    .db-breadcrumb { font-size: 0.75rem; font-weight: 800; color: var(--db-primary); text-transform: uppercase; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px; }
+    .db-page-title { font-size: 2.25rem; font-weight: 950; color: var(--db-primary-dark); margin: 0 0 2rem; }
+    
+    .db-main-grid { display: grid; grid-template-columns: 420px 1fr; gap: 1.5rem; align-items: start; }
+    @media (max-width: 1200px) { .db-main-grid { grid-template-columns: 1fr; } }
+    
+    .db-card { background: #fff; border-radius: var(--radius-lg); border: 1px solid var(--db-border); overflow: hidden; }
+    .db-card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--db-border); display: flex; align-items: center; gap: 0.75rem; }
+    .db-card-title { font-size: 0.8125rem; font-weight: 900; color: var(--db-primary-dark); text-transform: uppercase; margin: 0; }
+    .db-card-body { padding: 1.25rem; }
+    
+    .db-field { margin-bottom: 1rem; }
+    .db-label { font-size: 0.7rem; font-weight: 800; color: var(--db-primary-dark); text-transform: uppercase; margin-bottom: 0.375rem; display: block; }
+    .db-input, .db-select { padding: 0.625rem 0.875rem; border-radius: 8px; border: 1px solid var(--db-border); width: 100%; font-size: 0.875rem; }
+    .db-btn { padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; width: 100%; transition: 0.2s; }
+    .db-btn-primary { background: var(--db-primary); color: white; }
+    
+    .db-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    .db-table th { background: var(--db-primary-soft); padding: 0.75rem; text-align: left; text-transform: uppercase; font-weight: 800; color: var(--db-primary-dark); }
+    .db-table td { padding: 0.75rem; border-bottom: 1px solid var(--db-border); }
+    .db-badge { padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 800; background: var(--db-primary-soft); color: var(--db-primary); }
+</style>
 
-if (! isset($_GET['delete'])) {
+<div class="db-page">
+    <div class="db-centered">
+        <div class="db-breadcrumb">Manufacturing / Quality Assurance</div>
+        <h1 class="db-page-title">QA Test Dictionary</h1>
 
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+        <div class="db-main-grid">
+            <!-- Sidebar Form -->
+            <div class="db-field-group">
+                <form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">
+                <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+                <div class="db-card">
+                    <div class="db-card-header"><h3 class="db-card-title">' . (isset($SelectedQATest) ? __('Edit Test Definition') : __('New Test Definition')) . '</h3></div>
+                    <div class="db-card-body">';
+                    
+                    if (isset($SelectedQATest)) {
+                        $SQL = "SELECT * FROM qatests WHERE testid='".$SelectedQATest."'";
+                        $Row = DB_fetch_array(DB_query($SQL));
+                        foreach($Row as $k=>$v) if(!isset($_POST[$k])) $_POST[$k] = $v;
+                        echo '<input type="hidden" name="SelectedQATest" value="'.$SelectedQATest.'" />';
+                        echo '<div class="db-field"><label class="db-label">Test Identifier</label><div class="db-badge">#'.$SelectedQATest.'</div></div>';
+                    }
 
-	if (isset($SelectedQATest)) {
-		//editing an existing Sales-person
+                    echo '<div class="db-field"><label class="db-label">Name</label><input type="text" name="QATestName" class="db-input" value="'.($_POST['QATestName'] ?? '').'" required maxlength="50" /></div>';
+                    echo '<div class="db-field"><label class="db-label">Method / Std</label><input type="text" name="Method" class="db-input" value="'.($_POST['Method'] ?? '').'" maxlength="20" /></div>';
+                    
+                    echo '<div class="db-field"><label class="db-label">Group</label><select name="GroupBy" class="db-select">';
+                    $ResG = DB_query("SELECT groupname FROM prodspecgroups");
+                    while($G = DB_fetch_array($ResG)) { $sel = (($_POST['GroupBy'] ?? '') == $G['groupname']) ? 'selected':''; echo '<option '.$sel.' value="'.$G['groupname'].'">'.$G['groupname'].'</option>'; }
+                    echo '</select></div>';
 
-		$SQL = "SELECT testid,
-				name,
-				method,
-				groupby,
-				units,
-				type,
-				defaultvalue,
-				numericvalue,
-				showoncert,
-				showonspec,
-				showontestplan,
-				active
-				FROM qatests
-				WHERE testid='".$SelectedQATest."'";
+                    echo '<div class="db-field"><label class="db-label">Units</label><input type="text" name="Units" class="db-input" value="'.($_POST['Units'] ?? '').'" maxlength="20" /></div>';
+                    
+                    echo '<div class="db-field"><label class="db-label">Input UI Type</label><select name="Type" class="db-select">';
+                    $Types = [0=>'Text Box', 1=>'Select List', 2=>'Checkbox', 3=>'Date Picker', 4=>'Value Range'];
+                    foreach($Types as $k=>$v) { $sel = (($_POST['Type'] ?? 4) == $k) ? 'selected':''; echo '<option '.$sel.' value="'.$k.'">'.$v.'</option>'; }
+                    echo '</select></div>';
 
-		$Result = DB_query($SQL);
-		$MyRow = DB_fetch_array($Result);
+                    echo '<div class="db-field"><label class="db-label">Permitted / Possible Values</label><input type="text" name="DefaultValue" class="db-input" value="'.($_POST['DefaultValue'] ?? '').'" /></div>';
 
-		$_POST['SelectedQATest'] = $MyRow['testid'];
-		$_POST['QATestName'] = $MyRow['name'];
-		$_POST['Method'] = $MyRow['method'];
-		$_POST['GroupBy'] = $MyRow['groupby'];
-		$_POST['Type'] = $MyRow['type'];
-		$_POST['Units'] = $MyRow['units'];
-		$_POST['DefaultValue'] = $MyRow['defaultvalue'];
-		$_POST['NumericValue'] = $MyRow['numericvalue'];
-		$_POST['ShowOnCert'] = $MyRow['showoncert'];
-		$_POST['ShowOnSpec'] = $MyRow['showonspec'];
-		$_POST['ShowOnTestPlan'] = $MyRow['showontestplan'];
-		$_POST['Active'] = $MyRow['active'];
+                    $YesNo = [1=>'Yes', 0=>'No'];
+                    echo '<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">';
+                    foreach(['NumericValue','ShowOnCert','ShowOnSpec','ShowOnTestPlan','Active'] as $f) {
+                        echo '<div class="db-field"><label class="db-label">'.$f.'</label><select name="'.$f.'" class="db-select">';
+                        foreach($YesNo as $k=>$v) { $sel = (($_POST[$f] ?? 1) == $k) ? 'selected':''; echo '<option '.$sel.' value="'.$k.'">'.$v.'</option>'; }
+                        echo '</select></div>';
+                    }
+                    echo '</div>';
 
+                    echo '<button type="submit" name="submit" class="db-btn db-btn-primary" style="margin-top:1rem;">' . __('Commit Configuration') . '</button>';
+                    if(isset($SelectedQATest)) echo '<a href="'.htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8').'" class="db-btn" style="display:block; text-align:center; padding:0.75rem; font-size:0.8rem; color:var(--db-text-muted);">'.__('Cancel Edit').'</a>';
 
-		echo '<input type="hidden" name="SelectedQATest" value="' . $SelectedQATest . '" />';
-		echo '<input type="hidden" name="TestID" value="' . $_POST['SelectedQATest'] . '" />';
-		echo '<fieldset>
-				<legend>', __('Edit QA Test'), '</legend>
-				<field>
-					<label for="SelectedQATest">' . __('QA Test ID') . ':</label>
-					<fieldtext>' . $_POST['SelectedQATest'] . '</fieldtext>
-				</field>';
+                echo '</div></div></form></div>';
 
-	} else { //end of if $SelectedQATest only do the else when a new record is being entered
+            // Pagination Logic
+            $ItemsPerPage = 15;
+            $Page = isset($_GET['Page']) ? (int)$_GET['Page'] : 1;
+            $Offset = ($Page - 1) * $ItemsPerPage; $Types = [0=>'Text Box', 1=>'Select List', 2=>'Checkbox', 3=>'Date Picker', 4=>'Value Range'];
 
-		echo '<fieldset>
-				<legend>', __('Create New QA Test'), '</legend>';
+            $TotalRes = DB_query("SELECT COUNT(*) FROM qatests");
+            $TotalRows = DB_fetch_row($TotalRes)[0];
+            $TotalPages = ceil($TotalRows / $ItemsPerPage);
 
-	}
-	if (!isset($_POST['QATestName'])){
-		$_POST['QATestName']='';
-	}
-	if (!isset($_POST['Method'])){
-		$_POST['Method']='';
-	}
-	if (!isset($_POST['GroupBy'])){
-		$_POST['GroupBy']='';
-	}
-	if (!isset($_POST['Units'])){
-		$_POST['Units']='';
-	}
-	if (!isset($_POST['Type'])) {
-		$_POST['Type']=4;
-	}
-	if (!isset($_POST['Active'])) {
-		$_POST['Active']=1;
-	}
-	if (!isset($_POST['NumericValue'])) {
-		$_POST['NumericValue']=1;
-	}
-	if (!isset($_POST['ShowOnCert'])) {
-		$_POST['ShowOnCert']=1;
-	}
-	if (!isset($_POST['ShowOnSpec'])) {
-		$_POST['ShowOnSpec']=1;
-	}
-	if (!isset($_POST['ShowOnTestPlan'])) {
-		$_POST['ShowOnTestPlan']=1;
-	}
-	if (!isset($_POST['DefaultValue'])) {
-		$_POST['DefaultValue'] = '';
-	}
-	echo '<field>
-			<label for="QATestName">' . __('QA Test Name') . ':</label>
-			<input type="text" '. (in_array('QATestName',$Errors) ? 'class="inputerror"' : '' ) .' name="QATestName"  required="required" title="" size="30" maxlength="50" value="' . $_POST['QATestName'] . '" />
-			<fieldhelp>' . __('The name of the Test you are setting up') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="Method">' . __('Method') . ':</label>
-			<input type="text" name="Method" title="" size="20" maxlength="20" value="' . $_POST['Method'] . '" />
-			<fieldhelp>' . __('ASTM, ISO, UL or other') . '</fieldhelp>
-		</field>';
-	//echo '<field>
-	//		<label for="GroupBy">' . __('Group By') . ':</label>
-	//		<input type="text" name="GroupBy" title="" size="20" maxlength="20" value="' . $_POST['GroupBy'] . '" />
-	//		<fieldhelp>' . __('Can be used to group certain Tests on the Product Specification or Certificate of Analysis or left blank') . '</fieldhelp>
-	//	</field>';
+            echo '<div class="db-card">
+                    <div class="db-card-header"><h3 class="db-card-title">Configured QA Tests (' . $TotalRows . ')</h3></div>
+                    <div class="db-card-body" style="padding:0;">
+                        <table class="db-table">
+                            <thead><tr><th>' . __('Name') . '</th><th>' . __('Standard') . '</th><th>' . __('Units') . '</th><th>' . __('Type') . '</th><th>' . __('Visibility') . '</th><th>' . __('Actions') . '</th></tr></thead>
+                            <tbody>';
+            $SQL = "SELECT * FROM qatests ORDER BY name LIMIT $ItemsPerPage OFFSET $Offset";
+            $Res = DB_query($SQL);
+            while ($Row = DB_fetch_array($Res)) {
+                $vis = ($Row['showoncert']?'C':'').($Row['showonspec']?'S':'').($Row['showontestplan']?'P':'');
+                echo '<tr>
+                        <td><b style="color:var(--db-primary-dark);">'.$Row['name'].'</b><br><small class="db-badge">'.$Row['groupby'].'</small></td>
+                        <td>'.$Row['method'].'</td>
+                        <td>'.$Row['units'].'</td>
+                        <td>'.($Types[$Row['type']] ?? $Row['type']).'</td>
+                        <td><span class="db-badge" title="Cert/Spec/Plan">'.$vis.'</span></td>
+                        <td style="white-space:nowrap;">
+                            <a href="'.htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8').'?SelectedQATest='.$Row['testid'].'" class="link-action">Edit</a> | 
+                            <a href="'.htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8').'?SelectedQATest='.$Row['testid'].'&delete=1" class="link-action" style="color:#dc2626;" onclick="return confirm(\'Delete?\');">Del</a>
+                        </td>
+                      </tr>';
+            }
+            echo '</tbody></table>';
+            
+            // Pagination Controls
+            if ($TotalPages > 1) {
+                echo '<div style="padding: 1rem; border-top: 1px solid var(--db-border); display:flex; justify-content:space-between; align-items:center; background: #fff;">';
+                echo '<div style="font-size: 0.75rem; color: var(--db-text-muted); font-weight: 600;">Page ' . $Page . ' of ' . $TotalPages . '</div>';
+                echo '<div style="display:flex; gap: 8px;">';
+                if ($Page > 1) echo '<a href="'.htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8').'?Page='.($Page-1).'" class="db-btn db-btn-ghost" style="width: auto; padding: 0.5rem 1rem;">Previous</a>';
+                if ($Page < $TotalPages) echo '<a href="'.htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8').'?Page='.($Page+1).'" class="db-btn db-btn-ghost" style="width: auto; padding: 0.5rem 1rem;">Next</a>';
+                echo '</div></div>';
+            }
+            echo '</div></div>';
+        echo '</div>';
+    echo '</div>';
+echo '</div>';
 
-
-	$result2 = DB_query("SELECT groupname FROM prodspecgroups", $db);
-	// Error if no groups  setup
-	if (DB_num_rows($result2) == 0) {
-		$DataError = 1;
-		echo '<a href="ProdSpecGroups.php" target="_parent">' . _('Setup Product Spec Groups') . '</a>';
-		echo '<tr><td colspan="2">' . prnMsg(_('No Product Spec Groups defined') . '&nbsp;&nbsp;<a href="ProdSpecGroups.php" target="_parent">' . _('Setup Product Spec Groups') . '</a></td></tr>', 'error');
-		include(__DIR__ . '/includes/footer.php');
-		exit();
-	} else {
-		// if OK show select box with available options to choose
-		echo '<field>
-			<label for="Type">' . __('Group By') . ':</label>
-			<td><select title="" name="GroupBy">';
-		while ($myrow = DB_fetch_array($result2)) {
-			if (isset($_POST['GroupBy']) AND $_POST['GroupBy'] == $myrow['groupname']) {
-				echo '<option selected="selected" value="' . $myrow['groupname'] . '">' . $myrow['groupname'] . '</option>';
-			} else {
-				echo '<option value="' . $myrow['groupname'] . '">' . $myrow['groupname'] . '</option>';
-			}
-		} //end while loop
-		DB_data_seek($result2, 0);
-		echo '</select></td></tr>';
-		echo '</select>
-			<fieldhelp>' . __('Can be used to group certain Tests on the Product Specification or Certificate of Analysis or left blank') . '</fieldhelp>
-			</field>';
-	}
-
-
-	echo '<field>
-			<label for="Units">' . __('Units') . ':</label>
-			<input type="text" name="Units" title="" size="20" maxlength="20" value="' . $_POST['Units'] . '" />
-			<fieldhelp>' . __('How this is measured. PSI, Fahrenheit, Celsius etc.') . '</fieldhelp>
-		</field>';
-	echo '<field>
-			<label for="Type">' . __('Type') . ':</label>
-			<td><select title="" name="Type">';
-	if ($_POST['Type']==0){
-		echo '<option selected="selected" value="0">' . __('Text Box') . '</option>';
-	} else {
-		echo '<option value="0">' . __('Text Box') . '</option>';
-	}
-	if ($_POST['Type']==1){
-		echo '<option selected="selected" value="1">' . __('Select Box') . '</option>';
-	} else {
-		echo '<option value="1">' . __('Select Box') . '</option>';
-	}
-	if ($_POST['Type']==2){
-		echo '<option selected="selected" value="2">' . __('Check Box') . '</option>';
-	} else {
-		echo '<option value="2">' . __('Check Box') . '</option>';
-	}
-	if ($_POST['Type']==3){
-		echo '<option selected="selected" value="3">' . __('Date Box') . '</option>';
-	} else {
-		echo '<option value="3">' . __('Date Box') . '</option>';
-	}
-	if ($_POST['Type']==4){
-		echo '<option selected="selected" value="4">' . __('Range') . '</option>';
-	} else {
-		echo '<option value="4">' . __('Range') . '</option>';
-	}
-	echo '</select>
-		<fieldhelp>' . __('What sort of data field is required to record the results for this test') . '</fieldhelp>
-	</field>';
-
-	echo '<field>
-			<label for="DefaultValue">' . __('Possible Values') . ':</label>
-			<input type="text" name="DefaultValue" size="50" maxlength="150" value="' . $_POST['DefaultValue']. '" />
-		</field>';
-
-	echo '<field>
-			<label for="NumericValue">' . __('Numeric Value?') . ':</label>
-			<select name="NumericValue">';
-	if ($_POST['NumericValue']==1){
-		echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-	} else {
-		echo '<option value="1">' . __('Yes') . '</option>';
-	}
-	if ($_POST['NumericValue']==0){
-		echo '<option selected="selected" value="0">' . __('No') . '</option>';
-	} else {
-		echo '<option value="0">' . __('No') . '</option>';
-	}
-	echo '</select>
-		</field>';
-
-	echo '<field>
-			<label for="ShowOnCert">' . __('Show On Cert?') . ':</label>
-			<select name="ShowOnCert">';
-	if ($_POST['ShowOnCert']==1){
-		echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-	} else {
-		echo '<option value="1">' . __('Yes') . '</option>';
-	}
-	if ($_POST['ShowOnCert']==0){
-		echo '<option selected="selected" value="0">' . __('No') . '</option>';
-	} else {
-		echo '<option value="0">' . __('No') . '</option>';
-	}
-	echo '</select>
-		</field>';
-
-	echo '<field>
-			<label for="ShowOnSpec">' . __('Show On Spec?') . ':</label>
-			<select name="ShowOnSpec">';
-	if ($_POST['ShowOnSpec']==1){
-		echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-	} else {
-		echo '<option value="1">' . __('Yes') . '</option>';
-	}
-	if ($_POST['ShowOnSpec']==0){
-		echo '<option selected="selected" value="0">' . __('No') . '</option>';
-	} else {
-		echo '<option value="0">' . __('No') . '</option>';
-	}
-	echo '</select>
-		</field>';
-
-	echo '<field>
-			<label for="ShowOnTestPlan">' . __('Show On Test Plan?') . ':</label>
-			<select name="ShowOnTestPlan">';
-	if ($_POST['ShowOnTestPlan']==1){
-		echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-	} else {
-		echo '<option value="1">' . __('Yes') . '</option>';
-	}
-	if ($_POST['ShowOnTestPlan']==0){
-		echo '<option selected="selected" value="0">' . __('No') . '</option>';
-	} else {
-		echo '<option value="0">' . __('No') . '</option>';
-	}
-	echo '</select>
-		</field>';
-
-	echo '<field>
-			<label for="Active">' . __('Active?') . ':</label>
-			<select name="Active">';
-	if ($_POST['Active']==1){
-		echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-	} else {
-		echo '<option value="1">' . __('Yes') . '</option>';
-	}
-	if ($_POST['Active']==0){
-		echo '<option selected="selected" value="0">' . __('No') . '</option>';
-	} else {
-		echo '<option value="0">' . __('No') . '</option>';
-	}
-	echo '</select>
-		</field>';
-
-	echo '</fieldset>';
-
-	echo '<div class="centre">
-			<input type="submit" name="submit" value="' . __('Enter Information') . '" />
-		</div>
-		</form>';
-
-} //end if record deleted no point displaying form to add record
-if (!isset($SelectedQATest)) {
-
-/* It could still be the second time the page has been run and a record has been selected for modification - SelectedQATest will exist because it was sent with the new call. If its the first time the page has been displayed with no parameters
-then none of the above are true and the list of QA Test will be displayed with
-links to delete or edit each. These will call the same page again and allow update/input
-or deletion of the records*/
-
-	$SQL = "SELECT testid,
-				name,
-				method,
-				groupby,
-				units,
-				type,
-				defaultvalue,
-				numericvalue,
-				showoncert,
-				showonspec,
-				showontestplan,
-				active
-			FROM qatests
-			ORDER BY name";
-	$Result = DB_query($SQL);
-
-	echo '<table class="selection">
-		<thead>
-			<tr>
-			<th class="SortedColumn">' . __('Test ID') . '</th>
-			<th class="SortedColumn">' . __('Name') . '</th>
-			<th class="SortedColumn">' . __('Method') . '</th>
-			<th class="SortedColumn">' . __('Group By') . '</th>
-			<th class="SortedColumn">' . __('Units') . '</th>
-			<th class="SortedColumn">' . __('Type') . '</th>
-			<th>' . __('Possible Values') . '</th>
-			<th class="SortedColumn">' . __('Numeric Value') . '</th>
-			<th class="SortedColumn">' . __('Show on Cert') . '</th>
-			<th class="SortedColumn">' . __('Show on Spec') . '</th>
-			<th class="SortedColumn">' . __('Show on Test Plan') . '</th>
-			<th class="SortedColumn">' . __('Active') . '</th>
-			<th colspan="2"></th>
-			</tr>
-		</thead>
-		<tbody>';
-
-	while ($MyRow=DB_fetch_array($Result)) {
-
-	if ($MyRow['active'] == 1) {
-		$ActiveText = __('Yes');
-	} else {
-		$ActiveText = __('No');
-	}
-	if ($MyRow['numericvalue'] == 1) {
-		$IsNumeric = __('Yes');
-	} else {
-		$IsNumeric = __('No');
-	}
-	if ($MyRow['showoncert'] == 1) {
-		$ShowOnCertText = __('Yes');
-	} else {
-		$ShowOnCertText = __('No');
-	}
-	if ($MyRow['showonspec'] == 1) {
-		$ShowOnSpecText = __('Yes');
-	} else {
-		$ShowOnSpecText = __('No');
-	}
-	if ($MyRow['showontestplan'] == 1) {
-		$ShowOnTestPlanText = __('Yes');
-	} else {
-		$ShowOnTestPlanText = __('No');
-	}
-
-	switch ($MyRow['type']) {
-		case 0: //textbox
-			$TypeDisp='Text Box';
-			break;
-		case 1: //select box
-			$TypeDisp='Select Box';
-			break;
-		case 2: //checkbox
-			$TypeDisp='Check Box';
-			break;
-		case 3: //datebox
-			$TypeDisp='Date Box';
-			break;
-		case 4: //range
-			$TypeDisp='Range';
-			break;
-	} //end switch
-
-	echo '<tr class="striped_row">
-			<td class="number">', $MyRow['testid'], '</td>
-			<td>', $MyRow['name'], '</td>
-			<td>', $MyRow['method'], '</td>
-			<td>', $MyRow['groupby'], '</td>
-			<td>', $MyRow['units'], '</td>
-			<td>', $TypeDisp, '</td>
-			<td>', $MyRow['defaultvalue'], '</td>
-			<td>', $IsNumeric, '</td>
-			<td>', $ShowOnCertText, '</td>
-			<td>', $ShowOnSpecText, '</td>
-			<td>', $ShowOnTestPlanText, '</td>
-			<td>', $ActiveText, '</td>
-			<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedQATest=', $MyRow['testid'], '">' .  __('Edit') . '</a></td>
-			<td><a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?SelectedQATest=', $MyRow['testid'], '&amp;delete=1" onclick="return confirm(\'' . __('Are you sure you wish to delete this QA Test ?') . '\');">' . __('Delete') . '</a></td>
-		</tr>';
-
-	} //END WHILE LIST LOOP
-	echo '</tbody></table>';
-} //end of ifs and buts!
 include(__DIR__ . '/includes/footer.php');
+?>

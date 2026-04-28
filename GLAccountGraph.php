@@ -1,344 +1,118 @@
 <?php
 
-/**
- * GLAccountGraph.php
- * By Paul Becker
- *
- * This script generates a graph visualizing General Ledger (GL) account transactions
- * over a selected period. It allows users to choose a specific GL account,
- * define a date range (either by selecting start and end periods or a predefined period),
- * select the type of graph (bar, line, pie, etc.), and choose whether to display
- * the periodic variation or the cumulative account value.
- *
- * Features:
- * - Selection of GL account accessible to the user.
- * - Flexible period selection (From/To periods or predefined report periods).
- * - Various graph types available (bars, lines, pie, area, etc.).
- * - Option to display transaction amounts (variation) or cumulative account balance (value).
- * - Option to invert the graph values.
- * - Uses the PHPlot library for graph generation.
- * - Displays the generated graph inline and provides an option to re-select criteria.
- *
- * Workflow:
- * 1. Includes necessary session and header files.
- * 2. Checks if form data (Account, PeriodFrom, PeriodTo, etc.) is submitted.
- * 3. If form data is not present or invalid (e.g., PeriodFrom > PeriodTo), it displays the selection form:
- *    - Fetches available GL accounts for the user.
- *    - Provides options for graph type, display type (variation/value), and period selection.
- *    - Includes a submit button to generate the graph.
- * 4. If valid form data is submitted:
- *    - Constructs the graph title based on selected criteria.
- *    - Builds the SQL query based on the selected display type (variation or value).
- *    - Fetches the GL transaction data for the selected account and period range.
- *    - Initializes and configures the PHPlot object with selected options (title, type, colors, etc.).
- *    - Formats the fetched data into an array suitable for PHPlot.
- *    - Generates the graph image and saves it to the server.
- *    - Displays the generated graph image on the page.
- *    - Provides a link to return to the selection form.
- * 5. Includes the footer file.
- */
-
 require(__DIR__ . '/includes/session.php');
+include(__DIR__ . '/includes/GLFunctions.php');
 
 $Title = __('GL Account Graph');
 $ViewTopic = 'GeneralLedger';
 $BookMark = 'GLAccountGraph';
 include(__DIR__ . '/includes/header.php');
 
-include(__DIR__ . '/includes/GLFunctions.php');
-
-$NewReport = '';
-$SelectedAccount = '';
-
-if (isset($_POST['Account'])) {
-	$SelectedAccount = $_POST['Account'];
-} elseif (isset($_GET['Account'])) {
-	$SelectedAccount = $_GET['Account'];
-}
-
+$SelectedAccount = $_POST['Account'] ?? $_GET['Account'] ?? '';
 if (isset($_POST['Period']) and $_POST['Period'] != '') {
 	$_POST['PeriodFrom'] = ReportPeriod($_POST['Period'], 'From');
 	$_POST['PeriodTo'] = ReportPeriod($_POST['Period'], 'To');
 }
 
+$NewReport = '';
 if (isset($_POST['PeriodFrom']) and isset($_POST['PeriodTo'])) {
-
-	if ($_POST['PeriodFrom'] > $_POST['PeriodTo']) {
-		prnMsg(__('The selected period from is actually after the period to! Please re-select the reporting period'), 'error');
-		$NewReport = 'on';
-	}
-
+	if ($_POST['PeriodFrom'] > $_POST['PeriodTo']) { prnMsg(__('Invalid period range'), 'error'); $NewReport = 'on'; }
 }
 
+echo '<style>
+    :root { --db-primary: hsl(145, 63%, 38%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+    .db-page { background: var(--db-bg); min-height: 100vh; padding: 2rem; font-family: "Inter", sans-serif; }
+    .db-card { background: #fff; border-radius: 12px; border: 1px solid var(--db-border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 700px; margin: 0 auto; overflow: hidden; }
+    .db-card-header { padding: 1.25rem; border-bottom: 1px solid var(--db-border); }
+    .db-card-title { font-size: 0.85rem; font-weight: 800; color: var(--db-primary-dark); text-transform: uppercase; margin:0; }
+    .db-card-body { padding: 1.5rem; }
+    .db-field { margin-bottom: 1.25rem; }
+    .db-label { font-size: 0.75rem; font-weight: 800; color: var(--db-primary-dark); text-transform: uppercase; margin-bottom: 0.4rem; display: block; }
+    .db-select, .db-input { padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid var(--db-border); font-size: 0.85rem; width: 100%; background:#fdfdfd; }
+    .db-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: none; transition: 0.2s; width: 100%; margin-top: 15px; }
+    .db-btn-primary { background: var(--db-primary); color: #fff; }
+    .graph-img { width: 100%; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    @media print { .noPrint { display: none; } }
+</style>';
+
 if ((!isset($_POST['PeriodFrom']) or !isset($_POST['PeriodTo'])) or $NewReport == 'on') {
+    echo '<div class="db-page"><div class="db-card">
+            <div class="db-card-header"><h3 class="db-card-title">' . __('Analytics & Graphing Criteria') . '</h3></div>
+            <div class="db-card-body">
+                <form method="post" action="' . htmlspecialchars(basename(__FILE__), ENT_QUOTES, 'UTF-8') . '">
+                <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+                
+                <div class="db-field"><label class="db-label">Target GL Account</label><select name="Account" class="db-select">';
+                $SQL = "SELECT chartmaster.accountcode, chartmaster.accountname FROM chartmaster INNER JOIN glaccountusers ON glaccountusers.accountcode = chartmaster.accountcode AND glaccountusers.userid = '" . $_SESSION['UserID'] . "' AND glaccountusers.canview = 1 ORDER BY chartmaster.accountcode";
+                $Res = DB_query($SQL);
+                while ($R = DB_fetch_array($Res)) echo '<option '.($R['accountcode']==$SelectedAccount?'selected':'').' value="'.$R['accountcode'].'">'.$R['accountcode'].' - '.$R['accountname'].'</option>';
+                echo '</select></div>
 
-	echo '<form method="post" action="' . htmlspecialchars(basename(__FILE__), ENT_QUOTES, 'UTF-8') . '">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                    <div class="db-field"><label class="db-label">Graph Style</label><select name="GraphType" class="db-select"><option value="bars">Bar Chart</option><option value="lines">Line Chart</option><option value="area">Area Chart</option><option value="pie">Pie Chart</option></select></div>
+                    <div class="db-field"><label class="db-label">Data Metric</label><select name="DisplayType" class="db-select"><option value="variation">Periodic Variation</option><option value="value">Cumulative Balance</option></select></div>
+                </div>
 
-	echo '<p class="page_title_text">
-			<img src="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/images/maintenance.png" title="' . __('Search') . '" alt="" />' . ' ' . $Title . '
-		</p>';
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                    <div class="db-field"><label class="db-label">From Period</label><select name="PeriodFrom" class="db-select">';
+                    $Pers = DB_query("SELECT periodno, lastdate_in_period FROM periods ORDER BY periodno");
+                    while ($R = DB_fetch_array($Pers)) echo '<option value="'.$R['periodno'].'">'.MonthAndYearFromSQLDate($R['lastdate_in_period']).'</option>';
+                    echo '</select></div>
+                    <div class="db-field"><label class="db-label">To Period</label><select name="PeriodTo" class="db-select">';
+                    DB_data_seek($Pers, 0); while ($R = DB_fetch_array($Pers)) echo '<option value="'.$R['periodno'].'">'.MonthAndYearFromSQLDate($R['lastdate_in_period']).'</option>';
+                    echo '</select></div>
+                </div>
 
-	echo '<fieldset>
-			<legend>', __('Report Criteria'), '</legend>
-			<field>
-				<label for="Account">' . __('Select GL Account') . ':</label>
-				<select name="Account">';
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:1rem;"><input type="checkbox" name="InvertGraph" id="ig" /> <label class="db-label" for="ig" style="margin:0;">Invert Graph Direction</label></div>
 
-	$SQL = "SELECT chartmaster.accountcode,
-				bankaccounts.accountcode AS bankact,
-				bankaccounts.currcode,
-				chartmaster.accountname
-			FROM chartmaster
-			LEFT JOIN bankaccounts
-				ON chartmaster.accountcode = bankaccounts.accountcode
-			INNER JOIN glaccountusers
-				ON glaccountusers.accountcode = chartmaster.accountcode
-					AND glaccountusers.userid = '" . $_SESSION['UserID'] . "'
-					AND glaccountusers.canview = 1
-			ORDER BY chartmaster.accountcode";
-	$AccountResult = DB_query($SQL);
-	$BankAccount = false;
-	while ($MyRow = DB_fetch_array($AccountResult)) {
-		if ($MyRow['accountcode'] == $SelectedAccount) {
-			if (!is_null($MyRow['bankact'])) {
-				$BankAccount = true;
-			}
-			echo '<option selected="selected" value="' . $MyRow['accountcode'] . '">'
-				. $MyRow['accountcode'] . ' ' . htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false)
-				. '</option>';
-		} else {
-			echo '<option value="' . $MyRow['accountcode'] . '">'
-				. $MyRow['accountcode'] . ' ' . htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false)
-				. '</option>';
-		}
-	}
-	echo '</select>
-			</td>
-		</field>';
+                <button type="submit" name="ShowGraph" class="db-btn db-btn-primary">Visualize GL Data</button>
+                </form>
+            </div>
+        </div></div>';
 
-	echo '<field>
-			<label for="GraphType">' . __('Graph Type') . '</label>
-			<select name="GraphType">
-					<option value="bars">' . __('Bar Graph') . '</option>
-					<option value="stackedbars">' . __('Stacked Bar Graph') . '</option>
-					<option value="lines">' . __('Line Graph') . '</option>
-					<option value="linepoints">' . __('Line Point Graph') . '</option>
-					<option value="area">' . __('Area Graph') . '</option>
-					<option value="points">' . __('Points Graph') . '</option>
-					<option value="pie">' . __('Pie Graph') . '</option>
-					<option value="thinbarline">' . __('Thin Bar Line Graph') . '</option>
-					<option value="squared">' . __('Squared Graph') . '</option>
-					<option value="stackedarea">' . __('Stacked Area Graph') . '</option>
-				</select>
-			</field>';
-
-	echo '<field>
-			<label for="DisplayType">' . __('Display Type') . '</label>
-			<select name="DisplayType">
-				<option selected="selected" value="variation">' . __('Variation') . '</option>
-				<option value="value">' . __('Value') . '</option>
-			</select>
-		</field>';
-
-	echo '<field>
-			<label for="InvertGraph">', __('Invert Graph'), '</label>
-			<input type="checkbox" name="InvertGraph" />
-		</field>';
-
-	echo '<field>
-			<label for="PeriodFrom">' . __('Select Period From') . ':</label>
-			<select name="PeriodFrom">';
-
-	if (date('m') > $_SESSION['YearEnd']) {
-		/*Dates in SQL format */
-		$DefaultFromDate = date('Y-m-d', mktime(0, 0, 0, $_SESSION['YearEnd'] + 2, 0, date('Y')));
-	} else {
-		$DefaultFromDate = date('Y-m-d', mktime(0, 0, 0, $_SESSION['YearEnd'] + 2, 0, date('Y') - 1));
-	}
-	$SQL = "SELECT periodno, lastdate_in_period FROM periods ORDER BY periodno";
-	$Periods = DB_query($SQL);
-
-	while ($MyRow = DB_fetch_array($Periods)) {
-		if (isset($_POST['PeriodFrom']) and $_POST['PeriodFrom'] != '') {
-			if ($_POST['PeriodFrom'] == $MyRow['periodno']) {
-				echo '<option selected="selected" value="' . $MyRow['periodno'] . '">'
-					. MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-			} else {
-				echo '<option value="' . $MyRow['periodno'] . '">'
-					. MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-			}
-		} else {
-			if ($MyRow['lastdate_in_period'] == $DefaultFromDate) {
-				echo '<option selected="selected" value="' . $MyRow['periodno'] . '">'
-					. MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-			} else {
-				echo '<option value="' . $MyRow['periodno'] . '">'
-					. MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-			}
-		}
-	}
-
-	echo '</select>
-		</field>';
-	if (!isset($_POST['PeriodTo']) or $_POST['PeriodTo'] == '') {
-		$DefaultPeriodTo = GetPeriod(DateAdd(ConvertSQLDate($DefaultFromDate), 'm', 11));
-	} else {
-		$DefaultPeriodTo = $_POST['PeriodTo'];
-	}
-
-	echo '<field>
-			<label for="PeriodTo">' . __('Select Period To') . ':</label>
-			<select name="PeriodTo">';
-
-	DB_data_seek($Periods, 0);
-
-	while ($MyRow = DB_fetch_array($Periods)) {
-
-		if ($MyRow['periodno'] == $DefaultPeriodTo) {
-			echo '<option selected="selected" value="' . $MyRow['periodno'] . '">'
-				. MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-		} else {
-			echo '<option value ="' . $MyRow['periodno'] . '">'
-				. MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-		}
-	}
-	echo '</select>
-		</field>';
-
-	if (!isset($_POST['Period'])) {
-		$_POST['Period'] = '';
-	}
-
-	echo '<field>
-			<label for="Period">', '<b>', __('OR'), ' </b>', __('Select Period'), '</label>
-			' . ReportPeriodList($_POST['Period']) . '
-		</field>';
-
-	echo '</fieldset>
-			<div class="centre">
-				<input type="submit" name="ShowGraph" value="' . __('Show Account Graph') . '" />
-			</div>
-		</form>';
-	include(__DIR__ . '/includes/footer.php');
 } else {
-
-	$GraphTitle = '';
 	$AccountName = GetGLAccountName($SelectedAccount);
+	$GraphTitle = $AccountName . ' ' . ($_POST['DisplayType'] == 'value' ? __('Account Value') : __('Transactions'));
+    
+    $PRes = DB_query("SELECT YEAR(lastdate_in_period) as y, MONTHNAME(lastdate_in_period) as m FROM periods WHERE periodno IN ('".$_POST['PeriodFrom']."','".$_POST['PeriodTo']."')");
+    $P1 = DB_fetch_array($PRes); $P2 = DB_fetch_array($PRes);
+    $GraphTitle .= "\n" . __('From') . ' ' . $P1['m'] . ' ' . $P1['y'] . ' ' . __('to') . ' ' . $P2['m'] . ' ' . $P2['y'];
 
 	if ($_POST['DisplayType'] == 'value') {
-		$GraphTitle = $AccountName . ' ' . __('GL Account Graph - Account Value') . "\n\r";
+		$SQL = "SELECT p.periodno, p.lastdate_in_period, (SELECT SUM(amount) FROM gltotals WHERE account = '" . $SelectedAccount . "' AND period <= p.periodno) AS val FROM periods p WHERE p.periodno >= '" . $_POST['PeriodFrom'] . "' AND p.periodno <= '" . $_POST['PeriodTo'] . "' ORDER BY p.periodno";
+		$DataCol = 'val'; $Leg = __('Value');
 	} else {
-		$GraphTitle = $AccountName . ' ' . __('GL Account Graph - Actual Transactions') . "\n\r";
-	}
-	$SQL = "SELECT YEAR(`lastdate_in_period`) AS year,
-					MONTHNAME(`lastdate_in_period`) AS month
-			FROM `periods`
-			WHERE `periodno` = '" . $_POST['PeriodFrom'] . "'
-				OR periodno = '" . $_POST['PeriodTo'] . "'";
-
-	$Result = DB_query($SQL);
-
-	$PeriodFromRow = DB_fetch_array($Result);
-	$Starting = $PeriodFromRow['month'] . ' ' . $PeriodFromRow['year'];
-
-	$PeriodToRow = DB_fetch_array($Result);
-	$Ending = $PeriodToRow['month'] . ' ' . $PeriodToRow['year'];
-
-	$GraphTitle .= ' ' . __('From Period') . ' ' . $Starting . ' ' . __('to') . ' ' . $Ending . "\n\r";
-
-	if ($_POST['DisplayType'] == 'value') {
-		// Calculate cumulative value
-		$SQL = "SELECT p_to.periodno,
-					   p_to.lastdate_in_period,
-					   (SELECT SUM(gltotals.amount)
-						FROM gltotals
-						WHERE gltotals.account = '" . $SelectedAccount . "'
-							AND gltotals.period <= p_to.periodno) AS cumulative_actual
-				FROM periods p_to
-				WHERE p_to.periodno >= '" . $_POST['PeriodFrom'] . "'
-					AND p_to.periodno <= '" . $_POST['PeriodTo'] . "'
-				ORDER BY p_to.periodno";
-		$DataColumn = 'cumulative_actual';
-		$LegendText = __('Value');
-	} else {
-		// Show variation per period (original query)
-		$SQL = "SELECT periods.periodno,
-					periods.lastdate_in_period,
-					COALESCE(gltotals.amount, 0) AS actual
-				FROM periods
-				LEFT JOIN gltotals
-					ON periods.periodno = gltotals.period
-						AND gltotals.account = '" . $SelectedAccount . "'
-				WHERE periods.periodno >= '" . $_POST['PeriodFrom'] . "'
-					AND periods.periodno <= '" . $_POST['PeriodTo'] . "'
-				GROUP BY periods.periodno,
-						 periods.lastdate_in_period,
-						 gltotals.amount
-				ORDER BY periods.periodno";
-		$DataColumn = 'actual';
-		$LegendText = __('Actual');
+		$SQL = "SELECT periods.periodno, periods.lastdate_in_period, COALESCE(gltotals.amount, 0) AS val FROM periods LEFT JOIN gltotals ON periods.periodno = gltotals.period AND gltotals.account = '" . $SelectedAccount . "' WHERE periods.periodno >= '" . $_POST['PeriodFrom'] . "' AND periods.periodno <= '" . $_POST['PeriodTo'] . "' ORDER BY periods.periodno";
+		$DataCol = 'val'; $Leg = __('Actual');
 	}
 
 	$Graph = new Phplot\Phplot\phplot(1200,600);
 	$Graph->SetTitle($GraphTitle);
-	$Graph->SetTitleColor('blue');
 	$Graph->SetOutputFile('companies/' . $_SESSION['DatabaseName'] . '/reports/glaccountgraph.png');
-	$Graph->SetXTitle(__('Month'));
+	$Graph->SetXTitle(__('Period')); $Graph->SetXLabelAngle(90); $Graph->SetBackgroundColor('white'); $Graph->SetPlotType($_POST['GraphType']);
+	$Graph->SetIsInline('1'); $Graph->SetDataType('text-data'); $Graph->SetNumberFormat($DecimalPoint, $ThousandsSeparator);
 
-	$Graph->SetXTickPos('none');
-	$Graph->SetXTickLabelPos('none');
-	$Graph->SetXLabelAngle(90);
-	$Graph->SetBackgroundColor('white');
-	$Graph->SetFileFormat('png');
-	$Graph->SetPlotType($_POST['GraphType']);
-	$Graph->SetIsInline('1');
-	$Graph->SetShading(5);
-	$Graph->SetDrawYGrid(true);
-	$Graph->SetDataType('text-data');
-	$Graph->TuneYAutoRange(0, 0, 0);
-	$Graph->SetNumberFormat($DecimalPoint, $ThousandsSeparator);
-	$Graph->SetPrecisionY($_SESSION['CompanyRecord']['decimalplaces']);
+	$Res = DB_query($SQL);
+	if (DB_num_rows($Res) == 0) { prnMsg(__('No data found'), 'info'); include(__DIR__ . '/includes/footer.php'); exit(); }
 
-	$SalesResult = DB_query($SQL);
-	if (DB_error_no() != 0) {
-
-		prnMsg(__('The GL Account graph data for the selected criteria could not be retrieved because') . ' - ' . DB_error_msg(), 'error');
-		include(__DIR__ . '/includes/footer.php');
-		exit();
+	$GraphArray = array(); $i = 0;
+	while ($MyRow = DB_fetch_array($Res)) {
+		$Val = isset($_POST['InvertGraph']) ? -$MyRow[$DataCol] : $MyRow[$DataCol];
+		$GraphArray[$i++] = array(MonthAndYearFromSQLDate($MyRow['lastdate_in_period']), $Val);
 	}
-	if (DB_num_rows($SalesResult) == 0) {
-		prnMsg(__('There is not GL Account data for the criteria entered to graph'), 'info');
-		include(__DIR__ . '/includes/footer.php');
-		exit();
-	}
-
-	$GraphArray = array();
-	$i = 0;
-	while ($MyRow = DB_fetch_array($SalesResult)) {
-		$Value = isset($_POST['InvertGraph']) ? -$MyRow[$DataColumn] : $MyRow[$DataColumn];
-		$GraphArray[$i] = array(MonthAndYearFromSQLDate($MyRow['lastdate_in_period']), $Value);
-		$i++;
-	}
-
-	$Graph->SetDataValues($GraphArray);
-	$Graph->SetDataColors(
-		array('grey'), //Data Colors
-		array('black') //Border Colors
-	);
-	$Graph->SetLegend(array($LegendText));
-	$Graph->SetYDataLabelPos('plotin');
-
-	//Draw it
+	$Graph->SetDataValues($GraphArray); $Graph->SetDataColors(array('hsl(145, 63%, 38%)'), array('black')); $Graph->SetLegend(array($Leg));
 	$Graph->DrawGraph();
-	echo '<table class="selection">
-			<tr>
-				<td><img class="graph" src="companies/' . $_SESSION['DatabaseName'] . '/reports/glaccountgraph.png" alt="Sales Report Graph"></img></td>
-			</tr>
-		  </table>';
 
-	echo '<div class="noPrint centre">
-			<a href="', basename(__FILE__), '">', __('Select Different Criteria'), '</a>
-		</div>';
-	include(__DIR__ . '/includes/footer.php');
+    echo '<div class="db-page"><div class="db-card" style="max-width:1100px;">
+            <div class="db-card-header"><h3 class="db-card-title">' . $AccountName . ' ' . __('Performance Visualization') . '</h3></div>
+            <div class="db-card-body" style="text-align:center;">
+                <img class="graph-img" src="companies/' . $_SESSION['DatabaseName'] . '/reports/glaccountgraph.png" alt="Graph" />
+                <div class="noPrint" style="margin-top:2rem;">
+                    <a href="'.basename(__FILE__).'" class="db-btn db-btn-primary" style="text-decoration:none; width:auto;">Configure New View</a>
+                </div>
+            </div>
+        </div></div>';
 }
+
+include(__DIR__ . '/includes/footer.php');
+?>

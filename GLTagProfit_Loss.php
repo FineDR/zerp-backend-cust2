@@ -1,646 +1,155 @@
 <?php
 
 require(__DIR__ . '/includes/session.php');
-
 use Dompdf\Dompdf;
-
 include(__DIR__ . '/includes/SetDomPDFOptions.php');
+include(__DIR__ . '/includes/SQL_CommonFunctions.php');
+include(__DIR__ . '/includes/AccountSectionsDef.php');
 
 $Title = __('Income and Expenditure by Tag');
 $ViewTopic = 'GeneralLedger';
 $BookMark = 'TagReports';
 
-include(__DIR__ . '/includes/SQL_CommonFunctions.php');
-include(__DIR__ . '/includes/AccountSectionsDef.php'); // This loads the $Sections variable
-
 if (isset($_POST['PeriodFrom']) AND ($_POST['PeriodFrom'] > $_POST['PeriodTo'])) {
-	prnMsg(__('The selected period from is actually after the period to') . '! ' . __('Please reselect the reporting period') , 'error');
-	$_POST['NewReport'] = 'Select A Different Period';
+	prnMsg(__('Invalid period range'), 'error'); $_POST['NewReport'] = 'on';
 }
-
 if (isset($_POST['Period']) and $_POST['Period'] != '') {
 	$_POST['PeriodFrom'] = ReportPeriod($_POST['Period'], 'From');
 	$_POST['PeriodTo'] = ReportPeriod($_POST['Period'], 'To');
 }
 
 if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
-
 	$NumberOfMonths = $_POST['PeriodTo'] - $_POST['PeriodFrom'] + 1;
-
 	if ($NumberOfMonths > 12) {
-		echo '<br />';
-		prnMsg(__('A period up to 12 months in duration can be specified') . ' - ' . __('the system automatically shows a comparative for the same period from the previous year') . ' - ' . __('it cannot do this if a period of more than 12 months is specified') . '. ' . __('Please select an alternative period range') , 'error');
-		include(__DIR__ . '/includes/footer.php');
-		exit();
+		prnMsg(__('Max duration is 12 months'), 'error'); include(__DIR__ . '/includes/footer.php'); exit();
 	}
-
 	$PeriodToDate = MonthAndYearFromSQLDate(EndDateSQLFromPeriodNo($_POST['PeriodTo']));
-
-	$SQL = "SELECT accountgroups.sectioninaccounts,
-					accountgroups.groupname,
-					accountgroups.parentgroupname,
-					gltrans.account,
-					chartmaster.accountname,
-					Sum(CASE WHEN (gltrans.periodno>='" . $_POST['PeriodFrom'] . "' AND gltrans.periodno<='" . $_POST['PeriodTo'] . "') THEN gltrans.amount ELSE 0 END) AS TotalAllPeriods,
-					Sum(CASE WHEN (gltrans.periodno='" . $_POST['PeriodTo'] . "') THEN gltrans.amount ELSE 0 END) AS TotalThisPeriod
-			FROM chartmaster
-			INNER JOIN accountgroups ON chartmaster.group_ = accountgroups.groupname
-			INNER JOIN gltrans ON chartmaster.accountcode= gltrans.account
-			INNER JOIN gltags ON gltags.counterindex=gltrans.counterindex
-			WHERE accountgroups.pandl=1
-				AND gltags.tagref='" . $_POST['tag'] . "'
-			GROUP BY accountgroups.sectioninaccounts,
-					accountgroups.groupname,
-					accountgroups.parentgroupname,
-					gltrans.account,
-					chartmaster.accountname
-			ORDER BY accountgroups.sectioninaccounts,
-					accountgroups.sequenceintb,
-					accountgroups.groupname,
-					gltrans.account";
-
-	$AccountsResult = DB_query($SQL, __('No general ledger accounts were returned by the SQL because') , __('The SQL that failed was'));
-	$SQL = "SELECT tagdescription FROM tags WHERE tagref='" . $_POST['tag'] . "'";
-	$Result = DB_query($SQL);
-	$MyRow = DB_fetch_row($Result);
-
-	/*show a table of the accounts info returned by the SQL
-	 Account Code ,   Account Name , Month Actual, Month Budget, Period Actual, Period Budget */
+	$TagInfo = DB_fetch_row(DB_query("SELECT tagdescription FROM tags WHERE tagref='" . $_POST['tag'] . "'"));
 
 	$HTML = '';
+	if (isset($_POST['PrintPDF'])) { $HTML .= '<html><head><link href="css/reports.css" rel="stylesheet" type="text/css" /></head><body>'; }
 
-	if (isset($_POST['PrintPDF'])) {
-		$HTML .= '<html>
-					<head>';
-		$HTML .= '<link href="css/reports.css" rel="stylesheet" type="text/css" />';
-	}
+	$HTML .= '<div class="report-header" style="text-align:center; margin-bottom:2rem;">
+                <h1 style="margin:0; color:#1e293b;">' . $_SESSION['CompanyRecord']['coyname'] . '</h1>
+                <div style="font-weight:900; color:hsl(145, 63%, 38%); font-size:1.1rem; text-transform:uppercase;">' . $Title . '</div>
+                <div style="color:#64748b; font-size:0.85rem; margin-top:5px;"><b>Tag:</b> ' . $_POST['tag'] . ' - ' . $TagInfo[0] . ' | <b>Period:</b> ' . $NumberOfMonths . ' months to ' . $PeriodToDate . '</div>
+              </div>';
 
-	$HTML .= '<table cellpadding="2" class="selection">';
-	$HTML .= '<tr>
-			<th colspan="9">
-				<div class="centre">
-					<h2><b>' . __('Statement of Income and Expenditure for Tag') . ' ' . $MyRow[0] . ' ' . __('during the') . ' ' . $NumberOfMonths . ' ' . __('months to') . ' ' . $PeriodToDate . '</b></h2>
-				</div>
-			</th>
-		</tr>';
+	$AccountList = DB_query("SELECT accountgroups.sectioninaccounts, accountgroups.groupname, accountgroups.parentgroupname, gltrans.account, chartmaster.accountname, Sum(CASE WHEN (gltrans.periodno>='" . $_POST['PeriodFrom'] . "' AND gltrans.periodno<='" . $_POST['PeriodTo'] . "') THEN gltrans.amount ELSE 0 END) AS TotalAllPeriods FROM chartmaster INNER JOIN accountgroups ON chartmaster.group_ = accountgroups.groupname INNER JOIN gltrans ON chartmaster.accountcode= gltrans.account INNER JOIN gltags ON gltags.counterindex=gltrans.counterindex WHERE accountgroups.pandl=1 AND gltags.tagref='" . $_POST['tag'] . "' GROUP BY accountgroups.sectioninaccounts, accountgroups.groupname, accountgroups.parentgroupname, gltrans.account, chartmaster.accountname ORDER BY accountgroups.sectioninaccounts, accountgroups.sequenceintb, accountgroups.groupname, gltrans.account");
 
-	if ($_POST['Detail'] == 'Detailed') {
-		$TableHeader = '<tr>
-							<th>' . __('Account') . '</th>
-							<th>' . __('Account Name') . '</th>
-							<th colspan="2">' . __('Period Actual') . '</th>
-						</tr>';
-	}
-	else { /*summary */
-		$TableHeader = '<tr>
-							<th colspan="2"></th>
-							<th colspan="2">' . __('Period Actual') . '</th>
-						</tr>';
-	}
+	$HTML .= '<table class="report-table" style="width:100%; border-collapse:collapse; font-size:0.85rem;"><thead><tr style="background:hsl(145, 45%, 22%); color:white;">';
+	if ($_POST['Detail'] == 'Detailed') { $HTML .= '<th>' . __('Account') . '</th><th>' . __('Account Name') . '</th><th style="text-align:right;">' . __('Period Actual') . '</th>'; }
+	else { $HTML .= '<th colspan="2"></th><th style="text-align:right;">' . __('Period Actual') . '</th>'; }
+	$HTML .= '</tr></thead><tbody>';
 
-	$Section = '';
-	$SectionPrdActual = 0;
-	$SectionPrdLY = 0;
-	$SectionPrdBudget = 0;
+	$Section = ''; $SectionPrdActual = 0; $PeriodProfitLoss = 0; $ActGrp = ''; $ParentGroups = array(); $Level = 0; $ParentGroups[$Level] = ''; $GrpPrdActual = array(0); $TotalIncome = 0;
 
-	$PeriodProfitLoss = 0;
-	$PeriodLYProfitLoss = 0;
-	$PeriodBudgetProfitLoss = 0;
-
-	$ActGrp = '';
-	$ParentGroups = array();
-	$Level = 0;
-	$ParentGroups[$Level] = '';
-	$GrpPrdActual = array(
-		0
-	);
-	$GrpPrdLY = array(
-		0
-	);
-	$GrpPrdBudget = array(
-		0
-	);
-	$TotalIncome = 0;
-
-	while ($MyRow = DB_fetch_array($AccountsResult)) {
-
+	while ($MyRow = DB_fetch_array($AccountList)) {
 		if ($MyRow['groupname'] != $ActGrp) {
 			if ($MyRow['parentgroupname'] != $ActGrp AND $ActGrp != '') {
 				while ($MyRow['groupname'] != $ParentGroups[$Level] AND $Level > 0) {
-					if ($_POST['Detail'] == 'Detailed') {
-						$HTML .= '<tr>
-									<td colspan="2"></td>
-									<td colspan="6"><hr /></td>
-								</tr>';
-						$ActGrpLabel = str_repeat('___', $Level) . $ParentGroups[$Level] . ' ' . __('total');
-					}
-					else {
-						$ActGrpLabel = str_repeat('___', $Level) . $ParentGroups[$Level];
-					}
-
-					if ($Section == 3) { /*Income */
-						$HTML .= '<tr>
-									<td colspan="2"><h4><i>'. $ActGrpLabel . ' </i></h4></td>
-									<td></td>
-									<td class="number">' . locale_number_format($GrpPrdActual[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-								</tr>';
-					}
-					else { /*Costs */
-						$HTML .= '<tr>
-									<td colspan="2"><h4><i>' . $ActGrpLabel . ' </i></h4></td>
-									<td class="number">' . locale_number_format(-$GrpPrdActual[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-									<td></td>
-								</tr>';
-					}
-					$GrpPrdLY[$Level] = 0;
-					$GrpPrdActual[$Level] = 0;
-					$GrpPrdBudget[$Level] = 0;
-					$ParentGroups[$Level] = '';
-					$Level--;
-				} //end while
-				//still need to print out the old group totals
-				if ($_POST['Detail'] == 'Detailed') {
-					$HTML .= '<tr>
-								<td colspan="2"></td>
-								<td colspan="6"><hr /></td>
-							</tr>';
-					$ActGrpLabel = str_repeat('___', $Level) . $ParentGroups[$Level] . ' ' . __('total');
+					$lbl = str_repeat('&nbsp;&nbsp;', $Level) . $ParentGroups[$Level] . ($_POST['Detail'] == 'Detailed' ? ' ' . __('total') : '');
+                    $mul = ($Section == 4 ? -1 : 1);
+					$HTML .= '<tr style="font-style:italic;"><td>' . $lbl . '</td><td></td><td style="text-align:right;">' . locale_number_format($GrpPrdActual[$Level]*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+					$GrpPrdActual[$Level] = 0; $ParentGroups[$Level] = ''; $Level--;
 				}
-				else {
-					$ActGrpLabel = str_repeat('___', $Level) . $ParentGroups[$Level];
-				}
-
-				if ($Section == 4) { /*Income */
-					$HTML .= '<tr>
-								<td colspan="2"><h4><i>' . $ActGrpLabel . ' </i></h4></td>
-								<td></td>
-								<td class="number">' . locale_number_format(-$GrpPrdActual[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							</tr>';
-				}
-				else { /*Costs */
-					$HTML .= '<tr>
-								<td colspan="2"><h4><i>' . $ActGrpLabel . '</i></h4></td>
-								<td class="number">' . locale_number_format(-$GrpPrdActual[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-								<td></td>
-							</tr>';
-				}
-				$GrpPrdActual[$Level] = 0;
-				$ParentGroups[$Level] = '';
+				$lbl = str_repeat('&nbsp;&nbsp;', $Level) . $ParentGroups[$Level] . ($_POST['Detail'] == 'Detailed' ? ' ' . __('total') : '');
+                $mul = ($Section == 4 ? -1 : 1);
+				$HTML .= '<tr style="font-weight:800; border-bottom:1px solid #cbd5e1;"><td>' . $lbl . '</td><td></td><td style="text-align:right;">' . locale_number_format($GrpPrdActual[$Level]*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+				$GrpPrdActual[$Level] = 0; $ParentGroups[$Level] = '';
 			}
 		}
 
 		if ($MyRow['sectioninaccounts'] != $Section) {
-
-			if ($SectionPrdLY + $SectionPrdActual + $SectionPrdBudget != 0) {
-				if ($Section == 4) { /*Income*/
-
-					$HTML .= '<tr>
-								<td colspan="2"></td>
-								<td><hr /></td>
-								<td></td>
-								<td><hr /></td>
-							</tr>';
-
-					$HTML .= '<tr>
-								<td colspan="2"><h2>' . $Sections[$Section] . '</h2></td>
-								<td></td>
-								<td class="number">' . locale_number_format($SectionPrdActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							</tr>';
-
-				}
-				else {
-					$HTML .= '<tr>
-								<td colspan="2"></td>
-								<td colspan="2"><hr /></td>
-							</tr>';
-					$HTML .= '<tr>
-								<td colspan="2"><h2>' . $Sections[$Section] . '</h2></td>
-								<td></td>
-								<td class="number">' . locale_number_format($SectionPrdActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							</tr>';
-				}
-				if ($Section == 1) {
-					$TotalIncome += $SectionPrdActual;
-				}
-
-				if ($Section == 2) { /*Cost of Sales - need sub total for Gross Profit*/
-					$HTML .= '<tr>
-								<td colspan="2"></td>
-								<td colspan="5"><hr /></td>
-							</tr>';
-					$HTML .= '<tr>
-								<td colspan="2"><h2>' . __('Gross Profit') . '</h2></td>
-								<td></td>
-								<td class="number">' . locale_number_format($TotalIncome + $SectionPrdActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							</tr>';
-
-					if ($TotalIncome != 0) {
-						$PrdGPPercent = 100 * ($TotalIncome + $SectionPrdActual) / $TotalIncome;
-					}
-					else {
-						$PrdGPPercent = 0;
-					}
-					$HTML .= '<tr>
-							<td colspan="2"></td>
-							<td colspan="6"><hr /></td>
-						</tr>';
-					$HTML .= '<tr>
-							<td colspan="2"><h4><i>' . __('Gross Profit Percent') . '</i></h4></td>
-							<td></td>
-							<td class="number"><i>' . locale_number_format($PrdGPPercent, 1) . '%</i></td>
-						</tr>
-						<tr>
-							<td colspan="6"> </td>
-						</tr>';
+			if ($SectionPrdActual != 0) {
+                $mul = ($Section == 4 ? 1 : -1);
+				$HTML .= '<tr style="background:hsl(145, 40%, 95%); font-weight:900;"><td>' . $Sections[$Section] . '</td><td></td><td style="text-align:right;">' . locale_number_format($SectionPrdActual*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+                if ($Section == 1) $TotalIncome = $SectionPrdActual;
+				if ($Section == 2) { // Gross Profit
+					$HTML .= '<tr style="background:#f1f5f9; font-weight:900;"><td>' . __('Gross Profit') . '</td><td></td><td style="text-align:right;">' . locale_number_format(($TotalIncome - $SectionPrdActual), $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
 				}
 			}
-			$SectionPrdActual = 0;
-
-			$Section = $MyRow['sectioninaccounts'];
-
-			if ($_POST['Detail'] == 'Detailed') {
-				$HTML .= '<tr>
-							<td colspan="6"><h2><b>' . $Sections[$MyRow['sectioninaccounts']] . '</b></h2></td>
-						</tr>';
-			}
+			$SectionPrdActual = 0; $Section = $MyRow['sectioninaccounts'];
+			if ($_POST['Detail'] == 'Detailed') $HTML .= '<tr style="background:#f8fafc;"><td colspan="3"><b>' . $Sections[$MyRow['sectioninaccounts']] . '</b></td></tr>';
 		}
 
 		if ($MyRow['groupname'] != $ActGrp) {
-
-			if ($MyRow['parentgroupname'] == $ActGrp AND $ActGrp != '') { //adding another level of nesting
-				$Level++;
-			}
-
-			$ParentGroups[$Level] = $MyRow['groupname'];
-			$ActGrp = $MyRow['groupname'];
-			if ($_POST['Detail'] == 'Detailed') {
-				$HTML .= '<tr>
-							<td colspan="6"><h4><b>' . $MyRow['groupname'] . '</b></h4></td>
-						</tr>';
-
-				$HTML .= $TableHeader;
-			}
+			if ($MyRow['parentgroupname'] == $ActGrp AND $ActGrp != '') $Level++;
+			$ParentGroups[$Level] = $MyRow['groupname']; $ActGrp = $MyRow['groupname'];
+			if ($_POST['Detail'] == 'Detailed') $HTML .= '<tr><td colspan="3" style="padding-left:' . (20*$Level) . 'px; font-weight:700;">' . $MyRow['groupname'] . '</td></tr>';
 		}
 
-		$AccountPeriodActual = $MyRow['TotalAllPeriods'];
-		/*
-		 * todo : verify the impact and reasons behind the following lines
-		if ($Section == 4) {
-			$PeriodProfitLoss -= $AccountPeriodActual;
-		}
-		else
-		*/ {
-			$PeriodProfitLoss -= $AccountPeriodActual;
-		}
+		$AccAct = $MyRow['TotalAllPeriods']; $PeriodProfitLoss -= $AccAct;
+		for ($i = 0;$i <= $Level;$i++) { if (!isset($GrpPrdActual[$i])) $GrpPrdActual[$i] = 0; $GrpPrdActual[$i] += $AccAct; }
+		$SectionPrdActual -= $AccAct;
 
-		for ($i = 0;$i <= $Level;$i++) {
-			if (!isset($GrpPrdActual[$i])) {
-				$GrpPrdActual[$i] = 0;
-			}
-			$GrpPrdActual[$i] += $AccountPeriodActual;
-		}
-		$SectionPrdActual -= $AccountPeriodActual;
-
-		if ($_POST['Detail'] == __('Detailed')) {
-
-			$ActEnquiryURL = '<a href="' . $RootPath . '/GLAccountInquiry.php?PeriodFrom=' . urlencode($_POST['PeriodFrom']) . '&amp;PeriodTo=' . urlencode($_POST['PeriodTo']) . '&amp;Account=' . urlencode($MyRow['account']) . '&amp;Show=Yes">' . $MyRow['account'] . '</a>';
-
-			if ($Section == 4) {
-				$HTML .= '<tr class="striped_row">
-							<td>' . $ActEnquiryURL . '</td>
-							<td>' . htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false) . '</td>
-							<td></td>
-							<td class="number">' . locale_number_format(-$AccountPeriodActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-			}
-			else {
-				$HTML .= '<tr class="striped_row">
-							<td>' . $ActEnquiryURL . '</td>
-							<td>' . htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false) . '</td>
-							<td class="number">' . locale_number_format(-$AccountPeriodActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-			}
+		if ($_POST['Detail'] == 'Detailed') {
+			$mul = ($Section == 4 ? -1 : 1);
+			$HTML .= '<tr style="border-bottom:1px solid #f1f5f9; opacity:0.85;">
+                <td style="padding-left:' . (25+($Level*15)) . 'px;">' . $MyRow['account'] . '</td>
+                <td>' . htmlspecialchars($MyRow['accountname']) . '</td>
+                <td style="text-align:right;">' . locale_number_format($AccAct*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
+            </tr>';
 		}
 	}
-	//end of loop
-
-
-	if ($MyRow['groupname'] != $ActGrp) {
-		if ($MyRow['parentgroupname'] != $ActGrp AND $ActGrp != '') {
-			while ($MyRow['groupname'] != $ParentGroups[$Level] AND $Level > 0) {
-				if ($_POST['Detail'] == 'Detailed') {
-					$HTML .= '<tr>
-								<td colspan="2"></td>
-								<td colspan="4"><hr /></td>
-							</tr>';
-					$ActGrpLabel = str_repeat('___', $Level) . $ParentGroups[$Level] . ' ' . __('total');
-				}
-				else {
-					$ActGrpLabel = str_repeat('___', $Level) . $ParentGroups[$Level];
-				}
-				if ($Section == 4) { /*Income */
-					$HTML .= '<tr>
-								<td colspan="2"><h4><i>' . $ActGrpLabel . '</i></h4></td>
-								<td></td>
-								<td class="number">' . locale_number_format(-$GrpPrdActual[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							</tr>';
-				}
-				else { /*Costs */
-					$HTML .= '<tr>
-								<td colspan="2"><h4><i>' . $ActGrpLabel . '</i></h4></td>
-								<td class="number">' . locale_number_format($GrpPrdActual[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							</tr>';
-				}
-				$GrpPrdActual[$Level] = 0;
-				$ParentGroups[$Level] = '';
-				$Level--;
-			} //end while
-			//still need to print out the old group totals
-			if ($_POST['Detail'] == 'Detailed') {
-				$HTML .= '<tr>
-							<td colspan="2"></td>
-							<td colspan="4"><hr /></td>
-						</tr>';
-				$ActGrpLabel = str_repeat('___', $Level) . $ParentGroups[$Level] . ' ' . __('total');
-			}
-			else {
-				$ActGrpLabel = str_repeat('___', $Level) . $ParentGroups[$Level];
-			}
-
-			if ($Section == 4) { /*Income */
-				$HTML .= '<tr>
-							<td colspan="2"><h4><i>' . $ActGrpLabel . '</i></h4></td>
-							<td></td>
-							<td class="number">' . locale_number_format(-$GrpPrdActual[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-			}
-			else { /*Costs */
-				$HTML .= '<tr>
-							<td colspan="2"><h4><i>' . $ActGrpLabel . ' </i></h4></td>
-							<td class="number">' . locale_number_format($GrpPrdActual[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td></td>
-						</tr>';
-			}
-			$GrpPrdActual[$Level] = 0;
-			$ParentGroups[$Level] = '';
-		}
-	}
-
-	if ($MyRow['sectioninaccounts'] != $Section) {
-
-		if ($Section == 4) { /*Income*/
-
-			$HTML .= '<tr>
-						<td colspan="2"></td>
-						<td colspan="2"><hr /></td>
-					</tr>
-				<tr>
-					<td colspan="2"><h2>' . $Sections[$Section] . '</h2></td>
-					<td></td>
-					<td class="number">' . locale_number_format($SectionPrdActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-				</tr>';
-			$TotalIncome = $SectionPrdActual;
-		}
-		else {
-			$HTML .= '<tr>
-						<td colspan="2"></td>
-						<td colspan="2"><hr /></td>
-					</tr>
-					<tr>
-						<td colspan="2"><h2>' . $Sections[$Section] . '</h2></td>
-						<td></td>
-						<td class="number">' . locale_number_format(-$SectionPrdActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-					</tr>';
-		}
-		if ($Section == 2) { /*Cost of Sales - need sub total for Gross Profit*/
-			$HTML .= '<tr>
-						<td colspan="2"></td>
-						<td colspan="2"><hr /></td>
-					</tr>
-					<tr>
-						<td colspan="2"><h2>' . __('Gross Profit') . '</h2></td>
-						<td></td>
-						<td class="number">' . locale_number_format($TotalIncome - $SectionPrdActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-					</tr>';
-
-			if ($TotalIncome != 0) {
-				$PrdGPPercent = 100 * ($TotalIncome - $SectionPrdActual) / $TotalIncome;
-			} else {
-				$PrdGPPercent = 0;
-			}
-			$HTML .= '<tr>
-						<td colspan="2"></td>
-						<td colspan="2"><hr /></td>
-					</tr>
-					<tr>
-						<td colspan="2"><h4><i>' . __('Gross Profit Percent') . '</i></h4></td>
-						<td></td>
-						<td class="number"><i>' . locale_number_format($PrdGPPercent, 1) . '%</i></td>
-						<td></td>
-					</tr>';
-		}
-
-		$SectionPrdActual = 0;
-
-		$Section = $MyRow['sectioninaccounts'];
-
-		if ($_POST['Detail'] == 'Detailed' AND isset($Sections[$MyRow['sectioninaccounts']])) {
-			$HTML .= '<tr>
-						<td colspan="6"><h2><b>' . $Sections[$MyRow['sectioninaccounts']] . '</b></h2></td>
-					</tr>';
-		}
-	}
-
-	$HTML .= '<tr>
-				<td colspan="2"></td>
-				<td colspan="2"><hr /></td>
-			</tr>
-			<tr style="background-color:#ffffff">
-				<td colspan="2"><h2><b>' . __('Surplus') . ' - ' . __('Deficit') . '</b></h2></td>
-				<td>&nbsp;</td>
-				<td class="number">' . locale_number_format($PeriodProfitLoss, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-			</tr>
-			<tr>
-				<td colspan="2"></td>
-				<td colspan="4"><hr /></td>
-			</tr>
-		</table>';
-
+	$HTML .= '<tr style="background:hsl(145, 63%, 38%); color:white; font-weight:900;"><td colspan="2">' . __('Surplus / (Deficit)') . '</td><td style="text-align:right;">' . locale_number_format($PeriodProfitLoss, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+	$HTML .= '</tbody></table>';
 
 	if (isset($_POST['PrintPDF'])) {
-		$HTML .= '</tbody>
-				<div class="footer fixed-section">
-					<div class="right">
-						<span class="page-number">Page </span>
-					</div>
-				</div>
-			</table>';
+		$HTML .= '</body></html>';
+		$DomPDF = new Dompdf($DomPDFOptions); $DomPDF->loadHtml($HTML); $DomPDF->setPaper($_SESSION['PageSize'], 'portrait'); $DomPDF->render();
+		$DomPDF->stream($_SESSION['DatabaseName'] . '_TagReport_' . date('Y-m-d') . '.pdf', array("Attachment" => false));
 	} else {
-		$HTML .= '</tbody>
-				</table>
-				<div class="centre">
-					<form><input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" /></form>
-				</div>';
-	}
-	$HTML .= '</body>
-		</html>';
-
-	if (isset($_POST['PrintPDF'])) {
-		$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
-		$DomPDF->loadHtml($HTML);
-
-		// (Optional) Setup the paper size and orientation
-		$DomPDF->setPaper($_SESSION['PageSize'], 'landscape');
-
-		// Render the HTML as PDF
-		$DomPDF->render();
-
-		// Output the generated PDF to Browser
-		$DomPDF->stream($_SESSION['DatabaseName'] . '_TagReport_' . date('Y-m-d') . '.pdf', array(
-			"Attachment" => false
-		));
-	} else {
-		$Title = __('Income and Expenditure by Tag');
-		include(__DIR__ . '/includes/header.php');
-
-		echo '<p class="page_title_text"><img src="' . $RootPath, '/css/', $Theme, '/images/printer.png" title="' . __('Print') . '" alt="" />' . ' ' . $Title . '</p>';
-		echo $HTML;
+		$Title = __('Financial Statement by Tag'); include(__DIR__ . '/includes/header.php');
+		echo '<style>.report-grid { max-width: 1000px; margin: 0 auto; background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); } table th, table td { padding: 10px; border-bottom: 1px solid #f1f5f9; }</style>';
+		echo '<div style="background:hsl(210, 20%, 97%); padding:2rem; min-height:100vh;"><div class="report-grid">' . $HTML . '</div></div>';
 		include(__DIR__ . '/includes/footer.php');
 	}
+
 } else {
-
-	// If PeriodFrom or PeriodTo are NOT set or it is a NewReport, shows a parameters input form:
 	include(__DIR__ . '/includes/header.php');
-	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" target="_blank">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	echo '<p class="page_title_text">
-			<img src="' . $RootPath, '/css/', $Theme, '/images/printer.png" title="' . __('Print') . '" alt="" />' . ' ' . $Title . '
-		</p>';
+	echo '<style>
+        :root { --db-primary: hsl(145, 63%, 38%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+        .db-page { background: var(--db-bg); min-height: 100vh; padding: 2rem; font-family: "Inter", sans-serif; }
+        .db-card { background: #fff; border-radius: 12px; border: 1px solid var(--db-border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; overflow: hidden; }
+        .db-card-header { padding: 1.25rem; border-bottom: 1px solid var(--db-border); }
+        .db-card-title { font-size: 0.85rem; font-weight: 800; color: var(--db-primary-dark); text-transform: uppercase; margin:0; }
+        .db-card-body { padding: 1.5rem; }
+        .db-field { margin-bottom: 1.25rem; }
+        .db-label { font-size: 0.7rem; font-weight: 800; color: var(--db-primary-dark); text-transform: uppercase; margin-bottom: 0.4rem; display: block; }
+        .db-select { padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid var(--db-border); font-size: 0.85rem; width: 100%; background:#fdfdfd; }
+        .db-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: none; transition: 0.2s; width: 100%; margin-top: 15px; }
+        .db-btn-primary { background: var(--db-primary); color: #fff; }
+    </style>';
 
-	if (date('m') > $_SESSION['YearEnd']) {
-		/*Dates in SQL format */
-		$DefaultFromDate = date('Y-m-d', mktime(0, 0, 0, $_SESSION['YearEnd'] + 2, 0, date('Y')));
-		$FromDate = date($_SESSION['DefaultDateFormat'], mktime(0, 0, 0, $_SESSION['YearEnd'] + 2, 0, date('Y')));
-	}
-	else {
-		$DefaultFromDate = date('Y-m-d', mktime(0, 0, 0, $_SESSION['YearEnd'] + 2, 0, date('Y') - 1));
-		$FromDate = date($_SESSION['DefaultDateFormat'], mktime(0, 0, 0, $_SESSION['YearEnd'] + 2, 0, date('Y') - 1));
-	}
-	$Period = GetPeriod($FromDate);
+    echo '<div class="db-page"><div class="db-card">
+            <div class="db-card-header"><h3 class="db-card-title">' . __('Report by Accounting Tag') . '</h3></div>
+            <div class="db-card-body">
+                <form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" target="_blank">
+                <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+                
+                <div class="db-field"><label class="db-label">Accounting Tag</label><select name="tag" class="db-select">';
+                $Tags = DB_query("SELECT tagref, tagdescription FROM tags ORDER BY tagref");
+                while($R = DB_fetch_array($Tags)) echo '<option value="'.$R['tagref'].'">'.$R['tagref'].' - '.$R['tagdescription'].'</option>';
+                echo '</select></div>
 
-	/*Show a form to allow input of criteria for profit and loss to show */
-	echo '<fieldset>
-			<legend>', __('Report Criteria') , '</legend>
-			<field>
-				<label for="PeriodFrom">' . __('Select Period From') . ':</label>
-				<select name="PeriodFrom">';
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                    <div class="db-field"><label class="db-label">Duration</label><select name="PeriodFrom" class="db-select">';
+                    $Pers = DB_query("SELECT periodno, lastdate_in_period FROM periods ORDER BY periodno DESC");
+                    while($R = DB_fetch_array($Pers)) echo '<option value="'.$R['periodno'].'">'.MonthAndYearFromSQLDate($R['lastdate_in_period']).'</option>';
+                    echo '</select></div>
+                    <div class="db-field"><label class="db-label">To Period</label><select name="PeriodTo" class="db-select">';
+                    DB_data_seek($Pers, 0); while($R = DB_fetch_array($Pers)) echo '<option value="'.$R['periodno'].'">'.MonthAndYearFromSQLDate($R['lastdate_in_period']).'</option>';
+                    echo '</select></div>
+                </div>
 
-	$SQL = "SELECT periodno,
-					lastdate_in_period
-			FROM periods
-			ORDER BY periodno DESC";
-	$Periods = DB_query($SQL);
+                <div class="db-field"><label class="db-label">Inquiry Depth</label><select name="Detail" class="db-select"><option value="Summary">Group Summary</option><option selected value="Detailed">G/L Account Detail</option></select></div>
 
-	while ($MyRow = DB_fetch_array($Periods)) {
-		if (isset($_POST['PeriodFrom']) AND $_POST['PeriodFrom'] != '') {
-			if ($_POST['PeriodFrom'] == $MyRow['periodno']) {
-				echo '<option selected="selected" value="' . $MyRow['periodno'] . '">' . MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-			}
-			else {
-				echo '<option value="' . $MyRow['periodno'] . '">' . MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-			}
-		}
-		else {
-			if ($MyRow['lastdate_in_period'] == $DefaultFromDate) {
-				echo '<option selected="selected" value="' . $MyRow['periodno'] . '">' . MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-			}
-			else {
-				echo '<option value="' . $MyRow['periodno'] . '">' . MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-			}
-		}
-	}
-
-	echo '</select>
-		</field>';
-	if (!isset($_POST['PeriodTo']) OR $_POST['PeriodTo'] == '') {
-		$LastDate = date('Y-m-d', mktime(0, 0, 0, date('m') + 1, 0, date('Y')));
-		$SQL = "SELECT periodno FROM periods where lastdate_in_period = '" . $LastDate . "'";
-		$MaxPrd = DB_query($SQL);
-		$MaxPrdrow = DB_fetch_row($MaxPrd);
-		$DefaultPeriodTo = (int)($MaxPrdrow[0]);
-
-	}
-	else {
-		$DefaultPeriodTo = $_POST['PeriodTo'];
-	}
-
-	echo '<field>
-			<label for="PeriodTo">' . __('Select Period To') . ':</label>
-			<select name="PeriodTo">';
-
-	DB_data_seek($Periods, 0);
-
-	while ($MyRow = DB_fetch_array($Periods)) {
-
-		if ($MyRow['periodno'] == $DefaultPeriodTo) {
-			echo '<option selected="selected" value="' . $MyRow['periodno'] . '">' . MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-		}
-		else {
-			echo '<option value="' . $MyRow['periodno'] . '">' . MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-		}
-	}
-	echo '</select>
-		</field>';
-
-	if (!isset($_POST['Period'])) {
-		$_POST['Period'] = '';
-	}
-
-	echo '<field>
-			<label for="Period">', '<b>' . __('OR') . ' </b>' . __('Select Period') , '</label>
-			', ReportPeriodList($_POST['Period'], array(
-		'l',
-		't'
-	)) , '
-		</field>';
-
-	//Select the tag
-	echo '<field>
-			<label for="tag">' . __('Select tag') . '</label>
-			<select name="tag">';
-
-	$SQL = "SELECT tagref,
-				tagdescription
-				FROM tags
-				ORDER BY tagref";
-
-	$Result = DB_query($SQL);
-	while ($MyRow = DB_fetch_array($Result)) {
-		if (isset($_POST['tag']) and $_POST['tag'] == $MyRow['tagref']) {
-			echo '<option selected="selected" value="' . $MyRow['tagref'] . '">' . $MyRow['tagref'] . ' - ' . $MyRow['tagdescription'] . '</option>';
-		}
-		else {
-			echo '<option value="' . $MyRow['tagref'] . '">' . $MyRow['tagref'] . ' - ' . $MyRow['tagdescription'] . '</option>';
-		}
-	}
-	echo '</select>
-		</field>';
-	// End select tag
-	echo '<field>
-			<label for="ShowDetail">', __('Detail or summary') , '</label>
-			<select name="Detail">
-				<option selected="selected" value="Summary">' . __('Summary') . '</option>
-				<option selected="selected" value="Detailed">' . __('All Accounts') . '</option>
-			</select>
-		</field>
-	</fieldset>';
-
-	echo '<div class="centre">
-				<input type="submit" name="PrintPDF" title="PDF" value="' . __('Print PDF') . '" />
-				<input type="submit" name="View" title="View" value="' . __('View') . '" />
-			</div>
-		</form>';
-
+                <button type="submit" name="PrintPDF" class="db-btn db-btn-primary">Generate PDF Report</button>
+                <button type="submit" name="View" class="db-btn db-btn-primary" style="background:var(--db-primary-soft); color:var(--db-primary);">View Online Inquiry</button>
+                </form>
+            </div>
+        </div></div>';
 	include(__DIR__ . '/includes/footer.php');
-
 }
+?>

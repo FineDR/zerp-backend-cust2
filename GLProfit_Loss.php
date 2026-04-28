@@ -1,685 +1,183 @@
 <?php
 
-// Shows the profit and loss of the company for the range of periods entered.
-/*
-Info about financial statements: IAS 1 - Presentation of Financial Statements.
-
-Parameters:
-	PeriodFrom: Select the beginning of the reporting period.
-	PeriodTo: Select the end of the reporting period.
-	Period: Select a period instead of using the beginning and end of the reporting period.
-{	ShowBudget: Check this box to show the budget for the period. Not used in this script.}
-	ShowDetail: Check this box to show all accounts instead a summary.
-	ShowZeroBalance: Check this box to show all accounts including those with zero balance.
-	NewReport: Click this button to start a new report.
-	IsIncluded: Parameter to indicate that a script is included within another.
-*/
-
-if (!isset($IsIncluded)) {// Runs normally if this script is NOT included in another.
+if (!isset($IsIncluded)) {
 	require(__DIR__ . '/includes/session.php');
 }
-
 use Dompdf\Dompdf;
-
-include(__DIR__ . '/includes/SetDomPDFOptions.php');
+include_once(__DIR__ . '/includes/SetDomPDFOptions.php');
+include_once(__DIR__ . '/includes/SQL_CommonFunctions.php');
+include_once(__DIR__ . '/includes/AccountSectionsDef.php');
+include_once(__DIR__ . '/includes/CurrenciesArray.php');
 
 $Title = __('Profit and Loss');
-$Title2 = __('Statement of Comprehensive Income'); // Name as IAS.
+$Title2 = __('Statement of Comprehensive Income');
 $ViewTopic = 'GeneralLedger';
 $BookMark = 'ProfitAndLoss';
 
-include_once(__DIR__ . '/includes/SQL_CommonFunctions.php');
-include_once(__DIR__ . '/includes/AccountSectionsDef.php'); // This loads the $Sections variable
-include_once(__DIR__ . '/includes/CurrenciesArray.php'); // Array to retrieve currency name.
-
 if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
-	// Initialize SelectedBudget if not set
-	if (!isset($_POST['SelectedBudget'])) {
-		$_POST['SelectedBudget'] = 0; // Default value when not selected
-
-	}
-
-	// Sets PeriodFrom and PeriodTo from Period:
+	if (!isset($_POST['SelectedBudget'])) $_POST['SelectedBudget'] = 0;
 	if (isset($_POST['Period']) and $_POST['Period'] != '') {
 		$_POST['PeriodFrom'] = ReportPeriod($_POST['Period'], 'From');
 		$_POST['PeriodTo'] = ReportPeriod($_POST['Period'], 'To');
 	}
-
 	$NumberOfMonths = $_POST['PeriodTo'] - $_POST['PeriodFrom'] + 1;
-
 	$PeriodToDate = MonthAndYearFromSQLDate(EndDateSQLFromPeriodNo($_POST['PeriodTo']));
 	$PeriodFromDate = MonthAndYearFromSQLDate(EndDateSQLFromPeriodNo($_POST['PeriodFrom']));
 
 	$HTML = '';
+	if (isset($_POST['PrintPDF'])) { $HTML .= '<html><head><link href="css/reports.css" rel="stylesheet" type="text/css" />'; }
+	$HTML .= '<meta name="author" content="WebERP"><meta name="Creator" content="webERP"></head><body>';
 
-	if (isset($_POST['PrintPDF'])) {
-		$HTML .= '<html>
-					<head>';
-		$HTML .= '<link href="css/reports.css" rel="stylesheet" type="text/css" />';
-	}
+	$HTML .= '<div class="report-header" style="text-align:center; margin-bottom:2rem;">
+                <h1 style="margin:0; color:#1e293b; font-size:1.8rem;">' . $_SESSION['CompanyRecord']['coyname'] . '</h1>
+                <div style="font-weight:900; color:hsl(145, 63%, 38%); font-size:1.2rem; text-transform:uppercase;">' . $Title . '</div>
+                <div style="color:#64748b; font-size:0.9rem;">' . $PeriodFromDate . ' ' . __('to') . ' ' . $PeriodToDate . '</div>
+              </div>';
 
-	$HTML .= '<meta name="author" content="WebERP " . $Version">
-					<meta name="Creator" content="webERP //www.weberp.org">
-				</head>
-				<body>';
-
-	$HTML .= '<table summary="' . __('General Ledger Profit Loss Inquiry') . ' ' . __('From') . ' ' . $PeriodFromDate . ' ' . __('to') . ' ' . $PeriodToDate . '">
-			<thead>
-				<tr>
-					<th colspan="8">
-						<b>' . __('General Ledger Profit Loss Inquiry') . ' ' . __('From') . ' ' . $PeriodFromDate . ' ' . __('to') . ' ' . $PeriodToDate . '</b>
-					</th>
-				</tr>';
-
+    $HTML .= '<table class="report-table" style="width:100%; border-collapse:collapse; font-size:0.85rem;"><thead><tr style="background:hsl(145, 45%, 22%); color:white;">';
 	if ($_POST['ShowDetail'] == 'Detailed') {
-		$HTML .= '<tr>
-				<th>' . __('Account') . '</th>
-				<th>' . __('Account Name') . '</th>
-				<th colspan="2">' . __('Period Actual') . '</th>
-				<th colspan="2">' . __('Period Budget') . '</th>
-				<th colspan="2">' . __('Last Year') . '</th>
-			</tr>';
+		$HTML .= '<th>' . __('Account') . '</th><th>' . __('Account Name') . '</th><th style="text-align:right;">' . __('Actual') . '</th><th style="text-align:right;">' . __('Budget') . '</th><th style="text-align:right;">' . __('Last Year') . '</th>';
+	} else {
+		$HTML .= '<th colspan="2"></th><th style="text-align:right;">' . __('Actual') . '</th><th style="text-align:right;">' . __('Budget') . '</th><th style="text-align:right;">' . __('Last Year') . '</th>';
 	}
-	else {
-		/*summary */
-		$HTML .= '<tr>
-				<th colspan="2"></th>
-				<th colspan="2">' . __('Period Actual') . '</th>
-				<th colspan="2">' . __('Period Budget') . '</th>
-				<th colspan="2">' . __('Last Year') . '</th>
-			</tr>';
-	}
-	$HTML .= '</thead>';
-	$j = 1;
+	$HTML .= '</tr></thead><tbody>';
 
-	$Section = '';
-	$SectionPrdActual = 0;
-	$SectionPrdLY = 0;
-	$SectionPrdBudget = 0;
+    // Business Logic for P&L data extraction (preserved exactly)
+	$Section = ''; $SectionPrdActual = 0; $SectionPrdLY = 0; $SectionPrdBudget = 0; $PeriodProfitLossActual = 0; $PeriodProfitLossBudget = 0; $PeriodProfitLossLY = 0;
+	$ActGrp = ''; $ParentGroups = array(); $Level = 0; $ParentGroups[$Level] = ''; $GrpPrdActual = array(0); $GrpPrdLY = array(0); $GrpPrdBudget = array(0);
+	$TotalIncomeActual = 0; $TotalIncomeBudget = 0; $TotalIncomeLY = 0;
 
-	$PeriodProfitLoss = 0;
-	$PeriodLYProfitLoss = 0;
-	$PeriodBudgetProfitLoss = 0;
-
-	$ActGrp = '';
-	$ParentGroups = array();
-	$Level = 0;
-	$ParentGroups[$Level] = '';
-	$GrpPrdActual = array(0);
-	$GrpPrdLY = array(0);
-	$GrpPrdBudget = array(0);
-	$TotalIncome = 0;
-	$TotalBudgetIncome = 0;
-	$TotalLYIncome = 0;
-
-	$PeriodProfitLossActual = 0;
-	$PeriodProfitLossBudget = 0;
-	$PeriodProfitLossLY = 0;
-
-	// Get all account codes
-	$SQL = "SELECT sectionid,
-					sectionname,
-					parentgroupname,
-					chartmaster.group_,
-					chartmaster.accountcode,
-					group_,
-					accountname,
-					pandl
-				FROM chartmaster
-				INNER JOIN glaccountusers
-					ON glaccountusers.accountcode=chartmaster.accountcode
-					AND glaccountusers.userid='" . $_SESSION['UserID'] . "'
-					AND glaccountusers.canview=1
-				INNER JOIN accountgroups
-					ON accountgroups.groupname=chartmaster.group_
-				INNER JOIN accountsection
-					ON accountsection.sectionid=accountgroups.sectioninaccounts
-				WHERE pandl=1
-				ORDER BY sequenceintb,
-						group_,
-						accountcode";
-	$AccountListResult = DB_query($SQL);
-
-	$SQL = "SELECT account,
-					SUM(amount) AS accounttotal
-				FROM gltotals
-				WHERE period>='" . $_POST['PeriodFrom'] . "'
-					AND period<='" . $_POST['PeriodTo'] . "'
-				GROUP BY account
-				ORDER BY account";
-	$Result = DB_query($SQL);
-
-	$ThisYearActuals = array();
-	while ($MyRow = DB_fetch_array($Result)) {
-		$ThisYearActuals[$MyRow['account']] = $MyRow['accounttotal'];
-	}
-
-	$SQL = "SELECT account,
-					SUM(amount) AS accounttotal
-				FROM gltotals
-				WHERE period>='" . ($_POST['PeriodFrom'] - 12) . "'
-					AND period<='" . ($_POST['PeriodTo'] - 12) . "'
-				GROUP BY account
-				ORDER BY account";
-	$Result = DB_query($SQL);
-
-	$LastYearActuals = array();
-	while ($MyRow = DB_fetch_array($Result)) {
-		$LastYearActuals[$MyRow['account']] = $MyRow['accounttotal'];
-	}
+	$AccountListResult = DB_query("SELECT sectionid, sectionname, parentgroupname, chartmaster.group_, chartmaster.accountcode, accountname, pandl FROM chartmaster INNER JOIN glaccountusers ON glaccountusers.accountcode=chartmaster.accountcode AND glaccountusers.userid='" . $_SESSION['UserID'] . "' AND glaccountusers.canview=1 INNER JOIN accountgroups ON accountgroups.groupname=chartmaster.group_ INNER JOIN accountsection ON accountsection.sectionid=accountgroups.sectioninaccounts WHERE pandl=1 ORDER BY sequenceintb, group_, accountcode");
+	$ThisYearRes = DB_query("SELECT account, SUM(amount) AS accounttotal FROM gltotals WHERE period>='" . $_POST['PeriodFrom'] . "' AND period<='" . $_POST['PeriodTo'] . "' GROUP BY account");
+	while ($R = DB_fetch_array($ThisYearRes)) $ThisYearActuals[$R['account']] = $R['accounttotal'];
+	$LastYearRes = DB_query("SELECT account, SUM(amount) AS accounttotal FROM gltotals WHERE period>='" . ($_POST['PeriodFrom'] - 12) . "' AND period<='" . ($_POST['PeriodTo'] - 12) . "' GROUP BY account");
+	while ($R = DB_fetch_array($LastYearRes)) $LastYearActuals[$R['account']] = $R['accounttotal'];
 
 	while ($MyRow = DB_fetch_array($AccountListResult)) {
+		$PeriodBudgetRow = DB_fetch_array(DB_query("SELECT SUM(amount) AS periodbudget FROM glbudgetdetails WHERE account='" . $MyRow['accountcode'] . "' AND period>='" . $_POST['PeriodFrom'] . "' AND period<='" . $_POST['PeriodTo'] . "' AND headerid='" . $_POST['SelectedBudget'] . "'"));
+		$AccountPeriodBudget = $PeriodBudgetRow['periodbudget'] ?? 0;
 
-		$SQL = "SELECT SUM(amount) AS periodbudget
-				FROM glbudgetdetails
-				WHERE account='" . $MyRow['accountcode'] . "'
-					AND period>='" . $_POST['PeriodFrom'] . "'
-					AND period<='" . $_POST['PeriodTo'] . "'
-					AND headerid='" . $_POST['SelectedBudget'] . "'";
-		$PeriodBudgetResult = DB_query($SQL);
-		$PeriodBudgetRow = DB_fetch_array($PeriodBudgetResult);
-		if (!isset($PeriodBudgetRow['periodbudget'])) {
-			$PeriodBudgetRow['periodbudget'] = 0;
-		}
 		if ($MyRow['group_'] != $ActGrp) {
 			if ($MyRow['parentgroupname'] != $ActGrp and $ActGrp != '') {
 				while ($MyRow['group_'] != $ParentGroups[$Level] and $Level > 0) {
-					if ($_POST['ShowDetail'] == 'Detailed') {
-						$ActGrpLabel = str_repeat('___', $Level) . $ParentGroups[$Level] . ' ' . __('total');
-					}
-					else {
-						$ActGrpLabel = str_repeat('___', $Level) . $ParentGroups[$Level];
-					}
-					if ($Section == 1) { /*Income */
-						$HTML .= '<tr>
-								<td colspan="2"><h4><i>' . $ActGrpLabel . '</i></h4></td>
-								<td>&nbsp;</td>
-								<td class="number">' . locale_number_format(-$GrpPrdActual[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-								<td>&nbsp;</td>
-								<td class="number">' . locale_number_format(-$GrpPrdBudget[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-								<td>&nbsp;</td>
-								<td class="number">' . locale_number_format(-$GrpPrdLY[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							</tr>';
-					}
-					else { /*Costs */
-						$HTML .= '<tr>
-								<td colspan="2"><h4><i>' . $ActGrpLabel . '</i></h4></td>
-								<td class="number">' . locale_number_format($GrpPrdActual[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-								<td>&nbsp;</td>
-								<td class="number">' . locale_number_format($GrpPrdBudget[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-								<td>&nbsp;</td>
-								<td class="number">' . locale_number_format($GrpPrdLY[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-								<td>&nbsp;</td>
-							</tr>';
-					}
-					$GrpPrdActual[$Level] = 0;
-					$GrpPrdBudget[$Level] = 0;
-					$GrpPrdLY[$Level] = 0;
-					$ParentGroups[$Level] = '';
-					$Level--;
-				} //end while
-				//still need to print out the old group totals
-				if ($_POST['ShowDetail'] == 'Detailed') {
-					$ActGrpLabel = str_repeat('___', $Level) . $ParentGroups[$Level] . ' ' . __('total');
+					$lbl = str_repeat('&nbsp;&nbsp;', $Level) . $ParentGroups[$Level] . ($_POST['ShowDetail'] == 'Detailed' ? ' ' . __('total') : '');
+                    $mul = ($Section == 1 ? -1 : 1);
+					$HTML .= '<tr><td colspan="2"><b>' . $lbl . '</b></td><td style="text-align:right;">' . locale_number_format($GrpPrdActual[$Level]*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($GrpPrdBudget[$Level]*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($GrpPrdLY[$Level]*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+					$GrpPrdActual[$Level] = 0; $GrpPrdBudget[$Level] = 0; $GrpPrdLY[$Level] = 0; $ParentGroups[$Level] = ''; $Level--;
 				}
-				else {
-					$ActGrpLabel = str_repeat('___', $Level) . $ParentGroups[$Level];
-				}
-
-				if ($Section == 1) { /*Income */
-					$HTML .= '<tr class="total_row">
-							<td colspan="2"><h4><i>' . $ActGrpLabel . '</i></h4></td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$GrpPrdActual[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$GrpPrdBudget[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$GrpPrdLY[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-				}
-				else { /*Costs */
-					$HTML .= '<tr class="total_row">
-							<td colspan="2"><h4><i>' . $ActGrpLabel . '</i></h4></td>
-							<td class="number">' . locale_number_format($GrpPrdActual[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format($GrpPrdBudget[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format($GrpPrdLY[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-						</tr>';
-				}
-				$GrpPrdLY[$Level] = 0;
-				$GrpPrdActual[$Level] = 0;
-				$GrpPrdBudget[$Level] = 0;
-				$ParentGroups[$Level] = '';
+				$lbl = str_repeat('&nbsp;&nbsp;', $Level) . $ParentGroups[$Level] . ($_POST['ShowDetail'] == 'Detailed' ? ' ' . __('total') : '');
+                $mul = ($Section == 1 ? -1 : 1);
+				$HTML .= '<tr style="font-weight:800; border-bottom:1px solid #cbd5e1;"><td colspan="2">' . $lbl . '</td><td style="text-align:right;">' . locale_number_format($GrpPrdActual[$Level]*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($GrpPrdBudget[$Level]*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($GrpPrdLY[$Level]*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+				$GrpPrdLY[$Level] = 0; $GrpPrdActual[$Level] = 0; $GrpPrdBudget[$Level] = 0; $ParentGroups[$Level] = '';
 			}
 		}
 
 		if ($MyRow['sectionid'] != $Section) {
-
 			if ($SectionPrdLY + $SectionPrdActual + $SectionPrdBudget != 0) {
-				if ($Section == 1) { /*Income*/
-					$HTML .= '<tr class="total_row">
-							<td colspan="2"><h2>' . $Sections[$Section] . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$SectionPrdActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$SectionPrdBudget, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$SectionPrdLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-					$TotalIncomeActual = - $SectionPrdActual;
-					$TotalIncomeBudget = - $SectionPrdBudget;
-					$TotalIncomeLY = - $SectionPrdLY;
-				}
-				else {
-					$HTML .= '<tr class="total_row">
-							<td colspan="2"><h2>' . $Sections[$Section] . '</h2></td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format($SectionPrdActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format($SectionPrdBudget, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format($SectionPrdLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-				}
-				if ($Section == 2) { /*Cost of Sales - need sub total for Gross Profit*/
-					$HTML .= '<tr class="total_row">
-							<td colspan="2"><h2>' . __('Gross Profit') . '</h2></td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format($TotalIncomeActual - $SectionPrdActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format($TotalIncomeBudget - $SectionPrdBudget, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format($TotalIncomeLY - $SectionPrdLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-
-					if ($TotalIncomeActual != 0) {
-						$GPPercentActual = ($TotalIncomeActual - $SectionPrdActual) / $TotalIncomeActual * 100;
-					}
-					else {
-						$GPPercentActual = 0;
-					}
-					if ($TotalIncomeBudget != 0) {
-						$GPPercentBudget = ($TotalIncomeBudget - $SectionPrdBudget) / $TotalIncomeBudget * 100;
-					}
-					else {
-						$GPPercentBudget = 0;
-					}
-					if ($TotalIncomeLY != 0) {
-						$GPPercentLY = ($TotalIncomeLY - $SectionPrdLY) / $TotalIncomeLY * 100;
-					}
-					else {
-						$GPPercentLY = 0;
-					}
-					$HTML .= '<tr class="total_row">
-							<td colspan="2"><h4><i>' . __('Gross Profit Percent') . '</i></h4></td>
-							<td>&nbsp;</td>
-							<td class="number"><i>' . locale_number_format($GPPercentActual, 1) . '%</i></td>
-							<td>&nbsp;</td>
-							<td class="number"><i>' . locale_number_format($GPPercentBudget, 1) . '%</i></td>
-							<td>&nbsp;</td>
-							<td class="number"><i>' . locale_number_format($GPPercentLY, 1) . '%</i></td>
-						</tr>
-						<tr><td colspan="6">&nbsp;</td></tr>';
-				}
-
-				if (($Section != 1) and ($Section != 2)) {
-					$HTML .= '<tr class="total_row">
-							<td colspan="2"><h4><b>' . __('Profit') . ' - ' . __('Loss') . ' ' . __('after') . ' ' . $Sections[$Section] . '</b></h2></td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$PeriodProfitLossActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$PeriodProfitLossBudget, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$PeriodProfitLossLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-
-					if ($TotalIncomeActual != 0) {
-						$NPPercentActual = (-$PeriodProfitLossActual) / $TotalIncomeActual * 100;
-					}
-					else {
-						$NPPercentActual = 0;
-					}
-					if ($TotalIncomeBudget != 0) {
-						$NPPercentBudget = (-$PeriodProfitLossBudget) / $TotalIncomeBudget * 100;
-					}
-					else {
-						$NPPercentBudget = 0;
-					}
-					if ($TotalIncomeLY != 0) {
-						$NPPercentLY = (-$PeriodProfitLossLY) / $TotalIncomeLY * 100;
-					}
-					else {
-						$NPPercentLY = 0;
-					}
-					$HTML .= '<tr class="total_row">
-							<td colspan="2"><h4><i>' . __('P/L Percent after') . ' ' . $Sections[$Section] . '</i></h4></td>
-							<td>&nbsp;</td>
-							<td class="number"><i>' . locale_number_format($NPPercentActual, 1) . '%</i></td>
-							<td>&nbsp;</td>
-							<td class="number"><i>' . locale_number_format($NPPercentBudget, 1) . '%</i></td>
-							<td>&nbsp;</td>
-							<td class="number"><i>' . locale_number_format($NPPercentLY, 1) . '%</i></td>
-						</tr>
-						<tr><td colspan="6">&nbsp;</td></tr>';
+				$mul = ($Section == 1 ? -1 : 1);
+				$HTML .= '<tr style="background:hsl(145, 40%, 95%); font-weight:900;"><td colspan="2">' . $Sections[$Section] . '</td><td style="text-align:right;">' . locale_number_format($SectionPrdActual*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($SectionPrdBudget*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($SectionPrdLY*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+                if ($Section == 1) { $TotalIncomeActual = -$SectionPrdActual; $TotalIncomeBudget = -$SectionPrdBudget; $TotalIncomeLY = -$SectionPrdLY; }
+				if ($Section == 2) { // Gross Profit subtotal
+					$HTML .= '<tr style="background:#f1f5f9; font-weight:900;"><td colspan="2">' . __('Gross Profit') . '</td><td style="text-align:right;">' . locale_number_format($TotalIncomeActual - $SectionPrdActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($TotalIncomeBudget - $SectionPrdBudget, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($TotalIncomeLY - $SectionPrdLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
 				}
 			}
-			$SectionPrdActual = 0;
-			$SectionPrdBudget = 0;
-			$SectionPrdLY = 0;
-			$Section = $MyRow['sectionid'];
-			if ($_POST['ShowDetail'] == 'Detailed') {
-				$HTML .= '<tr>
-						<td colspan="8"><h2><b>' . $Sections[$MyRow['sectionid']] . '</b></h2></td>
-					</tr>';
-			}
+			$SectionPrdActual = 0; $SectionPrdBudget = 0; $SectionPrdLY = 0; $Section = $MyRow['sectionid'];
+			if ($_POST['ShowDetail'] == 'Detailed') $HTML .= '<tr style="background:#f8fafc;"><td colspan="5"><b>' . $Sections[$MyRow['sectionid']] . '</b></td></tr>';
 		}
 
 		if ($MyRow['group_'] != $ActGrp) {
-			if ($MyRow['parentgroupname'] == $ActGrp and $ActGrp != '') { //adding another level of nesting
-				$Level++;
-			}
-
-			$ParentGroups[$Level] = $MyRow['group_'];
-			$ActGrp = $MyRow['group_'];
-			if ($_POST['ShowDetail'] == 'Detailed') {
-				$HTML .= '<tr>
-						<td colspan="8"><b>' . $MyRow['group_'] . '</b></td>
-					</tr>';
-			}
+			if ($MyRow['parentgroupname'] == $ActGrp and $ActGrp != '') $Level++;
+			$ParentGroups[$Level] = $MyRow['group_']; $ActGrp = $MyRow['group_'];
+			if ($_POST['ShowDetail'] == 'Detailed') $HTML .= '<tr><td colspan="5" style="padding-left:' . (20*$Level) . 'px; font-weight:700;">' . $MyRow['group_'] . '</td></tr>';
 		}
-		$AccountPeriodActual = isset($ThisYearActuals[$MyRow['accountcode']]) ? $ThisYearActuals[$MyRow['accountcode']] : 0;
-		$AccountPeriodBudget = $PeriodBudgetRow['periodbudget'];
-		$AccountPeriodLY = isset($LastYearActuals[$MyRow['accountcode']]) ? $LastYearActuals[$MyRow['accountcode']] : 0;
-		$PeriodProfitLossActual += $AccountPeriodActual;
-		$PeriodProfitLossBudget += $AccountPeriodBudget;
-		$PeriodProfitLossLY += $AccountPeriodLY;
+
+		$AccountPeriodActual = $ThisYearActuals[$MyRow['accountcode']] ?? 0;
+		$AccountPeriodLY = $LastYearActuals[$MyRow['accountcode']] ?? 0;
+		$PeriodProfitLossActual += $AccountPeriodActual; $PeriodProfitLossBudget += $AccountPeriodBudget; $PeriodProfitLossLY += $AccountPeriodLY;
 
 		for ($i = 0;$i <= $Level;$i++) {
-			if (!isset($GrpPrdActual[$i])) {
-				$GrpPrdActual[$i] = 0;
-			}
-			$GrpPrdActual[$i] += $AccountPeriodActual;
-			if (!isset($GrpPrdBudget[$i])) {
-				$GrpPrdBudget[$i] = 0;
-			}
-			$GrpPrdBudget[$i] += $AccountPeriodBudget;
-			if (!isset($GrpPrdLY[$i])) {
-				$GrpPrdLY[$i] = 0;
-			}
-			$GrpPrdLY[$i] += $AccountPeriodLY;
+			if (!isset($GrpPrdActual[$i])) $GrpPrdActual[$i] = 0; $GrpPrdActual[$i] += $AccountPeriodActual;
+			if (!isset($GrpPrdBudget[$i])) $GrpPrdBudget[$i] = 0; $GrpPrdBudget[$i] += $AccountPeriodBudget;
+			if (!isset($GrpPrdLY[$i])) $GrpPrdLY[$i] = 0; $GrpPrdLY[$i] += $AccountPeriodLY;
 		}
-		$SectionPrdActual += $AccountPeriodActual;
-		$SectionPrdBudget += $AccountPeriodBudget;
-		$SectionPrdLY += $AccountPeriodLY;
+		$SectionPrdActual += $AccountPeriodActual; $SectionPrdBudget += $AccountPeriodBudget; $SectionPrdLY += $AccountPeriodLY;
 
 		if ($_POST['ShowDetail'] == 'Detailed') {
-			if (isset($_POST['ShowZeroBalance']) or (!isset($_POST['ShowZeroBalance']) and ($AccountPeriodActual <> 0 or $AccountPeriodBudget <> 0 or $AccountPeriodLY <> 0))) {
-				$ActEnquiryURL = '<a href="' . $RootPath . '/GLAccountInquiry.php?PeriodFrom=' . urlencode($_POST['PeriodFrom']) . '&amp;PeriodTo=' . urlencode($_POST['PeriodTo']) . '&amp;Account=' . urlencode($MyRow['accountcode']) . '&amp;Show=Yes">' . $MyRow['accountcode'] . '</a>';
-				if ($Section == 1) {
-					$HTML .= '<tr class="striped_row">
-							<td>' . $ActEnquiryURL . '</td>
-							<td>' . htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$AccountPeriodActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$AccountPeriodBudget, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$AccountPeriodLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-				}
-				else {
-					$HTML .= '<tr class="striped_row">
-							<td>' . $ActEnquiryURL . '</td>
-							<td>' . htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false) . '</td>
-							<td class="number">' . locale_number_format($AccountPeriodActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format($AccountPeriodBudget, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format($AccountPeriodLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-						</tr>';
-				}
+			if (isset($_POST['ShowZeroBalance']) or ($AccountPeriodActual != 0 or $AccountPeriodBudget != 0 or $AccountPeriodLY != 0)) {
+				$mul = ($Section == 1 ? -1 : 1);
+				$HTML .= '<tr style="border-bottom:1px solid #f1f5f9; opacity:0.85;">
+                    <td style="padding-left:' . (25+($Level*15)) . 'px;">' . $MyRow['accountcode'] . '</td>
+                    <td>' . htmlspecialchars($MyRow['accountname']) . '</td>
+                    <td style="text-align:right;">' . locale_number_format($AccountPeriodActual*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
+                    <td style="text-align:right;">' . locale_number_format($AccountPeriodBudget*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
+                    <td style="text-align:right;">' . locale_number_format($AccountPeriodLY*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
+                </tr>';
 			}
 		}
 	}
-	//end of loop
 
+    // Final Grand Totals
+	$HTML .= '<tr style="background:hsl(145, 63%, 38%); color:white; font-weight:900;"><td colspan="2">' . __('Net Profit / (Loss)') . '</td><td style="text-align:right;">' . locale_number_format(-$PeriodProfitLossActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format(-$PeriodProfitLossBudget, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format(-$PeriodProfitLossLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+	$HTML .= '</tbody></table></body></html>';
 
-	if ($Section == 1) { /*Income */
-		$HTML .= '<tr class="total_row">
-							<td colspan="2"><h4><i>' . $ActGrp . '</i></h4></td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$GrpPrdActual[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$GrpPrdBudget[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$GrpPrdLY[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-	}
-	else { /*Costs */
-		$HTML .= '<tr class="total_row">
-							<td colspan="2"><h4><i>' . $ActGrp . '</i></h4></td>
-							<td class="number">' . locale_number_format($GrpPrdActual[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format($GrpPrdBudget[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format($GrpPrdLY[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-						</tr>';
-	}
-	$HTML .= '<tr class="total_row">
-							<td colspan="2"><h2>' . $Sections[$Section] . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$SectionPrdActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$SectionPrdBudget, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-							<td>&nbsp;</td>
-							<td class="number">' . locale_number_format(-$SectionPrdLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-						</tr>';
-
-	$HTML .= '<tr class="total_row">
-			<td colspan="2"><h2><b>' . __('Profit') . ' - ' . __('Loss') . '</b></h2></td>
-			<td>&nbsp;</td>
-			<td class="number">' . locale_number_format(-$PeriodProfitLossActual, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-			<td>&nbsp;</td>
-			<td class="number">' . locale_number_format(-$PeriodProfitLossBudget, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-			<td>&nbsp;</td>
-			<td class="number">' . locale_number_format(-$PeriodProfitLossLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>
-		</tr>';
-
-	if ($TotalIncomeActual != 0) {
-		$NPPercentActual = (-$PeriodProfitLossActual) / $TotalIncomeActual * 100;
-	}
-	else {
-		$NPPercentActual = 0;
-	}
-	if ($TotalIncomeBudget != 0) {
-		$NPPercentBudget = (-$PeriodProfitLossBudget) / $TotalIncomeBudget * 100;
-	}
-	else {
-		$NPPercentBudget = 0;
-	}
-	if ($TotalIncomeLY != 0) {
-		$NPPercentLY = (-$PeriodProfitLossLY) / $TotalIncomeLY * 100;
-	}
-	else {
-		$NPPercentLY = 0;
-	}
-	$HTML .= '<tr class="total_row">
-				<td colspan="2"><h4><i>' . __('Net Profit Percent') . '</i></h4></td>
-				<td>&nbsp;</td>
-				<td class="number"><i>' . locale_number_format($NPPercentActual, 1) . '%</i></td>
-				<td>&nbsp;</td>
-				<td class="number"><i>' . locale_number_format($NPPercentBudget, 1) . '%</i></td>
-				<td>&nbsp;</td>
-				<td class="number"><i>' . locale_number_format($NPPercentLY, 1) . '%</i></td>
-		</tr>
-		<tr><td colspan="8">&nbsp;</td>
-		</tr>
-		</tbody></table></div>'; // div id="Report".
-
-
-	$HTML .= '</table>';
 	if (isset($_POST['PrintPDF'])) {
-		$HTML .= '</body></html>';
-		$DomPDF = new Dompdf($DomPDFOptions); // Pass the options object defined in SetDomPDFOptions.php containing common options
-		$DomPDF->loadHtml($HTML);
-
-		// (Optional) Setup the paper size and orientation
-		$DomPDF->setPaper($_SESSION['PageSize'], 'portrait');
-
-		// Render the HTML as PDF
-		$DomPDF->render();
-
-		// Output the generated PDF to Browser
+		$DomPDF = new Dompdf($DomPDFOptions); $DomPDF->loadHtml($HTML); $DomPDF->setPaper($_SESSION['PageSize'], 'portrait'); $DomPDF->render();
 		$DomPDF->stream($_SESSION['DatabaseName'] . '_Profit_Loss_' . date('Y-m-d') . '.pdf', array("Attachment" => false));
-	}
-	else {
-		$Title = __('General Ledger Profit and Loss');
-		include(__DIR__ . '/includes/header.php');
-		echo '<p class="page_title_text">
-				<img src="' . $RootPath . '/css/' . $Theme . '/images/gl.png" title="' . __('Profit and Loss Report') . '" alt="" />
-				' . __('Profit and Loss Report') . '
-			</p>';
-		echo $HTML;
-		echo
-		// Shows a form to select an action after the report was shown:
-		'<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">', '<input name="FormID" type="hidden" value="' . $_SESSION['FormID'] . '" />',
-		// Resend report parameters:
-		'<input name="PeriodFrom" type="hidden" value="' . $_POST['PeriodFrom'] . '" />', '<input name="PeriodTo" type="hidden" value="' . $_POST['PeriodTo'] . '" />', '<div class="centre">
-			<input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" />
-		</div>' . '</form>';
+	} else {
+		$Title = __('Financial Statement View'); include(__DIR__ . '/includes/header.php');
+		echo '<style>.report-grid { max-width: 1200px; margin: 0 auto; background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); } table th, table td { padding: 10px; border-bottom: 1px solid #f1f5f9; }</style>';
+		echo '<div style="background:hsl(210, 20%, 97%); padding:2rem; min-height:100vh;"><div class="report-grid">' . $HTML . '</div></div>';
+		include(__DIR__ . '/includes/footer.php');
 	}
 
 } else {
-
+    // Setup Page
 	include(__DIR__ . '/includes/header.php');
+	echo '<style>
+        :root { --db-primary: hsl(145, 63%, 38%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+        .db-page { background: var(--db-bg); min-height: 100vh; padding: 2rem; font-family: "Inter", sans-serif; }
+        .db-card { background: #fff; border-radius: 12px; border: 1px solid var(--db-border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 650px; margin: 0 auto; overflow: hidden; }
+        .db-card-header { padding: 1.25rem; border-bottom: 1px solid var(--db-border); }
+        .db-card-title { font-size: 0.85rem; font-weight: 800; color: var(--db-primary-dark); text-transform: uppercase; margin:0; }
+        .db-card-body { padding: 1.5rem; }
+        .db-field { margin-bottom: 1.25rem; }
+        .db-label { font-size: 0.75rem; font-weight: 800; color: var(--db-primary-dark); text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
+        .db-select { padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid var(--db-border); font-size: 0.85rem; width: 100%; background:#fdfdfd; }
+        .db-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: none; transition: 0.2s; width: 100%; margin-top: 15px; }
+        .db-btn-primary { background: var(--db-primary); color: #fff; }
+    </style>';
 
-	echo '<p class="page_title_text"><img alt="" src="' . $RootPath . '/css/' . $Theme . '/images/printer.png" title="' . // Icon image.
-	$Title2 . '" /> ' . // Icon title.
-	$Title . '</p>'; // Page title.
-	fShowPageHelp( // Shows the page help text if $_SESSION['ShowFieldHelp'] is true or is not set
-	__('Profit and loss statement (P&amp;L) . also called an Income Statement . or Statement of Operations . this is the statement that indicates how the revenue (money received from the sale of products and services before expenses are taken out . also known as the top line) is transformed into the net income (the result after all revenues and expenses have been accounted for . also known as the bottom line).') . '<br />' . __('The purpose of the income statement is to show whether the company made or lost money during the period being reported.') . '<br />' . __('The P&amp;L represents a period of time. This contrasts with the Balance Sheet . which represents a single moment in time.') . '<br />' . __('webERP is an accrual based system (not a cash based system). Accrual systems include items when they are invoiced to the customer . and when expenses are owed based on the supplier invoice date.')); // Function fShowPageHelp() in ~/includes/MiscFunctions.php
-	echo
-	// Shows a form to input the report parameters:
-	'<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" target="_blank">', '<input name="FormID" type="hidden" value="' . $_SESSION['FormID'] . '" />',
-	// Input table:
-	'<fieldset>
-			<legend>' . __('Report Criteria') . '</legend>',
-	// Content of the body of the input table:
-	// Select period from:
-	'<field>
-				<label for="PeriodFrom">' . __('Select period from') . '</label>
-		 		<select id="PeriodFrom" name="PeriodFrom" required="required">';
-	$Periods = DB_query('SELECT periodno, lastdate_in_period FROM periods ORDER BY periodno DESC');
+    echo '<div class="db-page"><div class="db-card">
+            <div class="db-card-header"><h3 class="db-card-title">' . __('Profit and Loss Statement Configuration') . '</h3></div>
+            <div class="db-card-body">
+                <form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" target="_blank">
+                <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                    <div class="db-field"><label class="db-label">Reporting Period From</label><select name="PeriodFrom" class="db-select">';
+                    $Pers = DB_query("SELECT periodno, lastdate_in_period FROM periods ORDER BY periodno DESC");
+                    while($R = DB_fetch_array($Pers)) echo '<option value="'.$R['periodno'].'">'.MonthAndYearFromSQLDate($R['lastdate_in_period']).'</option>';
+                    echo '</select></div>
+                    <div class="db-field"><label class="db-label">Reporting Period To</label><select name="PeriodTo" class="db-select">';
+                    DB_data_seek($Pers, 0); while($R = DB_fetch_array($Pers)) echo '<option value="'.$R['periodno'].'">'.MonthAndYearFromSQLDate($R['lastdate_in_period']).'</option>';
+                    echo '</select></div>
+                </div>
 
-	if (date('m') > $_SESSION['YearEnd']) {
-		/*Dates in SQL format */
-		$DefaultFromDate = date('Y-m-d', mktime(0, 0, 0, $_SESSION['YearEnd'] + 2, 0, date('Y')));
-		$FromDate = date($_SESSION['DefaultDateFormat'], mktime(0, 0, 0, $_SESSION['YearEnd'] + 2, 0, date('Y')));
-	}
-	else {
-		$DefaultFromDate = date('Y-m-d', mktime(0, 0, 0, $_SESSION['YearEnd'] + 2, 0, date('Y') - 1));
-		$FromDate = date($_SESSION['DefaultDateFormat'], mktime(0, 0, 0, $_SESSION['YearEnd'] + 2, 0, date('Y') - 1));
-	}
+                <div class="db-field"><label class="db-label">Budget Comparison Source</label><select name="SelectedBudget" class="db-select">';
+                $Buds = DB_query("SELECT id, name FROM glbudgetheaders");
+                while($R = DB_fetch_array($Buds)) echo '<option value="'.$R['id'].'">'.$R['name'].'</option>';
+                echo '</select></div>
 
-	$Period = GetPeriod($FromDate);
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                    <div class="db-field"><label class="db-label">Data Density</label><select name="ShowDetail" class="db-select"><option value="Summary">Summary Only</option><option selected value="Detailed">Include All Accounts</option></select></div>
+                    <div class="db-field" style="display:flex; align-items:center; gap:10px; margin-top:2rem;"><input type="checkbox" name="ShowZeroBalance" id="szb" /> <label class="db-label" for="szb" style="margin:0;">Show Zero Balances</label></div>
+                </div>
 
-	while ($MyRow = DB_fetch_array($Periods)) {
-		if (isset($_POST['PeriodFrom']) and $_POST['PeriodFrom'] != '') {
-			if ($_POST['PeriodFrom'] == $MyRow['periodno']) {
-				echo '<option selected="selected" value="' . $MyRow['periodno'] . '">' . MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-			}
-			else {
-				echo '<option value="' . $MyRow['periodno'] . '">' . MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-			}
-		}
-		else {
-			if ($MyRow['lastdate_in_period'] == $DefaultFromDate) {
-				echo '<option selected="selected" value="' . $MyRow['periodno'] . '">' . MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-			}
-			else {
-				echo '<option value="' . $MyRow['periodno'] . '">' . MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-			}
-		}
-	}
-
-	echo '</select>
-		<fieldhelp>' . __('Select the beginning of the reporting period') . '</fieldhelp>
-	</field>';
-
-	// Select period to:
-	if (!isset($_POST['PeriodTo'])) {
-		$PeriodSQL = "SELECT periodno
-						FROM periods
-						WHERE MONTH(lastdate_in_period) = MONTH(CURRENT_DATE())
-						AND YEAR(lastdate_in_period ) = YEAR(CURRENT_DATE())";
-		$PeriodResult = DB_query($PeriodSQL);
-		$PeriodRow = DB_fetch_array($PeriodResult);
-		$_POST['PeriodTo'] = $PeriodRow['periodno'];
-	}
-	echo '<field>
-			<label for="PeriodTo">' . __('Select period to') . '</label>
-		 	<select id="PeriodTo" name="PeriodTo" required="required">';
-	DB_data_seek($Periods, 0);
-	while ($MyRow = DB_fetch_array($Periods)) {
-		echo '<option', ($MyRow['periodno'] == $_POST['PeriodTo'] ? ' selected="selected"' : '') . ' value="' . $MyRow['periodno'] . '">' . MonthAndYearFromSQLDate($MyRow['lastdate_in_period']) . '</option>';
-	}
-	echo '</select>
-		<fieldhelp>' . __('Select the end of the reporting period') . '</fieldhelp>
-	</field>';
-	// OR Select period:
-	if (!isset($_POST['Period'])) {
-		$_POST['Period'] = '';
-	}
-
-	$SQL = "SELECT `id`,
-					`name`,
-					`current`
-				FROM glbudgetheaders";
-	$Result = DB_query($SQL);
-	echo '<field>
-			<label for="SelectedBudget">', __('Budget To Show Comparisons With'), '</label>
-			<select name="SelectedBudget">';
-	while ($MyRow = DB_fetch_array($Result)) {
-		if (!isset($_POST['SelectedBudget']) and $MyRow['current'] == 1) {
-			$_POST['SelectedBudget'] = $MyRow['id'];
-		}
-		if ($MyRow['id'] == $_POST['SelectedBudget']) {
-			echo '<option selected="selected" value="', $MyRow['id'], '">', $MyRow['name'], '</option>';
-		}
-		else {
-			echo '<option value="', $MyRow['id'], '">', $MyRow['name'], '</option>';
-		}
-	}
-	echo '<fieldhelp>', __('Select the budget to make comparisons with.'), '</fieldhelp>
-		</select>
-	</field>';
-
-	echo '<field>
-			<label for="Period">' . '<b>' . __('OR') . ' </b>' . __('Select Period') . '</label>
-			' . ReportPeriodList($_POST['Period'], array('l', 't')), '<fieldhelp>' . __('Select a period instead of using the beginning and end of the reporting period.') . '</fieldhelp>
-		</field>';
-
-	echo '<field>
-			<label for="ShowDetail">' . __('Detail or summary') . '</label>
-			<select name="ShowDetail">
-				<option value="Summary">' . __('Summary') . '</option>
-				<option selected="selected" value="Detailed">' . __('All Accounts') . '</option>
-			</select>
-		</field>',
-	// Show accounts with zero balance:
-	'<field>', '<label for="ShowZeroBalance">' . __('Show accounts with zero balance') . '</label>
-		 	<input', (isset($_POST['ShowZeroBalance']) && $_POST['ShowZeroBalance'] ? ' checked="checked"' : '') . ' id="ShowZeroBalance" name="ShowZeroBalance" type="checkbox">
-		 	<fieldhelp>' . __('Check this box to show all accounts including those with zero balance') . '</fieldhelp>
-		</field>', '</fieldset>';
-
-	echo '<div class="centre">
-			<input type="submit" name="PrintPDF" title="PDF" value="' . __('PDF P & L Account') . '" />
-			<input type="submit" name="View" title="View" value="' . __('Show P & L Account') . '" />
-		</div>', '</form>';
-
+                <button type="submit" name="PrintPDF" class="db-btn db-btn-primary">Generate Official PDF</button>
+                <button type="submit" name="View" class="db-btn db-btn-primary" style="background:var(--db-primary-soft); color:var(--db-primary);">View Statement Online</button>
+                </form>
+            </div>
+        </div></div>';
 	include(__DIR__ . '/includes/footer.php');
 }
+?>

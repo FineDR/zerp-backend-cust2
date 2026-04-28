@@ -1,27 +1,4 @@
 <?php
-/*
-	Shows a set of financial statements.
-	This program is under the GNU General Public License, last version. 2016-10-08.
-	This creative work is under the CC BY-NC-SA, last version. 2016-10-08.
-
-
-Info about financial statements: IAS 1 - Presentation of Financial Statements.
-
-Parameters:
-	PeriodFrom: Select the beginning of the reporting period.
-	PeriodTo: Select the end of the reporting period.
-	Period: Select a period instead of using the beginning and end of the reporting period.
-	ShowBudget: Check this box to show the budget.
-	ShowDetail: Check this box to show all accounts instead a summary.
-	ShowZeroBalance: Check this box to show accounts with zero balance.
-	ShowFinancialPosition: Check this box to show the statement of financial position as at the end and at the beginning of the period;
-	ShowComprehensiveIncome: Check this box to show the statement of comprehensive income;
-	ShowChangesInEquity: Check this box to show the statement of changes in equity;
-	ShowCashFlows: Check this box to show the statement of cash flows; and
-	ShowNotes: Check this box to show the notes that summarize the significant accounting policies and other explanatory information.
-	NewReport: Click this button to start a new report.
-	IsIncluded: Parameter to indicate that a script is included within another.
-*/
 
 require(__DIR__ . '/includes/session.php');
 
@@ -31,269 +8,94 @@ $BookMark = 'GLStatements';
 include(__DIR__ . '/includes/header.php');
 
 // Merges gets into posts:
-if (isset($_GET['PeriodFrom'])) {
-	$_POST['PeriodFrom'] = $_GET['PeriodFrom'];
-}
-if (isset($_GET['PeriodTo'])) {
-	$_POST['PeriodTo'] = $_GET['PeriodTo'];
-}
-if (isset($_GET['Period'])) {
-	$_POST['Period'] = $_GET['Period'];
-}
-if (isset($_GET['ShowBudget'])) {
-	$_POST['ShowBudget'] = $_GET['ShowBudget'];
-}
-if (isset($_GET['ShowZeroBalance'])) {
-	$_POST['ShowZeroBalance'] = $_GET['ShowZeroBalance'];
-}
-if (isset($_GET['ShowFinancialPosition'])) {
-	$_POST['ShowFinancialPosition'] = $_GET['ShowFinancialPosition'];
-}
-if (isset($_GET['ShowComprehensiveIncome'])) {
-	$_POST['ShowComprehensiveIncome'] = $_GET['ShowComprehensiveIncome'];
-}
-if (isset($_GET['ShowChangesInEquity'])) {
-	$_POST['ShowChangesInEquity'] = $_GET['ShowChangesInEquity'];
-}
-if (isset($_GET['ShowCashFlows'])) {
-	$_POST['ShowCashFlows'] = $_GET['ShowCashFlows'];
-}
-if (isset($_GET['ShowNotes'])) {
-	$_POST['ShowNotes'] = $_GET['ShowNotes'];
-}
-if (isset($_GET['NewReport'])) {
-	$_POST['NewReport'] = $_GET['NewReport'];
+foreach (array('PeriodFrom', 'PeriodTo', 'Period', 'ShowBudget', 'ShowZeroBalance', 'ShowFinancialPosition', 'ShowComprehensiveIncome', 'ShowChangesInEquity', 'ShowCashFlows', 'ShowNotes', 'NewReport') as $val) {
+    if (isset($_GET[$val])) $_POST[$val] = $_GET[$val];
 }
 
-// Sets PeriodFrom and PeriodTo from Period:
 if (isset($_POST['Period']) and $_POST['Period'] != '') {
 	$_POST['PeriodFrom'] = ReportPeriod($_POST['Period'], 'From');
 	$_POST['PeriodTo'] = ReportPeriod($_POST['Period'], 'To');
 }
 
-// Validates the data submitted in the form:
-if (isset($_POST['PeriodFrom']) and $_POST['PeriodFrom'] > $_POST['PeriodTo']) {
-	// The beginning is after the end.
-	$_POST['NewReport'] = 'on';
-	prnMsg(__('The beginning of the period should be before or equal to the end of the period. Please reselect the reporting period.'), 'error');
-}
-if (isset($_POST['PeriodTo']) and $_POST['PeriodTo']-$_POST['PeriodFrom']+1 > 12) {
-	// The reporting period is greater than 12 months.
-	$_POST['NewReport'] = 'on';
-	prnMsg(__('The period should be 12 months or less in duration. Please select an alternative period range.'), 'error');
-}
-if (isset($_POST['PeriodFrom']) and isset($_POST['PeriodTo']) and !isset($_POST['ShowFinancialPosition']) and !isset($_POST['ShowComprehensiveIncome']) and !isset($_POST['ShowChangesInEquity']) and !isset($_POST['ShowCashFlows']) and !isset($_POST['ShowNotes'])) {
-	// No financial statement was selected.
-	$_POST['NewReport'] = 'on';
-	prnMsg(__('You must select at least one financial statement. Please select financial statements.'), 'error');
-}
+if (isset($_POST['PeriodFrom']) and $_POST['PeriodFrom'] > $_POST['PeriodTo']) { $_POST['NewReport'] = 'on'; prnMsg(__('Invalid period range'), 'error'); }
+if (isset($_POST['PeriodTo']) and $_POST['PeriodTo']-$_POST['PeriodFrom']+1 > 12) { $_POST['NewReport'] = 'on'; prnMsg(__('Period duration must be <= 12 months'), 'error'); }
 
-// Main code:
-if (isset($_POST['PeriodFrom']) AND isset($_POST['PeriodTo']) AND !$_POST['NewReport']) {
-	// If PeriodFrom and PeriodTo are set and it is not a NewReport, generates the report:
+echo '<style>
+    :root { --db-primary: hsl(145, 63%, 38%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+    .db-page { background: var(--db-bg); min-height: 100vh; padding: 1.5rem; font-family: "Inter", sans-serif; }
+    .db-card { background: #fff; border-radius: 12px; border: 1px solid var(--db-border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 1.5rem; }
+    .db-card-header { padding: 1rem; border-bottom: 1px solid var(--db-border); }
+    .db-card-title { font-size: 0.8rem; font-weight: 800; color: var(--db-primary-dark); text-transform: uppercase; margin: 0; }
+    .db-card-body { padding: 1.5rem; }
+    .db-label { font-size: 0.75rem; font-weight: 800; color: var(--db-primary-dark); text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
+    .db-select { padding: 0.5rem; border-radius: 6px; border: 1px solid var(--db-border); width: 100%; font-size: 0.85rem; }
+    .db-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: none; width: 100%; margin-top: 10px; }
+    .db-btn-primary { background: var(--db-primary); color: white; }
+    .db-btn-ghost { background: var(--db-primary-soft); color: var(--db-primary); }
+    .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; margin-top:1.5rem; }
+    .checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; font-weight: 600; color: #334155; }
+    .statement-wrapper { max-width: 1200px; margin: 0 auto; background: white; padding: 2rem; border-radius: 12px; }
+    @media print { .noPrint { display: none; } .db-page { padding: 0; background: white; } }
+</style>';
 
-	echo '<div class="sheet">';// Division to identify the report block.
-	echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/gl.png" title="', // Icon image.
-		$Title, '" /> ', // Icon title.
-		// Page title as IAS1 numerals 10 and 51:
-		$Title, '<br />', // Page title, reporting statement.
-		stripslashes($_SESSION['CompanyRecord']['coyname']), '<br />'; // Page title, reporting entity.
-	$PeriodFromName = EndDateSQLFromPeriodNo($_POST['PeriodFrom']);
-	$PeriodToName = EndDateSQLFromPeriodNo($_POST['PeriodTo']);
-	echo __('From'), ' ', MonthAndYearFromSQLDate($PeriodFromName), ' ', __('to'), ' ', MonthAndYearFromSQLDate($PeriodToName), '<br />'; // Page title, reporting period.
-	include_once(__DIR__ . '/includes/CurrenciesArray.php');// Array to retrieve currency name.
-	echo __('All amounts stated in'), ': ', __($CurrencyName[$_SESSION['CompanyRecord']['currencydefault']]), '</p>';// Page title, reporting presentation currency and level of rounding used.
-	echo // Index of this report:
-		'<p>', __('In this set of financial statements:'),
-		(($_POST['ShowFinancialPosition']) ? '<br />* ' . __('Statement of financial position') . '.' : ''),
-		(($_POST['ShowComprehensiveIncome']) ? '<br />* ' . __('Statement of comprehensive income') . '.' : ''),
-		(($_POST['ShowChangesInEquity']) ? '<br />* ' . __('Statement of changes in equity') . '.' : ''),
-		(($_POST['ShowCashFlows']) ? '<br />* ' . __('Statement of cash flows') . '.' : ''),
-		(($_POST['ShowNotes']) ? '<br />* ' . __('Notes') . '.' : ''),
-		'<p>';
-	echo '</div>';// div id="Report".
+if (isset($_POST['PeriodFrom']) AND isset($_POST['PeriodTo']) AND (!isset($_POST['NewReport']) OR $_POST['NewReport']!='on')) {
+    echo '<div class="db-page"><div class="statement-wrapper">';
+    echo '<div style="text-align:center; padding: 1.5rem 0; border-bottom: 2px solid var(--db-primary-soft); margin-bottom:2rem;">';
+    echo '<h1 style="margin:0; color:#1e293b;">' . stripslashes($_SESSION['CompanyRecord']['coyname']) . '</h1>';
+    echo '<h2 style="font-weight:900; color:var(--db-primary); margin:5px 0;">' . $Title . '</h2>';
+    $PFN = EndDateSQLFromPeriodNo($_POST['PeriodFrom']); $PTN = EndDateSQLFromPeriodNo($_POST['PeriodTo']);
+    echo '<div style="color:#64748b;">' . __('From') . ' ' . MonthAndYearFromSQLDate($PFN) . ' ' . __('to') . ' ' . MonthAndYearFromSQLDate($PTN) . '</div>';
+    echo '</div>';
 
-	$IsIncluded = true;
-	$PageBreak = '<hr class="PageBreak"/>' . chr(12);// Marker to indicate that the content that follows is part of a new page.
-	// Displays the statements using the corresponding scripts:
+	$IsIncluded = true; $PageBreak = '<div style="page-break-before:always; margin-top:4rem;"></div>';
 	$_POST['ShowDetail'] = 'Detailed';
-	if ($_POST['ShowFinancialPosition']) {
-		echo $PageBreak;
-		include('GLBalanceSheet.php');
-	}
-	if ($_POST['ShowComprehensiveIncome']) {
-		echo $PageBreak;
-		include('GLProfit_Loss.php');
-	}
-	if ($_POST['ShowChangesInEquity']) {
-		echo $PageBreak;
-		if (file_exists('GLChangesInEquity.php')) {// Provisional, to be replaced by a rights verification.
-			include('GLChangesInEquity.php');
-		}
-	}
-	if ($_POST['ShowCashFlows']) {
-		echo $PageBreak;
-		include('GLCashFlowsIndirect.php');
-	}
-	if ($_POST['ShowNotes']) {
-		echo $PageBreak;
-		if (file_exists('GLNotes.php')) {// Provisional, to be replaced by a rights verification.
-			include('GLNotes.php');
-		}
-	}
+	if (isset($_POST['ShowFinancialPosition']) && $_POST['ShowFinancialPosition']) { include('GLBalanceSheet.php'); echo $PageBreak; }
+	if (isset($_POST['ShowComprehensiveIncome']) && $_POST['ShowComprehensiveIncome']) { include('GLProfit_Loss.php'); echo $PageBreak; }
+	if (isset($_POST['ShowChangesInEquity']) && $_POST['ShowChangesInEquity'] && file_exists('GLChangesInEquity.php')) { include('GLChangesInEquity.php'); echo $PageBreak; }
+	if (isset($_POST['ShowCashFlows']) && $_POST['ShowCashFlows']) { include('GLCashFlowsIndirect.php'); echo $PageBreak; }
+	if (isset($_POST['ShowNotes']) && $_POST['ShowNotes'] && file_exists('GLNotes.php')) { include('GLNotes.php'); }
 
-	echo // Shows a form to select an action after the report was shown:
-		'<form action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" method="post">',
-		'<input name="FormID" type="hidden" value="', $_SESSION['FormID'], '" />',
-		// Resend report parameters:
-		'<input name="PeriodFrom" type="hidden" value="', $_POST['PeriodFrom'], '" />',
-		'<input name="PeriodTo" type="hidden" value="', $_POST['PeriodTo'], '" />',
-		'<input name="ShowBudget" type="hidden" value="', $_POST['ShowBudget'], '" />',
-		'<input name="ShowZeroBalance" type="hidden" value="', $_POST['ShowZeroBalance'], '" />',
-		'<input name="ShowFinancialPosition" type="hidden" value="', $_POST['ShowFinancialPosition'], '" />',
-		'<input name="ShowComprehensiveIncome" type="hidden" value="', $_POST['ShowComprehensiveIncome'], '" />',
-		'<input name="ShowChangesInEquity" type="hidden" value="', $_POST['ShowChangesInEquity'], '" />',
-		'<input name="ShowCashFlows" type="hidden" value="', $_POST['ShowCashFlows'], '" />',
-		'<input name="ShowNotes" type="hidden" value="', $_POST['ShowNotes'], '" />',
-		'<div class="centre noPrint">', // Form buttons:
-			'<button onclick="window.print()" type="button"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/printer.png" /> ', __('Print'), '</button>', // "Print" button.
-			'<button name="NewReport" type="submit" value="on"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/reports.png" /> ', __('New Report'), '</button>', // "New Report" button.
-			'<button onclick="window.location=\'' . $RootPath . '/index.php?Application=GL\'" type="button"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/return.svg" /> ', __('Return'), '</button>', // "Return" button.
-		'</div>',
-		'</form>';
+	echo '<div class="noPrint" style="display:flex; justify-content:center; gap:15px; margin-top:3rem; padding-top:2rem; border-top:1px solid var(--db-border);">';
+    echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">';
+    echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+    foreach(array('PeriodFrom','PeriodTo','ShowBudget','ShowZeroBalance','ShowFinancialPosition', 'ShowComprehensiveIncome', 'ShowChangesInEquity', 'ShowCashFlows', 'ShowNotes') as $f) 
+        if(isset($_POST[$f])) echo '<input type="hidden" name="'.$f.'" value="'.$_POST[$f].'" />';
+    echo '<button type="button" class="db-btn db-btn-primary" style="width:auto;" onclick="window.print()">Print Batch</button> ';
+    echo '<button type="submit" name="NewReport" value="on" class="db-btn db-btn-ghost" style="width:auto;">New Set</button>';
+    echo '</form></div></div></div>';
+
 } else {
-	// If PeriodFrom or PeriodTo are NOT set or it is a NewReport, shows a parameters input form:
-	echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/gl.png" title="', // Icon image.
-		$Title, '" /> ', // Icon title.
-		$Title, '</p>';// Page title.
-	fShowPageHelp(// Shows the page help text if $_SESSION['ShowFieldHelp'] is true or is not set
-		__('Shows a set of financial statements.') . '<br />' .
-		__('A complete set of financial statements comprises:(a) a statement of financial position as at the end and at the beginning of the period;(b) a statement of comprehensive income for the period;(c) a statement of changes in equity for the period;(d) a statement of cash flows for the period; and(e) notes that summarize the significant accounting policies and other explanatory information.') . '<br />' .
-		__('webERP is an accrual based system (not a cash based system). Accrual systems include items when they are invoiced to the customer, and when expenses are owed based on the supplier invoice date.'));// Function fShowPageHelp() in ~/includes/MiscFunctions.php
-	echo // Shows a form to input the report parameters:
-		'<form action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" method="post">',
-		'<input name="FormID" type="hidden" value="', $_SESSION['FormID'], '" />', // Input table:
-		'<fieldset>
-			<legend>', __('Report Criteria'), '</legend>', // Content of the header and footer of the input table:
-	// Content of the body of the input table:
-	// Select period from:
-			'<field>',
-				'<label for="PeriodFrom">', __('Select period from'), '</label>
-		 		<select id="PeriodFrom" name="PeriodFrom" required="required">';
-	$Periods = DB_query('SELECT periodno, lastdate_in_period FROM periods ORDER BY periodno ASC');
-	if (!isset($_POST['PeriodFrom'])) {
-		$_POST['ShowBudget'] = '';
-		$_POST['ShowZeroBalance'] = '';
-		$_POST['ShowFinancialPosition'] = '';
-		$_POST['ShowComprehensiveIncome'] = '';
-		$_POST['ShowCashFlows'] = '';
-		$BeginMonth = ($_SESSION['YearEnd']==12 ? 1 : $_SESSION['YearEnd']+1);// Sets January as the month that follows December.
-		if ($BeginMonth <= date('n')) {// It is a month in the current year.
-			$BeginDate = mktime(0, 0, 0, $BeginMonth, 1, date('Y'));
-		} else {// It is a month in the previous year.
-			$BeginDate = mktime(0, 0, 0, $BeginMonth, 1, date('Y')-1);
-		}
-		$_POST['PeriodFrom'] = GetPeriod(date($_SESSION['DefaultDateFormat'], $BeginDate));
-	}
-	while($MyRow = DB_fetch_array($Periods)) {
-	    echo			'<option',($MyRow['periodno'] == $_POST['PeriodFrom'] ? ' selected="selected"' : '' ), ' value="', $MyRow['periodno'], '">', MonthAndYearFromSQLDate($MyRow['lastdate_in_period']), '</option>';
-	}
-	echo			'</select>
-				<fieldhelp>', __('Select the beginning of the reporting period'), '</fieldhelp>
-			</field>',
-	// Select period to:
-			'<field>',
-				'<label for="PeriodTo">', __('Select period to'), '</label>
-		 		<select id="PeriodTo" name="PeriodTo" required="required">';
-	if (!isset($_POST['PeriodTo'])) {
-		$_POST['PeriodTo'] = GetPeriod(date($_SESSION['DefaultDateFormat']));
-	}
-	DB_data_seek($Periods, 0);
-	while($MyRow = DB_fetch_array($Periods)) {
-	    echo			'<option',($MyRow['periodno'] == $_POST['PeriodTo'] ? ' selected="selected"' : '' ), ' value="', $MyRow['periodno'], '">', MonthAndYearFromSQLDate($MyRow['lastdate_in_period']), '</option>';
-	}
-	echo			'</select>
-				<fieldhelp>', __('Select the end of the reporting period'), '</fieldhelp>
-			</field>';
-	// OR Select period:
-	if (!isset($_POST['Period'])) {
-		$_POST['Period'] = '';
-	}
-	if (!isset($_POST['ShowBudget'])) {
-		$_POST['ShowBudget'] = '';
-	}
-	if (!isset($_POST['ShowZeroBalance'])) {
-		$_POST['ShowZeroBalance'] = '';
-	}
-	if (!isset($_POST['ShowFinancialPosition'])) {
-		$_POST['ShowFinancialPosition'] = '';
-	}
-	if (!isset($_POST['ShowComprehensiveIncome'])) {
-		$_POST['ShowComprehensiveIncome'] = '';
-	}
-	if (!isset($_POST['ShowCashFlows'])) {
-		$_POST['ShowCashFlows'] = '';
-	}
-	echo '<field>
-				<label for="Period">', '<b>' . __('OR') . ' </b>' . __('Select Period'), '</label>
-				', ReportPeriodList($_POST['Period'], array('l', 't')),'
-				<fieldhelp>', __('Select a period instead of using the beginning and end of the reporting period.'), '</fieldhelp>
-			</field>',
-	// Show the budget:
-			'<field>
-				<label for="ShowBudget">', __('Show the budget'), '</label>
-			 	<input', ($_POST['ShowBudget'] ? ' checked="checked"' : ''), ' id="ShowBudget" name="ShowBudget" type="checkbox">', // "Checked" if ShowBudget is set AND it is true.
-			 	'<fieldhelp>', __('Check this box to show the budget'), '</fieldhelp>
-			</field>',
-	// Show accounts with zero balance:
-			'<field>
-				<label for="ShowZeroBalance">', __('Show accounts with zero balance'), '</label>
-			 	<input', ($_POST['ShowZeroBalance'] ? ' checked="checked"' : ''), ' id="ShowZeroBalance" name="ShowZeroBalance" type="checkbox">
-			 	<fieldhelp>', __('Check this box to show accounts with zero balance'), '</fieldhelp>
-			</field>',
-	// Show the statement of financial position:
-			'<field>
-				<label for="ShowFinancialPosition">', __('Show the statement of financial position'), '</label>
-			 	<input', ($_POST['ShowFinancialPosition'] ? ' checked="checked"' : ''), ' id="ShowFinancialPosition" name="ShowFinancialPosition" type="checkbox">
-				<fieldhelp>', __('Check this box to show the statement of financial position'), '</fieldhelp>
-			</field>',
-	// Show the statement of comprehensive income:
-			'<field>
-				<label for="ShowComprehensiveIncome">', __('Show the statement of comprehensive income'), '</label>
-			 	<td><input', ($_POST['ShowComprehensiveIncome'] ? ' checked="checked"' : ''), ' id="ShowComprehensiveIncome" name="ShowComprehensiveIncome" type="checkbox">
-			 	<fieldhelp>', __('Check this box to show the statement of comprehensive income'), '</fieldhelp
-			</field>';
-	// Show the statement of changes in equity:
-	if (file_exists('GLChangesInEquity.php')) {// Provisional, to be replaced by a rights verification.
-		echo
-			'<field>
-				<label for="ShowChangesInEquity">', __('Show the statement of changes in equity'), '</label>
-			 	<input', ($_POST['ShowChangesInEquity'] ? ' checked="checked"' : ''), ' id="ShowChangesInEquity" name="ShowChangesInEquity" type="checkbox">
-			 	<fieldhelp>', __('Check this box to show the statement of changes in equity'), '</fieldhelp>
-			</field>';
-	}
-	// Show the statement of cash flows:
-	echo	'<field>
-				<label for="ShowCashFlows">', __('Show the statement of cash flows'), '</label>
-			 	<input', ($_POST['ShowCashFlows'] ? ' checked="checked"' : ''), ' id="ShowCashFlows" name="ShowCashFlows" type="checkbox">
-			 	<fieldhelp>', __('Check this box to show the statement of cash flows'), '</fieldhelp>
-			</field>';
-	// Show the notes:
-	if (file_exists('GLNotes.php')) {// Provisional, to be replaced by a rights verification.
-		echo
-			'<field>
-				<label for="ShowNotes">', __('Show the notes'), '</label>
-			 	<input', ($_POST['ShowNotes'] ? ' checked="checked"' : ''), ' id="ShowNotes" name="ShowNotes" type="checkbox">
-			 	<fieldhelp>', __('Check this box to show the notes that summarize the significant accounting policies and other explanatory information'), '</fieldhelp>
-			</field>';
-	}
-	echo
-		'</fieldset>
-			<div class="centre">
-				<input name="Submit" type="submit" value="', __('Submit'), '" />
-				<input onclick="window.location=\'index.php?Application=GL\'" type="reset" value="', __('Return'), '" />
-			</div>
-		</form>';
+    echo '<div class="db-page"><div class="db-card" style="max-width:800px; margin:0 auto;">
+            <div class="db-card-header"><h3 class="db-card-title">' . __('Generate Financial Statement Set') . '</h3></div>
+            <div class="db-card-body">
+                <form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
+                <input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                    <div class="db-field"><label class="db-label">Period From</label><select name="PeriodFrom" class="db-select">';
+                    $Pers = DB_query("SELECT periodno, lastdate_in_period FROM periods ORDER BY periodno ASC");
+                    $curP = GetPeriod(date($_SESSION['DefaultDateFormat']));
+                    while($R = DB_fetch_array($Pers)) echo '<option '.($R['periodno']==$curP-11?'selected':'').' value="'.$R['periodno'].'">'.MonthAndYearFromSQLDate($R['lastdate_in_period']).'</option>';
+                    echo '</select></div>
+                    <div class="db-field"><label class="db-label">Period To</label><select name="PeriodTo" class="db-select">';
+                    DB_data_seek($Pers, 0); while($R = DB_fetch_array($Pers)) echo '<option '.($R['periodno']==$curP?'selected':'').' value="'.$R['periodno'].'">'.MonthAndYearFromSQLDate($R['lastdate_in_period']).'</option>';
+                    echo '</select></div>
+                </div>
+
+                <div class="checkbox-grid">
+                    <div class="checkbox-item"><input type="checkbox" name="ShowFinancialPosition" id="sfp" checked /> <label for="sfp">Financial Position</label></div>
+                    <div class="checkbox-item"><input type="checkbox" name="ShowComprehensiveIncome" id="sci" checked /> <label for="sci">Comprehensive Income</label></div>
+                    <div class="checkbox-item"><input type="checkbox" name="ShowChangesInEquity" id="sce" /> <label for="sce">Changes in Equity</label></div>
+                    <div class="checkbox-item"><input type="checkbox" name="ShowCashFlows" id="scf" /> <label for="scf">Cash Flows</label></div>
+                    <div class="checkbox-item"><input type="checkbox" name="ShowBudget" id="sb" /> <label for="sb">Include Budget</label></div>
+                    <div class="checkbox-item"><input type="checkbox" name="ShowZeroBalance" id="szb" /> <label for="szb">Zero Balances</label></div>
+                </div>
+
+                <button type="submit" class="db-btn db-btn-primary" style="margin-top:2rem;">Generate Financial Statements</button>
+                </form>
+            </div>
+        </div></div>';
 }
 
 include(__DIR__ . '/includes/footer.php');
+?>
