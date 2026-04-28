@@ -125,7 +125,10 @@ echo '<main class="db-main">';
 if (!isset($SelectedAccount)) {
     echo '<div class="db-card"><div class="db-card-header"><i class="fas fa-book" style="color:var(--db-primary)"></i><h3 class="db-card-title">' . __('Chart of Accounts') . '</h3></div>';
     echo '<div style="overflow-x:auto;"><table class="db-table"><thead><tr><th>Code</th><th>Account Name</th><th>Group</th><th>Scope</th><th style="text-align:right">Actions</th></tr></thead><tbody>';
-    $SQL = "SELECT accountcode, accountname, group_, CASE WHEN pandl=0 THEN '" . __('B/S') . "' ELSE '" . __('P/L') . "' END AS acttype, cashflowsactivity FROM chartmaster, accountgroups WHERE chartmaster.group_=accountgroups.groupname ORDER BY chartmaster.accountcode";
+    $SQL = "SELECT chartmaster.accountcode, chartmaster.accountname, chartmaster.group_, CASE WHEN accountgroups.pandl=0 THEN '" . __('B/S') . "' ELSE '" . __('P/L') . "' END AS acttype, chartmaster.cashflowsactivity 
+            FROM chartmaster 
+            LEFT JOIN accountgroups ON chartmaster.group_=accountgroups.groupname 
+            ORDER BY chartmaster.accountcode";
     $Result = DB_query($SQL);
     while ($MyRow = DB_fetch_array($Result)) {
         $badge = ($MyRow['acttype'] == 'P/L' ? 'db-badge-teal' : 'db-badge-blue');

@@ -167,12 +167,14 @@ echo '					</select>
 if (isset($_POST['Go']) OR isset($_POST['Next']) OR isset($_POST['Previous'])) {
 	$_POST['Search'] = 'Search';
 }
-if (isset($_POST['Search']) OR isset($_POST['Go']) OR isset($_POST['Next']) OR isset($_POST['Previous'])) {
-	if (!isset($_POST['Go']) AND !isset($_POST['Next']) AND !isset($_POST['Previous'])) {
+if (isset($_POST['Search']) OR isset($_POST['Go']) OR isset($_POST['Next']) OR isset($_POST['Previous']) OR (!isset($_POST['Select']) AND !isset($_SESSION['SelectedAsset']))) {
+	if (!isset($_POST['Go']) AND !isset($_POST['Next']) AND !isset($_POST['Previous']) AND !isset($_POST['Search'])) {
+		$_POST['PageOffset'] = 1;
+	} elseif (!isset($_POST['Go']) AND !isset($_POST['Next']) AND !isset($_POST['Previous'])) {
 		// if Search then set to first page
 		$_POST['PageOffset'] = 1;
 	}
-	if ($_POST['Keywords'] AND $_POST['AssetCode']) {
+	if (isset($_POST['Keywords']) AND $_POST['Keywords'] AND isset($_POST['AssetCode']) AND $_POST['AssetCode']) {
 		prnMsg(__('Asset description keywords have been used in preference to the asset code extract entered'), 'info');
 	}
 	$SQL = "SELECT assetid,
@@ -182,28 +184,28 @@ if (isset($_POST['Search']) OR isset($_POST['Go']) OR isset($_POST['Next']) OR i
 			FROM fixedassets INNER JOIN fixedassetlocations
 			ON fixedassets.assetlocation=fixedassetlocations.locationid ";
 
-	if ($_POST['Keywords']) {
+	if (isset($_POST['Keywords']) AND $_POST['Keywords']) {
 		//insert wildcard characters in spaces
 		$_POST['Keywords'] = mb_strtoupper($_POST['Keywords']);
 		$SearchString = '%' . str_replace(' ', '%', $_POST['Keywords']) . '%';
 		if ($_POST['AssetCategory'] == 'ALL') {
 			if ($_POST['AssetLocation'] == 'ALL') {
-				$SQL .= "WHERE description " . LIKE . " '" . $SearchString . "'";
+				$SQL .= "WHERE (description " . LIKE . " '" . $SearchString . "' OR assetid " . LIKE . " '" . $SearchString . "')";
 			} else {
 				$SQL .= "WHERE fixedassets.assetlocation='" . $_POST['AssetLocation'] . "'
-						AND description " . LIKE . " '" . $SearchString . "'";
+						AND (description " . LIKE . " '" . $SearchString . "' OR assetid " . LIKE . " '" . $SearchString . "')";
 			}
 		} else {
 			if ($_POST['AssetLocation'] == 'ALL') {
-				$SQL .= "WHERE description " . LIKE . " '" . $SearchString . "'
+				$SQL .= "WHERE (description " . LIKE . " '" . $SearchString . "' OR assetid " . LIKE . " '" . $SearchString . "')
 						AND assetcategoryid='" . $_POST['AssetCategory'] . "'";
 			} else {
 				$SQL .= "WHERE fixedassets.assetlocation='" . $_POST['AssetLocation'] . "'
-						AND description " . LIKE . " '" . $SearchString . "'
+						AND (description " . LIKE . " '" . $SearchString . "' OR assetid " . LIKE . " '" . $SearchString . "')
 						AND assetcategoryid='" . $_POST['AssetCategory'] . "'";
 			}
 		}
-	} elseif (isset($_POST['AssetCode'])) {
+	} elseif (isset($_POST['AssetCode']) AND $_POST['AssetCode']) {
 		if ($_POST['AssetCategory'] == 'ALL') {
 			if ($_POST['AssetLocation'] == 'ALL') {
 				$SQL .= "WHERE fixedassets.assetid " . LIKE . " '%" . $_POST['AssetCode'] . "%'";
@@ -221,8 +223,8 @@ if (isset($_POST['Search']) OR isset($_POST['Go']) OR isset($_POST['Next']) OR i
 						AND assetcategoryid='" . $_POST['AssetCategory'] . "'";
 			}
 		}
-	} elseif (!isset($_POST['AssetCode']) AND !isset($_POST['Keywords'])) {
-		if ($_POST['AssetCategory'] == 'All') {
+	} else {
+		if ($_POST['AssetCategory'] == 'ALL') {
 			if ($_POST['AssetLocation'] == 'ALL') {
 				$SQL .= 'WHERE 1=1 ';
 			} else {

@@ -155,24 +155,48 @@ echo '<div class="db-layout">';
 
 // MAIN CONTENT: LISTING
 echo '<main class="db-main">';
-echo '<div class="db-card"><div class="db-card-header"><i class="fas fa-sitemap" style="color:var(--db-primary)"></i><h3 class="db-card-title">' . __('Group Hierarchy') . '</h3></div>';
-echo '<div style="overflow-x:auto;"><table class="db-table"><thead><tr><th>Group Name</th><th>Section</th><th>TB Seq</th><th>P&L</th><th>Parent</th><th style="text-align:right">Actions</th></tr></thead><tbody>';
+            // Pagination Logic
+            $ItemsPerPage = 15;
+            $Page = isset($_GET['Page']) ? (int)$_GET['Page'] : 1;
+            $Offset = ($Page - 1) * $ItemsPerPage;
 
-$Result = DB_query("SELECT groupname, sectionname, sequenceintb, pandl, parentgroupname FROM accountgroups LEFT JOIN accountsection ON sectionid = sectioninaccounts ORDER BY sequenceintb");
-while($MyRow = DB_fetch_array($Result)) {
-    $PandLText = ($MyRow['pandl'] != 0 ? '<span class="db-badge db-badge-green">'.__('Yes').'</span>' : '<span class="db-badge">'.__('No').'</span>');
-    echo '<tr>
-            <td style="font-weight:700; color:var(--db-primary-dark);">' . $MyRow['groupname'] . '</td>
-            <td>' . $MyRow['sectionname'] . '</td>
-            <td>' . $MyRow['sequenceintb'] . '</td>
-            <td>' . $PandLText . '</td>
-            <td style="font-size:0.75rem; color:#64748b;">' . $MyRow['parentgroupname'] . '</td>
-            <td style="text-align:right;"><div style="display:flex; gap:0.5rem; justify-content:flex-end;">
-                <a class="db-btn db-btn-outline" style="padding:0.4rem 0.6rem; font-size:0.7rem; width:auto;" href="'.htmlspecialchars($_SERVER['PHP_SELF'].'?SelectedAccountGroup='.urlencode($MyRow['groupname'])).'"><i class="fas fa-edit"></i></a>
-                <a class="db-btn db-btn-outline" style="padding:0.4rem 0.6rem; font-size:0.7rem; color:#dc2626; width:auto;" href="'.htmlspecialchars($_SERVER['PHP_SELF'].'?SelectedAccountGroup='.urlencode($MyRow['groupname']).'&delete=1').'" onclick="return confirm(\''.__('Delete group?').'\');"><i class="fas fa-trash"></i></a>
-            </div></td></tr>';
-}
-echo '</tbody></table></div></div></main>';
+            $TotalRes = DB_query("SELECT COUNT(*) FROM accountgroups");
+            $TotalRows = DB_fetch_row($TotalRes)[0];
+            $TotalPages = ceil($TotalRows / $ItemsPerPage);
+
+            echo '<div class="db-card">
+                    <div class="db-card-header"><i class="fas fa-sitemap" style="color:var(--db-primary)"></i><h3 class="db-card-title">' . __('Group Hierarchy') . ' (' . $TotalRows . ')</h3></div>
+                    <div style="overflow-x:auto;">
+                        <table class="db-table">
+                            <thead><tr><th>Group Name</th><th>Section</th><th>TB Seq</th><th>P&L</th><th>Parent</th><th style="text-align:right">Actions</th></tr></thead>
+                            <tbody>';
+
+            $Result = DB_query("SELECT groupname, sectionname, sequenceintb, pandl, parentgroupname FROM accountgroups LEFT JOIN accountsection ON sectionid = sectioninaccounts ORDER BY sequenceintb LIMIT $ItemsPerPage OFFSET $Offset");
+            while($MyRow = DB_fetch_array($Result)) {
+                $PandLText = ($MyRow['pandl'] != 0 ? '<span class="db-badge db-badge-green">'.__('Yes').'</span>' : '<span class="db-badge">'.__('No').'</span>');
+                echo '<tr>
+                        <td style="font-weight:700; color:var(--db-primary-dark);">' . $MyRow['groupname'] . '</td>
+                        <td>' . $MyRow['sectionname'] . '</td>
+                        <td>' . $MyRow['sequenceintb'] . '</td>
+                        <td>' . $PandLText . '</td>
+                        <td style="font-size:0.75rem; color:#64748b;">' . $MyRow['parentgroupname'] . '</td>
+                        <td style="text-align:right;"><div style="display:flex; gap:0.5rem; justify-content:flex-end;">
+                            <a class="db-btn db-btn-outline" style="padding:0.4rem 0.6rem; font-size:0.7rem; width:auto;" href="'.htmlspecialchars($_SERVER['PHP_SELF'].'?SelectedAccountGroup='.urlencode($MyRow['groupname'])).'&Page='.$Page.'"><i class="fas fa-edit"></i></a>
+                            <a class="db-btn db-btn-outline" style="padding:0.4rem 0.6rem; font-size:0.7rem; color:#dc2626; width:auto;" href="'.htmlspecialchars($_SERVER['PHP_SELF'].'?SelectedAccountGroup='.urlencode($MyRow['groupname']).'&delete=1&Page='.$Page).'" onclick="return confirm(\''.__('Delete group?').'\');"><i class="fas fa-trash"></i></a>
+                        </div></td></tr>';
+            }
+            echo '</tbody></table></div>';
+            
+            // Pagination Controls
+            if ($TotalPages > 1) {
+                echo '<div style="padding: 1rem; border-top: 1px solid var(--db-border); display:flex; justify-content:space-between; align-items:center; background: #fff;">';
+                echo '<div style="font-size: 0.75rem; color: #64748b; font-weight: 700;">Page ' . $Page . ' of ' . $TotalPages . '</div>';
+                echo '<div style="display:flex; gap: 8px;">';
+                if ($Page > 1) echo '<a href="'.htmlspecialchars($_SERVER['PHP_SELF']).'?Page='.($Page-1).'" class="db-btn db-btn-outline" style="width: auto; padding: 0.5rem 1rem; text-decoration:none;">Previous</a>';
+                if ($Page < $TotalPages) echo '<a href="'.htmlspecialchars($_SERVER['PHP_SELF']).'?Page='.($Page+1).'" class="db-btn db-btn-outline" style="width: auto; padding: 0.5rem 1rem; text-decoration:none;">Next</a>';
+                echo '</div></div>';
+            }
+            echo '</div></main>';
 
 // SIDEBAR: FORM
 echo '<aside class="db-aside">';

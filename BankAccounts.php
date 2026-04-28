@@ -99,7 +99,7 @@ echo '<main class="db-main">';
 echo '<div class="db-card"><div class="db-card-header"><i class="fas fa-university" style="color:var(--db-primary)"></i><h3 class="db-card-title">' . __('Defined Bank Accounts') . '</h3></div>';
 echo '<div style="overflow-x:auto;"><table class="db-table"><thead><tr><th>GL Account</th><th>Bank Details</th><th>Identity</th><th>Config</th><th style="text-align:right">Actions</th></tr></thead><tbody>';
 
-$Result = DB_query("SELECT bankaccounts.*, chartmaster.accountname FROM bankaccounts INNER JOIN chartmaster ON bankaccounts.accountcode = chartmaster.accountcode ORDER BY bankaccounts.accountcode");
+$Result = DB_query("SELECT bankaccounts.*, chartmaster.accountname FROM bankaccounts LEFT JOIN chartmaster ON bankaccounts.accountcode = chartmaster.accountcode ORDER BY bankaccounts.accountcode");
 while ($MyRow = DB_fetch_array($Result)) {
     $def = match($MyRow['invoice']) { '1' => 'Fall Back', '2' => 'Currency Default', default => 'No' };
     $defBadge = ($MyRow['invoice'] > 0 ? 'db-badge-green' : 'db-badge');

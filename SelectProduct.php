@@ -54,8 +54,13 @@ echo '<div class="db-bottom-layout">';
 if (isset($_POST['Go']) OR isset($_POST['Next']) OR isset($_POST['Previous'])) {
 	$_POST['Search']='Search';
 }
-if (isset($_POST['Search']) OR isset($_POST['Go']) OR isset($_POST['Next']) OR isset($_POST['Previous'])) {
-	if (!isset($_POST['Go']) AND !isset($_POST['Next']) AND !isset($_POST['Previous'])) {
+// Auto-trigger search if no item is selected and no search performed yet
+if (isset($_POST['Search']) OR isset($_POST['Go']) OR isset($_POST['Next']) OR isset($_POST['Previous']) OR (!isset($_POST['Select']) AND !isset($_SESSION['SelectedStockItem']))) {
+	if (!isset($_POST['Go']) AND !isset($_POST['Next']) AND !isset($_POST['Previous']) AND !isset($_POST['Search'])) {
+        // Default View: Just show everything if landing
+		$_POST['PageOffset'] = 1;
+        $_POST['StockCat'] = 'All';
+	} elseif (!isset($_POST['Go']) AND !isset($_POST['Next']) AND !isset($_POST['Previous'])) {
 		$_POST['PageOffset'] = 1;
 	}
 	$SQL = GenerateStockmasterQuery($_POST);
@@ -428,14 +433,14 @@ function GenerateStockmasterQuery(array $post): string {
         $JoinsSQL .= "LEFT JOIN stockcategory
 						ON stockmaster.categoryid = stockcategory.categoryid
 					LEFT JOIN locstock
-						ON stockmaster.stockid = locstock.stockid "; // Added locstock to the join.
-        $WhereSQL .= "AND stockmaster.description LIKE '$SearchString' ";
+						ON stockmaster.stockid = locstock.stockid ";
+        $WhereSQL .= "AND (stockmaster.description LIKE '$SearchString' OR stockmaster.stockid LIKE '$SearchString' OR stockmaster.longdescription LIKE '$SearchString') ";
     } elseif (isset($post['StockCode']) && mb_strlen($post['StockCode']) > 0) {
         $SearchString = PrepareSearchString($post['StockCode']);
         $JoinsSQL .= "INNER JOIN stockcategory
 						ON stockmaster.categoryid = stockcategory.categoryid
 					INNER JOIN locstock
-						ON stockmaster.stockid = locstock.stockid "; //Added locstock join
+						ON stockmaster.stockid = locstock.stockid ";
         $WhereSQL .= "AND stockmaster.stockid LIKE '$SearchString' ";
     } elseif (isset($post['SupplierStockCode']) && mb_strlen($post['SupplierStockCode']) > 0) {
         $SearchString = PrepareSearchString($post['SupplierStockCode']);
@@ -444,13 +449,15 @@ function GenerateStockmasterQuery(array $post): string {
 					INNER JOIN locstock
 						ON stockmaster.stockid = locstock.stockid
 					LEFT JOIN stockcategory
-						ON stockmaster.categoryid = stockcategory.categoryid"; // Added locstock join
+						ON stockmaster.categoryid = stockcategory.categoryid";
         $WhereSQL .= "AND purchdata.suppliers_partno LIKE '$SearchString' ";
     } else {
         $JoinsSQL .= "LEFT JOIN stockcategory
 						ON stockmaster.categoryid = stockcategory.categoryid
 					LEFT JOIN locstock
-						ON stockmaster.stockid = locstock.stockid "; // Added locstock to the join.
+						ON stockmaster.stockid = locstock.stockid ";
+        // If no search is performed, we might want to default to something, but here we preserve existing but safer logic.
+        $WhereSQL .= "AND stockmaster.stockid IS NOT NULL "; 
     }
 
     // Category filter.
