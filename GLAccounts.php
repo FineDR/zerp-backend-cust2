@@ -8,15 +8,6 @@ $BookMark = 'GLAccounts';
 include(__DIR__ . '/includes/header.php');
 include(__DIR__ . '/includes/GLFunctions.php');
 
-echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/transactions.png" title="', // Icon image.
-	$Title, '" /> ', // Icon title.
-	$Title, '</p>';// Page title.
-
-// Merges gets into posts:
-if (isset($_GET['CashFlowsActivity'])) {// Select period from.
-	$_POST['CashFlowsActivity'] = $_GET['CashFlowsActivity'];
-}
-
 if (isset($_POST['SelectedAccount'])) {
 	$SelectedAccount = $_POST['SelectedAccount'];
 } elseif (isset($_GET['SelectedAccount'])) {
@@ -24,185 +15,67 @@ if (isset($_POST['SelectedAccount'])) {
 }
 
 if (isset($_POST['submit'])) {
-
-	//initialise no input errors assumed initially before we test
 	$InputError = 0;
-
-	/* actions to take once the user has clicked the submit button
-	ie the page has called itself with some user input */
-
-	//first off validate inputs sensible
-
 	if (mb_strlen($_POST['AccountName']) >50) {
 		$InputError = 1;
 		prnMsg(__('The account name must be fifty characters or less long'), 'warn');
 	}
 
 	if (isset($SelectedAccount) AND $InputError != 1) {
-
-		$SQL = "UPDATE
-					chartmaster SET accountname='" . $_POST['AccountName'] . "',
-					group_='" . $_POST['Group'] . "',
-					cashflowsactivity='" . $_POST['CashFlowsActivity'] . "'
-				WHERE accountcode ='" . $SelectedAccount . "'";
-		$ErrMsg = __('Could not update the account because');
-		$Result = DB_query($SQL, $ErrMsg);
-
-		prnMsg(__('The general ledger account has been updated'),'success');
-	} elseif ($InputError != 1) {
-
-		/*SelectedAccount is null cos no item selected on first time round so must be adding a	record must be submitting new entries */
-
-		// Does the account code already exist
-		$SQL = "SELECT accountcode FROM chartmaster WHERE accountcode='" . $_POST['AccountCode'] . "'";
+		$SQL = "UPDATE chartmaster SET accountname='" . $_POST['AccountName'] . "', group_='" . $_POST['Group'] . "', cashflowsactivity='" . $_POST['CashFlowsActivity'] . "' WHERE accountcode ='" . $SelectedAccount . "'";
 		$Result = DB_query($SQL);
-
-		if (DB_num_rows($Result) == 0) {
-
-			$SQL = "INSERT INTO chartmaster (
-								accountcode,
-								accountname,
-								group_,
-								cashflowsactivity)
-							VALUES ('" .
-								$_POST['AccountCode'] . "', '" .
-								$_POST['AccountName'] . "', '" .
-								$_POST['Group'] . "', '" .
-								$_POST['CashFlowsActivity'] . "')";
-			$ErrMsg = __('Could not add the new account code');
-			$Result = DB_query($SQL, $ErrMsg);
-
-			prnMsg(__('The new general ledger account has been added'),'success');
+		prnMsg(__('Account updated successfully'),'success');
+	} elseif ($InputError != 1) {
+		$SQL = "SELECT accountcode FROM chartmaster WHERE accountcode='" . $_POST['AccountCode'] . "'";
+		if (DB_num_rows(DB_query($SQL)) == 0) {
+			$SQL = "INSERT INTO chartmaster (accountcode, accountname, group_, cashflowsactivity) VALUES ('" . $_POST['AccountCode'] . "', '" . $_POST['AccountName'] . "', '" . $_POST['Group'] . "', '" . $_POST['CashFlowsActivity'] . "')";
+			DB_query($SQL);
+			prnMsg(__('New account added successfully'),'success');
 		} else {
-			prnMsg(__('The account code already exists'),'error');
+			prnMsg(__('Account code already exists'),'error');
 		}
 	}
-
-	unset($_POST['Group']);
-	unset($_POST['AccountCode']);
-	unset($_POST['AccountName']);
-	unset($_POST['CashFlowsActivity']);
-	unset($SelectedAccount);
+	unset($_POST['Group'], $_POST['AccountCode'], $_POST['AccountName'], $_POST['CashFlowsActivity'], $SelectedAccount);
 
 } elseif (isset($_GET['delete'])) {
-	//the link to delete a selected record was clicked instead of the submit button
-
-	$SQL= "SELECT COUNT(*)
-			FROM gltotals
-			WHERE account ='" . $SelectedAccount . "'
-			AND amount <> 0";
-	$Result = DB_query($SQL);
-	$MyRow = DB_fetch_row($Result);
+	$SQL= "SELECT COUNT(*) FROM gltotals WHERE account ='" . $SelectedAccount . "' AND amount <> 0";
+	$Result = DB_query($SQL); $MyRow = DB_fetch_row($Result);
 	if ($MyRow[0] > 0) {
-		$CancelDelete = 1;
-		prnMsg(__('Cannot delete this account because GL transactions have been created using this account and at least one period has postings to it'), 'warn');
-		echo '<br />' . __('There are') . ' ' . $MyRow[0] . ' ' . __('chart details that require this account code');
-
+		prnMsg(__('Cannot delete: account has balances in one or more periods.'), 'warn');
 	} else {
-// PREVENT DELETES IF DEPENDENT RECORDS IN 'GLTrans'
-		$SQL = "SELECT COUNT(*)
-				FROM gltrans
-				WHERE gltrans.account ='" . $SelectedAccount . "'";
-		$ErrMsg = __('Could not test for existing transactions because');
-		$Result = DB_query($SQL, $ErrMsg);
-
-		$MyRow = DB_fetch_row($Result);
+		$SQL = "SELECT COUNT(*) FROM gltrans WHERE gltrans.account ='" . $SelectedAccount . "'";
+		$Result = DB_query($SQL); $MyRow = DB_fetch_row($Result);
 		if ($MyRow[0] > 0) {
-			$CancelDelete = 1;
-			prnMsg(__('Cannot delete this account because transactions have been created using this account'), 'warn');
-			echo '<br />' . __('There are') . ' ' . $MyRow[0] . ' ' . __('transactions that require this account code');
-
+			prnMsg(__('Cannot delete: account has transaction history.'), 'warn');
 		} else {
-			//PREVENT DELETES IF Company default accounts set up to this account
-			$SQL = "SELECT COUNT(*) FROM companies
-					WHERE debtorsact='" . $SelectedAccount . "'
-					OR pytdiscountact='" . $SelectedAccount . "'
-					OR creditorsact='" . $SelectedAccount . "'
-					OR payrollact='" . $SelectedAccount . "'
-					OR grnact='" . $SelectedAccount . "'
-					OR currencyexchangediffact='" . $SelectedAccount . "'
-					OR unrealizedcurrencydiffact='" . $SelectedAccount . "'
-					OR salesexchangediffact='" . $SelectedAccount . "'
-					OR purchasesexchangediffact='" . $SelectedAccount . "'
-					OR retainedearnings='" . $SelectedAccount . "'";
-			$ErrMsg = __('Could not test for default company GL codes because');
-			$Result = DB_query($SQL, $ErrMsg);
-
-			$MyRow = DB_fetch_row($Result);
-			if ($MyRow[0] > 0) {
-				$CancelDelete = 1;
-				prnMsg(__('Cannot delete this account because it is used as one of the company default accounts'), 'warn');
-
+			$SQL = "SELECT COUNT(*) FROM companies WHERE debtorsact='" . $SelectedAccount . "' OR pytdiscountact='" . $SelectedAccount . "' OR creditorsact='" . $SelectedAccount . "' OR payrollact='" . $SelectedAccount . "' OR grnact='" . $SelectedAccount . "' OR currencyexchangediffact='" . $SelectedAccount . "' OR unrealizedcurrencydiffact='" . $SelectedAccount . "' OR salesexchangediffact='" . $SelectedAccount . "' OR purchasesexchangediffact='" . $SelectedAccount . "' OR retainedearnings='" . $SelectedAccount . "'";
+			if (DB_fetch_row(DB_query($SQL))[0] > 0) {
+				prnMsg(__('Cannot delete: used as a system default account.'), 'warn');
 			} else {
-				//PREVENT DELETES IF Company default accounts set up to this account
-				$SQL = "SELECT COUNT(*) FROM taxauthorities
-					WHERE taxglcode='" . $SelectedAccount ."'
-					OR purchtaxglaccount ='" . $SelectedAccount ."'";
-				$ErrMsg = __('Could not test for tax authority GL codes because');
-				$Result = DB_query($SQL, $ErrMsg);
-
-				$MyRow = DB_fetch_row($Result);
-				if ($MyRow[0] > 0) {
-					$CancelDelete = 1;
-					prnMsg(__('Cannot delete this account because it is used as one of the tax authority accounts'), 'warn');
+				$SQL = "SELECT COUNT(*) FROM taxauthorities WHERE taxglcode='" . $SelectedAccount ."' OR purchtaxglaccount ='" . $SelectedAccount ."'";
+				if (DB_fetch_row(DB_query($SQL))[0] > 0) {
+					prnMsg(__('Cannot delete: used by tax authorities.'), 'warn');
 				} else {
-//PREVENT DELETES IF SALES POSTINGS USE THE GL ACCOUNT
-					$SQL = "SELECT COUNT(*) FROM salesglpostings
-						WHERE salesglcode='" . $SelectedAccount . "'
-						OR discountglcode='" . $SelectedAccount . "'";
-					$ErrMsg = __('Could not test for existing sales interface GL codes because');
-					$Result = DB_query($SQL, $ErrMsg);
-
-					$MyRow = DB_fetch_row($Result);
-					if ($MyRow[0] > 0) {
-						$CancelDelete = 1;
-						prnMsg(__('Cannot delete this account because it is used by one of the sales GL posting interface records'), 'warn');
+					$SQL = "SELECT COUNT(*) FROM salesglpostings WHERE salesglcode='" . $SelectedAccount . "' OR discountglcode='" . $SelectedAccount . "'";
+					if (DB_fetch_row(DB_query($SQL))[0] > 0) {
+						prnMsg(__('Cannot delete: used in sales posting interface.'), 'warn');
 					} else {
-//PREVENT DELETES IF COGS POSTINGS USE THE GL ACCOUNT
-						$SQL = "SELECT COUNT(*)
-								FROM cogsglpostings
-								WHERE glcode='" . $SelectedAccount . "'";
-						$ErrMsg = __('Could not test for existing cost of sales interface codes because');
-						$Result = DB_query($SQL, $ErrMsg);
-
-						$MyRow = DB_fetch_row($Result);
-						if ($MyRow[0]>0) {
-							$CancelDelete = 1;
-							prnMsg(__('Cannot delete this account because it is used by one of the cost of sales GL posting interface records'), 'warn');
-
+						$SQL = "SELECT COUNT(*) FROM cogsglpostings WHERE glcode='" . $SelectedAccount . "'";
+						if (DB_fetch_row(DB_query($SQL))[0] > 0) {
+							prnMsg(__('Cannot delete: used in COGS posting interface.'), 'warn');
 						} else {
-//PREVENT DELETES IF STOCK POSTINGS USE THE GL ACCOUNT
-							$SQL = "SELECT COUNT(*) FROM stockcategory
-									WHERE stockact='" . $SelectedAccount . "'
-									OR adjglact='" . $SelectedAccount . "'
-									OR purchpricevaract='" . $SelectedAccount . "'
-									OR materialuseagevarac='" . $SelectedAccount . "'
-									OR wipact='" . $SelectedAccount . "'";
-							$Errmsg = __('Could not test for existing stock GL codes because');
-							$Result = DB_query($SQL, $ErrMsg);
-
-							$MyRow = DB_fetch_row($Result);
-							if ($MyRow[0]>0) {
-								$CancelDelete = 1;
-								prnMsg(__('Cannot delete this account because it is used by one of the stock GL posting interface records'), 'warn');
+							$SQL = "SELECT COUNT(*) FROM stockcategory WHERE stockact='" . $SelectedAccount . "' OR adjglact='" . $SelectedAccount . "' OR purchpricevaract='" . $SelectedAccount . "' OR materialuseagevarac='" . $SelectedAccount . "' OR wipact='" . $SelectedAccount . "'";
+							if (DB_fetch_row(DB_query($SQL))[0] > 0) {
+								prnMsg(__('Cannot delete: used in stock category posting.'), 'warn');
 							} else {
-//PREVENT DELETES IF STOCK POSTINGS USE THE GL ACCOUNT
-								$SQL= "SELECT COUNT(*) FROM bankaccounts
-								WHERE accountcode='" . $SelectedAccount ."'";
-								$ErrMsg = __('Could not test for existing bank account GL codes because');
-								$Result = DB_query($SQL, $ErrMsg);
-
-								$MyRow = DB_fetch_row($Result);
-								if ($MyRow[0]>0) {
-									$CancelDelete = 1;
-									prnMsg(__('Cannot delete this account because it is used by one the defined bank accounts'), 'warn');
+								$SQL= "SELECT COUNT(*) FROM bankaccounts WHERE accountcode='" . $SelectedAccount ."'";
+								if (DB_fetch_row(DB_query($SQL))[0] > 0) {
+									prnMsg(__('Cannot delete: defined as a bank account.'), 'warn');
 								} else {
-
-									$SQL = "DELETE FROM gltotals WHERE account='" . $SelectedAccount ."'";
-									$Result = DB_query($SQL);
-									$SQL = "DELETE FROM chartmaster WHERE accountcode= '" . $SelectedAccount ."'";
-									$Result = DB_query($SQL);
-									prnMsg(__('Account') . ' ' . $SelectedAccount . ' ' . __('has been deleted'), 'succes');
+									DB_query("DELETE FROM gltotals WHERE account='" . $SelectedAccount ."'");
+									DB_query("DELETE FROM chartmaster WHERE accountcode= '" . $SelectedAccount ."'");
+									prnMsg(__('Account deleted successfully'), 'success');
+                                    unset($SelectedAccount);
 								}
 							}
 						}
@@ -213,132 +86,110 @@ if (isset($_POST['submit'])) {
 	}
 }
 
-if (!isset($_GET['delete'])) {
+echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    :root { --db-primary: hsl(145, 63%, 38%); --db-primary-hover: hsl(145, 63%, 32%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+    .db-page { background: var(--db-bg); min-height: 100vh; padding: 1.5rem; font-family: "Inter", sans-serif; }
+    .db-header { margin-bottom: 2rem; }
+    .db-breadcrumb { font-size: 0.75rem; font-weight: 700; color: var(--db-primary-dark); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; opacity: 0.7; }
+    .db-title { font-size: 2.25rem; font-weight: 950; color: var(--db-primary-dark); letter-spacing: -0.04em; }
+    .db-layout { display: grid; grid-template-columns: 1fr 400px; gap: 2rem; align-items: start; }
+    @media (max-width: 1200px) { .db-layout { grid-template-columns: 1fr; } }
+    .db-card { background: #fff; border-radius: 12px; border: 1px solid var(--db-border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 1.5rem; }
+    .db-card-header { padding: 1rem 1.25rem; background: var(--db-primary-soft); border-bottom: 1px solid var(--db-border); display: flex; align-items: center; gap: 0.75rem; }
+    .db-card-title { font-size: 0.875rem; font-weight: 800; color: var(--db-primary-dark); text-transform: uppercase; margin: 0; }
+    .db-card-body { padding: 1.25rem; }
+    .db-form-group { margin-bottom: 1.25rem; }
+    .db-label { display: block; font-size: 0.75rem; font-weight: 800; color: var(--db-primary-dark); text-transform: uppercase; margin-bottom: 0.5rem; }
+    .db-input, .db-select { width: 100%; padding: 0.625rem 0.875rem; border-radius: 8px; border: 1px solid var(--db-border); font-size: 0.875rem; background: #fff; }
+    .db-help { font-size: 0.7rem; color: #64748b; margin-top: 0.35rem; }
+    .db-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.625rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.875rem; cursor: pointer; border: 1px solid transparent; gap: 0.5rem; width: 100%; transition: all 0.2s; }
+    .db-btn-primary { background: var(--db-primary); color: #fff; }
+    .db-btn-primary:hover { background: var(--db-primary-hover); }
+    .db-btn-outline { border-color: var(--db-border); background: #fff; color: #475569; }
+    .db-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .db-table th { background: var(--db-primary-soft); color: var(--db-primary-dark); font-weight: 850; text-transform: uppercase; font-size: 0.7rem; padding: 1rem; text-align: left; border-bottom: 1px solid var(--db-border); }
+    .db-table td { padding: 1rem; border-bottom: 1px solid var(--db-border); color: #475569; }
+    .db-badge { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 700; background: #f1f5f9; color: #475569; }
+    .db-badge-blue { background: #dbeafe; color: #1e40af; }
+    .db-badge-teal { background: #ccfbf1; color: #115e59; }
+</style>';
 
-	echo '<form method="post" id="GLAccounts" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
-	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+echo '<div class="db-page">';
+echo '<header class="db-header"><div class="db-breadcrumb">' . __('General Ledger') . ' / ' . __('Setup') . '</div><h1 class="db-title">' . $Title . '</h1></header>';
 
-	if (isset($SelectedAccount)) {// Edit an existing account.
-		echo '<input type="hidden" name="SelectedAccount" value="' . $SelectedAccount . '" />';
-		$SQL = "SELECT accountcode, accountname, group_, cashflowsactivity FROM chartmaster WHERE accountcode='" . $SelectedAccount ."'";
-		$Result = DB_query($SQL);
-		$MyRow = DB_fetch_array($Result);
+echo '<div class="db-layout">';
 
-		$_POST['AccountCode'] = $MyRow['accountcode'];
-		$_POST['AccountName'] = $MyRow['accountname'];
-		$_POST['Group'] = $MyRow['group_'];
-		$_POST['CashFlowsActivity'] = $MyRow['cashflowsactivity'];
-		$Legend = __('Edit GL Account Details');
-	} else {
-		$_POST['AccountCode'] = '';
-		$_POST['AccountName'] = '';
-		$_POST['CashFlowsActivity'] = 0;
-		$Legend = __('Create GL Account Details');
-	}
-
-	echo '<fieldset>
-			<legend>', $Legend, '</legend>';
-
-	echo '<field>
-			<label for="AccountCode">', __('Account Code'), ':</label>
-			<input ', (empty($_POST['AccountCode']) ? 'autofocus="autofocus" ' : 'disabled="disabled" '), 'data-type="no-illegal-chars" maxlength="20" name="AccountCode" required="required" size="20" title="" type="text" value="', $_POST['AccountCode'], '" />
-			<fieldhelp>', __('Enter up to 20 alpha-numeric characters for the general ledger account code'), '</fieldhelp>
-		</field>
-		<field>
-			<label for="AccountName">' . __('Account Name') . ':</label>
-			<input ', (empty($_POST['AccountCode']) ? '' : 'autofocus="autofocus" '), 'maxlength="50" name="AccountName" required="required" size="51" title="" type="text" value="', $_POST['AccountName'], '" />
-			<fieldhelp>' . __('Enter up to 50 alpha-numeric characters for the general ledger account name') . '</fieldhelp>
-		</field>';
-
-	$SQL = "SELECT groupname FROM accountgroups ORDER BY sequenceintb";
-	$Result = DB_query($SQL);
-
-	echo '<field>
-			<label for="Group">' . __('Account Group') . ':</label>
-			<select required="required" name="Group">';
-	while($MyRow = DB_fetch_array($Result)) {
-		echo '<option';
-		if (isset($_POST['Group']) and $MyRow[0]==$_POST['Group']) {
-			echo ' selected="selected"';
-		}
-		echo ' value="', $MyRow[0], '">', $MyRow[0], '</option>';
-	}
-	echo '</select>
-		</field>';
-
-	echo '<field>
-			<label for="CashFlowsActivity">', __('Cash Flows Activity'), ':</label>
-			<select id="CashFlowsActivity" name="CashFlowsActivity" required="required">
-				<option value="0"', ($_POST['CashFlowsActivity'] == 0 ? ' selected="selected"' : ''), '>', __('No effect on cash flow'), '</option>
-				<option value="1"', ($_POST['CashFlowsActivity'] == 1 ? ' selected="selected"' : ''), '>', __('Operating activity'), '</option>
-				<option value="2"', ($_POST['CashFlowsActivity'] == 2 ? ' selected="selected"' : ''), '>', __('Investing activity'), '</option>
-				<option value="3"', ($_POST['CashFlowsActivity'] == 3 ? ' selected="selected"' : ''), '>', __('Financing activity'), '</option>
-				<option value="4"', ($_POST['CashFlowsActivity'] == 4 ? ' selected="selected"' : ''), '>', __('Cash or cash equivalent'), '</option>
-			</select>
-		</field>
-	</fieldset>';
-
-	echo '<div class="centre">
-			<input type="submit" name="submit" value="'. __('Enter Information') . '" />
-		</div>
-		</form>';
-
-} //end if record deleted no point displaying form to add record
-
-
+// MAIN: Chart of Accounts
+echo '<main class="db-main">';
 if (!isset($SelectedAccount)) {
-/* It could still be the second time the page has been run and a record has been selected for modification - SelectedAccount will exist because it was sent with the new call. If its the first time the page has been displayed with no parameters
-then none of the above are true and the list of ChartMaster will be displayed with
-links to delete or edit each. These will call the same page again and allow update/input
-or deletion of the records*/
+    echo '<div class="db-card"><div class="db-card-header"><i class="fas fa-book" style="color:var(--db-primary)"></i><h3 class="db-card-title">' . __('Chart of Accounts') . '</h3></div>';
+    echo '<div style="overflow-x:auto;"><table class="db-table"><thead><tr><th>Code</th><th>Account Name</th><th>Group</th><th>Scope</th><th style="text-align:right">Actions</th></tr></thead><tbody>';
+    $SQL = "SELECT accountcode, accountname, group_, CASE WHEN pandl=0 THEN '" . __('B/S') . "' ELSE '" . __('P/L') . "' END AS acttype, cashflowsactivity FROM chartmaster, accountgroups WHERE chartmaster.group_=accountgroups.groupname ORDER BY chartmaster.accountcode";
+    $Result = DB_query($SQL);
+    while ($MyRow = DB_fetch_array($Result)) {
+        $badge = ($MyRow['acttype'] == 'P/L' ? 'db-badge-teal' : 'db-badge-blue');
+        echo '<tr>
+                <td style="font-weight:700; color:var(--db-primary-dark);">' . $MyRow['accountcode'] . '</td>
+                <td>' . htmlspecialchars($MyRow['accountname']) . '</td>
+                <td><span class="db-badge">' . $MyRow['group_'] . '</span></td>
+                <td><span class="db-badge '.$badge.'">' . $MyRow['acttype'] . '</span></td>
+                <td style="text-align:right;"><div style="display:flex; gap:0.5rem; justify-content:flex-end;">
+                    <a class="db-btn db-btn-outline" style="padding:0.4rem 0.6rem; font-size:0.7rem; width:auto;" href="'.htmlspecialchars($_SERVER['PHP_SELF'].'?SelectedAccount='.urlencode($MyRow['accountcode'])).'"><i class="fas fa-edit"></i></a>
+                    <a class="db-btn db-btn-outline" style="padding:0.4rem 0.6rem; font-size:0.7rem; color:#dc2626; width:auto;" href="'.htmlspecialchars($_SERVER['PHP_SELF'].'?SelectedAccount='.urlencode($MyRow['accountcode']).'&delete=1').'" onclick="return confirm(\''.__('Final confirmation: Delete account?').'\');"><i class="fas fa-trash"></i></a>
+                </div></td></tr>';
+    }
+    echo '</tbody></table></div></div>';
+} else {
+    echo '<div class="db-card"><div class="db-card-body" style="text-align:center; padding:3rem;">
+            <i class="fas fa-info-circle" style="font-size:3rem; color:var(--db-primary); margin-bottom:1.5rem;"></i>
+            <h2 style="margin:0; font-weight:800; color:var(--db-primary-dark);">Currently Editing Account: ' . $SelectedAccount . '</h2>
+            <p style="color:#64748b;">Adjust account details in the right panel.</p>
+            <a href="'.basename(__FILE__).'" class="db-btn db-btn-outline" style="width:auto; margin-top:1rem;">Back to Listing</a>
+          </div></div>';
+}
+echo '</main>';
 
-	echo '<br />
-		<table class="selection">
-		<thead>
-			<tr>
-				<th class="SortedColumn">', __('Account Code'), '</th>
-				<th class="SortedColumn">', __('Account Name'), '</th>
-				<th class="SortedColumn">', __('Account Group'), '</th>
-				<th class="SortedColumn">', __('P/L or B/S'), '</th>
-				<th class="SortedColumn">', __('Cash Flows Activity'), '</th>
-				<th class="noPrint" colspan="2">&nbsp;</th>
-			</tr>
-		</thead>
-		<tbody>';
-
-	$SQL = "SELECT
-				accountcode,
-				accountname,
-				group_,
-				CASE WHEN pandl=0 THEN '" . __('Balance Sheet') . "' ELSE '" . __('Profit/Loss') . "' END AS acttype,
-				cashflowsactivity
-			FROM chartmaster, accountgroups
-			WHERE chartmaster.group_=accountgroups.groupname
-			ORDER BY chartmaster.accountcode";
-	$ErrMsg = __('The chart accounts could not be retrieved because');
-	$Result = DB_query($SQL, $ErrMsg);
-
-	while ($MyRow = DB_fetch_array($Result)) {
-		echo '<tr class="striped_row">
-				<td class="text">', $MyRow['accountcode'], '</td>
-				<td class="text">', htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8'), '</td>
-				<td class="text">', $MyRow['group_'], '</td>
-				<td class="text">', $MyRow['acttype'], '</td>
-				<td class="text">', CashFlowsActivityName($MyRow['cashflowsactivity']), '</td>
-				<td class="noPrint"><a href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '?', '&amp;SelectedAccount=', $MyRow['accountcode'], '">', __('Edit'), '</a></td>
-				<td class="noPrint"><a href="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '?', '&amp;SelectedAccount=', $MyRow['accountcode'], '&amp;delete=1" onclick="return confirm(\'', __('Are you sure you wish to delete this account? Additional checks will be performed in any event to ensure data integrity is not compromised.'), '\');">', __('Delete'), '</a></td>
-			</tr>';
-	}// END foreach($Result as $MyRow).
-
-	echo '</tbody></table>';
-} //END IF selected ACCOUNT
-
-//end of ifs and buts!
-
-echo '<br />';
-
+// SIDEBAR: Account Entry
+echo '<aside class="db-aside">';
 if (isset($SelectedAccount)) {
-	echo '<div class="centre"><a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">' . __('Show All Accounts') . '</a></div>';
+    $MyRow = DB_fetch_array(DB_query("SELECT accountcode, accountname, group_, cashflowsactivity FROM chartmaster WHERE accountcode='" . $SelectedAccount ."'"));
+    $_POST['AccountCode'] = $MyRow['accountcode'];
+    $_POST['AccountName'] = $MyRow['accountname'];
+    $_POST['Group'] = $MyRow['group_'];
+    $_POST['CashFlowsActivity'] = $MyRow['cashflowsactivity'];
+    $Legend = __('Edit Account Details');
+} else {
+    if (!isset($_POST['AccountCode'])) $_POST['AccountCode'] = '';
+    if (!isset($_POST['AccountName'])) $_POST['AccountName'] = '';
+    if (!isset($_POST['CashFlowsActivity'])) $_POST['CashFlowsActivity'] = 0;
+    $Legend = __('Add New GL Account');
 }
 
+echo '<div class="db-card"><div class="db-card-header"><i class="fas fa-plus-circle" style="color:var(--db-primary)"></i><h3 class="db-card-title">' . $Legend . '</h3></div>';
+echo '<div class="db-card-body"><form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF']) . '"><input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+if (isset($SelectedAccount)) echo '<input type="hidden" name="SelectedAccount" value="' . $SelectedAccount . '" />';
+
+echo '<div class="db-form-group"><label class="db-label">Account Code</label><input class="db-input" '.(isset($SelectedAccount)?'disabled':'name="AccountCode"').' required value="'.$_POST['AccountCode'].'" /></div>';
+echo '<div class="db-form-group"><label class="db-label">Account Name</label><input class="db-input" name="AccountName" required value="'.$_POST['AccountName'].'" /></div>';
+
+echo '<div class="db-form-group"><label class="db-label">Account Group</label><select name="Group" class="db-select">';
+$Groups = DB_query("SELECT groupname FROM accountgroups ORDER BY sequenceintb");
+while($G = DB_fetch_array($Groups)) echo '<option '.(isset($_POST['Group']) && $_POST['Group']==$G[0]?'selected':'').' value="'.$G[0].'">'.$G[0].'</option>';
+echo '</select></div>';
+
+echo '<div class="db-form-group"><label class="db-label">Cash Flows Logic</label><select name="CashFlowsActivity" class="db-select">
+    <option value="0"'.($_POST['CashFlowsActivity']==0?' selected':'').'>'.__('No effect on cash flow').'</option>
+    <option value="1"'.($_POST['CashFlowsActivity']==1?' selected':'').'>'.__('Operating activity').'</option>
+    <option value="2"'.($_POST['CashFlowsActivity']==2?' selected':'').'>'.__('Investing activity').'</option>
+    <option value="3"'.($_POST['CashFlowsActivity']==3?' selected':'').'>'.__('Financing activity').'</option>
+    <option value="4"'.($_POST['CashFlowsActivity']==4?' selected':'').'>'.__('Cash or cash equivalent').'</option>
+</select></div>';
+
+echo '<button type="submit" name="submit" class="db-btn db-btn-primary"><i class="fas fa-save"></i> ' . (isset($SelectedAccount)?__('Update Account'):__('Create Account')) . '</button>';
+echo '</form></div></div></aside>';
+
+echo '</div></div>';
+
 include(__DIR__ . '/includes/footer.php');
+?>

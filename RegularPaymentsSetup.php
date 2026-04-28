@@ -2,48 +2,22 @@
 
 require(__DIR__ . '/includes/session.php');
 
-$Title = __('Setup regular payments');
+$Title = __('Setup Regular Payments');
 $ViewTopic = 'GeneralLedger';
 $BookMark = 'RegularPayments';
 include(__DIR__ . '/includes/header.php');
-
 include(__DIR__ . '/includes/GLFunctions.php');
 
 if (isset($_POST['FirstPaymentDate'])){$_POST['FirstPaymentDate'] = ConvertSQLDate($_POST['FirstPaymentDate']);}
 if (isset($_POST['LastPaymentDate'])){$_POST['LastPaymentDate'] = ConvertSQLDate($_POST['LastPaymentDate']);}
 
-echo '<p class="page_title_text" >
-		<img src="', $RootPath, '/css/', $_SESSION['Theme'], '/images/maintenance.png" title="', $Title, '" alt="" />', ' ', $Title, '
-	</p>';
-
 if (isset($_GET['Complete'])) {
 	$SQL = "UPDATE regularpayments SET completed=1 WHERE id='" . $_GET['Payment'] . "'";
-	$ErrMsg = __('Cannot set regular payment as completed because');
-	$Result = DB_query($SQL, $ErrMsg);
-	if (DB_error_no() == 0) {
-		prnMsg(__('The regular payment has been marked as complete and no further payments will be made'), 'success');
-	} else {
-		prnMsg(__('There was a problem marking this payment as completed'), 'error');
-	}
+	if (DB_query($SQL)) prnMsg(__('Regular payment marked as complete.'), 'success');
 }
 
 if (isset($_GET['Edit'])) {
-	$SQL = "SELECT regularpayments.frequency,
-					regularpayments.days,
-					regularpayments.glcode,
-					regularpayments.bankaccountcode,
-					regularpayments.tag,
-					regularpayments.amount,
-					regularpayments.currabrev,
-					regularpayments.narrative,
-					regularpayments.firstpayment,
-					regularpayments.finalpayment,
-					regularpayments.nextpayment,
-					regularpayments.completed
-				FROM regularpayments
-				WHERE id='" . $_GET['Payment'] . "'";
-	$Result = DB_query($SQL);
-	$MyRow = DB_fetch_array($Result);
+	$MyRow = DB_fetch_array(DB_query("SELECT * FROM regularpayments WHERE id='" . $_GET['Payment'] . "'"));
 	$_POST['Frequency'] = $MyRow['frequency'];
 	$_POST['Days'] = $MyRow['days'];
 	$_POST['GLManualCode'] = $MyRow['glcode'];
@@ -57,374 +31,141 @@ if (isset($_GET['Edit'])) {
 }
 
 if (isset($_POST['Add']) or isset($_POST['Update'])) {
-	$Error = 0; //Assume everything is ok.
-	if ($_POST['Frequency'] == '') {
-		prnMsg(__('You must select a frequency for the payment to occur'), 'error');
-		$Error = 1;
-	}
-	if (!isset($_POST['Days']) or $_POST['Days'] == '') {
-		prnMsg(__('The days field must be an integer'), 'error');
-		$Error = 1;
-	}
-	if (isset($_POST['Frequency']) and $_POST['Frequency'] == 'D') {
-		$_POST['Days'] = 0; // If its a Daily payment then Days must be zero
-
-	}
-	if (isset($_POST['Frequency']) and $_POST['Frequency'] == 'W' and $_POST['Days'] > 6) {
-		prnMsg(__('If the payment is to be made weekly then the days field must be an integer between 0 and 6'), 'error');
-		$Error = 1;
-	}
-	if (isset($_POST['Frequency']) and $_POST['Frequency'] == 'F' and $_POST['Days'] > 13) {
-		prnMsg(__('If the payment is to be made fortnightly then the days field must be an integer between 0 and 13'), 'error');
-		$Error = 1;
-	}
-	if (isset($_POST['Frequency']) and $_POST['Frequency'] == 'M' and $_POST['Days'] > 31) {
-		prnMsg(__('If the payment is to be made monthly then the days field must be an integer between 0 and 31'), 'error');
-		$Error = 1;
-	}
-	if (isset($_POST['Frequency']) and $_POST['Frequency'] == 'Q' and $_POST['Days'] > 92) {
-		prnMsg(__('If the payment is to be made quarterly then the days field must be an integer between 0 and 92'), 'error');
-		$Error = 1;
-	}
-	if (isset($_POST['Frequency']) and $_POST['Frequency'] == 'Y' and $_POST['Days'] > 365) {
-		prnMsg(__('If the payment is to be made annually then the days field must be an integer between 0 and 365'), 'error');
-		$Error = 1;
-	}
-	if (!isset($_POST['BankAccount']) or $_POST['BankAccount'] == '') {
-		prnMsg(__('You must select a bank account where this payment will be made from'), 'error');
-		$Error = 1;
-	}
-	if (!isset($_POST['GLManualCode']) or $_POST['GLManualCode'] == '') {
-		prnMsg(__('A general ledger code must be selected'), 'error');
-		$Error = 1;
-	}
-	if (!isset($_POST['GLAmount']) or $_POST['GLAmount'] == '') {
-		prnMsg(__('You must enter a payment amount'), 'error');
-		$Error = 1;
-	}
-	if ($Error == 0) {
+	$Err = 0;
+	if ($_POST['Frequency'] == '') { prnMsg(__('Select a frequency'), 'error'); $Err = 1; }
+    if (!isset($_POST['BankAccount']) or $_POST['BankAccount'] == '') { prnMsg(__('Select bank account'), 'error'); $Err = 1; }
+	if (!isset($_POST['GLManualCode']) or $_POST['GLManualCode'] == '') { prnMsg(__('Select GL code'), 'error'); $Err = 1; }
+    
+	if ($Err == 0) {
 		$Tags = implode(',', $_POST['Tag']);
 		if (isset($_POST['Update'])) {
-			$SQL = "UPDATE regularpayments SET frequency='" . $_POST['Frequency'] . "',
-												days='" . $_POST['Days'] . "',
-												glcode='" . $_POST['GLManualCode'] . "',
-												bankaccountcode='" . $_POST['BankAccount'] . "',
-												tag='" . $Tags . "',
-												amount='" . $_POST['GLAmount'] . "',
-												currabrev='" . $_POST['Currency'] . "',
-												narrative='" . $_POST['GLNarrative'] . "',
-												firstpayment='" . FormatDateForSQL($_POST['FirstPaymentDate']) . "',
-												finalpayment='" . FormatDateForSQL($_POST['LastPaymentDate']) . "'
-											WHERE id='" . $_POST['ID'] . "'";
-			$ErrMsg = __('Cannot update regular payment because');
+			$SQL = "UPDATE regularpayments SET frequency='".$_POST['Frequency']."', days='".$_POST['Days']."', glcode='".$_POST['GLManualCode']."', bankaccountcode='".$_POST['BankAccount']."', tag='".$Tags."', amount='".$_POST['GLAmount']."', currabrev='".$_POST['Currency']."', narrative='".$_POST['GLNarrative']."', firstpayment='".FormatDateForSQL($_POST['FirstPaymentDate'])."', finalpayment='".FormatDateForSQL($_POST['LastPaymentDate'])."' WHERE id='".$_POST['ID']."'";
 		} else {
-			$SQL = "INSERT INTO regularpayments (frequency,
-												days,
-												glcode,
-												bankaccountcode,
-												tag,
-												amount,
-												currabrev,
-												narrative,
-												firstpayment,
-												finalpayment,
-												nextpayment
-											) VALUES (
-												'" . $_POST['Frequency'] . "',
-												'" . $_POST['Days'] . "',
-												'" . $_POST['GLManualCode'] . "',
-												'" . $_POST['BankAccount'] . "',
-												'" . $Tags . "',
-												'" . $_POST['GLAmount'] . "',
-												'" . $_POST['Currency'] . "',
-												'" . $_POST['GLNarrative'] . "',
-												'" . FormatDateForSQL($_POST['FirstPaymentDate']) . "',
-												'" . FormatDateForSQL($_POST['LastPaymentDate']) . "',
-												'" . FormatDateForSQL($_POST['FirstPaymentDate']) . "'
-											)";
-			$ErrMsg = __('Cannot insert a new regular payment because');
+			$SQL = "INSERT INTO regularpayments (frequency, days, glcode, bankaccountcode, tag, amount, currabrev, narrative, firstpayment, finalpayment, nextpayment) VALUES ('".$_POST['Frequency']."', '".$_POST['Days']."', '".$_POST['GLManualCode']."', '".$_POST['BankAccount']."', '".$Tags."', '".$_POST['GLAmount']."', '".$_POST['Currency']."', '".$_POST['GLNarrative']."', '".FormatDateForSQL($_POST['FirstPaymentDate'])."', '".FormatDateForSQL($_POST['LastPaymentDate'])."', '".FormatDateForSQL($_POST['FirstPaymentDate'])."')";
 		}
-		$Result = DB_query($SQL, $ErrMsg);
-		unset($_POST['ID']);
-		unset($_POST['Frequency']);
-		unset($_POST['Days']);
-		unset($_POST['GLManualCode']);
-		unset($_POST['BankAccount']);
-		unset($_POST['Tag']);
-		unset($_POST['GLAmount']);
-		unset($_POST['Currency']);
-		unset($_POST['GLNarrative']);
-		unset($_POST['FirstPaymentDate']);
-		unset($_POST['LastPaymentDate']);
+		DB_query($SQL);
+		prnMsg(__('Regular payment saved.'), 'success');
+		unset($_POST['ID'], $_POST['Frequency'], $_POST['Days'], $_POST['GLManualCode'], $_POST['BankAccount'], $_POST['Tag'], $_POST['GLAmount'], $_POST['Currency'], $_POST['GLNarrative'], $_POST['FirstPaymentDate'], $_POST['LastPaymentDate']);
 	}
 }
 
-echo '<form method="post" id="RegularPaymentsSetup" action="' . htmlspecialchars(basename(__FILE__), ENT_QUOTES, 'UTF-8') . '">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    :root { --db-primary: hsl(145, 63%, 38%); --db-primary-hover: hsl(145, 63%, 32%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+    .db-page { background: var(--db-bg); min-height: 100vh; padding: 1.5rem; font-family: "Inter", sans-serif; }
+    .db-header { margin-bottom: 2rem; }
+    .db-breadcrumb { font-size: 0.75rem; font-weight: 700; color: var(--db-primary-dark); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; opacity: 0.7; }
+    .db-title { font-size: 2.25rem; font-weight: 950; color: var(--db-primary-dark); letter-spacing: -0.04em; }
+    .db-layout { display: grid; grid-template-columns: 1fr 420px; gap: 2rem; align-items: start; }
+    @media (max-width: 1200px) { .db-layout { grid-template-columns: 1fr; } }
+    .db-card { background: #fff; border-radius: 12px; border: 1px solid var(--db-border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 1.5rem; }
+    .db-card-header { padding: 1rem 1.25rem; background: var(--db-primary-soft); border-bottom: 1px solid var(--db-border); display: flex; align-items: center; gap: 0.75rem; }
+    .db-card-title { font-size: 0.875rem; font-weight: 800; color: var(--db-primary-dark); text-transform: uppercase; margin: 0; }
+    .db-card-body { padding: 1.25rem; }
+    .db-form-group { margin-bottom: 1.25rem; }
+    .db-label { display: block; font-size: 0.7rem; font-weight: 800; color: var(--db-primary-dark); text-transform: uppercase; margin-bottom: 0.4rem; }
+    .db-input, .db-select, .db-textarea { width: 100%; padding: 0.625rem 0.875rem; border-radius: 8px; border: 1px solid var(--db-border); font-size: 0.85rem; background: #fff; }
+    .db-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.625rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.875rem; cursor: pointer; border: 1px solid transparent; gap: 0.5rem; transition: all 0.2s; text-decoration: none; }
+    .db-btn-primary { background: var(--db-primary); color: #fff; width: 100%; }
+    .db-btn-outline { border-color: var(--db-border); background: #fff; color: #475569; }
+    .db-table { width: 100%; border-collapse: collapse; font-size: 0.825rem; }
+    .db-table th { background: var(--db-primary-soft); color: var(--db-primary-dark); font-weight: 850; padding: 1rem; text-align: left; border-bottom: 1px solid var(--db-border); font-size: 0.65rem; text-transform: uppercase; }
+    .db-table td { padding: 1rem; border-bottom: 1px solid var(--db-border); color: #475569; }
+    .db-badge { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 700; background: #f1f5f9; color: #475569; }
+</style>';
 
-echo '<fieldset>
-		<legend>', __('Regular General Ledger Payment'), '</legend>';
+echo '<div class="db-page">';
+echo '<header class="db-header"><div class="db-breadcrumb">' . __('Payments') . ' / ' . __('Schedules') . '</div><h1 class="db-title">' . $Title . '</h1></header>';
 
-$Frequencies['D'] = __('Daily');
-$Frequencies['W'] = __('Weekly');
-$Frequencies['F'] = __('Fortnightly');
-$Frequencies['M'] = __('Monthly');
-$Frequencies['Q'] = __('Quarterly');
-$Frequencies['Y'] = __('Annually');
+echo '<div class="db-layout">';
 
-if (!isset($_POST['Frequency'])) {
-	$_POST['Frequency'] = '';
-}
-if (!isset($_POST['Days'])) {
-	$_POST['Days'] = 0;
-}
-/*now set up a GLCode field to select from avaialble GL accounts */
-if (!isset($_POST['GLManualCode'])) {
-	$_POST['GLManualCode'] = '';
-}
-if (!isset($_POST['FirstPaymentDate'])) {
-	$_POST['FirstPaymentDate'] = date($_SESSION['DefaultDateFormat']);
-}
-if (!isset($_POST['LastPaymentDate'])) {
-	$_POST['LastPaymentDate'] = date($_SESSION['DefaultDateFormat']);
-}
-if (!isset($_POST['Currency']) or $_POST['Currency'] == '') {
-	$_POST['Currency'] = $_SESSION['CompanyRecord']['currencydefault'];
-}
-if (!isset($_POST['Tag'])) {
-	$_POST['Tag'] = ['0'];
-}
-$Tags = $_POST['Tag'];
-echo '<field>
-		<label for="Frequency">', __('Frequency Of Payment'), '</label>
-		<select autofocus="autofocus" name="Frequency">
-			<option value=""></option>';
-foreach ($Frequencies as $Initial => $Name) {
-	if ($Initial == $_POST['Frequency']) {
-		echo '<option selected="selected" value="', $Initial, '">', $Name, '</option>';
-	} else {
-		echo '<option value="', $Initial, '">', $Name, '</option>';
-	}
-}
-echo '</select>
-	</field>';
+// MAIN: ACTIVE PAYMENTS
+echo '<main class="db-main">';
+echo '<div class="db-card"><div class="db-card-header"><i class="fas fa-calendar-check" style="color:var(--db-primary)"></i><h3 class="db-card-title">' . __('Active Schedules') . '</h3></div>';
+echo '<div style="overflow-x:auto;"><table class="db-table"><thead><tr><th>Frequency</th><th>Accounts</th><th>Tag</th><th>Amount</th><th>Timeline</th><th style="text-align:right">Actions</th></tr></thead><tbody>';
 
-echo '<field>
-		<label for="Days">', __('Days'), '</label>
-		<input type="text" class="number" size="4" name="Days" value="', $_POST['Days'], '" />
-		<fieldhelp>', __('The number of days from the start of the period that the payment is to be made'), '</fieldhelp>
-	</field>
-	<field>
-		<label for="FirstPaymentDate">', __('Date of first payment'), '</label>
-		<input name="FirstPaymentDate" type="date" required="required" maxlength="10" size="11" value="', FormatDateForSQL($_POST['FirstPaymentDate']), '" />
-	</field>
-	<field>
-		<label for="LastPaymentDate">', __('Date of Last payment'), '</label>
-		<input name="LastPaymentDate" type="date" required="required" maxlength="10" size="11" value="', FormatDateForSQL($_POST['LastPaymentDate']), '" />
-	</field>';
-
-$SQL = "SELECT bankaccountname,
-				bankaccounts.accountcode,
-				bankaccounts.currcode
-			FROM bankaccounts
-			INNER JOIN chartmaster
-				ON bankaccounts.accountcode=chartmaster.accountcode
-			INNER JOIN bankaccountusers
-				ON bankaccounts.accountcode=bankaccountusers.accountcode
-			WHERE bankaccountusers.userid = '" . $_SESSION['UserID'] . "'
-			ORDER BY bankaccountname";
-$ErrMsg = __('The bank accounts could not be retrieved because');
-$AccountsResults = DB_query($SQL, $ErrMsg);
-
-echo '<field>
-		<label for="BankAccount">', __('Bank Account'), ':</label>
-		<select name="BankAccount">';
-if (DB_num_rows($AccountsResults) == 0) {
-	echo '</select>
-		</field>
-	</fieldset>';
-	prnMsg(__('Bank Accounts have not yet been defined. You must first') . ' <a href="' . $RootPath . '/BankAccounts.php">' . __('define the bank accounts') . '</a> ' . __('and general ledger accounts to be affected'), 'warn');
-	include(__DIR__ . '/includes/footer.php');
-	exit();
-} else {
-	echo '<option value=""></option>';
-	while ($MyRow = DB_fetch_array($AccountsResults)) {
-		/*list the bank account names */
-		if (isset($_POST['BankAccount']) and $_POST['BankAccount'] == $MyRow['accountcode']) {
-			echo '<option selected="selected" value="', $MyRow['accountcode'], '">', $MyRow['bankaccountname'], ' - ', $MyRow['currcode'], '</option>';
-		} //isset($_POST['BankAccount']) and $_POST['BankAccount'] == $MyRow['accountcode']
-		else {
-			echo '<option value="', $MyRow['accountcode'], '">', $MyRow['bankaccountname'], ' - ', $MyRow['currcode'], '</option>';
-		}
-	} //$MyRow = DB_fetch_array($AccountsResults)
-	echo '</select>
-		</field>';
-}
-
-echo '<field>
-		<label for="Currency">', __('Currency of Payment'), ':</label>
-		<select required="required" name="Currency">';
-$SQL = "SELECT currency, currabrev, rate FROM currencies";
+$Frequencies = ['D'=>__('Daily'), 'W'=>__('Weekly'), 'F'=>__('Fortnightly'), 'M'=>__('Monthly'), 'Q'=>__('Quarterly'), 'Y'=>__('Annually')];
+$SQL = "SELECT regularpayments.*, chartmaster.accountname, bankaccounts.bankaccountname FROM regularpayments INNER JOIN bankaccounts ON bankaccounts.accountcode=regularpayments.bankaccountcode INNER JOIN chartmaster ON chartmaster.accountcode=regularpayments.glcode WHERE completed=0";
 $Result = DB_query($SQL);
 
-if (DB_num_rows($Result) == 0) {
-	echo '</select>
-		</field>';
-	prnMsg(__('No currencies are defined yet. Payments cannot be entered until a currency is defined'), 'error');
+if (DB_num_rows($Result) == 0 && !isset($_GET['Edit'])) {
+    echo '<tr><td colspan="6" style="text-align:center; padding:3rem; opacity:0.6;">'.__('No active scheduled payments found.').'</td></tr>';
 } else {
-	while ($MyRow = DB_fetch_array($Result)) {
-		if ($_POST['Currency'] == $MyRow['currabrev']) {
-			echo '<option selected="selected" value="', $MyRow['currabrev'], '">', __($MyRow['currency']), '</option>';
-		} else {
-			echo '<option value="', $MyRow['currabrev'], '">', __($MyRow['currency']), '</option>';
-		}
-	} //$MyRow = DB_fetch_array($Result)
-	echo '</select>
-		<fieldhelp>', __('The transaction currency does not need to be the same as the bank account currency'), '</fieldhelp>
-	</field>';
+    while ($MyRow = DB_fetch_array($Result)) {
+        $TagText = GetDescriptionsFromTagArray(explode(',', $MyRow['tag']));
+        echo '<tr>
+                <td><span class="db-badge">'.$Frequencies[$MyRow['frequency']].'</span><div style="font-size:0.7rem; opacity:0.6; margin-top:0.25rem;">Day '.$MyRow['days'].'</div></td>
+                <td><div style="font-weight:700; color:var(--db-primary-dark);">'.$MyRow['bankaccountname'].'</div><div style="font-size:0.75rem; opacity:0.8;">&rarr; '.$MyRow['accountname'].'</div></td>
+                <td><div style="font-size:0.7rem;">'.$TagText.'</div></td>
+                <td><div style="font-weight:900; color:var(--db-primary-dark);">'.locale_number_format($MyRow['amount'], 2).'</div><div style="font-size:0.7rem; opacity:0.6;">'.$MyRow['currabrev'].'</div></td>
+                <td><div style="font-size:0.7rem;"><span style="opacity:0.6">Next:</span> '.ConvertSQLDate($MyRow['nextpayment']).'</div><div style="font-size:0.7rem; opacity:0.6;">End: '.ConvertSQLDate($MyRow['finalpayment']).'</div></td>
+                <td style="text-align:right;"><div style="display:flex; gap:0.5rem; justify-content:flex-end;">
+                    <a class="db-btn db-btn-outline" style="padding:0.4rem 0.6rem; width:auto;" href="'.basename(__FILE__).'?Payment='.$MyRow['id'].'&Edit=1"><i class="fas fa-edit"></i></a>
+                    <a class="db-btn db-btn-outline" style="padding:0.4rem 0.6rem; color:#16a34a; width:auto;" title="Mark as Complete" href="'.basename(__FILE__).'?Payment='.$MyRow['id'].'&Complete=1"><i class="fas fa-check-circle"></i></a>
+                </div></td></tr>';
+    }
 }
+echo '</tbody></table></div></div></main>';
 
-//Select the tag
-$SQL = "SELECT tagref,
-				tagdescription
-		FROM tags
-		ORDER BY tagref";
-$Result = DB_query($SQL);
-echo '<field>
-		<label for="Tag">', __('GL Tag'), '</label>
-		<select multiple="multiple" name="Tag[]">';
-while ($MyRow = DB_fetch_array($Result)) {
-	if (in_array($MyRow['tagref'], $Tags)) {
-		echo '<option selected="selected" value="', $MyRow['tagref'], '">', $MyRow['tagref'], ' - ', $MyRow['tagdescription'], '</option>';
-	} else {
-		echo '<option value="', $MyRow['tagref'], '">', $MyRow['tagref'], ' - ', $MyRow['tagdescription'], '</option>';
-	}
-}
-echo '</select>
-	</field>';
-// End select tag
+// SIDEBAR: SETTINGS
+echo '<aside class="db-aside">';
+$_POST['Frequency'] = $_POST['Frequency'] ?? '';
+$_POST['Days'] = $_POST['Days'] ?? 0;
+$_POST['GLManualCode'] = $_POST['GLManualCode'] ?? '';
+$_POST['FirstPaymentDate'] = $_POST['FirstPaymentDate'] ?? date($_SESSION['DefaultDateFormat']);
+$_POST['LastPaymentDate'] = $_POST['LastPaymentDate'] ?? date($_SESSION['DefaultDateFormat']);
+$_POST['Currency'] = $_POST['Currency'] ?? $_SESSION['CompanyRecord']['currencydefault'];
+$_POST['Tag'] = $_POST['Tag'] ?? ['0'];
 
-$SQL = "SELECT chartmaster.accountcode,
-			chartmaster.accountname
-		FROM chartmaster
-			INNER JOIN glaccountusers ON glaccountusers.accountcode=chartmaster.accountcode AND glaccountusers.userid='" . $_SESSION['UserID'] . "' AND glaccountusers.canupd=1
-		ORDER BY chartmaster.accountcode";
+echo '<div class="db-card"><div class="db-card-header"><i class="fas fa-plus-circle" style="color:var(--db-primary)"></i><h3 class="db-card-title">' . (isset($_GET['Edit'])?__('Edit Schedule'):__('New Schedule')) . '</h3></div>';
+echo '<div class="db-card-body"><form method="post" action="'.basename(__FILE__).'"><input type="hidden" name="FormID" value="'.$_SESSION['FormID'].'" />';
+if (isset($_GET['Edit'])) echo '<input type="hidden" name="ID" value="'.$_GET['Payment'].'" />';
 
-$Result = DB_query($SQL);
-echo '<field>
-		<label for="GLManualCode">' . __('Select GL Account') . '</label>
-		<select name="GLManualCode" onchange="return assignComboToInput(this,' . 'GLManualCode' . ')">
-			<option value="">' . __('Select a general ledger account code') . '</option>';
-while ($MyRow = DB_fetch_array($Result)) {
-	if (isset($_POST['GLManualCode']) and $_POST['GLManualCode'] == $MyRow['accountcode']) {
-		echo '<option selected="selected" value="' . $MyRow['accountcode'] . '">' . $MyRow['accountcode'] . ' - ' . htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false) . '</option>';
-	}
-	else {
-		echo '<option value="' . $MyRow['accountcode'] . '">' . $MyRow['accountcode'] . ' - ' . htmlspecialchars($MyRow['accountname'], ENT_QUOTES, 'UTF-8', false) . '</option>';
-	}
-}
-echo '</select>';
+echo '<div class="db-form-group"><label class="db-label">Frequency</label><select name="Frequency" class="db-select" required><option value=""></option>';
+foreach ($Frequencies as $i => $n) echo '<option value="'.$i.'" '.($_POST['Frequency']==$i?'selected':'').'>'.$n.'</option>';
+echo '</select></div>';
 
-echo '<fieldhelp>', __('Select the account code for this transaction'), '</fieldhelp>
-	</field>';
+echo '<div class="db-form-group"><label class="db-label">Day of Period</label><input type="number" name="Days" class="db-input" value="'.$_POST['Days'].'" /></div>';
 
-if (isset($_POST['GLNarrative'])) { // General Ledger Payment (Different than Bank Account) info to be inserted on gltrans.narrative, varchar(200).
-	echo '<field>
-			<label for="GLNarrative">', __('GL Narrative'), ':</label>
-			<input type="text" name="GLNarrative" maxlength="50" size="52" value="', stripslashes($_POST['GLNarrative']), '" /></label>
-		</field>';
+echo '<div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:1.25rem;">';
+echo '<div><label class="db-label">First Date</label><input type="date" name="FirstPaymentDate" class="db-input" value="'.FormatDateForSQL($_POST['FirstPaymentDate']).'" required /></div>';
+echo '<div><label class="db-label">Last Date</label><input type="date" name="LastPaymentDate" class="db-input" value="'.FormatDateForSQL($_POST['LastPaymentDate']).'" required /></div>';
+echo '</div>';
+
+echo '<div class="db-form-group"><label class="db-label">From Bank Account</label><select name="BankAccount" class="db-select" required><option value=""></option>';
+$Banks = DB_query("SELECT bankaccountname, bankaccounts.accountcode, bankaccounts.currcode FROM bankaccounts INNER JOIN bankaccountusers ON bankaccounts.accountcode=bankaccountusers.accountcode WHERE bankaccountusers.userid = '" . $_SESSION['UserID'] . "' ORDER BY bankaccountname");
+while($b = DB_fetch_array($Banks)) echo '<option value="'.$b['accountcode'].'" '.((($_POST['BankAccount']??'')==$b['accountcode'])?'selected':'').'>'.$b['bankaccountname'].' - '.$b['currcode'].'</option>';
+echo '</select></div>';
+
+echo '<div class="db-form-group"><label class="db-label">To GL Account</label><select name="GLManualCode" class="db-select" required><option value="">Select Account...</option>';
+$Accs = DB_query("SELECT chartmaster.accountcode, accountname FROM chartmaster INNER JOIN glaccountusers ON glaccountusers.accountcode=chartmaster.accountcode AND glaccountusers.userid='" . $_SESSION['UserID'] . "' AND glaccountusers.canupd=1 ORDER BY chartmaster.accountcode");
+while($a = DB_fetch_array($Accs)) echo '<option value="'.$a['accountcode'].'" '.($_POST['GLManualCode']==$a['accountcode']?'selected':'').'>'.$a['accountcode'].' - '.$a['accountname'].'</option>';
+echo '</select></div>';
+
+echo '<div style="display:grid; grid-template-columns:1fr 2fr; gap:0.5rem; margin-bottom:1.25rem;">';
+echo '<div><label class="db-label">Currency</label><select name="Currency" class="db-select">';
+$Curs = DB_query("SELECT currabrev FROM currencies");
+while($c = DB_fetch_array($Curs)) echo '<option value="'.$c[0].'" '.($_POST['Currency']==$c[0]?'selected':'').'>'.$c[0].'</option>';
+echo '</select></div>';
+echo '<div><label class="db-label">Amount</label><input type="number" step="0.01" name="GLAmount" class="db-input" value="'.$_POST['GLAmount'].'" required /></div>';
+echo '</div>';
+
+echo '<div class="db-form-group"><label class="db-label">Narrative</label><input name="GLNarrative" class="db-input" value="'.($_POST['GLNarrative']??'').'" maxlength="50" /></div>';
+
+echo '<div class="db-form-group"><label class="db-label">GL Tags</label><select name="Tag[]" class="db-select" multiple style="height:80px;">';
+$Tags = DB_query("SELECT tagref, tagdescription FROM tags ORDER BY tagref");
+while($t = DB_fetch_array($Tags)) echo '<option value="'.$t['tagref'].'" '.(in_array($t['tagref'], $_POST['Tag'])?'selected':'').'>'.$t['tagref'].' - '.$t['tagdescription'].'</option>';
+echo '</select></div>';
+
+if (isset($_GET['Edit'])) {
+    echo '<button type="submit" name="Update" class="db-btn db-btn-primary"><i class="fas fa-save"></i> '. __('Update Schedule').'</button>';
+    echo '<a href="'.basename(__FILE__).'" class="db-btn db-btn-outline" style="margin-top:0.5rem; width:100%">Cancel Edit</a>';
 } else {
-	echo '<field>
-			<label for="GLNarrative">', __('GL Narrative'), ':</label>
-			<input type="text" name="GLNarrative" maxlength="50" size="52" />
-		</field>';
+    echo '<button type="submit" name="Add" class="db-btn db-btn-primary"><i class="fas fa-plus"></i> '. __('Start Schedule').'</button>';
 }
+echo '</form></div></div></aside>';
 
-if (isset($_POST['GLAmount'])) {
-	echo '<field>
-			<label for="GLAmount">', __('Amount'), '</label>
-			<input type="text" name="GLAmount" maxlength="12" size="12" class="number" value="', $_POST['GLAmount'], '" />
-		</field>';
-} else {
-	echo '<field>
-			<label for="GLAmount">', __('Amount'), '</label>
-			<input type="text" name="GLAmount" maxlength="12" size="12" class="number" />
-		</field>';
-}
-
-echo '</fieldset>';
-
-if (!isset($_GET['Edit'])) {
-	echo '<div class="centre">
-			<input type="submit" name="Add" value="', __('Add New Regular Payment'), '" />
-		</div>';
-} else {
-	echo '<div class="centre">
-			<input type="submit" name="Update" value="', __('Update Regular Payment Details'), '" />
-		</div>
-		<input type="hidden" name="ID" value="', $_GET['Payment'], '" />';
-}
-echo '</form>';
-
-$SQL = "SELECT regularpayments.id,
-				regularpayments.frequency,
-				regularpayments.days,
-				regularpayments.glcode,
-				chartmaster.accountname,
-				bankaccounts.bankaccountname,
-				regularpayments.tag,
-				regularpayments.amount,
-				regularpayments.currabrev,
-				regularpayments.narrative,
-				regularpayments.firstpayment,
-				regularpayments.finalpayment,
-				regularpayments.nextpayment
-			FROM regularpayments
-			INNER JOIN bankaccounts
-				ON bankaccounts.accountcode=regularpayments.bankaccountcode
-			INNER JOIN chartmaster
-				ON chartmaster.accountcode=regularpayments.glcode
-			WHERE completed=0";
-$Result = DB_query($SQL);
-
-if (DB_num_rows($Result) > 0 and !isset($_GET['Edit'])) {
-	echo '<table>
-			<tr>
-				<th>', __('Frequency'), '</th>
-				<th>', __('Days into Period'), '</th>
-				<th>', __('Bank Account'), '</th>
-				<th>', __('GL Account'), '</th>
-				<th>', __('GL Tags'), '</th>
-				<th>', __('Amount of Payment'), '</th>
-				<th>', __('Currency of payment'), '</th>
-				<th>', __('Description'), '</th>
-				<th>', __('First payment Date'), '</th>
-				<th>', __('Next payment Date'), '</th>
-				<th>', __('Last payment Date'), '</th>
-				<th></th>
-				<th></th>
-			</tr>';
-	while ($MyRow = DB_fetch_array($Result)) {
-		$Tags = explode(',', $MyRow['tag']);
-		$TagText = GetDescriptionsFromTagArray($Tags);
-		echo '<tr class="striped_row">
-				<td>', $Frequencies[$MyRow['frequency']], '</td>
-				<td class="number">', $MyRow['days'], '</td>
-				<td>', $MyRow['bankaccountname'], '</td>
-				<td>', $MyRow['glcode'], ' - ', $MyRow['accountname'], '</td>
-				<td>', $TagText, '</td>
-				<td class="number">', $MyRow['amount'], '</td>
-				<td>', $MyRow['currabrev'], '</td>
-				<td>', $MyRow['narrative'], '</td>
-				<td>', ConvertSQLDate($MyRow['firstpayment']), '</td>
-				<td>', ConvertSQLDate($MyRow['nextpayment']), '</td>
-				<td>', ConvertSQLDate($MyRow['finalpayment']), '</td>
-				<td><a href="', htmlspecialchars(basename(__FILE__) . '?Payment=' . urlencode($MyRow['id'])), '&Edit=True">', __('Edit'), '</a></td>
-				<td><a href="', htmlspecialchars(basename(__FILE__) . '?Payment=' . urlencode($MyRow['id'])), '&Complete=True">', __('Complete'), '</a></td>
-			</tr>';
-	}
-	echo '</table>';
-
-}
+echo '</div></div>';
 
 include(__DIR__ . '/includes/footer.php');
+?>

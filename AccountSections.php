@@ -146,131 +146,375 @@ if (isset($_POST['submit'])) {
 	unset ($_POST['SectionName']);
 }
 
-if (!isset($_GET['SelectedSectionID']) AND !isset($_POST['SelectedSectionID'])) {
+echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    :root {
+        --db-primary: hsl(145, 63%, 38%);
+        --db-primary-hover: hsl(145, 63%, 32%);
+        --db-primary-dark: hsl(145, 45%, 22%);
+        --db-primary-soft: hsl(145, 40%, 95%);
+        --db-bg: hsl(210, 20%, 97%);
+        --db-border: hsl(210, 14%, 89%);
+    }
 
-/*	An account section could be posted when one has been edited and is being updated
-	or GOT when selected for modification
-	SelectedSectionID will exist because it was sent with the page in a GET .
-	If its the first time the page has been displayed with no parameters
-	then none of the above are true and the list of account groups will be displayed with
-	links to delete or edit each. These will call the same page again and allow update/input
-	or deletion of the records*/
+    .db-page {
+        background: var(--db-bg);
+        min-height: 100vh;
+        padding: 1.5rem;
+        font-family: "Inter", sans-serif;
+    }
 
-	$SQL = "SELECT sectionid,
-			sectionname
-		FROM accountsection
-		ORDER BY sectionid";
+    .db-header {
+        margin-bottom: 2rem;
+    }
 
-	$ErrMsg = __('Could not get account group sections because');
-	$Result = DB_query($SQL, $ErrMsg);
+    .db-breadcrumb {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--db-primary-dark);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+        opacity: 0.7;
+    }
 
-	echo '<p class="page_title_text"><img alt="" class="noPrint" src="', $RootPath, '/css/', $Theme,
-		'/images/maintenance.png" title="', // Icon image.
-		__('Account Sections'), '" /> ', // Icon title.
-		__('Account Sections'), '</p>';// Page title.
+    .db-title {
+        font-size: 2.25rem;
+        font-weight: 900;
+        color: var(--db-primary-dark);
+        letter-spacing: -0.02em;
+    }
 
-	echo '<table class="selection">
-		<thead>
-			<tr>
-				<th class="SortedColumn">', __('Section Number'), '</th>
-				<th class="SortedColumn">', __('Section Description'), '</th>
-				<th class="noPrint" colspan="2">&nbsp;</th>
-			</tr>
-		</thead>
-		<tbody>';
+    .db-layout {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
 
-	while ($MyRow = DB_fetch_array($Result)) {
+    @media (max-width: 1024px) {
+        .db-layout {
+            grid-template-columns: 1fr;
+        }
+    }
 
-		echo '<tr class="striped_row">
-				<td class="number">', $MyRow['sectionid'], '</td>
-				<td class="text">', $MyRow['sectionname'], '</td>
-				<td class="noPrint"><a href="', htmlspecialchars($_SERVER['PHP_SELF'].'?SelectedSectionID='.urlencode($MyRow['sectionid']), ENT_QUOTES, 'UTF-8'), '">', __('Edit'), '</a></td>
-				<td class="noPrint">';
-		if ( $MyRow['sectionid'] == '1' or $MyRow['sectionid'] == '2' ) {
-			echo '<b>', __('Restricted'), '</b>';
-		} else {
-			echo '<a href="', htmlspecialchars($_SERVER['PHP_SELF'].'?SelectedSectionID='.urlencode($MyRow['sectionid']).'&delete=1', ENT_QUOTES, 'UTF-8'), '">', __('Delete'), '</a>';
-		}
-		echo '</td>
-			</tr>';
-	} //END WHILE LIST LOOP
-	echo '</tbody>
-		</table>';
-} //end of ifs and buts!
+    .db-card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid var(--db-border);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
 
+    .db-card-header {
+        padding: 1rem 1.25rem;
+        background: var(--db-primary-soft);
+        border-bottom: 1px solid var(--db-border);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .db-card-title {
+        font-size: 0.875rem;
+        font-weight: 800;
+        color: var(--db-primary-dark);
+        text-transform: uppercase;
+        margin: 0;
+    }
+
+    .db-card-body {
+        padding: 1.25rem;
+    }
+
+    .db-form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .db-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--db-primary-dark);
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+
+    .db-input, .db-select {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border-radius: 8px;
+        border: 1px solid var(--db-border);
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        background: #fff;
+    }
+
+    .db-input:focus {
+        outline: none;
+        border-color: var(--db-primary);
+        box-shadow: 0 0 0 3px var(--db-primary-soft);
+    }
+
+    .db-help {
+        font-size: 0.7rem;
+        color: #64748b;
+        margin-top: 0.35rem;
+        font-style: italic;
+    }
+
+    .db-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .db-btn-primary {
+        background: var(--db-primary);
+        color: #fff;
+    }
+
+    .db-btn-primary:hover {
+        background: var(--db-primary-hover);
+    }
+
+    .db-btn-outline {
+        border-color: var(--db-border);
+        background: #fff;
+        color: #475569;
+    }
+
+    .db-btn-outline:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+    }
+
+    .db-table-container, 
+    .db-table-container[scrollable="true"], 
+    [scrollable="true"] {
+        overflow-y: visible !important;
+        overflow-x: auto !important;
+        max-height: none !important;
+        height: auto !important;
+        display: block !important;
+    }
+
+    .db-card, .db-main {
+        overflow: visible !important;
+    }
+
+    .db-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .db-table th {
+        background: var(--db-primary-soft);
+        color: var(--db-primary-dark);
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--db-border);
+    }
+
+    .db-table td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--db-border);
+        color: #475569;
+    }
+
+    .db-table tr:hover {
+        background: #f8fafc;
+    }
+
+    .db-badge {
+        display: inline-flex;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .db-link {
+        color: var(--db-primary);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .db-link:hover {
+        text-decoration: underline;
+    }
+
+    .noPrint { display: initial; }
+</style>';
+
+echo '<div class="db-page">';
+
+echo '<header class="db-header">
+        <div class="db-breadcrumb">' . __('General Ledger') . ' / ' . __('Setup') . '</div>
+        <h1 class="db-title">' . $Title . '</h1>
+      </header>';
+
+echo '<div class="db-layout">';
+
+// LEFT COLUMN: FORM
+echo '<aside class="db-aside">';
 
 if (isset($_POST['SelectedSectionID']) or isset($_GET['SelectedSectionID'])) {
-	echo '<a class="toplink" href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">' . __('Review Account Sections') . '</a>';
+	echo '<div style="margin-bottom: 1rem;">
+            <a class="db-btn db-btn-outline" style="width: auto;" href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">
+                <i class="fas fa-arrow-left"></i> ' . __('Create New Section') . '
+            </a>
+          </div>';
 }
 
-if (! isset($_GET['delete'])) {
+echo '<div class="db-card">';
+echo '<div class="db-card-header">
+        <i class="fas fa-edit" style="color: var(--db-primary);"></i>
+        <h3 class="db-card-title">' . (isset($_GET['SelectedSectionID']) ? __('Edit Account Section') : __('New Account Section')) . '</h3>
+      </div>';
 
-	echo '<form action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" id="AccountSections" method="post">',
-		'<input name="FormID" type="hidden" value="', $_SESSION['FormID'], '" />';
+echo '<div class="db-card-body">';
+echo '<form action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" id="AccountSections" method="post">',
+    '<input name="FormID" type="hidden" value="', $_SESSION['FormID'], '" />';
 
-	if (isset($_GET['SelectedSectionID'])) {
-		//editing an existing section
+if (isset($_GET['SelectedSectionID'])) {
+    //editing an existing section
+    $SQL = "SELECT sectionid, sectionname FROM accountsection WHERE sectionid='" . $_GET['SelectedSectionID'] ."'";
+    $Result = DB_query($SQL);
+    if ( DB_num_rows($Result) == 0 ) {
+        prnMsg( __('Could not retrieve the requested section please try again.'),'warn');
+    } else {
+        $MyRow = DB_fetch_array($Result);
+        $_POST['SectionID'] = $MyRow['sectionid'];
+        $_POST['SectionName'] = $MyRow['sectionname'];
+        echo '<input name="SelectedSectionID" type="hidden" value="', $_POST['SectionID'], '" />';
+        
+        echo '<div class="db-form-group">
+                <label class="db-label">', __('Section Number'), '</label>
+                <div class="db-input" style="background: #f1f5f9; border-color: transparent;">', $_POST['SectionID'], '</div>
+              </div>';
+    }
+} else {
+    if (!isset($_POST['SectionID'])) { $_POST['SectionID']=''; }
+    echo '<div class="db-form-group">
+            <label class="db-label">', __('Section Number'), '</label>
+            <input autofocus="autofocus" class="db-input ', ( in_array('SectionID',$Errors) ? 'inputerror' : '' ), '" maxlength="4" name="SectionID" required="required" type="text" value="', $_POST['SectionID'], '" />
+            <div class="db-help">', __('Enter a unique integer identifier'), '</div>
+          </div>';
+}
 
-		$SQL = "SELECT sectionid,
-				sectionname
-			FROM accountsection
-			WHERE sectionid='" . $_GET['SelectedSectionID'] ."'";
+if (!isset($_POST['SectionName'])) { $_POST['SectionName']=''; }
+echo '<div class="db-form-group">
+        <label class="db-label">', __('Section Description'), '</label>
+        <input class="db-input ', ( in_array('SectionName',$Errors) ? 'inputerror' : '' ), '" maxlength="30" name="SectionName" required="required" type="text" value="', $_POST['SectionName'], '" />
+        <div class="db-help">', __('Example: Operating Expenses'), '</div>
+      </div>';
 
-		$Result = DB_query($SQL);
-		if ( DB_num_rows($Result) == 0 ) {
-			prnMsg( __('Could not retrieve the requested section please try again.'),'warn');
-			unset($_GET['SelectedSectionID']);
-		} else {
-			$MyRow = DB_fetch_array($Result);
+echo '<button name="submit" type="submit" class="db-btn db-btn-primary">
+        <i class="fas fa-save"></i> ', __('Save Section'), '
+      </button>';
 
-			$_POST['SectionID'] = $MyRow['sectionid'];
-			$_POST['SectionName'] = $MyRow['sectionname'];
+echo '</form>';
+echo '</div>'; // card-body
+echo '</div>'; // card
+echo '</aside>';
 
-			echo '<input name="SelectedSectionID" type="hidden" value="', $_POST['SectionID'], '" />';
 
-			echo '<fieldset>
-					<legend>', __('Edit Account Section Details'), '</legend>
-					<field>
-						<label for="SectionID">', __('Section Number'), ':</label>
-						<fieldtext>', $_POST['SectionID'], '</fieldtext>
-					</field>';
-		}
+// Pagination Logic
+$ItemsPerPage = 10;
+if (!isset($_GET['Offset']) or !is_numeric($_GET['Offset'])) {
+	$_GET['Offset'] = 0;
+}
+$TotalRowsRow = DB_fetch_row(DB_query("SELECT COUNT(*) FROM accountsection"));
+$TotalRows = $TotalRowsRow[0];
 
-	} else {
+$SQL = "SELECT sectionid, sectionname FROM accountsection ORDER BY sectionid LIMIT " . $_GET['Offset'] . "," . $ItemsPerPage;
+$ErrMsg = __('Could not get account group sections because');
+$Result = DB_query($SQL, $ErrMsg);
 
-		if (!isset($_POST['SelectedSectionID'])) {
-			$_POST['SelectedSectionID']='';
-		}
-		if (!isset($_POST['SectionID'])) {
-			$_POST['SectionID']='';
-		}
-		if (!isset($_POST['SectionName'])) {
-			$_POST['SectionName']='';
-		}
-		echo '<fieldset>
-				<legend>', __('New Account Section Details'), '</legend>
-				<field>
-					<label for="SectionID">', __('Section Number'), ':</label>
-					<input autofocus="autofocus" ',
-						( in_array('SectionID',$Errors) ? 'class="inputerror number"' : 'class="number" ' ),
-						'maxlength="4" name="SectionID" required="required" size="4" tabindex="1" type="text" value="', $_POST['SectionID'], '" />
-					<fieldhelp>', __('Enter a unique integer identifier for this section'), '</fieldhelp>
-				</field>';
-	}
-	echo	'<field>
-				<label for="SectionName">', __('Section Description'), ':</label>
-				<input ',
-					( in_array('SectionName',$Errors) ? 'class="inputerror text" ' : 'class="text" ' ),
-					'maxlength="30" name="SectionName" required="required" size="30" tabindex="2" type="text" value="', $_POST['SectionName'], '" />
-				<fieldhelp>', __('Enter a description for this section'), '</fieldhelp>
-			</field>';
+// RIGHT COLUMN: RESULTS
+echo '<main class="db-main">';
+echo '<div class="db-card">';
+echo '<div class="db-card-header">
+        <i class="fas fa-list" style="color: var(--db-primary);"></i>
+        <h3 class="db-card-title">' . __('Existing Account Sections') . '</h3>
+      </div>';
 
-	echo '</fieldset>';
+echo '<div class="db-table-container">';
+echo '<table class="db-table">
+    <thead>
+        <tr>
+            <th>', __('ID'), '</th>
+            <th>', __('Section Description'), '</th>
+            <th class="noPrint" style="text-align: right;">', __('Actions'), '</th>
+        </tr>
+    </thead>
+    <tbody>';
 
-	echo '<div class="centre">
-			<input name="submit" tabindex="3" type="submit" value="', __('Enter Information'), '" />
-		</div>
-	</form>';
-} //end if record deleted no point displaying form to add record
+while ($MyRow = DB_fetch_array($Result)) {
+    echo '<tr>
+            <td><span class="db-badge">', $MyRow['sectionid'], '</span></td>
+            <td style="font-weight: 500;">', $MyRow['sectionname'], '</td>
+            <td class="noPrint" style="text-align: right;">
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                    <a class="db-btn db-btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;" href="', htmlspecialchars($_SERVER['PHP_SELF'].'?SelectedSectionID='.urlencode($MyRow['sectionid']), ENT_QUOTES, 'UTF-8'), '">
+                        <i class="fas fa-edit"></i> ', __('Edit'), '
+                    </a>';
+    if ( $MyRow['sectionid'] == '1' or $MyRow['sectionid'] == '2' ) {
+        echo '<span class="db-badge" style="background: #fee2e2; color: #991b1b;">' . __('Restricted') . '</span>';
+    } else {
+        echo '<a class="db-btn db-btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; color: #dc2626;" href="', htmlspecialchars($_SERVER['PHP_SELF'].'?SelectedSectionID='.urlencode($MyRow['sectionid']).'&delete=1', ENT_QUOTES, 'UTF-8'), '" onclick="return confirm(\'' . __('Are you sure you want to delete this section?') . '\');">
+                <i class="fas fa-trash"></i> ', __('Delete'), '
+              </a>';
+    }
+    echo '</div>
+            </td>
+        </tr>';
+}
+echo '</tbody>
+    </table>
+</div>'; // table-container
+
+// Pagination Controls
+if ($TotalRows > $ItemsPerPage) {
+    echo '<div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--db-primary-soft); border-top: 1px solid var(--db-border);">';
+    if ($_GET['Offset'] > 0) {
+        echo '<a class="db-btn db-btn-outline" style="width: auto;" href="' . htmlspecialchars(basename(__FILE__) . '?Offset=' . ($_GET['Offset'] - $ItemsPerPage)) . '"><i class="fas fa-chevron-left"></i> Previous</a>';
+    } else {
+        echo '<span></span>';
+    }
+    
+    echo '<div style="font-size: 0.75rem; font-weight: 700; color: var(--db-primary-dark);">';
+    echo __('Showing') . ' ' . ($_GET['Offset'] + 1) . ' - ' . min($_GET['Offset'] + $ItemsPerPage, $TotalRows) . ' ' . __('of') . ' ' . $TotalRows;
+    echo '</div>';
+
+    if ($_GET['Offset'] + $ItemsPerPage < $TotalRows) {
+        echo '<a class="db-btn db-btn-outline" style="width: auto;" href="' . htmlspecialchars(basename(__FILE__) . '?Offset=' . ($_GET['Offset'] + $ItemsPerPage)) . '">Next <i class="fas fa-chevron-right"></i></a>';
+    } else {
+        echo '<span></span>';
+    }
+    echo '</div>';
+}
+
+echo '</div>'; // card
+echo '</main>';
+
+echo '</div>'; // layout
+echo '</div>'; // page
 
 include(__DIR__ . '/includes/footer.php');
+?>
