@@ -27,6 +27,7 @@ if (isset($_GET['NewSearch']) or isset($_POST['Next']) or isset($_POST['Previous
 	unset($_SESSION['SelectedStockItem']);
 	unset($_POST['Select']);
 }
+
 if (!isset($_POST['PageOffset'])) {
 	$_POST['PageOffset'] = 1;
 } else {
@@ -38,136 +39,93 @@ if (isset($_POST['StockCode'])) {
 	$_POST['StockCode'] = trim(mb_strtoupper($_POST['StockCode']));
 }
 
-// Always show the search facilities
-$SQL = "SELECT categoryid, categorydescription FROM stockcategory ORDER BY categorydescription";
-$Result1 = DB_query($SQL);
-if (DB_num_rows($Result1) == 0) {
-	prnMsg(__('There are no stock categories currently defined. Please use the link below to set them up'), 'warn');
-	echo '<a class="toplink" href="' . $RootPath . '/StockCategories.php">' . __('Define Stock Categories') . '</a><br /><br />';
-	include(__DIR__ . '/includes/footer.php');
-	exit();
-}
-
-echo '<div class="db-bottom-layout">';
-
-// 1. RUN SEARCH LOGIC (Move up)
-if (isset($_POST['Go']) OR isset($_POST['Next']) OR isset($_POST['Previous'])) {
-	$_POST['Search']='Search';
-}
 // Auto-trigger search if no item is selected and no search performed yet
 if (isset($_POST['Search']) OR isset($_POST['Go']) OR isset($_POST['Next']) OR isset($_POST['Previous']) OR (!isset($_POST['Select']) AND !isset($_SESSION['SelectedStockItem']))) {
 	if (!isset($_POST['Go']) AND !isset($_POST['Next']) AND !isset($_POST['Previous']) AND !isset($_POST['Search'])) {
-        // Default View: Just show everything if landing
+        // Default View on Landing: Automatically show the list
 		$_POST['PageOffset'] = 1;
         $_POST['StockCat'] = 'All';
+        $_POST['Search'] = 'Search'; // Trigger the search results view
 	} elseif (!isset($_POST['Go']) AND !isset($_POST['Next']) AND !isset($_POST['Previous'])) {
-		$_POST['PageOffset'] = 1;
+		// Just stay on current page if not a nav action
 	}
 	$SQL = GenerateStockmasterQuery($_POST);
 	$SearchResult = DB_query($SQL);
 }
 
-// 2. SIDEBAR: PERSISTENT SEARCH
-echo '<aside class="db-col-aside">';
-echo '<div class="db-card mb-4">
-		<div class="db-card-header">
-			<h3 class="db-card-title"><i class="fas fa-search"></i> ' . __('Search Items') . '</h3>
-		</div>
-		<div class="db-card-body">
-			<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
-				<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-				<div class="db-form-group">
-					<label class="db-label">' . __('Category') . '</label>
-					<select name="StockCat" class="db-select">';
-if (!isset($_POST['StockCat'])) $_POST['StockCat'] = 'All';
-echo '<option value="All" ' . ($_POST['StockCat'] == 'All' ? 'selected' : '') . '>' . __('All Categories') . '</option>';
-DB_data_seek($Result1, 0);
-while ($MyRow1 = DB_fetch_array($Result1)) {
-	echo '<option value="' . $MyRow1['categoryid'] . '" ' . ($_POST['StockCat'] == $MyRow1['categoryid'] ? 'selected' : '') . '>' . $MyRow1['categorydescription'] . '</option>';
+// Always show the search facilities
+$SQL = "SELECT categoryid, categorydescription FROM stockcategory ORDER BY categorydescription";
+$Result1 = DB_query($SQL);
+if (DB_num_rows($Result1) == 0) {
+	prnMsg(__('There are no stock categories currently defined'), 'warn');
+	include(__DIR__ . '/includes/footer.php');
+	exit();
 }
-echo '				</select>
-				</div>
-				<div class="db-form-group">
-					<label class="db-label">' . __('Keyword/Code') . '</label>
-					<input type="text" name="Keywords" class="db-input" value="' . (isset($_POST['Keywords']) ? $_POST['Keywords'] : '') . '" placeholder="' . __('e.g. Pump, 1001') . '" />
-				</div>
-				<div class="db-form-group">
-					<label class="db-label">' . __('Stock Code') . '</label>
-					<input type="text" name="StockCode" class="db-input" value="' . (isset($_POST['StockCode']) ? $_POST['StockCode'] : '') . '" />
-				</div>
-				<button type="submit" name="Search" class="db-btn db-btn-primary w-100">' . __('Search Now') . '</button>
-			</form>
-		</div>
-	  </div>';
 
-// 3. SIDEBAR: RESULTS LIST
-if (isset($SearchResult)) {
-	$ListCount = DB_num_rows($SearchResult);
-	echo '<div class="db-card overflow-hidden">
-			<div class="db-card-header">
-				<h3 class="db-card-title"><i class="fas fa-list"></i> ' . __('Results') . ' (' . $ListCount . ')</h3>
-			</div>
-			<div class="db-card-body p-0" style="max-height: 500px; overflow-y: auto;">';
-	
-	if ($ListCount > 0) {
-		$ListPageMax = ceil($ListCount / $_SESSION['DisplayRecordsMax']);
-		DB_data_seek($SearchResult, ($_POST['PageOffset'] - 1) * $_SESSION['DisplayRecordsMax']);
-		$RowIndex = 0;
-		echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post">
-				<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-				<input type="hidden" name="Keywords" value="' . (isset($_POST['Keywords']) ? $_POST['Keywords'] : '') . '" />
-				<input type="hidden" name="StockCat" value="' . $_POST['StockCat'] . '" />
-				<input type="hidden" name="StockCode" value="' . (isset($_POST['StockCode']) ? $_POST['StockCode'] : '') . '" />';
+?>
+<style>
+    :root {
+        --primary: hsl(145, 63%, 38%);
+        --primary-hover: hsl(145, 63%, 32%);
+        --primary-dark: hsl(145, 45%, 22%);
+        --primary-soft: hsl(145, 40%, 95%);
+        --bg: hsl(210, 20%, 97%);
+        --white: #ffffff;
+        --border: #e2e8f0;
+        --border-soft: #f1f5f9;
+        --text-main: #334155;
+        --text-muted: #64748b;
+        --shadow: 0 1px 3px rgba(0,0,0,0.1);
+        --radius: 12px;
+        --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    body { background-color: var(--bg); color: var(--text-main); font-family: var(--font-sans); overflow-x: hidden; }
+    .aw-page { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+    .aw-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; }
+    .aw-breadcrumb { font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; margin-bottom: 0.25rem; }
+    .aw-title { font-size: 1.75rem; font-weight: 900; color: var(--primary-dark); margin: 0; line-height: 1; }
+    
+    .aw-layout-grid { display: grid; gap: 1.5rem; align-items: start; }
+    .aw-layout-search { grid-template-columns: 320px 1fr; }
+    .aw-layout-dashboard { grid-template-columns: 1fr 350px; }
+    
+    @media (max-width: 1024px) { .aw-layout-grid { grid-template-columns: 1fr; } }
+    
+    .aw-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border-soft); margin-bottom: 1rem; overflow: hidden; }
+    .aw-card-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-soft); background: var(--white); display: flex; align-items: center; gap: 0.75rem; }
+    .aw-card-title { font-size: 0.9rem; font-weight: 700; color: var(--primary-dark); margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+    .aw-card-body { padding: 1rem; }
+    
+    .aw-field-group { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.75rem; }
+    .aw-label { font-size: 0.75rem; font-weight: 700; color: var(--primary-dark); }
+    .aw-input, .aw-select { width: 100%; padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--white); font-size: 0.85rem; box-sizing: border-box; }
+    
+    .aw-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: none; text-decoration: none; transition: all 0.2s; }
+    .aw-btn-primary { background: var(--primary); color: var(--white); }
+    .aw-btn-primary:hover { background: var(--primary-hover); }
+    .aw-btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+    .aw-btn-sm { padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 6px; }
+    
+    .aw-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .aw-table th { background: var(--primary-soft); color: var(--primary-dark); font-weight: 800; text-transform: uppercase; font-size: 0.65rem; padding: 0.75rem; text-align: left; position: sticky; top: 0; z-index: 10; }
+    .aw-table td { padding: 0.75rem; border-bottom: 1px solid var(--border-soft); }
+    .aw-table tr:hover { background: var(--bg); }
+    .aw-table .number { text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+    
+    .aw-pagination { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem; background: var(--white); border-top: 1px solid var(--border-soft); }
+    .aw-page-link { min-width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: var(--white); border: 1px solid var(--border); color: var(--text-main); font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+    .aw-page-link:hover { border-color: var(--primary); color: var(--primary); }
+    .aw-page-link.active { background: var(--primary); color: var(--white); border-color: var(--primary); }
+    .aw-page-link.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+    
+    .aw-badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; background: var(--primary-soft); color: var(--primary); }
+</style>
 
-		while (($MyRow = DB_fetch_array($SearchResult)) AND ($RowIndex <> $_SESSION['DisplayRecordsMax'])) {
-			$QOH = ($MyRow['mbflag'] == 'D' ? 'N/A' : locale_number_format($MyRow['qoh'], $MyRow['decimalplaces']));
-			echo '<button type="submit" name="Select" value="' . $MyRow['stockid'] . '" class="w-100 text-left p-3 border-bottom db-row-hover" style="background: none; border: none; border-bottom: 1px solid var(--border-soft) !important;">
-					<div class="db-font-bold text-primary" style="font-size: 0.85rem;">' . $MyRow['stockid'] . '</div>
-					<div class="db-muted" style="font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' . $MyRow['description'] . '</div>
-					<div style="font-size: 0.7rem; margin-top: 4px;">' . __('QOH') . ': <span class="db-font-bold">' . $QOH . '</span> ' . $MyRow['units'] . '</div>
-				  </button>';
-			$RowIndex++;
-		}
-		
-		if ($ListPageMax > 1) {
-			echo '<div class="p-3 bg-light border-top d-flex justify-content-between align-items: center;">
-					<button type="submit" name="Previous" class="db-btn db-btn-sm" ' . ($_POST['PageOffset'] <= 1 ? 'disabled' : '') . '><i class="fas fa-chevron-left"></i></button>
-					<span class="db-font-medium" style="font-size: 0.75rem;">' . $_POST['PageOffset'] . ' / ' . $ListPageMax . '</span>
-					<button type="submit" name="Next" class="db-btn db-btn-sm" ' . ($_POST['PageOffset'] >= $ListPageMax ? 'disabled' : '') . '><i class="fas fa-chevron-right"></i></button>
-					<input type="hidden" name="PageOffset" value="' . $_POST['PageOffset'] . '" />
-				  </div>';
-		}
-		echo '</form>';
-	} else {
-		echo '<div class="p-4 text-center db-muted" style="font-size: 0.8rem;">' . __('No items found') . '</div>';
-	}
-	echo '	</div>
-		  </div>';
-}
-echo '</aside>';
+<div class="aw-page">
 
-// MAIN: ITEM DASHBOARD
-echo '<main class="db-col-main">';
-
-// end of showing search facilities
-/* displays item options if there is one and only one selected */
-$TableHead =
-	'<table cellpadding="4" width="90%" class="selection">
-		<thead>
-			<tr>
-				<th style="width:33%">' .
-					'<img alt="" src="' . $RootPath . '/css/' . $Theme . '/images/reports.png" title="' . __('Inquiries and Reports') . '" />' .
-					__('Item Inquiries') . '</th>
-				<th style="width:33%">' .
-					'<img alt="" src="' . $RootPath . '/css/' . $Theme . '/images/transactions.png" title="' . __('Transactions') . '" />' .
-					__('Item Transactions') . '</th>
-				<th style="width:33%">' .
-					'<img alt="" src="' . $RootPath . '/css/' . $Theme . '/images/maintenance.png" title="' . __('Maintenance') . '" />' .
-					__('Item Maintenance') . '</th>
-			</tr>
-		</thead>
-		<tbody>';
+<?php 
 if (!isset($_POST['Search']) AND (isset($_POST['Select']) OR isset($_SESSION['SelectedStockItem']))) {
+	// --- DASHBOARD MODE (MASTER-SIDEBAR) ---
 	if (isset($_POST['Select'])) {
 		$_SESSION['SelectedStockItem'] = $_POST['Select'];
 		$StockID = $_POST['Select'];
@@ -176,307 +134,234 @@ if (!isset($_POST['Search']) AND (isset($_POST['Select']) OR isset($_SESSION['Se
 		$StockID = $_SESSION['SelectedStockItem'];
 	}
 
-	$Result = DB_query("SELECT stockmaster.description,
-								stockmaster.longdescription,
-								stockmaster.mbflag,
-								stockcategory.stocktype,
-								stockmaster.units,
-								stockmaster.decimalplaces,
-								stockmaster.controlled,
-								stockmaster.serialised,
-								stockmaster.actualcost AS cost,
-								stockmaster.discontinued,
-								stockmaster.eoq,
-								stockmaster.volume,
-								stockmaster.grossweight,
-								stockcategory.categorydescription,
-								stockmaster.categoryid
+	$Result = DB_query("SELECT stockmaster.*, stockcategory.stocktype, stockcategory.categorydescription
 						FROM stockmaster INNER JOIN stockcategory
 						ON stockmaster.categoryid=stockcategory.categoryid
 						WHERE stockid='" . $StockID . "'");
 	$MyRow = DB_fetch_array($Result);
 	
 	$Its_A_Kitset_Assembly_Or_Dummy = in_array($MyRow['mbflag'], ['A', 'G', 'K', 'D']);
-	$Its_A_Dummy = ($MyRow['mbflag'] == 'D');
-	$Its_A_Kitset = in_array($MyRow['mbflag'], ['K', 'G']);
-	$Its_A_Labour_Item = ($MyRow['mbflag'] == 'D' && $MyRow['stocktype'] == 'L');
+?>
+    <div class="aw-header">
+        <div>
+            <div class="aw-breadcrumb"><?php echo __('Inventory'); ?> / <?php echo __('Dashboard'); ?></div>
+            <h1 class="aw-title"><?php echo $StockID; ?> - <?php echo $MyRow['description']; ?></h1>
+        </div>
+        <a href="<?php echo $_SERVER['PHP_SELF']; ?>?NewSearch=Yes" class="aw-btn aw-btn-outline aw-btn-sm"><i class="fas fa-search"></i> <?php echo __('New Search'); ?></a>
+    </div>
 
-	// --- DASHBOARD HEADER ---
-	echo '<div class="mb-4" style="display: flex; justify-content: space-between; align-items: flex-start;">
-			<div>
-				<h1 class="db-title mb-1">' . $StockID . ' - ' . $MyRow['description'] . '</h1>
-				<div class="db-muted" style="font-size: 0.9rem;">' . $MyRow['categorydescription'] . '</div>
-			</div>';
-	if ($MyRow['discontinued'] == 1) {
-		echo '<div class="db-badge db-badge-danger" style="font-size: 0.9rem; padding: 6px 14px;">' . __('Obsolete') . '</div>';
-	} else {
-		echo '<div class="db-badge db-badge-success" style="font-size: 0.9rem; padding: 6px 14px;">' . __('Active') . '</div>';
-	}
-	echo '</div>';
+    <div class="aw-layout-grid aw-layout-dashboard">
+        <!-- LEFT: MAIN CONTENT -->
+        <main>
+            <div class="aw-card">
+                <div class="aw-card-header"><h3 class="aw-card-title"><i class="fas fa-info-circle"></i> <?php echo __('Item Specifications'); ?></h3></div>
+                <div class="aw-card-body">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                        <div><label class="aw-label"><?php echo __('UOM'); ?></label><div style="font-weight:700;"><?php echo $MyRow['units']; ?></div></div>
+                        <div><label class="aw-label"><?php echo __('Type'); ?></label><div style="font-weight:700;"><?php echo $MyRow['mbflag']; ?></div></div>
+                        <div><label class="aw-label"><?php echo __('Weight'); ?></label><div style="font-weight:700;"><?php echo locale_number_format($MyRow['grossweight'],3); ?></div></div>
+                    </div>
+                </div>
+            </div>
 
-	// --- KPI ROW ---
-	$QOH = ($Its_A_Kitset_Assembly_Or_Dummy ? 0 : GetQuantityOnHand($StockID, 'ALL'));
-	$Demand = GetDemand($StockID, 'ALL');
-	$QOO = ($Its_A_Kitset_Assembly_Or_Dummy ? 0 : GetQuantityOnOrder($StockID, 'ALL'));
+            <div class="aw-card">
+                <div class="aw-card-header"><h3 class="aw-card-title"><i class="fas fa-chart-pie"></i> <?php echo __('Stock Levels'); ?></h3></div>
+                <div class="aw-card-body">
+                    <?php 
+                    $QOH = ($Its_A_Kitset_Assembly_Or_Dummy ? 0 : GetQuantityOnHand($StockID, 'ALL'));
+                    $Demand = GetDemand($StockID, 'ALL');
+                    ?>
+                    <div style="display: flex; gap: 2rem;">
+                        <div><div class="aw-label"><?php echo __('On Hand'); ?></div><div style="font-size: 1.5rem; font-weight: 900; color: var(--primary);"><?php echo locale_number_format($QOH, $MyRow['decimalplaces']); ?></div></div>
+                        <div><div class="aw-label"><?php echo __('Demand'); ?></div><div style="font-size: 1.5rem; font-weight: 900; color: #ef4444;"><?php echo locale_number_format($Demand, $MyRow['decimalplaces']); ?></div></div>
+                    </div>
+                </div>
+            </div>
+        </main>
 
-	echo '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">';
-	// QOH
-	echo '<div class="db-card p-4">
-			<div class="db-muted mb-1" style="font-size: 0.75rem;">' . __('Quantity On Hand') . '</div>
-			<div class="db-font-bold text-primary" style="font-size: 1.5rem;">' . locale_number_format($QOH, $MyRow['decimalplaces']) . ' <span style="font-size: 0.9rem;">' . $MyRow['units'] . '</span></div>
-		  </div>';
-	// Demand
-	echo '<div class="db-card p-4">
-			<div class="db-muted mb-1" style="font-size: 0.75rem;">' . __('Current Demand') . '</div>
-			<div class="db-font-bold" style="font-size: 1.5rem;">' . locale_number_format($Demand, $MyRow['decimalplaces']) . '</div>
-		  </div>';
-	// On Order
-	echo '<div class="db-card p-4">
-			<div class="db-muted mb-1" style="font-size: 0.75rem;">' . __('On Order') . '</div>
-			<div class="db-font-bold" style="font-size: 1.5rem;">' . locale_number_format($QOO, $MyRow['decimalplaces']) . '</div>
-		  </div>';
-	// GP % (if authorized)
-	if (in_array($PricesSecurity, $_SESSION['AllowedPageSecurityTokens']) && in_array($CostSecurity, $_SESSION['AllowedPageSecurityTokens'])) {
-		$PriceResult = DB_query("SELECT price FROM prices WHERE currabrev ='" . $_SESSION['CompanyRecord']['currencydefault'] . "' AND typeabbrev = '" . $_SESSION['DefaultPriceList'] . "' AND debtorno='' AND branchcode='' AND startdate <= CURRENT_DATE AND enddate >= CURRENT_DATE AND stockid='" . $StockID . "'");
-		$Price = (DB_num_rows($PriceResult) > 0 ? DB_fetch_row($PriceResult)[0] : 0);
-		$Cost = ($Its_A_Kitset ? DB_fetch_row(DB_query("SELECT SUM(bom.quantity * stockmaster.actualcost) FROM bom INNER JOIN stockmaster ON bom.component=stockmaster.stockid WHERE bom.parent='" . $StockID . "' AND bom.effectiveafter <= CURRENT_DATE AND bom.effectiveto > CURRENT_DATE"))[0] : $MyRow['cost']);
-		$GP = ($Price > 0 ? ($Price - $Cost) * 100 / $Price : 0);
-		echo '<div class="db-card p-4">
-				<div class="db-muted mb-1" style="font-size: 0.75rem;">' . __('Gross Profit') . ' %</div>
-				<div class="db-font-bold ' . ($GP > 25 ? 'text-success' : 'text-warning') . '" style="font-size: 1.5rem;">' . locale_number_format($GP, 1) . '%</div>
-			  </div>';
-	}
-	echo '</div>';
+        <!-- RIGHT: SIDEBAR -->
+        <aside>
+            <div class="aw-card" style="padding: 1rem; text-align: center;">
+                <?php 
+                $PossibleImageFiles = glob($_SESSION['part_pics_dir'] . '/' . $StockID . '.{png,jpg,jpeg}', GLOB_BRACE);
+                $ImageFile = (count($PossibleImageFiles) > 0 ? $PossibleImageFiles[0] : '');
+                echo GetImageLink($ImageFile, $StockID, 200, 200, "max-width: 100%; height: auto; border-radius: 8px;");
+                ?>
+            </div>
+            <div class="aw-card">
+                <div class="aw-card-header"><h3 class="aw-card-title"><i class="fas fa-bolt"></i> <?php echo __('Quick Actions'); ?></h3></div>
+                <div class="aw-card-body" style="display: grid; gap: 0.5rem;">
+                    <a href="Stocks.php?StockID=<?php echo urlencode($StockID); ?>" class="aw-btn aw-btn-outline w-100" style="justify-content: flex-start; border: none;"><i class="fas fa-edit"></i> <?php echo __('Edit Item'); ?></a>
+                    <a href="StockStatus.php?StockID=<?php echo urlencode($StockID); ?>" class="aw-btn aw-btn-outline w-100" style="justify-content: flex-start; border: none;"><i class="fas fa-warehouse"></i> <?php echo __('Stock Status'); ?></a>
+                    <a href="StockMovements.php?StockID=<?php echo urlencode($StockID); ?>" class="aw-btn aw-btn-outline w-100" style="justify-content: flex-start; border: none;"><i class="fas fa-exchange-alt"></i> <?php echo __('Movements'); ?></a>
+                </div>
+            </div>
+        </aside>
+    </div>
 
-	// --- MAIN GRID ---
-	echo '<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">';
-	
-	// Left Column: Details
-	echo '<div>';
-	
-	// Card: Specification
-	echo '<div class="db-card mb-4">
-			<div class="db-card-header"><h3 class="db-card-title"><i class="fas fa-info-circle"></i> ' . __('Product Specification') . '</h3></div>
-			<div class="db-card-body">
-				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-					<div><label class="db-muted" style="font-size: 0.75rem; display: block;">' . __('Item Type') . '</label><div class="db-font-medium">';
-	switch ($MyRow['mbflag']) {
-		case 'A': echo __('Assembly'); break;
-		case 'G': echo __('Phantom'); break;
-		case 'K': echo __('Kitset'); break;
-		case 'D': echo __('Service'); break;
-		case 'B': echo __('Purchased'); break;
-		default: echo __('Manufactured'); break;
-	}
-	echo '</div></div>
-					<div><label class="db-muted" style="font-size: 0.75rem; display: block;">' . __('Control') . '</label><div class="db-font-medium">' . ($MyRow['serialised'] ? __('Serialised') : ($MyRow['controlled'] ? __('Batched') : __('N/A'))) . '</div></div>
-					<div><label class="db-muted" style="font-size: 0.75rem; display: block;">' . __('Volume') . '</label><div class="db-font-medium">' . locale_number_format($MyRow['volume'], 3) . '</div></div>
-					<div><label class="db-muted" style="font-size: 0.75rem; display: block;">' . __('Weight') . '</label><div class="db-font-medium">' . locale_number_format($MyRow['grossweight'], 3) . '</div></div>
-				</div>';
-	
-	// Properties
-	$SQLProps = "SELECT stkcatpropid, label, controltype, defaultvalue FROM stockcatproperties WHERE categoryid ='" . $MyRow['categoryid'] . "' AND reqatsalesorder = 0 ORDER BY stkcatpropid";
-	$PropsResult = DB_query($SQLProps);
-	if (DB_num_rows($PropsResult) > 0) {
-		echo '<div class="mt-4 pt-4 border-top">
-				<div class="db-font-bold mb-3" style="font-size: 0.8rem;">' . __('Category Properties') . '</div>
-				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">';
-		while ($Prop = DB_fetch_array($PropsResult)) {
-			$PVal = DB_query("SELECT value FROM stockitemproperties WHERE stockid='" . $StockID . "' AND stkcatpropid ='" . $Prop['stkcatpropid'] . "'");
-			$Val = (DB_num_rows($PVal) > 0 ? DB_fetch_row($PVal)[0] : __('Not Set'));
-			echo '<div><span class="db-muted" style="font-size: 0.7rem;">' . $Prop['label'] . ':</span> <span class="db-font-medium ml-1">' . $Val . '</span></div>';
-		}
-		echo '</div></div>';
-	}
-	echo '</div></div>';
-
-	// Card: Supplier Data
-	if (($MyRow['mbflag'] == 'B' OR ($MyRow['mbflag'] == 'M')) AND (in_array($SuppliersSecurity, $_SESSION['AllowedPageSecurityTokens']))) {
-		$SuppResult = DB_query("SELECT suppliers.suppname, suppliers.currcode, suppliers.supplierid, purchdata.price, purchdata.suppliers_partno, purchdata.leadtime, purchdata.conversionfactor, purchdata.minorderqty, purchdata.preferred, currencies.decimalplaces FROM purchdata INNER JOIN suppliers ON purchdata.supplierno=suppliers.supplierid INNER JOIN currencies ON suppliers.currcode=currencies.currabrev WHERE purchdata.stockid = '" . $StockID . "' AND purchdata.effectivefrom=(SELECT max(a.effectivefrom) FROM purchdata a WHERE purchdata.supplierno=a.supplierno and a.stockid=purchdata.stockid) ORDER BY purchdata.preferred DESC");
-		if (DB_num_rows($SuppResult) > 0) {
-			echo '<div class="db-card mb-4">
-					<div class="db-card-header"><h3 class="db-card-title"><i class="fas fa-truck-loading"></i> ' . __('Supplier Sourcing') . '</h3></div>
-					<div class="db-card-body p-0">
-						<table class="db-table">
-							<thead>
-								<tr>
-									<th>' . __('Supplier') . '</th>
-									<th class="text-right">' . __('Part No.') . '</th>
-									<th class="text-right">' . __('Cost') . '</th>
-									<th>' . __('Order') . '</th>
-								</tr>
-							</thead>
-							<tbody>';
-			while ($SuppRow = DB_fetch_array($SuppResult)) {
-				echo '<tr>
-						<td class="db-font-medium">' . $SuppRow['suppname'] . '</td>
-						<td class="text-right db-muted" style="font-size: 0.75rem;">' . $SuppRow['suppliers_partno'] . '</td>
-						<td class="text-right db-font-bold">' . locale_number_format($SuppRow['price'] / $SuppRow['conversionfactor'], $SuppRow['decimalplaces']) . ' <span style="font-size: 0.7rem;">' . $SuppRow['currcode'] . '</span></td>
-						<td class="text-center"><a href="' . $RootPath . '/PO_Header.php?NewOrder=Yes&SelectedSupplier=' . $SuppRow['supplierid'] . '&StockID=' . urlencode($StockID) . '&Quantity=' . $SuppRow['minorderqty'] . '&LeadTime=' . $SuppRow['leadtime'] . '" class="db-btn db-btn-sm db-btn-primary"><i class="fas fa-shopping-cart"></i></a></td>
-					  </tr>';
-			}
-			echo '</tbody></table></div></div>';
-		}
-	}
-	
-	echo '</div>'; // End Left Column
-	
-	// Right Column: Image & Quick Actions
-	echo '<div>';
-	
-	// Image Card
-	$PossibleImageFiles = glob($_SESSION['part_pics_dir'] . '/' . $StockID . '.{png,jpg,jpeg}', GLOB_BRACE);
-	$ImageFile = (count($PossibleImageFiles) > 0 ? $PossibleImageFiles[0] : '');
-	$StockImgLink = GetImageLink($ImageFile, $StockID, 300, 300, "db-card mb-4 p-2", "");
-	echo '<div class="db-card mb-4 p-2 text-center">' . $StockImgLink . '</div>';
-
-	// Card: Quick Actions
-	echo '<div class="db-card">
-			<div class="db-card-header"><h3 class="db-card-title"><i class="fas fa-bolt"></i> ' . __('Quick Actions') . '</h3></div>
-			<div class="db-card-body">
-				<div style="display: grid; grid-template-columns: 1fr; gap: 8px;">';
-	// Inquiries
-	echo '<div class="db-font-bold mt-2" style="font-size: 0.75rem; color: var(--primary);"><i class="fas fa-search-plus mr-1"></i> ' . __('INQUIRIES') . '</div>';
-	echo '<a href="' . $RootPath . '/StockMovements.php?StockID=' . urlencode($StockID) . '" class="db-btn db-btn-sm db-btn-secondary text-left"><i class="fas fa-exchange-alt mr-2"></i> ' . __('Stock Movements') . '</a>';
-	if (!$Its_A_Kitset_Assembly_Or_Dummy) {
-		echo '<a href="' . $RootPath . '/StockStatus.php?StockID=' . urlencode($StockID) . '" class="db-btn db-btn-sm db-btn-secondary text-left"><i class="fas fa-info mr-2"></i> ' . __('Stock Status') . '</a>';
-	}
-	echo '<a href="' . $RootPath . '/SelectSalesOrder.php?SelectedStockItem=' . urlencode($StockID) . '" class="db-btn db-btn-sm db-btn-secondary text-left"><i class="fas fa-file-invoice mr-2"></i> ' . __('Open Sales Orders') . '</a>';
-
-	// Transactions
-	if (!$Its_A_Kitset_Assembly_Or_Dummy) {
-		echo '<div class="db-font-bold mt-3" style="font-size: 0.75rem; color: var(--primary);"><i class="fas fa-truck mr-1"></i> ' . __('TRANSACTIONS') . '</div>';
-		echo '<a href="' . $RootPath . '/StockAdjustments.php?StockID=' . urlencode($StockID) . '" class="db-btn db-btn-sm db-btn-secondary text-left"><i class="fas fa-adjust mr-2"></i> ' . __('Adjust Quantity') . '</a>';
-		echo '<a href="' . $RootPath . '/StockTransfers.php?StockID=' . urlencode($StockID) . '&NewTransfer=true" class="db-btn db-btn-sm db-btn-secondary text-left"><i class="fas fa-random mr-2"></i> ' . __('Location Transfer') . '</a>';
-	}
-
-	// Maintenance
-	echo '<div class="db-font-bold mt-3" style="font-size: 0.75rem; color: var(--primary);"><i class="fas fa-tools mr-1"></i> ' . __('MAINTENANCE') . '</div>';
-	echo '<a href="' . $RootPath . '/Stocks.php?StockID=' . urlencode($StockID) . '" class="db-btn db-btn-sm db-btn-secondary text-left"><i class="fas fa-edit mr-2"></i> ' . __('Edit Item Details') . '</a>';
-	if (!$Its_A_Kitset) {
-		echo '<a href="' . $RootPath . '/Prices.php?Item=' . urlencode($StockID) . '" class="db-btn db-btn-sm db-btn-secondary text-left"><i class="fas fa-tag mr-2"></i> ' . __('Maintain Pricing') . '</a>';
-	}
-	if (!$Its_A_Kitset_Assembly_Or_Dummy) {
-		echo '<a href="' . $RootPath . '/StockCostUpdate.php?StockID=' . urlencode($StockID) . '" class="db-btn db-btn-sm db-btn-secondary text-left"><i class="fas fa-dollar-sign mr-2"></i> ' . __('Update Costs') . '</a>';
-	}
-
-	echo '		</div>
-			</div>
-		  </div>';
-	
-	echo '</div>'; // End Right Column
-	echo '</div>'; // End Main Grid
-
+<?php 
 } else {
-	// --- ZERO STATE ---
-	echo '<div class="db-card mt-4">
-			<div class="db-card-body text-center" style="padding: 100px;">
-				<div style="width: 100px; height: 100px; background: var(--primary-soft); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
-					<i class="fas fa-inventory fa-4x"></i>
-				</div>
-				<h2 class="db-font-bold mb-2">' . __('Inventory Selection Hub') . '</h2>
-				<p class="db-muted" style="max-width: 500px; margin: 0 auto 30px;">' . __('Search for an item in the sidebar to view detailed inventory statuses, inquiries, and maintenance options.') . '</p>
-				<div class="db-badge db-badge-secondary">' . __('Search by Category, Model, or ID') . '</div>
-			</div>
-		  </div>';
-} // End of Dashboard/Zero-State Dispatcher
+	// --- SEARCH MODE (FILTERS LEFT, RESULTS RIGHT) ---
+?>
+    <div class="aw-header">
+        <div>
+            <div class="aw-breadcrumb"><?php echo __('Inventory'); ?> / <?php echo __('Listing'); ?></div>
+            <h1 class="aw-title"><?php echo $Title; ?></h1>
+        </div>
+    </div>
 
-echo '</main></div>'; // Close main and db-bottom-layout
+    <div class="aw-layout-grid aw-layout-search">
+        <!-- LEFT: FILTERS -->
+        <aside>
+            <div class="aw-card">
+                <div class="aw-card-header"><h3 class="aw-card-title"><i class="fas fa-search"></i> <?php echo __('Search Filters'); ?></h3></div>
+                <div class="aw-card-body">
+                    <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'); ?>" method="post">
+                        <input type="hidden" name="FormID" value="<?php echo $_SESSION['FormID']; ?>" />
+                        <div class="aw-field-group">
+                            <label class="aw-label"><?php echo __('Category'); ?></label>
+                            <select name="StockCat" class="aw-select">
+                                <option value="All"><?php echo __('All Categories'); ?></option>
+                                <?php 
+                                DB_data_seek($Result1, 0);
+                                while ($cRow = DB_fetch_array($Result1)) {
+                                    echo '<option ' . (($_POST['StockCat'] ?? '') == $cRow['categoryid'] ? 'selected' : '') . ' value="' . $cRow['categoryid'] . '">' . $cRow['categorydescription'] . '</option>';
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="aw-field-group">
+                            <label class="aw-label"><?php echo __('Keywords'); ?></label>
+                            <input type="text" name="Keywords" class="aw-input" value="<?php echo $_POST['Keywords'] ?? ''; ?>" />
+                        </div>
+                        <div class="aw-field-group">
+                            <label class="aw-label"><?php echo __('Stock Code'); ?></label>
+                            <input type="text" name="StockCode" class="aw-input" value="<?php echo $_POST['StockCode'] ?? ''; ?>" />
+                        </div>
+                        <button type="submit" name="Search" class="aw-btn aw-btn-primary w-100"><i class="fas fa-sync"></i> <?php echo __('Find Items'); ?></button>
+                    </form>
+                </div>
+            </div>
+        </aside>
 
+        <!-- RIGHT: RESULTS WITH RESPONSIVE PAGINATION -->
+        <main>
+            <?php 
+            if (isset($SearchResult)) {
+                $ListCount = DB_num_rows($SearchResult);
+                $DisplayMax = 15; // Set a modern compact limit to avoid scrolling
+                $MaxPages = ceil($ListCount / $DisplayMax);
+                $PageOffset = $_POST['PageOffset'] ?? 1;
+
+                if ($ListCount > 0): ?>
+                    <div class="aw-card">
+                        <div class="aw-card-header" style="justify-content: space-between;">
+                            <h3 class="aw-card-title"><i class="fas fa-list"></i> <?php echo __('Inventory Records'); ?></h3>
+                            <span class="aw-badge"><?php echo $ListCount; ?> <?php echo __('Items'); ?></span>
+                        </div>
+                        <div class="aw-card-body p-0">
+                            <div style="overflow-x: auto;">
+                                <table class="aw-table">
+                                    <thead>
+                                        <tr>
+                                            <th><?php echo __('Code'); ?></th>
+                                            <th><?php echo __('Description'); ?></th>
+                                            <th class="number"><?php echo __('On Hand'); ?></th>
+                                            <th><?php echo __('Units'); ?></th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php 
+                                        DB_data_seek($SearchResult, ($PageOffset - 1) * $DisplayMax);
+                                        $i = 0;
+                                        while ($row = DB_fetch_array($SearchResult) AND ($i < $DisplayMax)): ?>
+                                            <tr>
+                                                <td style="font-weight: 700; color: var(--primary);"><?php echo $row['stockid']; ?></td>
+                                                <td style="font-weight: 600;"><?php echo $row['description']; ?></td>
+                                                <td class="number"><?php echo locale_number_format($row['qoh'], $row['decimalplaces']); ?></td>
+                                                <td><?php echo $row['units']; ?></td>
+                                                <td style="text-align: right;">
+                                                    <form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+                                                        <input type="hidden" name="FormID" value="<?php echo $_SESSION['FormID']; ?>" />
+                                                        <button type="submit" name="Select" value="<?php echo $row['stockid']; ?>" class="aw-btn aw-btn-outline aw-btn-sm"><?php echo __('Select'); ?></button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        <?php 
+                                        $i++;
+                                        endwhile; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- MODERN RESPONSIVE PAGINATION -->
+                            <?php if ($MaxPages > 1): ?>
+                                <div class="aw-pagination">
+                                    <form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" style="display: flex; gap: 0.5rem;">
+                                        <input type="hidden" name="FormID" value="<?php echo $_SESSION['FormID']; ?>" />
+                                        <input type="hidden" name="StockCat" value="<?php echo $_POST['StockCat']; ?>" />
+                                        <input type="hidden" name="Keywords" value="<?php echo $_POST['Keywords']; ?>" />
+                                        <input type="hidden" name="StockCode" value="<?php echo $_POST['StockCode']; ?>" />
+                                        <input type="hidden" name="Search" value="Search" />
+
+                                        <!-- Prev -->
+                                        <button type="submit" name="PageOffset" value="<?php echo $PageOffset - 1; ?>" class="aw-page-link <?php if ($PageOffset <= 1) echo 'disabled'; ?>"><i class="fas fa-chevron-left"></i></button>
+                                        
+                                        <!-- Page Numbers (Modern Responsive Logic) -->
+                                        <?php 
+                                        $range = 2;
+                                        for ($p = 1; $p <= $MaxPages; $p++): 
+                                            if ($p == 1 || $p == $MaxPages || ($p >= $PageOffset - $range && $p <= $PageOffset + $range)):
+                                        ?>
+                                            <button type="submit" name="PageOffset" value="<?php echo $p; ?>" class="aw-page-link <?php if ($p == $PageOffset) echo 'active'; ?>"><?php echo $p; ?></button>
+                                        <?php 
+                                            elseif ($p == $PageOffset - $range - 1 || $p == $PageOffset + $range + 1):
+                                                echo '<span style="color: var(--text-muted);">...</span>';
+                                            endif;
+                                        endfor; 
+                                        ?>
+
+                                        <!-- Next -->
+                                        <button type="submit" name="PageOffset" value="<?php echo $PageOffset + 1; ?>" class="aw-page-link <?php if ($PageOffset >= $MaxPages) echo 'disabled'; ?>"><i class="fas fa-chevron-right"></i></button>
+                                    </form>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="aw-card"><div class="aw-card-body text-center" style="padding: 4rem;"><p><?php echo __('No items found matching your criteria.'); ?></p></div></div>
+                <?php endif;
+            }
+            ?>
+        </main>
+    </div>
+<?php } ?>
+
+</div>
+
+<?php 
 include(__DIR__ . '/includes/footer.php');
 
-/**
- * Code mostly generated by Gemini 2.0
- * Generates an SQL query for stockmaster data based on user-provided filters.
- *
- * The function constructs a SELECT query with JOINs to retrieve stock information,
- * including quantity on hand (qoh).  It supports filtering by keywords,
- * stock code, supplier stock code, and stock category.  The query is ordered
- * by discontinued status and stock ID.
- *
- * @param array $post An array containing user input, typically from $_POST.
- * Expected keys:
- * - 'Keywords':  String to search for in stock descriptions.
- * - 'StockCode': String to search for in stock IDs.
- * - 'SupplierStockCode': String to search for in supplier part numbers.
- * - 'StockCat':  Category ID to filter by, or 'All' for all categories.
- *
- * @return string The generated SQL query string.  Returns an empty string if
- * no valid search criteria are provided.
- */
+function PrepareSearchString(string $InputString): string {
+    return '%' . str_replace(' ', '%', mb_strtoupper($InputString)) . '%';
+}
+
 function GenerateStockmasterQuery(array $post): string {
-
-    // Helper function to sanitize and prepare search strings.
-    function PrepareSearchString(string $InputString): string {
-        $InputString = mb_strtoupper($InputString); // Consistent case for comparisons.
-        return '%' . str_replace(' ', '%', $InputString) . '%'; // Add wildcards.
-    }
-
-    // Initialize the SQL query.
-    $SQL = "SELECT stockmaster.stockid,
-                   stockmaster.description,
-                   stockmaster.longdescription,
-                   SUM(locstock.quantity) AS qoh,
-                   stockmaster.units,
-                   stockmaster.mbflag,
-                   stockmaster.discontinued,
-                   stockmaster.decimalplaces
-            FROM stockmaster ";
-
-    // Common JOIN and WHERE clauses.
-    $JoinsSQL = "";
-    $WhereSQL = " WHERE stockmaster.stockid = locstock.stockid "; // Corrected initial where clause
-
-    // Determine the filter and build the query.
+    $SQL = "SELECT stockmaster.stockid, stockmaster.description, SUM(locstock.quantity) AS qoh, stockmaster.units, stockmaster.decimalplaces
+            FROM stockmaster LEFT JOIN locstock ON stockmaster.stockid = locstock.stockid ";
+    $WhereSQL = " WHERE 1=1 "; 
     if (isset($post['Keywords']) && mb_strlen($post['Keywords']) > 0) {
         $SearchString = PrepareSearchString($post['Keywords']);
-        $JoinsSQL .= "LEFT JOIN stockcategory
-						ON stockmaster.categoryid = stockcategory.categoryid
-					LEFT JOIN locstock
-						ON stockmaster.stockid = locstock.stockid ";
-        $WhereSQL .= "AND (stockmaster.description LIKE '$SearchString' OR stockmaster.stockid LIKE '$SearchString' OR stockmaster.longdescription LIKE '$SearchString') ";
+        $WhereSQL .= "AND (stockmaster.description LIKE '$SearchString' OR stockmaster.stockid LIKE '$SearchString') ";
     } elseif (isset($post['StockCode']) && mb_strlen($post['StockCode']) > 0) {
         $SearchString = PrepareSearchString($post['StockCode']);
-        $JoinsSQL .= "INNER JOIN stockcategory
-						ON stockmaster.categoryid = stockcategory.categoryid
-					INNER JOIN locstock
-						ON stockmaster.stockid = locstock.stockid ";
         $WhereSQL .= "AND stockmaster.stockid LIKE '$SearchString' ";
-    } elseif (isset($post['SupplierStockCode']) && mb_strlen($post['SupplierStockCode']) > 0) {
-        $SearchString = PrepareSearchString($post['SupplierStockCode']);
-        $JoinsSQL .= "INNER JOIN purchdata
-						ON stockmaster.stockid = purchdata.stockid
-					INNER JOIN locstock
-						ON stockmaster.stockid = locstock.stockid
-					LEFT JOIN stockcategory
-						ON stockmaster.categoryid = stockcategory.categoryid";
-        $WhereSQL .= "AND purchdata.suppliers_partno LIKE '$SearchString' ";
-    } else {
-        $JoinsSQL .= "LEFT JOIN stockcategory
-						ON stockmaster.categoryid = stockcategory.categoryid
-					LEFT JOIN locstock
-						ON stockmaster.stockid = locstock.stockid ";
-        // If no search is performed, we might want to default to something, but here we preserve existing but safer logic.
-        $WhereSQL .= "AND stockmaster.stockid IS NOT NULL "; 
     }
-
-    // Category filter.
     if ($post['StockCat'] != 'All') {
         $WhereSQL .= "AND stockmaster.categoryid = '" . $post['StockCat'] . "' ";
     }
-
-    // Complete the query.
-    $SQL .= $JoinsSQL;
-    $SQL .= $WhereSQL;
-    $SQL .= "GROUP BY stockmaster.stockid,
-                    stockmaster.description,
-                    stockmaster.longdescription,
-                    stockmaster.units,
-                    stockmaster.mbflag,
-                    stockmaster.discontinued,
-                    stockmaster.decimalplaces
-             ORDER BY stockmaster.discontinued,
-			 		stockmaster.stockid";
-
+    $SQL .= $WhereSQL . " GROUP BY stockmaster.stockid, stockmaster.description, stockmaster.units, stockmaster.decimalplaces ORDER BY stockmaster.stockid";
     return $SQL;
 }
+?>

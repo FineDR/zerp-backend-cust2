@@ -9,302 +9,181 @@ $ViewTopic = 'Inventory';
 $BookMark = '';
 
 include(__DIR__ . '/includes/header.php');
-
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/StockFunctions.php');
 
-echo '<div class="db-bottom-layout">';
-
-// SIDEBAR START
-echo '<aside class="db-col-aside">
-		<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">
-			<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-			
-			<div class="db-card" style="margin-bottom: 20px;">
-				<div class="db-card-header">
-					<h3 class="db-card-title"><i class="fas fa-search"></i> ' . __('Item Lookup') . '</h3>
-				</div>
-				<div class="db-card-body">
-					<div class="db-form-group">
-						<label class="db-label">' . __('Stock Code') . '</label>
-						<input type="text" name="StockID" class="db-input" value="' . $StockID . '" required="required" placeholder="' . __('e.g. ITEM-001') . '" autofocus />
-					</div>
-					<button type="submit" name="ShowStatus" class="db-btn db-btn-primary" style="width: 100%; margin-top: 15px;">
-						<i class="fas fa-search"></i> ' . __('Show Status') . '
-					</button>
-				</div>
-			</div>';
-
-// ITEM INFO CARD (If StockID selected)
-if ($StockID != '' AND isset($Description)) {
-	echo '<div class="db-card" style="margin-bottom: 20px;">
-			<div class="db-card-header">
-				<h3 class="db-card-title"><i class="fas fa-info-circle"></i> ' . __('Item Specifications') . '</h3>
-			</div>
-			<div class="db-card-body">
-				<div style="margin-bottom: 12px;">
-					<label class="db-label" style="display:block; font-size: 0.7rem; text-transform: uppercase;">' . __('Description') . '</label>
-					<div class="db-font-bold">' . $Description . '</div>
-				</div>
-				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-					<div>
-						<label class="db-label" style="display:block; font-size: 0.7rem; text-transform: uppercase;">' . __('UOM') . '</label>
-						<div class="db-badge db-badge-secondary">' . $Units . '</div>
-					</div>
-					<div>
-						<label class="db-label" style="display:block; font-size: 0.7rem; text-transform: uppercase;">' . __('Decimals') . '</label>
-						<div class="db-badge db-badge-outline">' . $DecimalPlaces . '</div>
-					</div>
-				</div>
-			</div>
-		  </div>';
+if (isset($_GET['StockID'])) {
+	$StockID = trim(mb_strtoupper($_GET['StockID']));
+} elseif (isset($_POST['StockID'])) {
+	$StockID = trim(mb_strtoupper($_POST['StockID']));
+} else {
+	$StockID = '';
 }
 
-// QUICK LINKS CARD
 if ($StockID != '') {
-	echo '<div class="db-card">
-			<div class="db-card-header">
-				<h3 class="db-card-title"><i class="fas fa-external-link-alt"></i> ' . __('Related Insights') . '</h3>
-			</div>
-			<div class="db-card-body" style="padding: 10px;">
-				<a href="' . $RootPath . '/StockMovements.php?StockID=' . $StockID . '" class="db-btn db-input-light" style="width: 100%; justify-content: flex-start; margin-bottom: 8px; font-size: 0.8rem;">
-					<i class="fas fa-exchange-alt"></i> ' . __('Show Movements') . '
-				</a>
-				<a href="' . $RootPath . '/StockUsage.php?StockID=' . $StockID . '" class="db-btn db-input-light" style="width: 100%; justify-content: flex-start; margin-bottom: 8px; font-size: 0.8rem;">
-					<i class="fas fa-chart-line"></i> ' . __('Show Usage') . '
-				</a>
-				<a href="' . $RootPath . '/SelectSalesOrder.php?SelectedStockItem=' . $StockID . '" class="db-btn db-input-light" style="width: 100%; justify-content: flex-start; margin-bottom: 8px; font-size: 0.8rem;">
-					<i class="fas fa-shopping-cart"></i> ' . __('Open Orders') . '
-				</a>';
-	if ($KitSet != 'K' AND $KitSet != 'A' AND $KitSet != 'D') {
-		echo '<a href="' . $RootPath . '/PO_SelectOSPurchOrder.php?SelectedStockItem=' . $StockID . '" class="db-btn db-input-light" style="width: 100%; justify-content: flex-start; font-size: 0.8rem;">
-				<i class="fas fa-truck"></i> ' . __('Search POs') . '
-			  </a>';
+	$Res = DB_query("SELECT description, units, decimalplaces, mbflag, serialised, controlled FROM stockmaster WHERE stockid='" . $StockID . "'");
+	if (DB_num_rows($Res) > 0) {
+		$MyRow = DB_fetch_array($Res);
+		$Description = $MyRow['description'];
+		$Units = $MyRow['units'];
+		$DecimalPlaces = $MyRow['decimalplaces'];
+		$KitSet = $MyRow['mbflag'];
+		$Serialised = $MyRow['serialised'];
+		$Controlled = $MyRow['controlled'];
 	}
-	echo '</div>
-		  </div>';
 }
 
-echo '		</form>
-	</aside>';
+?>
+<style>
+    :root {
+        --primary: hsl(145, 63%, 38%);
+        --primary-hover: hsl(145, 63%, 32%);
+        --primary-dark: hsl(145, 45%, 22%);
+        --primary-soft: hsl(145, 40%, 95%);
+        --bg: hsl(210, 20%, 97%);
+        --white: #ffffff;
+        --border: #e2e8f0;
+        --border-soft: #f1f5f9;
+        --text-main: #334155;
+        --text-muted: #64748b;
+        --shadow: 0 1px 3px rgba(0,0,0,0.1);
+        --radius: 12px;
+        --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    body { background-color: var(--bg); color: var(--text-main); font-family: var(--font-sans); }
+    .aw-page { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+    .aw-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; }
+    .aw-breadcrumb { font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; margin-bottom: 0.5rem; }
+    .aw-title { font-size: 2rem; font-weight: 900; color: var(--primary-dark); margin: 0; line-height: 1; }
+    .aw-layout-grid { display: grid; grid-template-columns: 350px 1fr; gap: 2rem; align-items: start; }
+    @media (max-width: 1024px) { .aw-layout-grid { grid-template-columns: 1fr; } }
+    .aw-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border-soft); margin-bottom: 1.5rem; overflow: hidden; }
+    .aw-card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-soft); background: var(--white); display: flex; align-items: center; gap: 0.75rem; }
+    .aw-card-title { font-size: 1rem; font-weight: 700; color: var(--primary-dark); margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+    .aw-card-title i { color: var(--primary); font-size: 1.1rem; }
+    .aw-card-body { padding: 1.25rem; }
+    .aw-field-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.25rem; }
+    .aw-label { font-size: 0.8rem; font-weight: 700; color: var(--primary-dark); }
+    .aw-input { width: 100%; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--white); font-size: 0.9rem; box-sizing: border-box; }
+    .aw-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; text-decoration: none; }
+    .aw-btn-primary { background: var(--primary); color: var(--white); }
+    .aw-btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+    .aw-btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+    .aw-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .aw-table th { background: var(--primary-soft); color: var(--primary-dark); font-weight: 800; text-transform: uppercase; font-size: 0.75rem; padding: 1rem; text-align: left; border-bottom: 2px solid var(--border-soft); }
+    .aw-table td { padding: 1rem; border-bottom: 1px solid var(--border-soft); }
+    .aw-table tr:hover { background: var(--bg); }
+    .aw-table .number { text-align: right; font-family: 'JetBrains Mono', monospace; }
+    .aw-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; background: var(--primary-soft); color: var(--primary); }
+</style>
 
-echo '<main class="db-col-main">';
+<div class="aw-page">
+    <div class="aw-header">
+        <div>
+            <div class="aw-breadcrumb"><?php echo __('Inventory'); ?> / <?php echo __('Stock Status'); ?></div>
+            <h1 class="aw-title"><?php echo $Title; ?> <?php if ($StockID) echo '<span class="aw-badge">' . $StockID . '</span>'; ?></h1>
+            <p style="margin: 10px 0 0; color: var(--text-muted); font-weight: 600;"><?php echo $Description ?? ''; ?></p>
+        </div>
+        <div>
+            <a href="SelectProduct.php?StockID=<?php echo $StockID; ?>" class="aw-btn aw-btn-outline aw-btn-sm"><i class="fas fa-th"></i> <?php echo __('Product Dashboard'); ?></a>
+        </div>
+    </div>
 
+    <div class="aw-layout-grid">
+        <!-- LEFT: LOOKUP & INFO -->
+        <aside>
+            <div class="aw-card">
+                <div class="aw-card-header"><h3 class="aw-card-title"><i class="fas fa-search"></i> <?php echo __('Item Lookup'); ?></h3></div>
+                <div class="aw-card-body">
+                    <form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'); ?>">
+                        <input type="hidden" name="FormID" value="<?php echo $_SESSION['FormID']; ?>" />
+                        <div class="aw-field-group">
+                            <label class="aw-label"><?php echo __('Stock Code'); ?></label>
+                            <input type="text" name="StockID" class="aw-input" value="<?php echo $StockID; ?>" required autofocus />
+                        </div>
+                        <button type="submit" class="aw-btn aw-btn-primary w-100"><i class="fas fa-search"></i> <?php echo __('Show Status'); ?></button>
+                    </form>
+                </div>
+            </div>
 
+            <?php if ($StockID != '' && isset($Description)): ?>
+                <div class="aw-card">
+                    <div class="aw-card-header"><h3 class="aw-card-title"><i class="fas fa-info-circle"></i> <?php echo __('Specifications'); ?></h3></div>
+                    <div class="aw-card-body">
+                        <div style="margin-bottom: 1rem;">
+                            <label class="aw-label" style="display:block; font-size: 0.7rem; color: var(--text-muted);"><?php echo __('Unit of Measure'); ?></label>
+                            <div style="font-weight: 700;"><?php echo $Units; ?></div>
+                        </div>
+                        <div>
+                            <label class="aw-label" style="display:block; font-size: 0.7rem; color: var(--text-muted);"><?php echo __('Decimal Precision'); ?></label>
+                            <div style="font-weight: 700;"><?php echo $DecimalPlaces; ?></div>
+                        </div>
+                    </div>
+                </div>
 
-$Its_A_KitSet_Assembly_Or_Dummy =false;
-if ($KitSet=='K'){
-	$Its_A_KitSet_Assembly_Or_Dummy =true;
-	prnMsg( __('This is a kitset part and cannot have a stock holding') . ', ' . __('only the total quantity on outstanding sales orders is shown'),'info');
-} elseif ($KitSet=='A'){
-	$Its_A_KitSet_Assembly_Or_Dummy =true;
-	prnMsg(__('This is an assembly part and cannot have a stock holding') . ', ' . __('only the total quantity on outstanding sales orders is shown'),'info');
-} elseif ($KitSet=='D'){
-	$Its_A_KitSet_Assembly_Or_Dummy =true;
-	prnMsg( __('This is an dummy part and cannot have a stock holding') . ', ' . __('only the total quantity on outstanding sales orders is shown'),'info');
-}
+                <div class="aw-card">
+                    <div class="aw-card-header"><h3 class="aw-card-title"><i class="fas fa-external-link-alt"></i> <?php echo __('Quick Insights'); ?></h3></div>
+                    <div class="aw-card-body" style="padding: 0.5rem;">
+                        <a href="StockMovements.php?StockID=<?php echo $StockID; ?>" class="aw-btn aw-btn-outline w-100" style="justify-content: flex-start; border: none; font-size: 0.85rem;"><i class="fas fa-exchange-alt"></i> <?php echo __('Stock Movements'); ?></a>
+                        <a href="StockUsage.php?StockID=<?php echo $StockID; ?>" class="aw-btn aw-btn-outline w-100" style="justify-content: flex-start; border: none; font-size: 0.85rem;"><i class="fas fa-chart-line"></i> <?php echo __('Stock Usage'); ?></a>
+                        <a href="SelectSalesOrder.php?SelectedStockItem=<?php echo $StockID; ?>" class="aw-btn aw-btn-outline w-100" style="justify-content: flex-start; border: none; font-size: 0.85rem;"><i class="fas fa-shopping-cart"></i> <?php echo __('Open Sales Orders'); ?></a>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </aside>
 
-if ($StockID == '') {
-	echo '<div class="db-status-bar db-status-info">
-			<div class="db-status-icon"><i class="fas fa-arrow-left"></i></div>
-			<div class="db-status-text">' . __('Please enter a stock code in the sidebar to view status across all locations.') . '</div>
-		  </div>';
-}
+        <!-- RIGHT: STATUS TABLE -->
+        <main>
+            <?php 
+            if ($StockID == '') {
+                echo '<div class="aw-card"><div class="aw-card-body text-center" style="padding: 4rem;"><i class="fas fa-warehouse fa-3x mb-3" style="color: var(--border);"></i><p style="color: var(--text-muted);">' . __('Search for an item to view location-wise status.') . '</p></div></div>';
+            } else {
+                $SQL = "SELECT locstock.loccode, locations.locationname, locstock.quantity, locstock.reorderlevel, locstock.bin, locations.managed, canupd FROM locstock INNER JOIN locations ON locstock.loccode=locations.loccode INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1 WHERE locstock.stockid = '" . $StockID . "' ORDER BY locations.locationname";
+                $Res = DB_query($SQL);
+                
+                if (DB_num_rows($Res) > 0): ?>
+                    <div class="aw-card">
+                        <div class="aw-card-header"><h3 class="aw-card-title"><i class="fas fa-warehouse"></i> <?php echo __('Location Status'); ?></h3></div>
+                        <div class="aw-card-body" style="padding: 0;">
+                            <div style="overflow-x: auto;">
+                                <table class="aw-table">
+                                    <thead>
+                                        <tr>
+                                            <th><?php echo __('Location'); ?></th>
+                                            <th><?php echo __('Bin'); ?></th>
+                                            <th class="number"><?php echo __('On Hand'); ?></th>
+                                            <th class="number"><?php echo __('Demand'); ?></th>
+                                            <th class="number"><?php echo __('Available'); ?></th>
+                                            <th class="number"><?php echo __('On Order'); ?></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php while ($row = DB_fetch_array($Res)): 
+                                            $DemandQty = GetDemand($StockID, $row['loccode']);
+                                            $QOO = GetQuantityOnOrder($StockID, $row['loccode']);
+                                            $Avail = $row['quantity'] - $DemandQty;
+                                        ?>
+                                            <tr>
+                                                <td style="font-weight: 700; color: var(--primary);"><?php echo $row['locationname']; ?></td>
+                                                <td style="font-size: 0.8rem; color: var(--text-muted);"><?php echo $row['bin'] ?: '-'; ?></td>
+                                                <td class="number" style="font-weight: 700;"><?php echo locale_number_format($row['quantity'], $DecimalPlaces); ?></td>
+                                                <td class="number" style="color: #ef4444;"><?php echo locale_number_format($DemandQty, $DecimalPlaces); ?></td>
+                                                <td class="number" style="font-weight: 700; color: var(--primary);"><?php echo locale_number_format($Avail, $DecimalPlaces); ?></td>
+                                                <td class="number"><?php echo locale_number_format($QOO, $DecimalPlaces); ?></td>
+                                            </tr>
+                                        <?php endwhile; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="aw-card"><div class="aw-card-body text-center" style="padding: 4rem;"><p><?php echo __('No stock records found for this item.'); ?></p></div></div>
+                <?php endif;
+            }
+            ?>
+        </main>
+    </div>
+</div>
 
-
-$SQL = "SELECT locstock.loccode,
-				locations.locationname,
-				locstock.quantity,
-				locstock.reorderlevel,
-				locstock.bin,
-				locations.managed,
-				canupd
-		FROM locstock INNER JOIN locations
-		ON locstock.loccode=locations.loccode
-		INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
-		WHERE locstock.stockid = '" . $StockID . "'
-		ORDER BY locations.locationname";
-
-$ErrMsg = __('The stock held at each location cannot be retrieved because');
-$LocStockResult = DB_query($SQL, $ErrMsg);
-
-if ($StockID != '' AND DB_num_rows($LocStockResult) > 0) {
-	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post">
-			<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-			<input type="hidden" name="StockID" value="' . $StockID . '" />
-			<div class="db-card">
-				<div class="db-card-header" style="display: flex; justify-content: space-between; align-items: center;">
-					<h3 class="db-card-title"><i class="fas fa-warehouse"></i> ' . __('Location Status') . '</h3>
-					<div style="display: flex; gap: 10px;">
-						<button type="submit" name="UpdateBinLocations" class="db-btn db-btn-primary" style="font-size: 0.75rem; padding: 5px 15px;">
-							<i class="fas fa-save"></i> ' . __('Update Bins') . '
-						</button>
-					</div>
-				</div>
-				<div class="db-card-body">
-					<div class="db-table-wrapper" style="border: 1px solid var(--border-soft); border-radius: var(--radius-sm);">
-						<table class="db-table">
-							<thead>
-								<tr>
-									<th>' . __('Location') . '</th>
-									<th>' . __('Bin Location') . '</th>
-									<th class="text-right">' . __('On Hand') . '</th>
-									<th class="text-right">' . __('Reorder') . '</th>
-									<th class="text-right">' . __('Demand') . '</th>
-									<th class="text-right">' . __('In Transit') . '</th>
-									<th class="text-right">' . __('Available') . '</th>
-									<th class="text-right">' . __('On Order') . '</th>';
-	if ($Serialised == 1 OR $Controlled == 1) {
-		echo '						<th>' . __('Controlled') . '</th>';
-	}
-	echo '						</tr>
-							</thead>
-							<tbody>';
-
-	while ($MyRow=DB_fetch_array($LocStockResult)) {
-		$DemandQty = GetDemand($StockID, $MyRow['loccode']);
-		$QOO = GetQuantityOnOrder($StockID, $MyRow['loccode']);
-		$InTransitQuantityOut = -GetItemQtyInTransitFromLocation($StockID, $MyRow['loccode']);
-		$InTransitQuantityIn = GetItemQtyInTransitToLocation($StockID, $MyRow['loccode']);
-		
-		if (($InTransitQuantityIn+$InTransitQuantityOut) < 0) {
-			$Available = $MyRow['quantity'] - $DemandQty + ($InTransitQuantityIn+$InTransitQuantityOut);
-		} else {
-			$Available = $MyRow['quantity'] - $DemandQty;
-		}
-
-		echo '			<tr class="striped_row">
-							<td><div class="db-font-bold text-primary">' . $MyRow['locationname'] . '</div></td>
-							<td>';
-		if ($MyRow['canupd']==1) {
-			echo '				<input type="text" name="BinLocation' . $MyRow['loccode'] . '" class="db-input" value="' . $MyRow['bin'] . '" style="width: 100px; font-size: 0.8rem; padding: 4px;" />';
-		} else {
-			echo '				<span style="font-size: 0.8rem; color: var(--text-muted);">' . ($MyRow['bin'] ?: '-') . '</span>';
-		}
-		echo '				</td>
-							<td class="text-right db-font-bold">' . locale_number_format($MyRow['quantity'], $DecimalPlaces) . '</td>
-							<td class="text-right" style="color: var(--text-muted);">' . locale_number_format($MyRow['reorderlevel'], $DecimalPlaces) . '</td>
-							<td class="text-right" style="color: var(--danger); font-weight: 500;">' . locale_number_format($DemandQty, $DecimalPlaces) . '</td>
-							<td class="text-right">' . locale_number_format($InTransitQuantityIn+$InTransitQuantityOut, $DecimalPlaces) . '</td>
-							<td class="text-right db-font-bold" style="color: var(--primary);">' . locale_number_format($Available, $DecimalPlaces) . '</td>
-							<td class="text-right">' . locale_number_format($QOO, $DecimalPlaces) . '</td>';
-
-		if ($Serialised == 1) {
-			echo '			<td><a class="db-link" target="_blank" href="' . $RootPath . '/StockSerialItems.php?Serialised=Yes&amp;Location=' . $MyRow['loccode'] . '&amp;StockID=' . $StockID . '" style="font-size:0.75rem;">' . __('Numbers') . '</a></td>';
-		} elseif ($Controlled == 1) {
-			echo '			<td><a class="db-link" target="_blank" href="' . $RootPath . '/StockSerialItems.php?Location=' . $MyRow['loccode'] . '&amp;StockID=' . $StockID . '" style="font-size:0.75rem;">' . __('Batches') . '</a></td>';
-		}
-		echo '			</tr>';
-	}
-	echo '				</tbody>
-						</table>
-					</div>
-				</div>
-			</div>
-		  </form>';
-}
-
-if ($StockID != '' AND isset($DebtorNo)) {
-	// Pricing history logic here (keep as is but modernised)
-	// I'll skip deep refactoring of pricing history for now to keep this concise, 
-	// but I'll wrap it in a db-card if it exists.
-}
-
-
-if (isset($_GET['DebtorNo'])){
-	$DebtorNo = trim(mb_strtoupper($_GET['DebtorNo']));
-} elseif (isset($_POST['DebtorNo'])){
-	$DebtorNo = trim(mb_strtoupper($_POST['DebtorNo']));
-} elseif (isset($_SESSION['CustomerID'])){
-	$DebtorNo=$_SESSION['CustomerID'];
-}
-
-if ($DebtorNo) { /* display recent pricing history for this debtor and this stock item */
-
-	$SQL = "SELECT stockmoves.trandate,
-				stockmoves.qty,
-				stockmoves.price,
-				stockmoves.discountpercent
-			FROM stockmoves
-			WHERE stockmoves.debtorno='" . $DebtorNo . "'
-				AND stockmoves.type=10
-				AND stockmoves.stockid = '" . $StockID . "'
-				AND stockmoves.hidemovt=0
-			ORDER BY stockmoves.trandate DESC";
-
-	/* only show pricing history for sales invoices - type=10 */
-
-	$ErrMsg = __('The stock movements for the selected criteria could not be retrieved because') . ' - ';
-
-	$MovtsResult = DB_query($SQL, $ErrMsg);
-
-	$k=1;
-	while ($MyRow=DB_fetch_array($MovtsResult)) {
-	  if ($LastPrice != $MyRow['price']
-			OR $LastDiscount != $MyRow['discount']) { /* consolidate price history for records with same price/discount */
-	    if (isset($Qty)) {
-	    	$DateRange=ConvertSQLDate($FromDate);
-	    	if ($FromDate != $ToDate) {
-	        	$DateRange .= ' - ' . ConvertSQLDate($ToDate);
-	     	}
-	    	$PriceHistory[] = array($DateRange, $Qty, $LastPrice, $LastDiscount);
-	    	$k++;
-	    	if ($k > 9) {
-                  break; /* 10 price records is enough to display */
-                }
-	    	if ($MyRow['trandate'] < FormatDateForSQL(DateAdd(date($_SESSION['DefaultDateFormat']),'y', -1))) {
-	    	  break; /* stop displaying price history more than a year old once we have at least one  to display */
-   	        }
-	    }
-	    $LastPrice = $MyRow['price'];
-	    $LastDiscount = $MyRow['discountpercent'];
-	    $ToDate = $MyRow['trandate'];
-	    $Qty = 0;
-	  }
-	  $Qty += $MyRow['qty'];
-	  $FromDate = $MyRow['trandate'];
-	} //end of while loop
-
-	if (isset($Qty)) {
-		$DateRange = ConvertSQLDate($FromDate);
-		if ($FromDate != $ToDate) {
-	   		$DateRange .= ' - '.ConvertSQLDate($ToDate);
-		}
-		$PriceHistory[] = array($DateRange, $Qty, $LastPrice, $LastDiscount);
-	}
-
-	if (isset($PriceHistory)) {
-	  echo '<table class="selection">
-			<thead>
-			<tr>
-				<th colspan="4"><font color="navy" size="2">' . __('Pricing history for sales of') . ' ' . $StockID . ' ' . __('to') . ' ' . $DebtorNo . '</font></th>
-				</tr>
-				<tr>
-						<th class="SortedColumn">' . __('Date Range') . '</th>
-						<th class="SortedColumn">' . __('Quantity') . '</th>
-						<th class="SortedColumn">' . __('Price') . '</th>
-						<th class="SortedColumn">' . __('Discount') . '</th>
-				</tr>
-			</thead>
-			<tbody>';
-
-	  foreach($PriceHistory as $PreviousPrice) {
-
-		echo '<tr class="striped_row">
-				<td>', $PreviousPrice[0], '</td>
-				<td class="number">', locale_number_format($PreviousPrice[1],$DecimalPlaces), '</td>
-				<td class="number">', locale_number_format($PreviousPrice[2],$_SESSION['CompanyRecord']['decimalplaces']), '</td>
-				<td class="number">', locale_number_format($PreviousPrice[3]*100,2), '%</td>
-			</tr>';
-		} // end foreach
-	 echo '</tbody></table>';
-	 }
-	else {
-	  echo '<p>' . __('No history of sales of') . ' ' . $StockID . ' ' . __('to') . ' ' . $DebtorNo;
-	}
-}//end of displaying price history for a debtor
-
-echo '	</main>
-	</div>'; // end db-bottom-layout
-
-include(__DIR__ . '/includes/footer.php');
+<?php include(__DIR__ . '/includes/footer.php'); ?>
