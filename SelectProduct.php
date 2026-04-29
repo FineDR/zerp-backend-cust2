@@ -39,6 +39,10 @@ if (isset($_POST['StockCode'])) {
 	$_POST['StockCode'] = trim(mb_strtoupper($_POST['StockCode']));
 }
 
+if (!isset($_POST['StockFilter'])) {
+    $_POST['StockFilter'] = 'All';
+}
+
 // Auto-trigger search if no item is selected and no search performed yet
 if (isset($_POST['Search']) OR isset($_POST['Go']) OR isset($_POST['Next']) OR isset($_POST['Previous']) OR (!isset($_POST['Select']) AND !isset($_SESSION['SelectedStockItem']))) {
 	if (!isset($_POST['Go']) AND !isset($_POST['Next']) AND !isset($_POST['Previous']) AND !isset($_POST['Search'])) {
@@ -231,6 +235,14 @@ if (!isset($_POST['Search']) AND (isset($_POST['Select']) OR isset($_SESSION['Se
                             </select>
                         </div>
                         <div class="aw-field-group">
+                            <label class="aw-label"><?php echo __('Stock Status'); ?></label>
+                            <select name="StockFilter" class="aw-select">
+                                <option value="All" <?php if ($_POST['StockFilter'] == 'All') echo 'selected'; ?>><?php echo __('All Registered Items'); ?></option>
+                                <option value="InStock" <?php if ($_POST['StockFilter'] == 'InStock') echo 'selected'; ?>><?php echo __('In-Stock Only'); ?></option>
+                                <option value="OutOfStock" <?php if ($_POST['StockFilter'] == 'OutOfStock') echo 'selected'; ?>><?php echo __('Out-of-Stock Only'); ?></option>
+                            </select>
+                        </div>
+                        <div class="aw-field-group">
                             <label class="aw-label"><?php echo __('Keywords'); ?></label>
                             <input type="text" name="Keywords" class="aw-input" value="<?php echo $_POST['Keywords'] ?? ''; ?>" />
                         </div>
@@ -257,7 +269,14 @@ if (!isset($_POST['Search']) AND (isset($_POST['Select']) OR isset($_SESSION['Se
                     <div class="aw-card">
                         <div class="aw-card-header" style="justify-content: space-between;">
                             <h3 class="aw-card-title"><i class="fas fa-list"></i> <?php echo __('Inventory Records'); ?></h3>
-                            <span class="aw-badge"><?php echo $ListCount; ?> <?php echo __('Items'); ?></span>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <span class="aw-badge" style="background: var(--primary-soft); color: var(--primary);"><?php echo $ListCount; ?> <?php echo __('Found'); ?></span>
+                                <?php if ($_POST['StockFilter'] == 'All'): ?>
+                                    <span class="aw-badge" style="background: #dcfce7; color: #166534;"><?php echo __('All SKUs'); ?></span>
+                                <?php elseif ($_POST['StockFilter'] == 'InStock'): ?>
+                                    <span class="aw-badge" style="background: #dcfce7; color: #166534;"><?php echo __('Physical Stock'); ?></span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <div class="aw-card-body p-0">
                             <div style="overflow-x: auto;">
@@ -279,7 +298,7 @@ if (!isset($_POST['Search']) AND (isset($_POST['Select']) OR isset($_SESSION['Se
                                             <tr>
                                                 <td style="font-weight: 700; color: var(--primary);"><?php echo $row['stockid']; ?></td>
                                                 <td style="font-weight: 600;"><?php echo $row['description']; ?></td>
-                                                <td class="number"><?php echo locale_number_format($row['qoh'], $row['decimalplaces']); ?></td>
+                                                <td class="number" style="color: <?php echo ($row['qoh'] > 0 ? '#166534' : '#ef4444'); ?>;"><?php echo locale_number_format($row['qoh'], $row['decimalplaces']); ?></td>
                                                 <td><?php echo $row['units']; ?></td>
                                                 <td style="text-align: right;">
                                                     <form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
@@ -301,6 +320,7 @@ if (!isset($_POST['Search']) AND (isset($_POST['Select']) OR isset($_SESSION['Se
                                     <form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" style="display: flex; gap: 0.5rem;">
                                         <input type="hidden" name="FormID" value="<?php echo $_SESSION['FormID']; ?>" />
                                         <input type="hidden" name="StockCat" value="<?php echo $_POST['StockCat']; ?>" />
+                                        <input type="hidden" name="StockFilter" value="<?php echo $_POST['StockFilter']; ?>" />
                                         <input type="hidden" name="Keywords" value="<?php echo $_POST['Keywords']; ?>" />
                                         <input type="hidden" name="StockCode" value="<?php echo $_POST['StockCode']; ?>" />
                                         <input type="hidden" name="Search" value="Search" />
@@ -361,7 +381,17 @@ function GenerateStockmasterQuery(array $post): string {
     if ($post['StockCat'] != 'All') {
         $WhereSQL .= "AND stockmaster.categoryid = '" . $post['StockCat'] . "' ";
     }
-    $SQL .= $WhereSQL . " GROUP BY stockmaster.stockid, stockmaster.description, stockmaster.units, stockmaster.decimalplaces ORDER BY stockmaster.stockid";
+    
+    $SQL .= $WhereSQL . " GROUP BY stockmaster.stockid, stockmaster.description, stockmaster.units, stockmaster.decimalplaces ";
+    
+    // Applying the Stock Filter
+    if ($post['StockFilter'] == 'InStock') {
+        $SQL .= " HAVING SUM(locstock.quantity) > 0 ";
+    } elseif ($post['StockFilter'] == 'OutOfStock') {
+        $SQL .= " HAVING SUM(locstock.quantity) <= 0 OR SUM(locstock.quantity) IS NULL ";
+    }
+
+    $SQL .= " ORDER BY stockmaster.stockid";
     return $SQL;
 }
 ?>
