@@ -176,7 +176,7 @@ $SQL = "SELECT debtorsmaster.name,
 			ON debtorsmaster.currcode = currencies.currabrev
 		INNER JOIN holdreasons
 			ON debtorsmaster.holdreason = holdreasons.reasoncode
-		INNER JOIN debtortrans
+		LEFT JOIN debtortrans
 			ON debtorsmaster.debtorno = debtortrans.debtorno
 		WHERE
 			debtorsmaster.debtorno = '" . $CustomerID . "'";

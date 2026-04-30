@@ -201,6 +201,8 @@ echo '<div class="db-page">
 		</div>';
 
 $Errors = array();
+$ErrorTabs = array();
+$ActiveTab = $_GET['ActiveTab'] ?? $_POST['ActiveTab'] ?? 'tab-identity';
 
 if (isset($_POST['submit'])) {
 

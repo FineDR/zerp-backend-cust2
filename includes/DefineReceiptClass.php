@@ -35,7 +35,7 @@ class Receipt_Batch {
 		if ((isset($Customer) OR isset($GLCode)) AND ($Amount + $Discount) !=0){
 			$this->Items[$this->ItemCounter] = new Receipt($Amount, $Customer, $Discount, $Narrative, $this->ItemCounter, $GLCode, $PayeeBankDetail, $CustomerName, $Tag);
 			$this->ItemCounter++;
-			$this->Total = $this->Total + ($Amount + $Discount) / $this->ExRate;
+			$this->Total = $this->Total + ($Amount + $Discount) / ($this->ExRate != 0 ? $this->ExRate : 1);
 			Return 1;
 		}
 		Return 0;
@@ -43,7 +43,7 @@ class Receipt_Batch {
 
 	function remove_receipt_item($RcptID){
 
-		$this->Total = $this->Total - ($this->Items[$RcptID]->Amount + $this->Items[$RcptID]->Discount) / $this->ExRate;
+		$this->Total = $this->Total - ($this->Items[$RcptID]->Amount + $this->Items[$RcptID]->Discount) / ($this->ExRate != 0 ? $this->ExRate : 1);
 		unset($this->Items[$RcptID]);
 
 	}

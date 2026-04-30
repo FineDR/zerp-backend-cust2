@@ -23,6 +23,12 @@ echo '<div class="db-page">
 					<p class="db-page-subtitle">' . (isset($_GET['Type']) && $_GET['Type']=='GL' ? __('Process general ledger receipt entries') : __('Process customer payment receipts')) . '</p>
 				</div>
 				<div class="db-header-actions">';
+if (empty($_GET['identifier'])) {
+	$identifier = date('U');
+} else {
+	$identifier = $_GET['identifier'];
+}
+
 if (isset($_SESSION['ReceiptBatch' . $identifier]) && count($_SESSION['ReceiptBatch' . $identifier]->Items) > 0) {
 	echo '			<span class="db-badge db-badge-success" style="padding: 8px 16px; font-weight: 800;">' . count($_SESSION['ReceiptBatch' . $identifier]->Items) . ' ' . __('Items in Batch') . '</span>';
 }
@@ -32,12 +38,6 @@ echo '				</div>
 
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/GLFunctions.php');
-
-if (empty($_GET['identifier'])) {
-	$identifier = date('U');
-} else {
-	$identifier = $_GET['identifier'];
-}
 
 $Msg='';
 
@@ -727,7 +727,7 @@ customer record returned by the search - this record is then auto selected */
 			ON debtorsmaster.holdreason = holdreasons.reasoncode
 			INNER JOIN currencies
 			ON debtorsmaster.currcode = currencies.currabrev
-			INNER JOIN debtortrans
+			LEFT JOIN debtortrans
 			ON debtorsmaster.debtorno = debtortrans.debtorno
 			WHERE debtorsmaster.debtorno = '" . $_POST['CustomerID'] . "'";
 	if ($_SESSION['SalesmanLogin'] !=  '') {

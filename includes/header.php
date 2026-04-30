@@ -33,7 +33,7 @@ if (isset($_GET['Theme'])) {
 	$Result = DB_query($SQL);
 }
 
-if ($LanguagesArray[$_SESSION['Language']]['Direction'] == 'rtl' and mb_substr($_SESSION['Theme'], -4) != '-rtl') {
+if (isset($_SESSION['Language']) && isset($LanguagesArray[$_SESSION['Language']]) && $LanguagesArray[$_SESSION['Language']]['Direction'] == 'rtl' and mb_substr($_SESSION['Theme'], -4) != '-rtl') {
 	$_SESSION['Theme'] = $_SESSION['Theme'] . '-rtl';
 }
 
@@ -217,15 +217,21 @@ echo '</header>';
 
 echo '<section class="MainBody">';
 
-if ($ScriptName != 'index.php') {
+if ($ScriptName != 'index.php' && $ScriptName != 'Dashboard.php') {
 	if (isset($_SESSION['Module'])) {
 		$SQL = "SELECT modulename FROM modules WHERE modulelink='" . $_SESSION['Module'] . "'";
 		$Result = DB_query($SQL);
-		$MyRow = DB_fetch_array($Result);
-		echo '<div class="ScriptTitle"><a href="index.php?Application=' . $_SESSION['Module'] . '">', $MyRow['modulename'] . '</a> -> '. $Title, '</div>';
+		if (DB_num_rows($Result) > 0) {
+			$MyRow = DB_fetch_array($Result);
+			echo '<div class="ScriptTitle"><a href="index.php?Application=' . $_SESSION['Module'] . '">', $MyRow['modulename'] . '</a> -> '. $Title, '</div>';
+		} else {
+			echo '<div class="ScriptTitle">', $Title, '</div>';
+		}
 	} else {
 		echo '<div class="ScriptTitle">', $Title, '</div>';
 	}
+} elseif ($ScriptName == 'Dashboard.php') {
+    echo '<div class="ScriptTitle">', __('Dashboard'), '</div>';
 }
 
 echo '<div id="MessageContainerHead"></div>';
