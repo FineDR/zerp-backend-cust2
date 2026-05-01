@@ -17,6 +17,23 @@ if (isset($_GET['SupplierID'])) { // Links to Manual before header.php
 	$BookMark = 'BankAccountPayments';
 	$PageTitleText = __('Bank Account Payments Entry');
 }
+
+if (empty($_GET['identifier']) && empty($_POST['identifier'])) {
+	$identifier = date('U'); // Unique session identifier
+} else {
+	$identifier = !empty($_GET['identifier']) ? $_GET['identifier'] : $_POST['identifier'];
+}
+
+if (isset($_GET['NewPayment']) AND $_GET['NewPayment'] == 'Yes') {
+	unset($_SESSION['PaymentDetail' . $identifier]->GLItems);
+	unset($_SESSION['PaymentDetail' . $identifier]);
+}
+
+if (!isset($_SESSION['PaymentDetail' . $identifier])) {
+	$_SESSION['PaymentDetail' . $identifier] = new Payment;
+	$_SESSION['PaymentDetail' . $identifier]->GLItemCounter = 1;
+}
+
 include(__DIR__ . '/includes/header.php');
 
 if (isset($_POST['DatePaid'])) {
@@ -338,23 +355,6 @@ if (isset($_POST['PaymentCancelled'])) {
 	prnMsg(__('Payment Cancelled since cheque was not printed') , 'warning');
 	include(__DIR__ . '/includes/footer.php');
 	exit();
-}
-
-if (empty($_GET['identifier'])) {
-	$identifier = date('U'); // Unique session identifier to ensure that there is no conflict with other order entry session on the same machine.
-
-} else {
-	$identifier = $_GET['identifier'];
-}
-
-if (isset($_GET['NewPayment']) AND $_GET['NewPayment'] == 'Yes') {
-	unset($_SESSION['PaymentDetail' . $identifier]->GLItems);
-	unset($_SESSION['PaymentDetail' . $identifier]);
-}
-
-if (!isset($_SESSION['PaymentDetail' . $identifier])) {
-	$_SESSION['PaymentDetail' . $identifier] = new Payment;
-	$_SESSION['PaymentDetail' . $identifier]->GLItemCounter = 1;
 }
 
 if ((isset($_POST['UpdateHeader']) AND $_POST['BankAccount'] == '') OR (isset($_POST['Process']) AND $_POST['BankAccount'] == '')) {
@@ -886,8 +886,8 @@ if (isset($_POST['CommitBatch']) AND empty($Errors)) {
 			if (!isset($_POST['PaidArray'])) {
 				$PaidArray = array();
 				foreach ($_POST as $Name => $Value) {
-					if (substr($Name, 0, 4) == 'paid' AND $Value > 0) {
-						$PaidArray[substr($Name, 4) ] = $Value;
+					if (substr($Name, 0, 4) == 'paid' AND filter_number_format($Value) > 0) {
+						$PaidArray[substr($Name, 4) ] = filter_number_format($Value);
 					}
 				}
 			}
@@ -918,7 +918,7 @@ if (isset($_POST['CommitBatch']) AND empty($Errors)) {
 							22,'" .
 							$_SESSION['PaymentDetail' . $identifier]->SupplierID . "','" .
 							FormatDateForSQL($_SESSION['PaymentDetail' . $identifier]->DatePaid) . "','" .
-							date('Y-m-d H-i-s') . "','" .
+							date('Y-m-d H:i:s') . "','" .
 							$_SESSION['PaymentDetail' . $identifier]->SuppTransSuppReference . "','" .
 							($_SESSION['PaymentDetail' . $identifier]->FunctionalExRate * $_SESSION['PaymentDetail' . $identifier]->ExRate) . "','" .
 							(-$_SESSION['PaymentDetail' . $identifier]->Amount - $_SESSION['PaymentDetail' . $identifier]->Discount) . "','" .
@@ -1612,7 +1612,7 @@ echo '<!-- TAB 4: REVIEW & FINALIZE -->
 				</div>
 			</div> <!-- end card-body -->
 			<div class="db-card-footer">
-				<button type="submit" name="CommitBatch" onClick="payVerify(\'Amount\',\'ttl\')" class="db-btn db-btn-primary" style="height: 48px; padding: 0 32px; font-size: 1.1rem;">
+				<button type="submit" name="CommitBatch" onClick="return payVerify(\'Amount\',\'ttl\')" class="db-btn db-btn-primary" style="height: 48px; padding: 0 32px; font-size: 1.1rem;">
 					<i class="fas fa-check-double" style="margin-right: 12px;"></i>
 					' . __('Finalize & Process Payment') . '
 				</button>

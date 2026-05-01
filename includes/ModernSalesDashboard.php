@@ -48,7 +48,7 @@ while ($row = DB_fetch_assoc($resTop)) {
 
 // Fallback if salesanalysis is empty
 if (empty($topProds)) {
-    $sqlFallback = "SELECT stkcode as stockid, SUM(-qty) as total_qty FROM stockmoves WHERE show_on_inv_crds=1 GROUP BY stkcode ORDER BY total_qty DESC LIMIT 5";
+    $sqlFallback = "SELECT stockid, SUM(-qty) as total_qty FROM stockmoves WHERE show_on_inv_crds=1 GROUP BY stockid ORDER BY total_qty DESC LIMIT 5";
     $resFallback = DB_query($sqlFallback);
     while ($row = DB_fetch_assoc($resFallback)) {
         $topProds[] = $row;

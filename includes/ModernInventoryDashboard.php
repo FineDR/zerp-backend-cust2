@@ -121,7 +121,7 @@ while ($row = DB_fetch_assoc($resMoves)) {
             <h3 class="db-card-title"><?= __('Category Distribution') ?></h3>
             <div class="db-dist-list">
                 <?php foreach ($stockDist as $dist): 
-                    $pct = ($dist['item_count'] / $totalItems) * 100;
+                    $pct = ($totalItems > 0) ? ($dist['item_count'] / $totalItems) * 100 : 0;
                 ?>
                 <div class="db-dist-item">
                     <div class="db-dist-header">

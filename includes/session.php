@@ -91,6 +91,17 @@ if (!function_exists('__')) {
 
 if (file_exists($PathPrefix . 'includes/LanguageSetup.php')) {
 	include($PathPrefix . 'includes/LanguageSetup.php');
+} else {
+	if (file_exists($PathPrefix . 'includes/LanguagesArray.php')) {
+		include($PathPrefix . 'includes/LanguagesArray.php');
+		if (isset($_SESSION['Language']) && isset($LanguagesArray[$_SESSION['Language']])) {
+			$ThousandsSeparator = $LanguagesArray[$_SESSION['Language']]['ThousandsSeparator'];
+			$DecimalPoint = $LanguagesArray[$_SESSION['Language']]['DecimalPoint'];
+		} else {
+			$ThousandsSeparator = ',';
+			$DecimalPoint = '.';
+		}
+	}
 }
 
 /// @todo instead of delegating to ConnectDB.php the handling of $_POST, do it here, so that that file can then be used

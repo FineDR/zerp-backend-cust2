@@ -7,6 +7,7 @@
  * ii)  an invoice
  * iii) a credit note
 */
+#[AllowDynamicProperties]
 class Cart {
 
 	var $LineItems; /*array of objects of class LineDetails using the product id as the pointer */
@@ -416,6 +417,7 @@ class Cart {
 
 } /* end of cart class defintion */
 
+#[AllowDynamicProperties]
 class LineDetails {
 	var $LineNumber;
 	var $StockID;
@@ -577,6 +579,7 @@ class LineDetails {
 
 }
 
+#[AllowDynamicProperties]
 class Tax {
 	var $TaxCalculationOrder;  /*the index for the array */
 	var $TaxAuthID;

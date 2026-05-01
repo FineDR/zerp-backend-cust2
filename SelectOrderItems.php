@@ -6,12 +6,9 @@ include(__DIR__ . '/includes/DefineCartClass.php');
 require(__DIR__ . '/includes/session.php');
 
 
-if (isset($_GET['NewOrder'])) {
+if (isset($_GET['NewOrder']) && empty($_GET['identifier'])) {
 	$identifier = date('U');
-	$_SESSION['ExistingOrder' . $identifier] = 0;
-	$_SESSION['Items' . $identifier] = new Cart;
-	
-	$RedirectURL = $RootPath . '/SelectOrderItems.php?identifier=' . $identifier;
+	$RedirectURL = $RootPath . '/SelectOrderItems.php?NewOrder=Yes&identifier=' . $identifier;
 	if (isset($_GET['SelectedCustomer'])) {
 		$RedirectURL .= '&DebtorNo=' . urlencode($_GET['SelectedCustomer']);
 	} elseif (isset($_GET['DebtorNo'])) {
