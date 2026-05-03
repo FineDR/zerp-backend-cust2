@@ -129,7 +129,7 @@ if ($NewTransfer) {
 		$MyRow = DB_fetch_array($Result);
 		$_SESSION['Transfer']->TransferItem[0] = new LineItem(	trim(mb_strtoupper($_POST['StockID'])),
 															$MyRow['description'],
-						 									filter_number_format($_POST['Quantity']),
+						 									(isset($_POST['Quantity']) ? filter_number_format($_POST['Quantity']) : 0),
 															$MyRow['units'],
 															$MyRow['controlled'],
 															$MyRow['serialised'],
@@ -154,7 +154,7 @@ if (isset($_POST['Quantity'])
 	AND isset($_SESSION['Transfer']->TransferItem[0]->Controlled)
 	AND $_SESSION['Transfer']->TransferItem[0]->Controlled==0) {
 
-	$_SESSION['Transfer']->TransferItem[0]->Quantity = filter_number_format($_POST['Quantity']);
+	$_SESSION['Transfer']->TransferItem[0]->Quantity = (isset($_POST['Quantity']) ? filter_number_format($_POST['Quantity']) : 0);
 
 }
 
@@ -174,7 +174,7 @@ if (isset($_POST['StockLocationFrom'])
 
 	$_SESSION['Transfer']->StockLocationFrom = $_POST['StockLocationFrom'];
 	$_SESSION['Transfer']->StockLocationTo = $_POST['StockLocationTo'];
-	$_SESSION['Transfer']->TransferItem[0]->Quantity=filter_number_format($_POST['Quantity']);
+	$_SESSION['Transfer']->TransferItem[0]->Quantity=(isset($_POST['Quantity']) ? filter_number_format($_POST['Quantity']) : 0);
 	$_SESSION['Transfer']->TransferItem[0]->SerialItems=array();
 }
 

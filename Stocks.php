@@ -53,7 +53,7 @@ if (isset($StockID) and $StockID != '' and !isset($_POST['UpdateCategories'])) {
 	$SQL = "SELECT COUNT(stockid) FROM stockmaster WHERE stockid='" . $StockID . "' GROUP BY stockid";
 	$Result = DB_query($SQL);
 	$MyRow = DB_fetch_row($Result);
-	$New = ($MyRow[0] == 0) ? 1 : 0;
+	$New = (!$MyRow || $MyRow[0] == 0) ? 1 : 0;
 } else {
 	$New = 1;
 }
@@ -692,7 +692,8 @@ if (isset($_POST['submit'])) {
                         <div class="aw-card-body text-center">
                             <div class="aw-image-container">
                                 <?php 
-                                $ImgGlob = glob($_SESSION['part_pics_dir'] . '/' . $StockID . '.{' . implode(",", $SupportedImgExt) . '}', GLOB_BRACE);
+                                $PartPicsDir = (isset($_SESSION['part_pics_dir'])) ? $_SESSION['part_pics_dir'] : 'companies/' . $_SESSION['DatabaseName'] . '/part_pics';
+                                $ImgGlob = glob($PartPicsDir . '/' . $StockID . '.{' . implode(",", $SupportedImgExt) . '}', GLOB_BRACE);
                                 $Pic = reset($ImgGlob);
                                 if ($Pic): ?>
                                     <img src="<?php echo $Pic; ?>" />

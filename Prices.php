@@ -6,10 +6,10 @@ $Title = __('Item Prices');
 $ViewTopic = 'Prices';
 include(__DIR__ . '/includes/header.php');
 
-if (isset($_POST['StartDate'])) {
+if (isset($_POST['StartDate']) && $_POST['StartDate'] != '') {
 	$_POST['StartDate'] = ConvertSQLDate($_POST['StartDate']);
 }
-if (isset($_POST['EndDate'])) {
+if (isset($_POST['EndDate']) && $_POST['EndDate'] != '') {
 	$_POST['EndDate'] = ConvertSQLDate($_POST['EndDate']);
 }
 
@@ -248,7 +248,7 @@ if (isset($_GET['Edit'])) {
                             <input type="text" name="Price" class="aw-input text-right" required value="<?php echo $_POST['Price'] ?? ''; ?>" />
                         </div>
 
-                        <button type="submit" name="submit" class="aw-btn aw-btn-primary w-100" style="margin-top: 10px;">
+                        <button type="submit" name="submit" value="1" class="aw-btn aw-btn-primary w-100" style="margin-top: 10px;">
                             <i class="fas fa-save"></i> <?php echo (isset($_POST['OldTypeAbbrev']) ? __('Update Price') : __('Enter Price')); ?>
                         </button>
                         

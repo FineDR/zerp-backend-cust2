@@ -187,7 +187,7 @@ if (!isset($_POST['Search']) AND (isset($_POST['Select']) OR isset($_SESSION['Se
         <aside>
             <div class="aw-card" style="padding: 1rem; text-align: center;">
                 <?php 
-                $PossibleImageFiles = glob($_SESSION['part_pics_dir'] . '/' . $StockID . '.{png,jpg,jpeg}', GLOB_BRACE);
+                $PossibleImageFiles = glob(($_SESSION["part_pics_dir"] ?? "part_pics") . '/' . $StockID . '.{png,jpg,jpeg}', GLOB_BRACE);
                 $ImageFile = (count($PossibleImageFiles) > 0 ? $PossibleImageFiles[0] : '');
                 echo GetImageLink($ImageFile, $StockID, 200, 200, "max-width: 100%; height: auto; border-radius: 8px;");
                 ?>

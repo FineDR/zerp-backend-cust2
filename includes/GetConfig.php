@@ -151,11 +151,13 @@ if ((isset($ForceConfigReload) AND $ForceConfigReload==true) OR !isset($_SESSION
 	//Add favorite scripts
 	//Check that the favourites table exists (upgrades will choke otherwise)
 
-	$SQL = "SELECT href, caption FROM favourites WHERE userid='" . $_SESSION['UserID'] . "'";
-	$Result = DB_query($SQL, '', '', false, false);
-	if (DB_num_rows($Result)>0) {
-		while ($MyRow = DB_fetch_array($Result)) {
-			$_SESSION['Favourites'][$MyRow['href']] = $MyRow['caption'];
+	if (isset($_SESSION['UserID'])) {
+		$SQL = "SELECT href, caption FROM favourites WHERE userid='" . $_SESSION['UserID'] . "'";
+		$Result = DB_query($SQL, '', '', false, false);
+		if (DB_num_rows($Result)>0) {
+			while ($MyRow = DB_fetch_array($Result)) {
+				$_SESSION['Favourites'][$MyRow['href']] = $MyRow['caption'];
+			}
 		}
 	}
 

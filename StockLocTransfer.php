@@ -12,6 +12,8 @@ include(__DIR__ . '/includes/header.php');
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/StockFunctions.php');
 
+$LinesCounter = 0;
+
 if (isset($_POST['Submit'])){
 /*Trap any errors in input */
 
@@ -331,7 +333,6 @@ if (isset($_POST['Submit']) AND $InputError==false){
 
 	
 	// Pre-populate if post data exists
-	$LinesCounter = 0;
 	if (isset($_POST['LinesCounter'])){
 		for ($i=0; $i < $_POST['LinesCounter']; $i++){
 			if (isset($_POST['StockID' . $i]) && $_POST['StockID' . $i] != ''){

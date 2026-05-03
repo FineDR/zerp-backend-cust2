@@ -160,7 +160,7 @@ if (isset($_POST['CheckCode'])) {
 	exit();
 }
 
-if (isset($_POST['EnterAdjustment']) AND $_POST['EnterAdjustment']!= ''){
+if (isset($_POST['EnterAdjustment'])){
 
 	$InputError = false; /*Start by hoping for the best */
 	$Result = DB_query("SELECT * FROM stockmaster WHERE stockid='" . $_SESSION['Adjustment' . $identifier]->StockID . "'");
@@ -408,6 +408,8 @@ if (!isset($_SESSION['Adjustment' . $identifier])) {
 		$_SESSION['Adjustment' . $identifier]->PartUnit=$MyRow['units'];
 		$_SESSION['Adjustment' . $identifier]->StandardCost=$MyRow['actualcost'];
 		$DecimalPlaces = $MyRow['decimalplaces'];
+	} else {
+		$DecimalPlaces = 2;
 	}
 }
 
@@ -435,11 +437,8 @@ if (isset($_SESSION['Adjustment' . $identifier]) AND mb_strlen($_SESSION['Adjust
 						<div class="db-font-bold text-primary" style="font-size: 1rem;">' . $_SESSION['Adjustment' . $identifier]->StockID . '</div>
 						<div style="font-size: 0.85rem; color: var(--text-main); margin: 4px 0;">' . $_SESSION['Adjustment' . $identifier]->ItemDescription . '</div>
 						<div style="font-size: 0.75rem; color: var(--text-muted);">' . __('UOM') . ': ' . $_SESSION['Adjustment' . $identifier]->PartUnit . ' | ' . __('Cost') . ': ' . locale_number_format($_SESSION['Adjustment' . $identifier]->StandardCost, 4) . '</div>
-						<input type="hidden" name="StockID" id="StockID" value="' . $_SESSION['Adjustment' . $identifier]->StockID . '" />
 					</div>
 				</div>';
-} else {
-	echo '		<input type="hidden" name="StockID" id="StockID" value="' . $StockID . '" />';
 }
 
 echo '		</div>
@@ -450,8 +449,15 @@ echo '<main class="db-col-main">';
 
 
 	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post">
-			<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-			
+			<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+
+if (isset($_SESSION['Adjustment' . $identifier]) AND mb_strlen($_SESSION['Adjustment' . $identifier]->ItemDescription)>1){
+	echo '		<input type="hidden" name="StockID" id="StockID" value="' . $_SESSION['Adjustment' . $identifier]->StockID . '" />';
+} else {
+	echo '		<input type="hidden" name="StockID" id="StockID" value="' . $StockID . '" />';
+}
+
+echo '			
 			<div class="db-card">
 				<div class="db-card-header">
 					<div class="db-card-title"><i class="fas fa-sliders-h"></i> ' . __('Adjustment Details') . '</div>
@@ -512,7 +518,7 @@ echo '			</select>
 	</div>';
 	  echo '</div>
 	  <div class=" centre" style="margin-top:20px;">
-		<button type="submit" name="EnterAdjustment" class="db-btn db-btn-primary"><i class="fas fa-check-circle"></i> ' . __('Process Adjustment') . '</button>
+		<button type="submit" name="EnterAdjustment" value="1" class="db-btn db-btn-primary"><i class="fas fa-check-circle"></i> ' . __('Process Adjustment') . '</button>
 	  </div>
 	  <div class="db-footer-links centre" style="margin-top:20px;">
 		<a href="StockMovements.php?StockID=' . $StockID . '" class="db-link"><i class="fas fa-history"></i> ' . __('Show History') . '</a> | 
