@@ -944,11 +944,11 @@ if ($_SESSION['RequireCustomerSelection'] ==1
 								AND custitem.debtorno='" .  $_SESSION['Items'.$identifier]->DebtorNo . "' ";
 		}
 
-		if ($_POST['Keywords']!='' AND $_POST['StockCode']=='') {
+		if (isset($_POST['Keywords']) AND $_POST['Keywords']!='' AND (!isset($_POST['StockCode']) OR $_POST['StockCode']=='')) {
 			$Msg='<div class="page_help_text">' . __('Order Item description has been used in search') . '.</div>';
-		} elseif ($_POST['StockCode']!='' AND $_POST['Keywords']=='') {
+		} elseif (isset($_POST['StockCode']) AND $_POST['StockCode']!='' AND (!isset($_POST['Keywords']) OR $_POST['Keywords']=='')) {
 			$Msg='<div class="page_help_text">' . __('Stock Code has been used in search') . '.</div>';
-		} elseif ($_POST['Keywords']=='' AND $_POST['StockCode']=='') {
+		} elseif ((!isset($_POST['Keywords']) OR $_POST['Keywords']=='') AND (!isset($_POST['StockCode']) OR $_POST['StockCode']=='')) {
 			$Msg='<div class="page_help_text">' . __('Stock Category has been used in search') . '.</div>';
 		}
 		$SQL = "SELECT stockmaster.stockid,

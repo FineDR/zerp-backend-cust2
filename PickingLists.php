@@ -145,6 +145,9 @@ if (!isset($_GET['Prid']) and !isset($_SESSION['ProcessingPick'])) {
 		$_SESSION['Items' . $identifier]->TaxGroup = $MyRow['taxgroupid'];
 		$_SESSION['Items' . $identifier]->DispatchTaxProvince = $MyRow['taxprovinceid'];
 		$_SESSION['Items' . $identifier]->GetFreightTaxes();
+		if ($_SESSION['Items' . $identifier]->SpecialInstructions) {
+			echo '<div class="warn"><i class="fas fa-exclamation-triangle"></i> ' . $_SESSION['Items' . $identifier]->SpecialInstructions . '</div>';
+		}
 		$_SESSION['Items' . $identifier]->SpecialInstructions = $MyRow['specialinstructions'];
 
 		DB_free_result($GetOrdHdrResult);
@@ -300,38 +303,56 @@ if (!isset($_GET['Prid']) and !isset($_SESSION['ProcessingPick'])) {
 
 }
 
-if ($_SESSION['Items' . $identifier]->SpecialInstructions) {
-	prnMsg($_SESSION['Items' . $identifier]->SpecialInstructions, 'warn');
-}
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div class="db-page-title">
+				<i class="fas fa-truck-loading"></i> ' . $Title . '
+			</div>
+			<div class="db-page-subtitle">' . __('Manage pick list: ') . str_pad($_SESSION['ProcessingPick'], 10, '0', STR_PAD_LEFT) . __(' for Order No: ') . $_SESSION['Items' . $identifier]->OrderNo . '</div>
+			<div class="db-page-actions">
+				<a href="' . $RootPath . '/SelectPickingLists.php" class="db-btn db-btn-outline"><i class="fas fa-arrow-left"></i> ' . __('Back to Registers') . '</a>
+			</div>
+		</div>
 
-echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/images/inventory.png" title="' . __('Pick List Maintenance') . '" alt="" />' . ' ' . __('Pick List: ') . str_pad($_SESSION['ProcessingPick'], 10, '0', STR_PAD_LEFT) . __(' for Order No: ') . $_SESSION['Items' . $identifier]->OrderNo . '</p>';
+		<div class="db-page-content">
+			<div class="kpi-grid" style="margin-bottom: var(--space-6);">
+				<div class="kpi-card-v2">
+					<div class="kpi-icon" style="background: var(--primary-soft); color: var(--primary);"><i class="fas fa-user"></i></div>
+					<div class="kpi-data">
+						<span class="label">' . __('Customer') . '</span>
+						<span class="value">' . $_SESSION['Items' . $identifier]->CustomerName . ' (' . $_SESSION['Items' . $identifier]->DebtorNo . ')</span>
+					</div>
+				</div>
+				<div class="kpi-card-v2">
+					<div class="kpi-icon" style="background: var(--info-soft); color: var(--info);"><i class="fas fa-shopping-cart"></i></div>
+					<div class="kpi-data">
+						<span class="label">' . __('Order Reference') . '</span>
+						<span class="value">' . ($_SESSION['Items' . $identifier]->CustRef ?: __('No Ref')) . '</span>
+					</div>
+				</div>
+			</div>
 
-echo '<div class="toplink">
-		<a href="' . $RootPath . '/SelectPickingLists.php">' . __('Back to Pick Lists') . '</a>
-	</div>';
+			<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post">
+				<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
 
-echo '<table class="selection">
-			<tr>
-				<th><img src="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/images/customer.png" title="' . __('Customer') . '" alt="" />' . ' ' . __('Customer Code') . ' :<b> ' . $_SESSION['Items' . $identifier]->DebtorNo . '</b></th>
-				<th>' . __('Customer Name') . ' :<b> ' . $_SESSION['Items' . $identifier]->CustomerName . '</b></th>
-			</tr>
-		</table>';
-
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-/***************************************************************
-Line Item Display
-***************************************************************/
-echo '<table width="90%" cellpadding="2" class="selection">
-	<tr>
-		<th>' . __('Item Code') . '</th>
-		<th>' . __('Item Description') . '</th>
-		<th>' . __('Ordered') . '</th>
-		<th>' . __('Units') . '</th>
-		<th>' . __('Already') . '<br />' . __('Sent') . '</th>
-		<th>' . __('Qty Picked') . '</th>
-	</tr>';
+				<div class="db-card" style="margin-bottom: var(--space-6);">
+					<div class="db-card-header">
+						<div class="db-card-title"><i class="fas fa-list-ol"></i> ' . __('Fulfillment Items') . '</div>
+					</div>
+					<div class="db-card-body p-0">
+						<div class="db-table-wrapper">
+							<table class="db-table">
+								<thead>
+									<tr>
+										<th>' . __('Item Code') . '</th>
+										<th>' . __('Item Description') . '</th>
+										<th class="text-right">' . __('Ordered') . '</th>
+										<th>' . __('Units') . '</th>
+										<th class="text-right">' . __('Already Sent') . '</th>
+										<th class="text-right">' . __('Qty Picked') . '</th>
+									</tr>
+								</thead>
+								<tbody>';
 
 /*show the line items on the order with the quantity being dispatched available for modification */
 
@@ -351,47 +372,40 @@ foreach ($_SESSION['Items' . $identifier]->LineItems as $LnItm) {
 		}
 	}
 
-	echo '<tr class="striped_row">
-		<td>' . $LnItm->StockID . '</td>
-		<td title="' . $LnItm->LongDescription . '">' . $LnItm->ItemDescription . '</td>
-		<td class="number">' . locale_number_format($LnItm->Quantity, $LnItm->DecimalPlaces) . '</td>
+	echo '<tr>
+		<td><span class="db-badge db-badge-secondary">' . $LnItm->StockID . '</span></td>
+		<td title="' . $LnItm->LongDescription . '"><div class="db-font-bold">' . $LnItm->ItemDescription . '</div></td>
+		<td class="text-right">' . locale_number_format($LnItm->Quantity, $LnItm->DecimalPlaces) . '</td>
 		<td>' . $LnItm->Units . '</td>
-		<td class="number">' . locale_number_format($LnItm->QtyInv, $LnItm->DecimalPlaces) . '</td>';
+		<td class="text-right">' . locale_number_format($LnItm->QtyInv, $LnItm->DecimalPlaces) . '</td>';
 
 	if ($LnItm->Controlled == 1) {
 		if (isset($_POST['ProcessPickList'])) {
-			echo '<td class="number">' . locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces) . '</td>';
+			echo '<td class="text-right db-font-bold">' . locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces) . '</td>';
 		} else {
-			echo '<td class="number"><input type="hidden" name="' . $LnItm->LineNumber . '_QtyDispatched"  value="' . $LnItm->QtyDispatched . '" /><a href="' . $RootPath . '/PickingListsControlled.php?identifier=' . $identifier . '&amp;LineNo=' . $LnItm->LineNumber . '">' . locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces) . '</a></td>';
+			echo '<td class="text-right">
+                    <input type="hidden" name="' . $LnItm->LineNumber . '_QtyDispatched"  value="' . $LnItm->QtyDispatched . '" />
+                    <a href="' . $RootPath . '/PickingListsControlled.php?identifier=' . $identifier . '&amp;LineNo=' . $LnItm->LineNumber . '" class="db-btn db-btn-outline-primary" style="padding: 4px 8px;">
+                        ' . locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces) . ' <i class="fas fa-barcode"></i>
+                    </a>
+                  </td>';
 		}
 	} else {
 		if (isset($_POST['ProcessPickList'])) {
-			echo '<td class="number">' . locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces) . '</td>';
+			echo '<td class="text-right db-font-bold">' . locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces) . '</td>';
 		} else {
-			echo '<td class="number"><input tabindex="' . $j . '" type="text" ' . ($j == 1 ? 'autofocus="autofocus" ' : '') . ' class="number" required="required" title="' . __('Enter the quantity to charge the customer for, that has been dispatched') . '" name="' . $LnItm->LineNumber . '_QtyDispatched" maxlength="12" size="12" value="' . locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces) . '" /></td>';
+			echo '<td class="text-right">
+                    <input tabindex="' . $j . '" type="text" ' . ($j == 1 ? 'autofocus="autofocus" ' : '') . ' class="db-input text-right" style="width: 100px; display: inline-block;" required="required" title="' . __('Enter the quantity to charge the customer for, that has been dispatched') . '" name="' . $LnItm->LineNumber . '_QtyDispatched" maxlength="12" size="12" value="' . locale_number_format($LnItm->QtyDispatched, $LnItm->DecimalPlaces) . '" />
+                  </td>';
 		}
 	}
 
-	echo '<td class="number">' . locale_number_format($_SESSION['Items' . $identifier]->LineItems[$LnItm->LineNumber]->QtyShipped, $LnItm->DecimalPlaces) . '</td>';
-
-	if ($LnItm->Controlled == 1) {
-		if (!isset($_POST['ProcessPickList'])) {
-			echo '<td><a href="' . $RootPath . '/PickingListsControlled.php?identifier=' . $identifier . '&amp;LineNo=' . $LnItm->LineNumber . '">';
-			if ($LnItm->Serialised == 1) {
-				echo __('Enter Serial Numbers');
-			} else {
-				/*Just batch/roll/lot control */
-				echo __('Enter Batch/Roll/Lot #');
-			}
-			echo '</a></td>';
-		}
-	}
 	echo '</tr>';
 
 	if (mb_strlen($LnItm->Narrative) > 1) {
 		$Narrative = str_replace('\r\n', '<br />', $LnItm->Narrative);
-		echo '<tr class="striped_row">
-				<td colspan="6">' . stripslashes($Narrative) . '</td>
+		echo '<tr>
+				<td colspan="6" style="padding-top: 0; padding-bottom: 12px; font-style: italic; color: var(--text-muted); font-size: 0.8rem;">' . stripslashes($Narrative) . '</td>
 			</tr>';
 	}
 } //end foreach ($Line)
@@ -402,7 +416,12 @@ if (!isset($_POST['DispatchDate']) or !is_date($_POST['DispatchDate'])) {
 	$DefaultDispatchDate = $_POST['DispatchDate'];
 }
 
-echo '</table>';
+echo '          </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>';
+
 
 if (isset($_POST['ProcessPickList']) and $_POST['ProcessPickList'] !=  '') {
 
@@ -491,9 +510,9 @@ if (isset($_POST['ProcessPickList']) and $_POST['ProcessPickList'] !=  '') {
 
 	/*Now need to check that the order details are the same as they were when they were read into the Items array. If they've changed then someone else may have invoiced them */
 
-	$SQL = "SELECT stkcode,
-					quantity,
-					qtyinvoiced,
+	$SQL = "SELECT salesorderdetails.stkcode,
+					salesorderdetails.quantity,
+					salesorderdetails.qtyinvoiced,
 					pickreqdetails.orderlineno
 				FROM pickreqdetails
 				INNER JOIN pickreq
@@ -648,12 +667,23 @@ if (isset($_POST['ProcessPickList']) and $_POST['ProcessPickList'] !=  '') {
 	unset($_SESSION['Items' . $identifier]);
 	unset($_SESSION['ProcessingPick']);
 
-	echo '<br /><div class="centre">';
-
-	echo '<a target="_blank" href="' . $PrintDispatchNote . '">' . __('Print Packing Slip') . '<img src="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/images/pdf.png" title="' . __('Click for PDF') . '" alt="" /></a><br />
-		<a target="_blank" href="' . $PrintLabels . '">' . __('Print Customer Labels') . '</a><br /><br />';
-
-	echo '<a href="' . $RootPath . '/SelectPickingLists.php">' . __('Select another pick list for processing') . '</a><br /><br />';
+	echo '<div class="db-card p-10 text-center">
+			<div class="pos-modal-icon"><i class="fas fa-check-circle"></i></div>
+			<h2 class="pos-modal-title">' . __('Pick List Processed') . '</h2>
+			<p class="pos-modal-subtitle">' . __('Pick list #') . $_SESSION['ProcessingPick'] . __(' has been successfully updated.') . '</p>
+			
+			<div class="pos-modal-actions" style="max-width: 600px; margin: 0 auto;">
+				<a target="_blank" href="' . $PrintDispatchNote . '" class="db-btn db-btn-primary">
+					<i class="fas fa-file-pdf"></i> ' . __('Print Packing Slip') . '
+				</a>
+				<a target="_blank" href="' . $PrintLabels . '" class="db-btn db-btn-outline">
+					<i class="fas fa-tags"></i> ' . __('Customer Labels') . '
+				</a>
+				<a href="' . $RootPath . '/SelectPickingLists.php" class="db-btn db-btn-outline" style="grid-column: span 2;">
+					<i class="fas fa-arrow-left"></i> ' . __('Select Another Pick List') . '
+				</a>
+			</div>
+		  </div>';
 	/*end of process invoice */
 } else {
 	/*Process Invoice not set so allow input of invoice data */
@@ -673,76 +703,63 @@ if (isset($_POST['ProcessPickList']) and $_POST['ProcessPickList'] !=  '') {
 
 	++$j;
 
-	echo '<fieldset>
-			<legend<', __('Picking List Criteria'), '</legend>
-			<field>
-				<label for="Status">' . __('Pick List Status') . ':</label>
-				<select name="Status">';
+	echo '<div class="db-card">
+			<div class="db-card-header">
+				<div class="db-card-title"><i class="fas fa-cog"></i> ' . __('Picking List Criteria') . '</div>
+			</div>
+			<div class="db-card-body">
+				<div class="db-grid-3">
+					<div class="db-field">
+						<label>' . __('Pick List Status') . '</label>
+						<select name="Status" class="db-select">';
 
 	if (($_SESSION['Items' . $identifier]->Status !=  'Shipped') or (in_array($ARSecurity, $_SESSION['AllowedPageSecurityTokens']))) {
-		//only allow A/R to change status on an already shipped Pick, we expect to invoice, we need A/R intervention to prevent ship, cancel, no invoice, lost money
-		if ($_POST['Status'] == 'Picked') {
-			echo '<option selected="selected" value="Picked">' . __('Picked') . '</option>';
-		} else {
-			echo '<option value="Picked">' . __('Picked') . '</option>';
-		}
+		echo '<option ' . ($_POST['Status'] == 'Picked' ? 'selected' : '') . ' value="Picked">' . __('Picked') . '</option>';
 	}
+	echo '<option ' . ($_POST['Status'] == 'Shipped' ? 'selected' : '') . ' value="Shipped">' . __('Shipped') . '</option>';
+	if (($_SESSION['Items' . $identifier]->Status !=  'Shipped') or (in_array($ARSecurity, $_SESSION['AllowedPageSecurityTokens']))) {
+		echo '<option ' . ($_POST['Status'] == 'Cancelled' ? 'selected' : '') . ' value="Cancelled">' . __('Cancelled') . '</option>';
+	}
+	echo '				</select>
+					</div>
+					
+					<div class="db-field">
+						<label>' . __('Consignment Note Ref') . '</label>
+						<input type="text" name="Consignment" value="' . $_POST['Consignment'] . '" class="db-input" maxlength="15" />
+					</div>
+					
+					<div class="db-field">
+						<label>' . __('Packages in Delivery') . '</label>
+						<input type="number" name="Packages" value="' . $_POST['Packages'] . '" class="db-input" />
+					</div>
+				</div>
 
-	if ($_POST['Status'] == 'Shipped') {
-		echo '<option selected="selected" value="Shipped">' . __('Shipped') . '</option>';
-	} else {
-		echo '<option value="Shipped">' . __('Shipped') . '</option>';
-	}
+				<div class="db-grid-2" style="margin-top: var(--space-4);">
+					<div class="db-field">
+						<label>' . __('Pick List Comments') . '</label>
+						<textarea name="Comments" class="db-input" rows="3">' . reverse_escape($_SESSION['Items' . $identifier]->Comments) . '</textarea>
+					</div>
+					<div class="db-field">
+						<label>' . __('Order Internal Comments') . '</label>
+						<textarea name="InternalComments" class="db-input" rows="3">' . reverse_escape($_SESSION['Items' . $identifier]->InternalComments) . '</textarea>
+					</div>
+				</div>';
 
 	if (($_SESSION['Items' . $identifier]->Status !=  'Shipped') or (in_array($ARSecurity, $_SESSION['AllowedPageSecurityTokens']))) {
-		//only allow A/R to cancel an already shipped Pick, we expect to invoice, we need A/R intervention to prevent ship, cancel, no invoice, lost money
-		if ($_POST['Status'] == 'Cancelled') {
-			echo '<option selected="selected" value="Cancelled">' . __('Cancelled') . '</option>';
-		} else {
-			echo '<option value="Cancelled">' . __('Cancelled') . '</option>';
-		}
-	}
-
-	echo '</select>
-		</field>';
-
-	echo '<field>
-			<label for="Consignment">' . __('Consignment Note Ref') . ':</label>
-			<input tabindex="' . $j . '" type="text" data-type="no-illegal-chars" title="" maxlength="15" size="15" name="Consignment" value="' . $_POST['Consignment'] . '" />
-			<fieldhelp>' . __('Enter the consignment note reference to enable tracking of the delivery in the event of customer proof of delivery issues') . '</fieldhelp>
-		</field>';
-	++$j;
-
-	echo '<field>
-			<label for="Packages">' . __('No Of Packages in Delivery') . ':</label>
-			<input tabindex="' . $j . '" type="number" maxlength="6" size="6" class="integer" name="Packages" value="' . $_POST['Packages'] . '" />
-		</field>';
-
-	++$j;
-	echo '<field>
-			<label for="Comments">' . __('Pick List Comments') . ':</label>
-			<textarea tabindex="' . $j . '" name="Comments" pattern=".{0,20}" cols="31" rows="5">' . reverse_escape($_SESSION['Items' . $identifier]->Comments) . '</textarea>
-		</field>';
-
-	++$j;
-	echo '<field>
-			<label for="InternalComments">' . __('Order Internal Comments') . ':</label>
-			<textarea tabindex="' . $j . '" name="InternalComments" pattern=".{0,20}" cols="31" rows="5">' . reverse_escape($_SESSION['Items' . $identifier]->InternalComments) . '</textarea>
-		</field>';
-
-	++$j;
-	echo '</fieldset>';
-
-	if (($_SESSION['Items' . $identifier]->Status !=  'Shipped') or (in_array($ARSecurity, $_SESSION['AllowedPageSecurityTokens']))) {
-		//only allow A/R to change status on an already shipped Pick, we expect to invoice, we need A/R intervention to prevent ship, cancel, no invoice, lost money
-		echo '<div class="centre">
-				<input type="submit" tabindex="' . $j . '" name="Update" value="' . __('Update') . '" />';
-		++$j;
-		echo '<input type="submit" tabindex="' . $j . '" name="ProcessPickList" value="' . __('Process Pick List') . '" />
+		echo '<div class="db-action-btn-row" style="margin-top: var(--space-6); justify-content: center; gap: var(--space-4);">
+				<button type="submit" name="Update" class="db-btn db-btn-outline" style="min-width: 200px;">
+					<i class="fas fa-sync"></i> ' . __('Update Values') . '
+				</button>
+				<button type="submit" name="ProcessPickList" class="db-btn db-btn-primary" style="min-width: 200px;">
+					<i class="fas fa-check-double"></i> ' . __('Finalize Pick List') . '
+				</button>
 			</div>
 			<input type="hidden" name="ShipVia" value="' . $_SESSION['Items' . $identifier]->ShipVia . '" />';
 	}
+	echo '</div></div>';
 }
-echo '</form>';
+echo '      </form>
+        </div> <!-- .db-page-content -->
+    </div> <!-- .db-page -->';
 
 include(__DIR__ . '/includes/footer.php');

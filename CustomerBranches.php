@@ -754,7 +754,8 @@ if (!isset($_GET['delete'])) {
 			include(__DIR__ . '/includes/footer.php');
 			exit();
 		}
-	} // <-- ADDED THIS BRACE
+	} 
+
 
 	echo '<hr style="margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--border-color);" />';
 

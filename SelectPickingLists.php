@@ -9,16 +9,17 @@ $ViewTopic = 'Sales';
 $BookMark = 'SelectPickingLists';
 include(__DIR__ . '/includes/header.php');
 
-echo '<div class="dashboard-shell-container" style="max-width: 1400px; margin: 0 auto;">
-		<header class="db-page-header">
-			<div>
-				<h2 class="db-page-title">' . $Title . '</h2>
-				<p class="db-page-subtitle">' . __('Manage and search picking lists across locations') . '</p>
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div class="db-page-title">
+				<i class="fas fa-search-location"></i> ' . $Title . '
 			</div>
+			<div class="db-page-subtitle">' . __('Manage and search picking lists across locations') . '</div>
 			<div class="db-page-actions">
 				<a href="PickingLists.php?New=Yes" class="db-btn db-btn-primary"><i class="fas fa-plus"></i> ' . __('New Request') . '</a>
 			</div>
-		</header>';
+		</div>
+		<div class="db-page-content">';
 
         // Premium KPI Metrics Row
         $sqlPending = "SELECT COUNT(*) FROM pickreq WHERE status='New' AND closed=0";
@@ -26,7 +27,7 @@ echo '<div class="dashboard-shell-container" style="max-width: 1400px; margin: 0
         $rowPending = DB_fetch_row($resPending);
         $PendingCount = $rowPending[0];
 
-        $sqlItems = "SELECT SUM(quantity) FROM pickreqdetails INNER JOIN pickreq ON pickreq.prid=pickreqdetails.prid WHERE pickreq.status='New' AND pickreq.closed=0";
+        $sqlItems = "SELECT SUM(qtyexpected) FROM pickreqdetails INNER JOIN pickreq ON pickreq.prid=pickreqdetails.prid WHERE pickreq.status='New' AND pickreq.closed=0";
         $resItems = DB_query($sqlItems);
         $rowItems = DB_fetch_row($resItems);
         $TotalItems = $rowItems[0] ?? 0;
@@ -69,7 +70,6 @@ echo '<div class="dashboard-shell-container" style="max-width: 1400px; margin: 0
             </div>
         </div>';
 
-echo '<div class="MainBody" style="display: flex; flex-direction: column; gap: var(--space-6);">';
 
 
 if (isset($_GET['SelectedStockItem'])) {
@@ -535,7 +535,7 @@ else {
     }
 }
 }
-echo '</div> <!-- End MainBody vertical stack -->
+echo '</div></div><!-- .db-page-content & .db-page -->
       </form>';
 
 if (isset($_POST['Status']) && $_POST['Status'] == 'New') {

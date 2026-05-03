@@ -175,7 +175,7 @@ if (!isset($_GET['OrderNumber']) and !isset($_SESSION['ProcessingOrder'])) {
 	exit();
 }
 
-elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0 and (!isset($_SESSION['ProcessingOrder']) or $_SESSION['ProcessingOrder'] != $_GET['OrderNumber'])) {
+elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0 and (!isset($_SESSION['ProcessingOrder']) or $_SESSION['ProcessingOrder'] != $_GET['OrderNumber'] or !isset($_SESSION['Items' . $identifier]))) {
 
 	unset($_SESSION['Items' . $identifier]->LineItems);
 	unset($_SESSION['Items' . $identifier]);

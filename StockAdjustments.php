@@ -124,7 +124,8 @@ echo '<div class="db-page">
 			<div class="db-page-actions">
 				<a href="StockStatus.php" class="db-btn db-btn-outline db-btn-small"><i class="fas fa-list"></i> ' . __('Inventory Status') . '</a>
 			</div>
-		</div><br />';
+		</div>
+		<div class="db-page-content">';
 
 if (isset($_POST['CheckCode'])) {
 
@@ -526,7 +527,9 @@ echo '			</select>
 	  </div>
 	</form>
   </main>
-</div>';
+</div> <!-- .db-bottom-layout -->
+</div> <!-- .db-page-content -->
+</div> <!-- .db-page -->';
 
 
 echo '<script>

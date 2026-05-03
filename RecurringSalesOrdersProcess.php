@@ -31,14 +31,14 @@ include(__DIR__ . '/includes/header.php');
 include(__DIR__ . '/includes/SQL_CommonFunctions.php');
 include(__DIR__ . '/includes/GetSalesTransGLCodes.php');
 
-echo '<div class="dashboard-shell-container">
-		<header class="db-page-header">
-			<div>
-				<h2 class="db-page-title">' . $Title . '</h2>
-				<p class="db-page-subtitle">' . __('Automated processing of scheduled recurring sales orders') . '</p>
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div class="db-page-title">
+				<i class="fas fa-magic"></i> ' . $Title . '
 			</div>
-		</header>
-		<div class="MainBody">';
+			<div class="db-page-subtitle">' . __('Automated processing of scheduled recurring sales orders') . '</div>
+		</div>
+		<div class="db-page-content">';
 
 $SQL = "SELECT recurringsalesorders.recurrorderno,
 			recurringsalesorders.debtorno,
@@ -88,23 +88,23 @@ $SQL = "SELECT recurringsalesorders.recurrorderno,
 $RecurrOrdersDueResult = DB_query($SQL,__('There was a problem retrieving the recurring sales order templates. The database reported:'));
 
 if (DB_num_rows($RecurrOrdersDueResult)==0){
-	echo '<div class="card-v2">
-			<div class="prnInfo">
-				' . __('There are no recurring order templates that are due to have another recurring order created') . '
-			</div>
+	echo '<div class="db-card p-10 text-center">
+			<div class="pos-modal-icon" style="color: var(--text-muted); opacity: 0.3;"><i class="fas fa-calendar-check"></i></div>
+			<h3 class="db-font-bold">' . __('All Caught Up!') . '</h3>
+			<p>' . __('There are no recurring order templates that are due to have another recurring order created at this time.') . '</p>
 		</div>
-		</div></div><!-- .MainBody & .dashboard-shell-container -->';
+		</div></div>';
 	include(__DIR__ . '/includes/footer.php');
 	exit();
 }
 
-echo '<div class="card-v2">
-		<div class="card-header-v2">
-			<h3>' . __('Processing Queue') . '</h3>
-			<span class="badge-v2 badge-info">' . DB_num_rows($RecurrOrdersDueResult) . ' ' . __('Templates Due') . '</span>
+echo '<div class="db-card">
+		<div class="db-card-header">
+			<div class="db-card-title"><i class="fas fa-tasks"></i> ' . __('Processing Queue') . '</div>
+			<span class="db-badge db-badge-info">' . DB_num_rows($RecurrOrdersDueResult) . ' ' . __('Templates Due') . '</span>
 		</div>
-		<div class="card-body-v2">
-			<div class="processing-log">';
+		<div class="db-card-body p-0">
+			<div class="processing-log" style="max-height: 600px; overflow-y: auto; padding: var(--space-4);">';
 
 while ($RecurrOrderRow = DB_fetch_array($RecurrOrdersDueResult)){
 
@@ -734,7 +734,7 @@ while ($RecurrOrderRow = DB_fetch_array($RecurrOrdersDueResult)){
 
 }/*end while there are recurring orders due to have a new order created */
 
-echo '</div></div></div>'; // Close processing-log, card-body-v2, and card-v2
-echo '</div></div><!-- .MainBody & .dashboard-shell-container -->';
+echo '</div></div></div>'; // Close processing-log, db-card-body, and db-card
+echo '</div></div><!-- .db-page-content & .db-page -->';
 
 include(__DIR__ . '/includes/footer.php');

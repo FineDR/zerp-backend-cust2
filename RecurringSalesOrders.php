@@ -315,23 +315,40 @@ if (isset($_POST['Process'])) {
 	}
 }
 
-echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/customer.png" title="' . __('Search') .
-		'" alt="" /><b>' . ' '. __('Recurring Order for Customer') .' : ' . $_SESSION['Items'.$identifier]->CustomerName  . '</b></p>';
-echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post">';
-echo '<div>';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+echo '<div class="db-page">
+		<div class="db-page-header">
+			<div class="db-page-title">
+				<i class="fas fa-sync-alt"></i> ' . $Title . '
+			</div>
+			<div class="db-page-subtitle">' . __('Recurring Order for Customer') . ': <span class="db-font-bold">' . $_SESSION['Items'.$identifier]->CustomerName . '</span></div>
+			<div class="db-page-actions">
+				<a href="' . $RootPath . '/SelectRecurringSalesOrder.php" class="db-btn db-btn-outline"><i class="fas fa-arrow-left"></i> ' . __('Back to Templates') . '</a>
+			</div>
+		</div>
 
-echo '<table cellpadding="2" class="selection">';
-echo '<tr><th colspan="7"><b>' . __('Order Line Details') . '</b></th></tr>';
-echo '<tr>
-	<th>' .  __('Item Code')  . '</th>
-	<th>' .  __('Item Description')  . '</th>
-	<th>' .  __('Quantity')  . '</th>
-	<th>' .  __('Unit')  . '</th>
-	<th>' .  __('Price')  . '</th>
-	<th>' .  __('Discount') .' %</th>
-	<th>' .  __('Total')  . '</th>
-</tr>';
+		<div class="db-page-content">
+			<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '" method="post">
+				<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+
+echo '<div class="db-card" style="margin-bottom: var(--space-6);">
+		<div class="db-card-header">
+			<div class="db-card-title"><i class="fas fa-list"></i> ' . __('Order Line Details') . '</div>
+		</div>
+		<div class="db-card-body p-0">
+			<div class="db-table-wrapper">
+				<table class="db-table">
+					<thead>
+						<tr>
+							<th>' . __('Item Code') . '</th>
+							<th>' . __('Description') . '</th>
+							<th class="text-right">' . __('Quantity') . '</th>
+							<th>' . __('Unit') . '</th>
+							<th class="text-right">' . __('Price') . '</th>
+							<th class="text-right">' . __('Discount %') . '</th>
+							<th class="text-right">' . __('Total') . '</th>
+						</tr>
+					</thead>
+					<tbody>';
 
 $_SESSION['Items'.$identifier]->total = 0;
 $_SESSION['Items'.$identifier]->totalVolume = 0;
@@ -346,15 +363,15 @@ foreach ($_SESSION['Items'.$identifier]->LineItems as $StockItem) {
 	$DisplayDiscount = locale_number_format(($StockItem->DiscountPercent * 100),2);
 
 
-	echo '<tr class="striped_row">
-			<td>' . $StockItem->StockID . '</td>
+	echo '<tr>
+			<td><span class="db-badge db-badge-secondary">' . $StockItem->StockID . '</span></td>
 			<td title="'. $StockItem->LongDescription . '">' . $StockItem->ItemDescription . '</td>
-			<td class="number">' . $DisplayQuantity . '</td>
+			<td class="text-right">' . $DisplayQuantity . '</td>
 			<td>' . $StockItem->Units . '</td>
-			<td class="number">' . $DisplayPrice . '</td>
-			<td class="number">' . $DisplayDiscount . '</td>
-			<td class="number">' . $DisplayLineTotal . '</td>
-			</tr>';
+			<td class="text-right">' . $DisplayPrice . '</td>
+			<td class="text-right">' . $DisplayDiscount . '</td>
+			<td class="text-right db-font-bold">' . $DisplayLineTotal . '</td>
+		  </tr>';
 
 	$_SESSION['Items'.$identifier]->total += $LineTotal;
 	$_SESSION['Items'.$identifier]->totalVolume += ($StockItem->Quantity * $StockItem->Volume);
@@ -362,166 +379,139 @@ foreach ($_SESSION['Items'.$identifier]->LineItems as $StockItem) {
 }
 
 $DisplayTotal = locale_number_format($_SESSION['Items'.$identifier]->total,$_SESSION['Items'.$identifier]->CurrDecimalPlaces);
-echo '<tr>
-		<td colspan="6" class="number"><b>' .  __('TOTAL Excl Tax/Freight')  . '</b></td>
-		<td class="number">' . $DisplayTotal . '</td>
-	</tr>
-	</table>';
+echo '</tbody>
+		<tfoot>
+			<tr>
+				<td colspan="6" class="text-right db-font-bold">' . __('TOTAL Excl Tax/Freight') . '</td>
+				<td class="text-right db-font-bold" style="font-size: 1.1rem; color: var(--primary);">' . $DisplayTotal . '</td>
+			</tr>
+		</tfoot>
+	</table></div></div></div>';
 
-echo '<fieldset>
-		<legend>' . __('Order Header Details') . '</legend>';
-
-echo '<field>
-		<label>' .  __('Deliver To') .':</label>
-		<fieldtext>' . $_SESSION['Items'.$identifier]->DeliverTo . '&nbsp;</fieldtext>
-	</field>';
-
-echo '<field>
-		<label>' .  __('Deliver from the warehouse at') .':</label>
-		<fieldtext>' . $_SESSION['Items'.$identifier]->Location . '&nbsp;</fieldtext>
-	</field>';
-
-echo '<field>
-		<label>' .  __('Street') .':</label>
-		<fieldtext>' . $_SESSION['Items'.$identifier]->DelAdd1 . '&nbsp;</fieldtext>
-	</field>';
-
-echo '<field>
-		<label>' .  __('Suburb') .':</label>
-		<fieldtext>' . $_SESSION['Items'.$identifier]->DelAdd2 . '&nbsp;&nbsp;</fieldtext>
-	</field>';
-
-echo '<field>
-		<label>' .  __('City') . '/' . __('Region') .':</label>
-		<fieldtext>' . $_SESSION['Items'.$identifier]->DelAdd3 . '&nbsp;</fieldtext>
-	</field>';
-
-echo '<field>
-		<label>' .  __('Post Code') .':</label>
-		<fieldtext>' . $_SESSION['Items'.$identifier]->DelAdd4 . '&nbsp;</fieldtext>
-	</field>';
-
-echo '<field>
-		<label>' .  __('Contact Phone Number') .':</label>
-		<fieldtext>' . $_SESSION['Items'.$identifier]->PhoneNo . '&nbsp;</fieldtext>
-	</field>';
-
-echo '<field>
-		<label>' . __('Contact Email') .':</label>
-		<fieldtext>' . $_SESSION['Items'.$identifier]->Email . '&nbsp;</fieldtext>
-	</field>';
-
-echo '<field>
-		<label>' .  __('Customer Reference') .':</label>
-		<fieldtext>' . $_SESSION['Items'.$identifier]->CustRef . '&nbsp;</fieldtext>
-	</field>';
-
-echo '<field>
-		<label>' .  __('Comments') .':</label>
-		<fieldtext>' . $_SESSION['Items'.$identifier]->Comments  . '&nbsp;</fieldtext>
-	</field>';
+echo '<div class="db-bottom-layout">
+		<main class="db-col-main">
+			<div class="db-card">
+				<div class="db-card-header">
+					<div class="db-card-title"><i class="fas fa-calendar-alt"></i> ' . __('Template Settings') . '</div>
+				</div>
+				<div class="db-card-body">
+					<div class="db-grid-2">';
 
 if (!isset($_POST['StartDate'])){
 	$_POST['StartDate'] = date($_SESSION['DefaultDateFormat']);
 }
 
 if ($NewRecurringOrder=='Yes'){
-	echo '<field>
-			<label for="StartDate">' .  __('Start Date') .':</label>
-			<input type="date" name="StartDate" size="11" maxlength="10" value="' . FormatDateForSQL($_POST['StartDate']) .'" />
-		</field>';
+	echo '<div class="db-field">
+			<label>' .  __('Start Date') . '</label>
+			<input type="date" name="StartDate" class="db-input" value="' . FormatDateForSQL($_POST['StartDate']) .'" />
+		</div>';
 } else {
-	echo '<field>
-			<label>' .  __('Last Recurrence') . ':</label>
-			<fieldtext>' . $_POST['StartDate'], '<fieldtext>
+	echo '<div class="db-field">
+			<label>' .  __('Last Recurrence') . '</label>
+			<div class="db-input" style="background: var(--bg-soft);">' . $_POST['StartDate'] . '</div>
 			<input type="hidden" name="StartDate" value="' . FormatDateForSQL($_POST['StartDate']) . '" />
-		</field>';
+		</div>';
 }
 
 if (!isset($_POST['StopDate'])){
    $_POST['StopDate'] = date($_SESSION['DefaultDateFormat'], mktime(0,0,0,date('m'),date('d')+1,date('y')+1));
 }
 
-echo '<field>
-		<label for="StopDate">' .  __('Finish Date') .':</label>
-		<input type="date" name="StopDate" size="11" maxlength="10" value="' . FormatDateForSQL($_POST['StopDate']) .'" />
-	</field>';
+echo '<div class="db-field">
+		<label>' .  __('Finish Date') . '</label>
+		<input type="date" name="StopDate" class="db-input" value="' . FormatDateForSQL($_POST['StopDate']) .'" />
+	</div>';
 
-echo '<field>
-		<label for="Frequency">' .  __('Frequency of Recurrence') .':</label>
-		<select name="Frequency">';
+echo '<div class="db-field">
+		<label>' .  __('Frequency of Recurrence') . '</label>
+		<select name="Frequency" class="db-select">';
 
-if (isset($_POST['Frequency']) and $_POST['Frequency']==52){
-	echo '<option selected="selected" value="52">' . __('Weekly') . '</option>';
-} else {
-	echo '<option value="52">' . __('Weekly') . '</option>';
+$FreqOptions = [
+	52 => __('Weekly'),
+	26 => __('Fortnightly'),
+	12 => __('Monthly'),
+	6 => __('Bi-monthly'),
+	4 => __('Quarterly'),
+	2 => __('Bi-Annually'),
+	1 => __('Annually')
+];
+
+foreach ($FreqOptions as $val => $lab) {
+	echo '<option ' . ((isset($_POST['Frequency']) and $_POST['Frequency']==$val) ? 'selected' : '') . ' value="' . $val . '">' . $lab . '</option>';
 }
-if (isset($_POST['Frequency']) and $_POST['Frequency']==26){
-	echo '<option selected="selected" value="26">' . __('Fortnightly') . '</option>';
-} else {
-	echo '<option value="26">' . __('Fortnightly') . '</option>';
-}
-if (isset($_POST['Frequency']) and $_POST['Frequency']==12){
-	echo '<option selected="selected" value="12">' . __('Monthly') . '</option>';
-} else {
-	echo '<option value="12">' . __('Monthly') . '</option>';
-}
-if (isset($_POST['Frequency']) and $_POST['Frequency']==6){
-	echo '<option selected="selected" value="6">' . __('Bi-monthly') . '</option>';
-} else {
-	echo '<option value="6">' . __('Bi-monthly') . '</option>';
-}
-if (isset($_POST['Frequency']) and $_POST['Frequency']==4){
-	echo '<option selected="selected" value="4">' . __('Quarterly') . '</option>';
-} else {
-	echo '<option value="4">' . __('Quarterly') . '</option>';
-}
-if (isset($_POST['Frequency']) and $_POST['Frequency']==2){
-	echo '<option selected="selected" value="2">' . __('Bi-Annually') . '</option>';
-} else {
-	echo '<option value="2">' . __('Bi-Annually') . '</option>';
-}
-if (isset($_POST['Frequency']) and $_POST['Frequency']==1){
-	echo '<option selected="selected" value="1">' . __('Annually') . '</option>';
-} else {
-	echo '<option value="1">' . __('Annually') . '</option>';
-}
-echo '</select>
-	</field>';
+echo '  </select>
+	</div>';
 
 if ($_SESSION['Items'.$identifier]->AllDummyLineItems()==true){
-
-	echo '<field>
-			<label for="AutoInvoice">' . __('Invoice Automatically') . ':</label>
-			<select name="AutoInvoice">';
-	if ($_POST['AutoInvoice']==0){
-		echo '<option selected="selected" value="0">' . __('No') . '</option>';
-		echo '<option value="1">' . __('Yes') . '</option>';
-	} else {
-		echo '<option value="0">' . __('No') . '</option>';
-		echo '<option selected="selected" value="1">' . __('Yes') . '</option>';
-	}
-	echo '</select>
-		</field>
-	</fieldset>';
+	echo '<div class="db-field">
+			<label>' . __('Invoice Automatically') . '</label>
+			<select name="AutoInvoice" class="db-select">
+				<option ' . ($_POST['AutoInvoice']==0 ? 'selected' : '') . ' value="0">' . __('No') . '</option>
+				<option ' . ($_POST['AutoInvoice']==1 ? 'selected' : '') . ' value="1">' . __('Yes') . '</option>
+			</select>
+		</div>';
 } else {
-	echo '</fieldset>';
 	echo '<input type="hidden" name="AutoInvoice" value="0" />';
 }
 
-echo '<div class="centre">';
+echo '          </div> <!-- .db-grid-2 -->
+
+				<div class="db-action-btn-row" style="margin-top: var(--space-6);">';
 if ($NewRecurringOrder=='Yes'){
 	echo '<input type="hidden" name="NewRecurringOrder" value="Yes" />';
-	echo '<input type="submit" name="Process" value="' . __('Create Recurring Order') . '" />';
+	echo '<button type="submit" name="Process" class="db-btn db-btn-primary" style="width: 100%;">
+			<i class="fas fa-plus-circle"></i> ' . __('Create Recurring Order') . '
+		  </button>';
 } else {
 	echo '<input type="hidden" name="NewRecurringOrder" value="No" />';
 	echo '<input type="hidden" name="ExistingRecurrOrderNo" value="' . $_POST['ExistingRecurrOrderNo'] . '" />';
 
-	echo '<input type="submit" name="Process" value="' . __('Update Recurring Order Details') . '" />';
-	echo '<hr />';
-	echo '<br /><br /><input type="reset" name="DeleteRecurringOrder" value="' . __('Delete Recurring Order') . ' ' . $_POST['ExistingRecurrOrderNo'] . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this recurring order template?') . '\');" />';
+	echo '<button type="submit" name="Process" class="db-btn db-btn-primary">
+			<i class="fas fa-save"></i> ' . __('Update Template') . '
+		  </button>';
+	echo '<button type="submit" name="DeleteRecurringOrder" class="db-btn db-btn-danger" onclick="return confirm(\'' . __('Are you sure you wish to delete this recurring order template?') . '\');">
+			<i class="fas fa-trash"></i> ' . __('Delete Template') . '
+		  </button>';
 }
+echo '          </div>
+				</div>
+			</div>
+		</main>
 
-echo '</div>';
-echo '</form>';
+		<aside class="db-col-aside">
+			<div class="db-card">
+				<div class="db-card-header">
+					<div class="db-card-title"><i class="fas fa-truck"></i> ' . __('Delivery Details') . '</div>
+				</div>
+				<div class="db-card-body">
+					<div class="db-field">
+						<label>' . __('Deliver To') . '</label>
+						<div class="db-font-bold">' . $_SESSION['Items'.$identifier]->DeliverTo . '</div>
+					</div>
+					<div class="db-field">
+						<label>' . __('Location') . '</label>
+						<div>' . $_SESSION['Items'.$identifier]->Location . '</div>
+					</div>
+					<div class="db-field">
+						<label>' . __('Address') . '</label>
+						<div style="font-size: 0.9rem; color: var(--text-muted);">
+							' . $_SESSION['Items'.$identifier]->DelAdd1 . '<br />
+							' . $_SESSION['Items'.$identifier]->DelAdd2 . '<br />
+							' . $_SESSION['Items'.$identifier]->DelAdd3 . ' ' . $_SESSION['Items'.$identifier]->DelAdd4 . '
+						</div>
+					</div>
+					<div class="db-field">
+						<label>' . __('Reference') . '</label>
+						<div>' . ($_SESSION['Items'.$identifier]->CustRef ?: '-') . '</div>
+					</div>
+				</div>
+			</div>
+		</aside>
+	</div> <!-- .db-bottom-layout -->
+
+	</form>
+</div> <!-- .db-page-content -->
+</div> <!-- .db-page -->';
+
 include(__DIR__ . '/includes/footer.php');
