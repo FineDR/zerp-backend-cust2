@@ -413,10 +413,18 @@ if (isset($SearchResult)) {
 							<div class="db-info-item" style="margin-top: var(--space-2);"><span class="db-badge db-badge-info">' . $MyRow['typename'] . '</span></div>
 						</div>
 					</div>
-					<div style="padding: var(--space-4); background: var(--surface-alt); border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg);">
-						<button type="submit" name="SubmitCustomerSelection[' . htmlspecialchars($MyRow['debtorno'], ENT_QUOTES, 'UTF-8') . ']" value="' . htmlspecialchars($MyRow['branchcode'], ENT_QUOTES, 'UTF-8') . '" class="db-btn db-btn-primary" style="width: 100%;">
-							' . __('Select Account') . '
+					<div style="padding: var(--space-4); background: var(--surface-alt); border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg); display: flex; flex-direction: column; gap: var(--space-2);">
+						<button type="submit" name="SubmitCustomerSelection[' . htmlspecialchars($MyRow['debtorno'], ENT_QUOTES, 'UTF-8') . ']" value="' . htmlspecialchars($MyRow['branchcode'], ENT_QUOTES, 'UTF-8') . '" class="db-btn db-btn-primary" style="width: 100%; justify-content: center;">
+							<i class="fas fa-check-circle" style="margin-right: 8px;"></i>' . __('Select Account') . '
 						</button>
+						<div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+							<a href="SelectOrderItems.php?NewOrder=Yes&SelectedCustomer=' . urlencode($MyRow['debtorno']) . '" class="db-btn db-btn-secondary" style="font-size: 0.75rem; justify-content: center; padding: 8px 4px;">
+								<i class="fas fa-shopping-cart" style="margin-right: 4px;"></i>' . __('New Order') . '
+							</a>
+							<a href="CustomerInquiry.php?CustomerID=' . urlencode($MyRow['debtorno']) . '" class="db-btn db-btn-secondary" style="font-size: 0.75rem; justify-content: center; padding: 8px 4px;">
+								<i class="fas fa-search-dollar" style="margin-right: 4px;"></i>' . __('Inquiry') . '
+							</a>
+						</div>
 					</div>
 				</div>';
 			$RowIndex++;

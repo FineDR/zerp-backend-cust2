@@ -47,7 +47,7 @@ if (!headers_sent()) {
 echo "<!DOCTYPE html>\n";
 
 /// @todo handle better the case where $Language is not in xx-YY format (full spec is at https://www.rfc-editor.org/rfc/rfc5646.html)
-echo '<html lang="' , str_replace('_', '-', substr($Language, 0, 5)) , '">
+echo '<html lang="' , str_replace('_', '-', substr($Language ?? 'en_GB', 0, 5)) , '">
 <head>
 	<meta http-equiv="Content-Type" content="application/html; charset=utf-8; cache-control: no-cache, no-store, must-revalidate; Pragma: no-cache" />
 	<title>', __('webERP'), ' - ', $Title, '</title>

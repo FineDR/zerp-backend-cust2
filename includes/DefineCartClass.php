@@ -374,7 +374,7 @@ class Cart {
 		/*Gets the Taxes and rates applicable to the freight based on the tax group of the branch combined with the tax category for this particular freight
 		and SESSION['FreightTaxCategory'] the taxprovince of the dispatch location */
 
-		$SQL = "SELECT taxcatid FROM taxcategories WHERE taxcatname='Freight'";// This tax category is hardcoded inside the database.
+		$SQL = "SELECT taxcatid FROM taxcategories WHERE taxcatname='Freight' OR taxcatname='Freight & Shipping'";// This tax category is hardcoded inside the database.
 		$TaxCatQuery = DB_query($SQL);
 
 		if ($TaxCatRow = DB_fetch_array($TaxCatQuery)) {
@@ -496,7 +496,7 @@ class LineDetails {
 			if ($_SESSION['InvoiceQuantityDefault']==1){
 				$this->QtyDispatched = $Qty - $QtyInvoiced;
 			} else {
-				$this->QtyDispathced = 0;
+				$this->QtyDispatched = 0;
 			}
 		}
 		$this->QOHatLoc = $QOHatLoc;

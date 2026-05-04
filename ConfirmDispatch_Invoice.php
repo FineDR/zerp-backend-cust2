@@ -11,6 +11,8 @@ include(__DIR__ . '/includes/DefineSerialItems.php');
 require(__DIR__ . '/includes/session.php');
 require 'vendor/autoload.php';
 
+global $Title;
+
 $Title = __('Confirm Dispatches and Invoice An Order');
 $ViewTopic = 'ARTransactions';
 $BookMark = 'ConfirmInvoice';
@@ -244,6 +246,11 @@ elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0 and (!isset($_S
 	$ErrMsg = __('The order cannot be retrieved because');
 	$GetOrdHdrResult = DB_query($OrderHeaderSQL, $ErrMsg);
 
+
+	if (DB_num_rows($GetOrdHdrResult) == 0) {
+		error_log("Order not found. SQL: " . $OrderHeaderSQL);
+	}
+
 	if (DB_num_rows($GetOrdHdrResult) == 1) {
 		$MyRow = DB_fetch_array($GetOrdHdrResult);
 
@@ -266,7 +273,7 @@ elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0 and (!isset($_S
 			$BestShipper = 0;
 		}
 		$_SESSION['Items' . $identifier]->DeliverTo = $MyRow['deliverto'];
-		$_SESSION['Items' . $identifier]->DeliveryDate = ConvertSQLDate($MyRow['deliverydate']);
+		$_SESSION['Items' . $identifier]->DeliveryDate = (isset($MyRow['deliverydate']) && $MyRow['deliverydate'] != '') ? ConvertSQLDate($MyRow['deliverydate']) : date($_SESSION['DefaultDateFormat']);
 		$_SESSION['Items' . $identifier]->BrAdd1 = $MyRow['deladd1'];
 		$_SESSION['Items' . $identifier]->BrAdd2 = $MyRow['deladd2'];
 		$_SESSION['Items' . $identifier]->BrAdd3 = $MyRow['deladd3'];
@@ -278,10 +285,12 @@ elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0 and (!isset($_S
 		$_SESSION['Items' . $identifier]->SalesPerson = $MyRow['salesperson'];
 
 		$_SESSION['Items' . $identifier]->Location = $MyRow['fromstkloc'];
+
 		$_SESSION['Items' . $identifier]->FreightCost = $MyRow['freightcost'];
 		$_SESSION['Old_FreightCost'] = $MyRow['freightcost'];
+
 		//		$_POST['ChargeFreightCost'] = $_SESSION['Old_FreightCost'];
-		$_SESSION['Items' . $identifier]->Orig_OrderDate = $MyRow['orddate'];
+		$_SESSION['Items' . $identifier]->Orig_OrderDate = (isset($MyRow['orddate']) && $MyRow['orddate'] != '') ? ConvertSQLDate($MyRow['orddate']) : date($_SESSION['DefaultDateFormat']);
 		$_SESSION['CurrencyRate'] = $MyRow['currency_rate'];
 		$_SESSION['Items' . $identifier]->TaxGroup = $MyRow['taxgroupid'];
 		$_SESSION['Items' . $identifier]->DispatchTaxProvince = $MyRow['taxprovinceid'];
@@ -289,6 +298,7 @@ elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0 and (!isset($_S
 		$_SESSION['Items' . $identifier]->GetFreightTaxes();
 
 		$_SESSION['Items' . $identifier]->SpecialInstructions = $MyRow['specialinstructions'];
+
 
 		DB_free_result($GetOrdHdrResult);
 
@@ -324,6 +334,7 @@ elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0 and (!isset($_S
 
 		$ErrMsg = __('The line items of the order cannot be retrieved because');
 		$LineItemsResult = DB_query($LineItemsSQL, $ErrMsg);
+
 
 		if (DB_num_rows($LineItemsResult) > 0) {
 
@@ -378,7 +389,10 @@ elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0 and (!isset($_S
 
 	} else { // End if the order was returned successfully.
 		echo '<br />';
-		prnMsg(__('This order item could not be retrieved. Please select another order'), 'warn');
+		prnMsg(__('This order item could not be retrieved. Please select another order. (Order #') . $_GET['OrderNumber'] . ')', 'warn');
+		if (isset($ErrMsg)) {
+			prnMsg($ErrMsg, 'error');
+		}
 		include(__DIR__ . '/includes/footer.php');
 		exit();
 	} //valid order returned from the entered order number
@@ -388,6 +402,7 @@ elseif (isset($_GET['OrderNumber']) and $_GET['OrderNumber'] > 0 and (!isset($_S
 // This avoids "Attempt to assign property on null" Fatal Errors.
 if (!isset($_SESSION['Items' . $identifier]) || !is_object($_SESSION['Items' . $identifier])) {
 	prnMsg(__('The order session has expired or was not initialized. Please select an order to invoice.'), 'error');
+
 	echo '<br /><div class="centre"><a href="' . $RootPath . '/SelectSalesOrder.php">' . __('Back to Order Selection') . '</a></div>';
 	include(__DIR__ . '/includes/footer.php');
 	exit();
@@ -992,10 +1007,10 @@ if (isset($_POST['ProcessInvoice']) and $_POST['ProcessInvoice'] != '') {
 									'" . $TaxTotal . "',
 									'" . filter_number_format($_POST['ChargeFreightCost']) . "',
 									'" . $_SESSION['CurrencyRate'] . "',
-									'" . $_POST['InvoiceText'] . "',
+									'" . (isset($_POST['InvoiceText']) ? $_POST['InvoiceText'] : '') . "',
 									'" . $_SESSION['Items' . $identifier]->ShipVia . "',
-									'" . $_POST['Consignment'] . "',
-									'" . $_POST['Packages'] . "',
+									'" . (isset($_POST['Consignment']) ? $_POST['Consignment'] : '') . "',
+									'" . (isset($_POST['Packages']) && $_POST['Packages'] != '' ? $_POST['Packages'] : 1) . "',
 									'" . $_SESSION['Items' . $identifier]->SalesPerson . "' )";
 
 	$ErrMsg = __('CRITICAL ERROR') . '! ' . __('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . __('The debtor transaction record could not be inserted because');
@@ -1035,7 +1050,7 @@ if (isset($_POST['ProcessInvoice']) and $_POST['ProcessInvoice'] != '') {
 			$AssetNumber = 0;
 		}
 
-		if ($_POST['BOPolicy'] == 'CAN') {
+		if (isset($_POST['BOPolicy']) && $_POST['BOPolicy'] == 'CAN') {
 
 			$SQL = "UPDATE salesorderdetails
 					SET quantity = quantity - " . ($OrderLine->Quantity - $OrderLine->QtyDispatched - $OrderLine->QtyInv) . "

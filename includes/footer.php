@@ -2,6 +2,7 @@
 
 // log the script running time
 include_once (__DIR__ . '/AuditScriptsFunctions.php');
+global $Title;
 RecordRunningTime($Title, $_SESSION['UserID']);
 
 echo '<div id="mask">
