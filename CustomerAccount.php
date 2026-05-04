@@ -136,6 +136,8 @@ $SQL = "SELECT debtorsmaster.name,
 			holdreasons.dissallowinvoices,
 			holdreasons.reasondescription,
 			SUM(debtortrans.balance) AS balance,
+			SUM(CASE WHEN (debtortrans.ovamount + debtortrans.ovgst + debtortrans.ovfreight + debtortrans.ovdiscount) > 0 THEN (debtortrans.ovamount + debtortrans.ovgst + debtortrans.ovfreight + debtortrans.ovdiscount) ELSE 0 END) AS total_invoices,
+			SUM(CASE WHEN (debtortrans.ovamount + debtortrans.ovgst + debtortrans.ovfreight + debtortrans.ovdiscount) < 0 THEN (debtortrans.ovamount + debtortrans.ovgst + debtortrans.ovfreight + debtortrans.ovdiscount) ELSE 0 END) AS total_receipts,
 			SUM(CASE WHEN paymentterms.daysbeforedue > 0 THEN
 				CASE WHEN (TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate)) >=
 				paymentterms.daysbeforedue
@@ -214,6 +216,10 @@ $CustomerRecord = DB_fetch_array($CustomerResult);
 				<a href="' . $RootPath . '/SelectCustomer.php" class="db-btn db-btn-secondary">
 					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
 					' . __('Select Customer') . '
+				</a>
+				<a href="' . $RootPath . '/PrintCustStatements.php?FromCust=' . $CustomerID . '&ToCust=' . $CustomerID . '&PrintPDF=Yes&EmailOrPrint=print&TransAfterDate=' . FormatDateForSQL($_POST['TransAfterDate']) . '" target="_blank" class="db-btn db-btn-primary">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+					' . __('Print Statement') . '
 				</a>
 			</div>
 		</div>';

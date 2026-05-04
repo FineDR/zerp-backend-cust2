@@ -89,6 +89,8 @@ $SQL = "SELECT debtorsmaster.name,
 		holdreasons.dissallowinvoices,
 		holdreasons.reasondescription,
 		SUM(debtortrans.balance) AS balance,
+		SUM(CASE WHEN (debtortrans.ovamount + debtortrans.ovgst + debtortrans.ovfreight + debtortrans.ovdiscount) > 0 THEN (debtortrans.ovamount + debtortrans.ovgst + debtortrans.ovfreight + debtortrans.ovdiscount) ELSE 0 END) AS total_invoices,
+		SUM(CASE WHEN (debtortrans.ovamount + debtortrans.ovgst + debtortrans.ovfreight + debtortrans.ovdiscount) < 0 THEN (debtortrans.ovamount + debtortrans.ovgst + debtortrans.ovfreight + debtortrans.ovdiscount) ELSE 0 END) AS total_receipts,
 		SUM(CASE WHEN (paymentterms.daysbeforedue > 0) THEN
 			CASE WHEN (TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate)) >= paymentterms.daysbeforedue
 			THEN debtortrans.balance ELSE 0 END
@@ -164,6 +166,8 @@ $CustomerRecord = DB_fetch_array($CustomerResult);
 
 if ($NIL_BALANCE == true) {
 	$CustomerRecord['balance'] = 0;
+	$CustomerRecord['total_invoices'] = 0;
+	$CustomerRecord['total_receipts'] = 0;
 	$CustomerRecord['due'] = 0;
 	$CustomerRecord['overdue1'] = 0;
 	$CustomerRecord['overdue2'] = 0;
@@ -219,6 +223,8 @@ if ($NIL_BALANCE == true) {
 					<table class="db-table">
 						<thead>
 							<tr>
+								<th>' . __('Total Invoices') . '</th>
+								<th>' . __('Total Receipts') . '</th>
 								<th>' . __('Current') . '</th>
 								<th>' . __('Now Due') . '</th>
 								<th>' . $_SESSION['PastDueDays1'] . '-' . $_SESSION['PastDueDays2'] . ' Days</th>
@@ -227,6 +233,8 @@ if ($NIL_BALANCE == true) {
 						</thead>
 						<tbody>
 							<tr>
+								<td>' . locale_number_format($CustomerRecord['total_invoices'] ?? 0, $CustomerRecord['decimalplaces']) . '</td>
+								<td>' . locale_number_format(abs($CustomerRecord['total_receipts'] ?? 0), $CustomerRecord['decimalplaces']) . '</td>
 								<td>' . locale_number_format(($CustomerRecord['balance'] - $CustomerRecord['due']), $CustomerRecord['decimalplaces']) . '</td>
 								<td>' . locale_number_format(($CustomerRecord['due'] - $CustomerRecord['overdue1']), $CustomerRecord['decimalplaces']) . '</td>
 								<td>' . locale_number_format(($CustomerRecord['overdue1'] - $CustomerRecord['overdue2']), $CustomerRecord['decimalplaces']) . '</td>
@@ -270,6 +278,15 @@ if ($NIL_BALANCE == true) {
 		</div>';
 
 $DateAfterCriteria = FormatDateForSQL($_POST['TransAfterDate']);
+
+// Calculate opening balance
+$SQL = "SELECT SUM(ovamount + ovgst + ovfreight + ovdiscount) AS open_balance 
+		FROM debtortrans 
+		WHERE debtorno = '" . $CustomerID . "' 
+		AND trandate < '" . $DateAfterCriteria . "'";
+$OpenBalResult = DB_query($SQL, $ErrMsg);
+$OpenBalRow = DB_fetch_array($OpenBalResult);
+$RunningBalance = $OpenBalRow['open_balance'] ?? 0;
 
 $SQL = "SELECT systypes.typename,
 				debtortrans.id,
@@ -316,17 +333,29 @@ $TransResult = DB_query($SQL, $ErrMsg);
 								<th>' . __('Branch') . '</th>
 								<th>' . __('Reference') . '</th>
 								<th>' . __('Comments') . '</th>
-								<th class="number">' . __('Total') . '</th>
-								<th class="number">' . __('Alloc') . '</th>
-								<th class="number">' . __('Balance') . '</th>
+								<th class="number">' . __('Charges') . '</th>
+								<th class="number">' . __('Credits') . '</th>
+								<th class="number">' . __('Allocated') . '</th>
+								<th class="number">' . __('Outstanding') . '</th>
+								<th class="number">' . __('Running Balance') . '</th>
 								<th class="number noPrint">' . __('Actions') . '</th>
 							</tr>
 						</thead>
 						<tbody>';
 	
 	if (DB_num_rows($TransResult) == 0) {
-		echo '<tr><td colspan="10" style="padding: var(--space-12); text-align: center; color: var(--text-muted); font-size: 0.875rem;">' . __('No transactions found for the selected period.') . '</td></tr>';
+		echo '<tr><td colspan="12" style="padding: var(--space-12); text-align: center; color: var(--text-muted); font-size: 0.875rem;">' . __('No transactions found for the selected period.') . '</td></tr>';
 	} else {
+
+		echo '<tr style="background: var(--surface-alt); font-weight: 600;">
+				<td colspan="6">' . __('Opening Balance') . '</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td class="number">' . locale_number_format($RunningBalance, $CustomerRecord['decimalplaces']) . '</td>
+				<td class="noPrint">&nbsp;</td>
+			</tr>';
 
 	while ($MyRow = DB_fetch_array($TransResult)) {
 
@@ -381,6 +410,8 @@ $TransResult = DB_query($SQL, $ErrMsg);
 							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M2 12h20"></path></svg>
 						</a>';
 		}
+		
+		$RunningBalance += $MyRow['totalamount'];
 
 		echo '<tr>
 				<td><span class="db-badge ' . $BadgeClass . '">' . __($MyRow['typename']) . '</span></td>
@@ -389,9 +420,11 @@ $TransResult = DB_query($SQL, $ErrMsg);
 				<td>' . $MyRow['branchcode'] . '</td>
 				<td>' . $MyRow['reference'] . '</td>
 				<td style="width:200px">' . $MyRow['invtext'] . '</td>
-				<td class="number">' . locale_number_format($MyRow['totalamount'], $CustomerRecord['decimalplaces']) . '</td>
+				<td class="number">' . ($MyRow['totalamount'] > 0 ? locale_number_format($MyRow['totalamount'], $CustomerRecord['decimalplaces']) : '&nbsp;') . '</td>
+				<td class="number">' . ($MyRow['totalamount'] < 0 ? locale_number_format(abs($MyRow['totalamount']), $CustomerRecord['decimalplaces']) : '&nbsp;') . '</td>
 				<td class="number">' . locale_number_format($MyRow['allocated'], $CustomerRecord['decimalplaces']) . '</td>
 				<td class="number">' . locale_number_format($MyRow['totalamount'] - $MyRow['allocated'], $CustomerRecord['decimalplaces']) . '</td>
+				<td class="number" style="font-weight: 700; color: var(--primary);">' . locale_number_format($RunningBalance, $CustomerRecord['decimalplaces']) . '</td>
 				<td class="number noPrint">
 					<div class="db-action-group" style="justify-content: flex-end;">
 						' . $Actions . '

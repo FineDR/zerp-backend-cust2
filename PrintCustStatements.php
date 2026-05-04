@@ -24,6 +24,9 @@ if (isset($_GET['PrintPDF'])) {
 	$_POST['ToCust'] = $ToCust;
 	$_POST['PrintPDF'] = $PrintPDF;
 	$PaperSize = 'A4_Landscape';
+	if (isset($_GET['TransAfterDate'])) {
+		$_POST['TransAfterDate'] = $_GET['TransAfterDate'];
+	}
 }
 
 if (isset($_GET['FromCust'])) {
@@ -135,11 +138,13 @@ if (isset($_POST['PrintPDF']) and isset($_POST['FromCust']) and $_POST['FromCust
 			}
 		}
 
-		// Only print if Print, or Email and there are recipients
-		if (($_POST['EmailOrPrint'] == 'print' and count($RecipientArray) == 0) or ($_POST['EmailOrPrint'] == 'email' and count($RecipientArray) > 0)) {
+		// Only print if Print, or Email and there are recipients. If it's a single customer request, always print.
+		if (($_POST['EmailOrPrint'] == 'print' and (count($RecipientArray) == 0 or $_POST['FromCust'] == $_POST['ToCust'])) or ($_POST['EmailOrPrint'] == 'email' and count($RecipientArray) > 0)) {
 
 			// Header
-			$HTML .= '<div class="company"><img class="logo" src="' . $_SESSION['LogoFile'] . '" /></div>';
+			if (isset($_SESSION['LogoFile']) and $_SESSION['LogoFile'] != '') {
+				$HTML .= '<div class="company"><img class="logo" src="' . $_SESSION['LogoFile'] . '" /></div>';
+			}
 			$HTML .= '<div class="company">' . $_SESSION['CompanyRecord']['coyname'] . '</div>';
 			$HTML .= '<div class="header">' . __('Customer Statement') . '</div>';
 			$HTML .= '<div class="small">' . __('For customer') . ': ' . $StmtHeader['name'] . ' (' . $StmtHeader['debtorno'] . ')</div>';
@@ -180,7 +185,7 @@ if (isset($_POST['PrintPDF']) and isset($_POST['FromCust']) and $_POST['FromCust
 							INNER JOIN custallocns
 								ON (debtortrans.id=custallocns.transid_allocfrom
 									OR debtortrans.id=custallocns.transid_allocto)
-							WHERE custallocns.datealloc >='" . date('Y-m-d', mktime(0, 0, 0, date('m') - 1, date('d'), date('y'))) . "'
+							WHERE custallocns.datealloc >='" . (isset($_POST['TransAfterDate']) ? $_POST['TransAfterDate'] : date('Y-m-d', mktime(0, 0, 0, date('m') - 1, date('d'), date('y')))) . "'
 							AND debtortrans.debtorno='" . $StmtHeader['debtorno'] . "'
 							AND debtortrans.settled=1";
 				if ($_SESSION['SalesmanLogin'] != '') {
@@ -191,7 +196,7 @@ if (isset($_POST['PrintPDF']) and isset($_POST['FromCust']) and $_POST['FromCust
 				$NumberOfRecordsReturned += DB_num_rows($SetldTrans);
 			}
 
-			if ($NumberOfRecordsReturned >= 1) {
+			if ($NumberOfRecordsReturned >= 0) {
 
 				// Settled Transactions Table
 				if ($_SESSION['Show_Settled_LastMonth'] == 1 && DB_num_rows($SetldTrans) >= 1) {
@@ -257,8 +262,10 @@ if (isset($_POST['PrintPDF']) and isset($_POST['FromCust']) and $_POST['FromCust
 							debtorsmaster.creditlimit,
 							holdreasons.dissallowinvoices,
 							holdreasons.reasondescription,
-							SUM(debtortrans.ovamount + debtortrans.ovgst + debtortrans.ovfreight +
-							debtortrans.ovdiscount - debtortrans.alloc) AS balance,
+							SUM(debtortrans.balance
+							) AS balance,
+							SUM(CASE WHEN (debtortrans.ovamount + debtortrans.ovgst + debtortrans.ovfreight + debtortrans.ovdiscount) > 0 THEN (debtortrans.ovamount + debtortrans.ovgst + debtortrans.ovfreight + debtortrans.ovdiscount) ELSE 0 END) AS total_invoices,
+							SUM(CASE WHEN (debtortrans.ovamount + debtortrans.ovgst + debtortrans.ovfreight + debtortrans.ovdiscount) < 0 THEN (debtortrans.ovamount + debtortrans.ovgst + debtortrans.ovfreight + debtortrans.ovdiscount) ELSE 0 END) AS total_receipts,
 							SUM(CASE WHEN paymentterms.daysbeforedue > 0 THEN
 								CASE WHEN (TO_DAYS(Now()) - TO_DAYS(debtortrans.trandate)) >=
 								paymentterms.daysbeforedue
@@ -298,7 +305,7 @@ if (isset($_POST['PrintPDF']) and isset($_POST['FromCust']) and $_POST['FromCust
 							ON debtorsmaster.currcode = currencies.currabrev
 						INNER JOIN holdreasons
 							ON debtorsmaster.holdreason = holdreasons.reasoncode
-						INNER JOIN debtortrans
+						LEFT JOIN debtortrans
 							ON debtorsmaster.debtorno = debtortrans.debtorno
 						WHERE
 							debtorsmaster.debtorno = '" . $StmtHeader['debtorno'] . "'";
@@ -316,7 +323,12 @@ if (isset($_POST['PrintPDF']) and isset($_POST['FromCust']) and $_POST['FromCust
 							holdreasons.reasondescription";
 				$CustomerResult = DB_query($SQL);
 				$AgedAnalysis = DB_fetch_array($CustomerResult);
+				if (!$AgedAnalysis) {
+					$AgedAnalysis = array('due' => 0, 'overdue1' => 0, 'balance' => 0, 'overdue2' => 0, 'total_invoices' => 0, 'total_receipts' => 0);
+				}
 
+				$DisplayTotalInvoices = locale_number_format($AgedAnalysis['total_invoices'] ?? 0, $StmtHeader['currdecimalplaces']);
+				$DisplayTotalReceipts = locale_number_format(abs($AgedAnalysis['total_receipts'] ?? 0), $StmtHeader['currdecimalplaces']);
 				$DisplayDue = locale_number_format($AgedAnalysis['due'] - $AgedAnalysis['overdue1'], $StmtHeader['currdecimalplaces']);
 				$DisplayCurrent = locale_number_format($AgedAnalysis['balance'] - $AgedAnalysis['due'], $StmtHeader['currdecimalplaces']);
 				$DisplayBalance = locale_number_format($AgedAnalysis['balance'], $StmtHeader['currdecimalplaces']);
@@ -326,6 +338,8 @@ if (isset($_POST['PrintPDF']) and isset($_POST['FromCust']) and $_POST['FromCust
 				$HTML .= '<div class="section-title">' . __('Aged Analysis') . '</div>';
 				$HTML .= '<table>
 					<tr>
+						<th>' . __('Total Invoices') . '</th>
+						<th>' . __('Total Receipts') . '</th>
 						<th>' . __('Current') . '</th>
 						<th>' . __('Past Due') . '</th>
 						<th>' . $_SESSION['PastDueDays1'] . '-' . $_SESSION['PastDueDays2'] . ' ' . __('days') . '</th>
@@ -333,6 +347,8 @@ if (isset($_POST['PrintPDF']) and isset($_POST['FromCust']) and $_POST['FromCust
 						<th>' . __('Total Balance') . '</th>
 					</tr>
 					<tr>
+						<td class="right">' . $DisplayTotalInvoices . '</td>
+						<td class="right">' . $DisplayTotalReceipts . '</td>
 						<td class="right">' . $DisplayCurrent . '</td>
 						<td class="right">' . $DisplayDue . '</td>
 						<td class="right">' . $DisplayOverdue1 . '</td>
@@ -341,7 +357,7 @@ if (isset($_POST['PrintPDF']) and isset($_POST['FromCust']) and $_POST['FromCust
 					</tr>
 				</table>';
 
-				if (mb_strlen($StmtHeader['lastpaiddate']) > 1 and $StmtHeader['lastpaid'] != 0) {
+				if (mb_strlen((string)$StmtHeader['lastpaiddate']) > 1 and $StmtHeader['lastpaid'] != 0) {
 					$HTML .= '<div class="footer">' . __('Last payment received') . ': ' . ConvertSQLDate($StmtHeader['lastpaiddate']) . ' | ' . __('Amount received was') . ': ' . locale_number_format($StmtHeader['lastpaid'], $StmtHeader['currdecimalplaces']) . '</div>';
 				}
 
