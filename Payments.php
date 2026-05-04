@@ -457,6 +457,7 @@ if (isset($_GET['SupplierID'])) {
 	}
 }
 
+$CurrBalanceRow = array('balance' => 0);
 if (isset($_POST['BankAccount']) AND $_POST['BankAccount'] != '') {
 
 	$_SESSION['PaymentDetail' . $identifier]->Account = $_POST['BankAccount'];
@@ -589,7 +590,7 @@ if (isset($_POST['gltrans_narrative'])) {
 // Supplier reference in supplier transactions:
 if (isset($_POST['supptrans_suppreference'])) {
 	if ($_POST['supptrans_suppreference'] == '') {
-		$_SESSION['PaymentDetail' . $identifier]->SuppTransSuppReference = $_POST['Paymenttype']; // If blank, it uses the payment type.
+		$_SESSION['PaymentDetail' . $identifier]->SuppTransSuppReference = ($_SESSION['PaymentDetail' . $identifier]->Paymenttype ?? ''); // If blank, it uses the payment type.
 
 	}
 	else {
@@ -679,7 +680,7 @@ if (isset($_POST['CommitBatch']) AND empty($Errors)) {
 	$MyRow = DB_fetch_row($Result);
 
 	// first time through commit if supplier cheque then print it first
-	if ((!isset($_POST['ChequePrinted'])) AND (!isset($_POST['PaymentCancelled'])) AND ($MyRow[0] == 1)) {
+	if ((!isset($_POST['ChequePrinted'])) AND (!isset($_POST['PaymentCancelled'])) AND (isset($MyRow[0]) && $MyRow[0] == 1)) {
 		// it is a supplier payment by cheque and haven't printed yet so print cheque
 		//check the cheque number
 		if (empty($_POST['ChequeNum'])) {
@@ -1073,9 +1074,135 @@ if (isset($_POST['CommitBatch']) AND empty($Errors)) {
 		$Result = DB_query($SQL, $ErrMsg, '', true);
 
 		DB_Txn_Commit();
-		prnMsg(__('Payment') . ' ' . $TransNo . ' ' . __('has been successfully entered') , 'success');
 
-		$LastSupplier = ($_SESSION['PaymentDetail' . $identifier]->SupplierID);
+		$PaymentDetail = $_SESSION['PaymentDetail' . $identifier];
+		$LastSupplier = $PaymentDetail->SupplierID;
+
+		// Capture details for display summary before unsetting session
+		$DisplayAmount = $PaymentDetail->Amount;
+		$DisplayCurrency = $PaymentDetail->Currency;
+		$DisplayDate = $PaymentDetail->DatePaid;
+		$DisplayPayee = __('General Ledger');
+
+		if (isset($LastSupplier) and $LastSupplier != '') {
+			$SupplierSQL = "SELECT suppname FROM suppliers WHERE supplierid='" . $LastSupplier . "'";
+			$SupplierResult = DB_query($SupplierSQL);
+			$SupplierRow = DB_fetch_array($SupplierResult);
+			$DisplayPayee = $SupplierRow['suppname'];
+			$TransSQL = "SELECT id FROM supptrans WHERE type=22 AND transno='" . $TransNo . "'";
+			$TransResult = DB_query($TransSQL);
+			$TransRow = DB_fetch_array($TransResult);
+		}
+
+		echo '<div class="db-centered" style="max-width: 600px; margin-top: 50px;">
+			<div class="db-card" style="text-align: center; padding: 40px; border: 1px solid var(--border-soft); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);">
+				<div style="width: 80px; height: 80px; background: #ecfdf5; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+					<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+				</div>
+				<h2 style="font-size: 1.5rem; font-weight: 900; color: var(--primary-dark); margin-bottom: 8px;">' . __('Payment Successfully Recorded') . '</h2>
+				<p style="color: var(--text-muted); margin-bottom: 24px;">' . __('Transaction has been processed and ledger entries created.') . '</p>
+				
+				<!-- PAYMENT SUMMARY TABLE -->
+				<div style="background: var(--surface-alt); border-radius: 12px; padding: 20px; margin-bottom: 32px; text-align: left; border: 1px solid var(--border-soft);">
+					<div style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid var(--border-soft); padding-bottom: 8px;">
+						<span style="color: var(--text-muted);">' . __('Payment Reference') . '</span>
+						<span style="font-weight: 700; color: var(--text-main);">#' . $TransNo . '</span>
+					</div>
+					<div style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid var(--border-soft); padding-bottom: 8px;">
+						<span style="color: var(--text-muted);">' . __('Payee') . '</span>
+						<span style="font-weight: 600; color: var(--text-main);">' . $DisplayPayee . '</span>
+					</div>
+					<div style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid var(--border-soft); padding-bottom: 8px;">
+						<span style="color: var(--text-muted);">' . __('Date Paid') . '</span>
+						<span style="color: var(--text-main);">' . $DisplayDate . '</span>
+					</div>
+					<div style="display: flex; justify-content: space-between; padding-top: 4px;">
+						<span style="color: var(--text-muted); font-weight: 600;">' . __('Total Amount') . '</span>
+						<span style="font-weight: 900; color: var(--primary); font-size: 1.2rem;">' . locale_number_format($DisplayAmount, 2) . ' ' . $DisplayCurrency . '</span>
+					</div>
+				</div>
+
+				</div>
+				';
+		if (sizeOf($PaymentDetail->GLItems) > 0) {
+			echo '<div style="margin-bottom: 32px; text-align: left;">
+            <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-list-ul"></i> ' . __('General Ledger Analysis Details') . '
+            </div>
+            <div class="db-table-wrapper" style="border: 1px solid var(--border-soft); border-radius: 12px; overflow: hidden; background: #ffffff;">
+                <table class="db-table" style="margin-bottom: 0;">
+                    <thead>
+                        <tr style="background: #f8fafc; border-bottom: 1px solid var(--border-soft);">
+                            <th style="padding: 12px 16px; text-align: left; font-size: 0.7rem;">' . __('Account') . '</th>
+                            <th style="padding: 12px 16px; text-align: right; font-size: 0.7rem;">' . __('Amount') . '</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
+
+        foreach ($PaymentDetail->GLItems as $Item) {
+            echo '<tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 10px 16px; text-align: left;">
+                        <div style="font-weight: 700; color: var(--text-main); font-size: 0.85rem;">' . $Item->GLCode . '</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">' . htmlspecialchars($Item->GLActName) . '</div>
+                    </td>
+                    <td style="padding: 10px 16px; text-align: right; font-weight: 800; color: var(--primary); font-size: 0.9rem;">
+                        ' . locale_number_format($Item->Amount, 2) . '
+                    </td>
+                </tr>';
+        }
+			echo '</tbody></table></div></div>';
+		}
+
+        if (isset($PaidArray) && sizeOf($PaidArray) > 0) {
+            echo '<div style="margin-bottom: 32px; text-align: left;">
+                <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-link"></i> ' . __('Invoices Settled / Paid') . '
+                </div>
+                <div class="db-table-wrapper" style="border: 1px solid var(--border-soft); border-radius: 12px; overflow: hidden; background: #ffffff;">
+                    <table class="db-table" style="margin-bottom: 0;">
+                        <thead>
+                            <tr style="background: #f8fafc; border-bottom: 1px solid var(--border-soft);">
+                                <th style="padding: 12px 16px; text-align: left; font-size: 0.7rem;">' . __('Invoice #') . '</th>
+                                <th style="padding: 12px 16px; text-align: right; font-size: 0.7rem;">' . __('Amount') . '</th>
+                            </tr>
+                        </thead>
+                        <tbody>';
+            foreach ($PaidArray as $PaidID => $PaidAmount) {
+                echo '<tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 10px 16px; text-align: left;">
+                            <div style="font-weight: 700; color: var(--text-main); font-size: 0.85rem;">' . __('Ref') . ': ' . $PaidID . '</div>
+                        </td>
+                        <td style="padding: 10px 16px; text-align: right; font-weight: 800; color: var(--primary); font-size: 0.9rem;">
+                            ' . locale_number_format($PaidAmount, 2) . '
+                        </td>
+                    </tr>';
+            }
+            echo '</tbody></table></div></div>';
+        }
+		echo '				<div style="display: grid; grid-template-columns: 1fr; gap: 12px;">';
+
+		if (isset($LastSupplier) and $LastSupplier != '') {
+			echo '<a href="' . $RootPath . '/SupplierAllocations.php?AllocTrans=' . $TransRow['id'] . '" class="db-btn db-btn-primary" style="height: 48px; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+					<i class="fas fa-link" style="margin-right: 10px;"></i> ' . __('Allocate this payment') . '
+				  </a>';
+			echo '<a href="' . $RootPath . '/Payments.php?SupplierID=' . $LastSupplier . '" class="db-btn db-btn-secondary" style="height: 48px; text-decoration: none; background: var(--surface-alt); display: flex; align-items: center; justify-content: center;">
+					<i class="fas fa-plus" style="margin-right: 10px;"></i> ' . __('Enter another Payment for') . ' ' . $DisplayPayee . '
+				  </a>';
+		} else {
+			echo '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" class="db-btn db-btn-primary" style="height: 48px; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+					<i class="fas fa-plus" style="margin-right: 10px;"></i> ' . __('Enter another GL Payment') . '
+				  </a>';
+		}
+
+		echo '<a href="' . $RootPath . '/GLTransInquiry.php?TypeID=22&TransNo=' . $TransNo . '" target="_blank" class="db-btn" style="height: 48px; text-decoration: none; border: 1px solid var(--border-soft); background: transparent; color: var(--text-main); display: flex; align-items: center; justify-content: center;">
+				<i class="fas fa-file-invoice-dollar" style="margin-right: 10px;"></i> ' . __('View General Ledger Postings') . '
+			  </a>';
+
+		echo '<a href="' . $RootPath . '/index.php" class="db-btn" style="height: 48px; text-decoration: none; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">
+				<i class="fas fa-home" style="margin-right: 10px;"></i> ' . __('Return to Menu') . '
+			  </a>';
+
+		echo '</div></div></div>';
 
 		unset($_POST['BankAccount']);
 		unset($_POST['DatePaid']);
@@ -1092,22 +1219,6 @@ if (isset($_POST['CommitBatch']) AND empty($Errors)) {
 		unset($_SESSION['PaymentDetail' . $identifier]->GLItems);
 		unset($_SESSION['PaymentDetail' . $identifier]->SupplierID);
 		unset($_SESSION['PaymentDetail' . $identifier]);
-
-		/*Set up a newy in case user wishes to enter another */
-		if (isset($LastSupplier) and $LastSupplier != '') {
-			$SupplierSQL = "SELECT suppname FROM suppliers
-					WHERE supplierid='" . $LastSupplier . "'";
-			$SupplierResult = DB_query($SupplierSQL);
-			$SupplierRow = DB_fetch_array($SupplierResult);
-			$TransSQL = "SELECT id FROM supptrans WHERE type=22 AND transno='" . $TransNo . "'";
-			$TransResult = DB_query($TransSQL);
-			$TransRow = DB_fetch_array($TransResult);
-			echo '<br /><a href="' . $RootPath . '/SupplierAllocations.php?AllocTrans=' . $TransRow['id'] . '">' . __('Allocate this payment') . '</a>';
-			echo '<br /><a href="' . $RootPath . '/Payments.php?SupplierID=' . $LastSupplier . '">' . __('Enter another Payment for') . ' ' . $SupplierRow['suppname'] . '</a>';
-		}
-		else {
-			echo '<br /><a href="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">' . __('Enter another General Ledger Payment') . '</a><br />';
-		}
 	}
 
 	include(__DIR__ . '/includes/footer.php');
@@ -1213,6 +1324,7 @@ if ($_SESSION['PaymentDetail' . $identifier]->Currency == '' AND $_SESSION['Paym
 	$_SESSION['PaymentDetail' . $identifier]->Currency = $_SESSION['CompanyRecord']['currencydefault'];
 }
 
+$CurrBalanceRow = array('balance' => 0);
 if (isset($_POST['BankAccount']) AND $_POST['BankAccount'] != '') {
 	$SQL = "SELECT bankaccountname
 			FROM bankaccounts,
@@ -1232,6 +1344,10 @@ if (isset($_POST['BankAccount']) AND $_POST['BankAccount'] != '') {
 	elseif (DB_num_rows($Result) == 0) {
 		prnMsg(__('The bank account number') . ' ' . $_POST['BankAccount'] . ' ' . __('is not set up as a bank account with a valid general ledger account') , 'error');
 	}
+
+	$BalanceSQL = "SELECT SUM(amount) AS balance FROM banktrans WHERE bankact='" . $_POST['BankAccount'] . "'";
+	$BalanceResult = DB_query($BalanceSQL);
+	$CurrBalanceRow = DB_fetch_array($BalanceResult);
 }
 
 
@@ -1262,7 +1378,7 @@ if (DB_num_rows($AccountsResults) == 0) {
 	}
 	echo '</select>';
 	if ((in_array($CashSecurity, $_SESSION['AllowedPageSecurityTokens']) OR !isset($CashSecurity)) && isset($_SESSION['PaymentDetail' . $identifier]->Account)) {
-		echo '<div style="margin-top: 8px; font-size: 0.8rem; color: var(--success); font-weight: 700;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right: 4px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>' . __('Current Balance') . ': ' . locale_number_format($CurrBalanceRow['balance'], $_SESSION['CompanyRecord']['decimalplaces']) . '</div>';
+		echo '<div style="margin-top: 8px; font-size: 0.8rem; color: var(--success); font-weight: 700;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right: 4px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>' . __('Current Balance') . ': ' . locale_number_format(($CurrBalanceRow['balance'] ?? 0), $_SESSION['CompanyRecord']['decimalplaces']) . '</div>';
 	}
 	echo '</div>';
 }
@@ -1318,6 +1434,34 @@ if ($_SESSION['PaymentDetail' . $identifier]->AccountCurrency != $_SESSION['Comp
 }
 
 	echo '</div></div></div></div>'; // end inner-div, card-body, db-card, pay-tab-source
+
+if (!isset($_POST['BankTransRef'])) {
+	$_POST['BankTransRef'] = (isset($_SESSION['PaymentDetail' . $identifier]->BankTransRef)) ? $_SESSION['PaymentDetail' . $identifier]->BankTransRef : '';
+}
+if (!isset($_POST['Narrative'])) {
+	$_POST['Narrative'] = (isset($_SESSION['PaymentDetail' . $identifier]->Narrative)) ? $_SESSION['PaymentDetail' . $identifier]->Narrative : '';
+}
+if (!isset($_POST['gltrans_narrative'])) {
+	$_POST['gltrans_narrative'] = (isset($_SESSION['PaymentDetail' . $identifier]->GLTransNarrative)) ? $_SESSION['PaymentDetail' . $identifier]->GLTransNarrative : '';
+}
+if (!isset($_POST['supptrans_suppreference'])) {
+	$_POST['supptrans_suppreference'] = (isset($_SESSION['PaymentDetail' . $identifier]->SuppTransSuppReference)) ? $_SESSION['PaymentDetail' . $identifier]->SuppTransSuppReference : '';
+}
+if (!isset($_POST['supptrans_transtext'])) {
+	$_POST['supptrans_transtext'] = (isset($_SESSION['PaymentDetail' . $identifier]->SuppTransTransText)) ? $_SESSION['PaymentDetail' . $identifier]->SuppTransTransText : '';
+}
+if (!isset($_POST['Amount'])) {
+	$_POST['Amount'] = (isset($_SESSION['PaymentDetail' . $identifier]->Amount)) ? $_SESSION['PaymentDetail' . $identifier]->Amount : 0;
+}
+if (!isset($_POST['Discount'])) {
+	$_POST['Discount'] = (isset($_SESSION['PaymentDetail' . $identifier]->Discount)) ? $_SESSION['PaymentDetail' . $identifier]->Discount : 0;
+}
+if (!isset($_POST['Currency'])) {
+	$_POST['Currency'] = (isset($_SESSION['PaymentDetail' . $identifier]->Currency)) ? $_SESSION['PaymentDetail' . $identifier]->Currency : '';
+}
+if (!isset($_POST['Paymenttype'])) {
+	$_POST['Paymenttype'] = (isset($_SESSION['PaymentDetail' . $identifier]->Paymenttype)) ? $_SESSION['PaymentDetail' . $identifier]->Paymenttype : '';
+}
 
 echo '<!-- TAB 2: EXECUTION & AUDIT -->
 	<div id="pay-tab-execution" class="pay-tab-content">
