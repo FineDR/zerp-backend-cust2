@@ -16,22 +16,33 @@ if (isset($_POST['DoIt'])) {
 if ((isset($_POST['InvOrCredit']) and $_POST['InvOrCredit']=='Invoice') or $_GET['InvOrCredit']=='Invoice'){
 	$TransactionType = __('Invoice');
 	$TypeCode = 10;
+} elseif ((isset($_POST['InvOrCredit']) and $_POST['InvOrCredit']=='Receipt') or $_GET['InvOrCredit']=='Receipt'){
+	$TransactionType = __('Receipt');
+	$TypeCode = 12;
 } else {
 	$TransactionType = __('Credit Note');
 	$TypeCode =11;
+}
+
+if (isset($_GET['DebtorNo'])) {
+	$DebtorNo = $_GET['DebtorNo'];
+} elseif (isset($_POST['DebtorNo'])) {
+	$DebtorNo = $_POST['DebtorNo'];
+} else {
+	$DebtorNo = '';
 }
 $Title=__('Email') . ' ' . $TransactionType . ' ' . __('Number') . ' ' . $_GET['FromTransNo'];
 
 if (isset($_POST['DoIt']) AND IsEmailAddress($_POST['EmailAddr'])){
 
 	if ($_SESSION['InvoicePortraitFormat']==0){
-		echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $_POST['TransNo'] . '&orientation=landscape&PrintPDF=Yes&InvOrCredit=' . $_POST['InvOrCredit'] .'&Email=' . $_POST['EmailAddr'] . '">';
+		echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $_POST['TransNo'] . '&orientation=landscape&PrintPDF=Yes&InvOrCredit=' . $_POST['InvOrCredit'] .'&Email=' . $_POST['EmailAddr'] . '&DebtorNo=' . $DebtorNo . '">';
 
-		prnMsg(__('The transaction should have been emailed off. If this does not happen (perhaps the browser does not support META Refresh)') . '<a href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $_POST['FromTransNo'] . '&orientation=landscape&PrintPDF=Yes&InvOrCredit=' . $_POST['InvOrCredit'] .'&Email=' . $_POST['EmailAddr'] . '">' . __('click here') . '</a> ' . __('to email the customer transaction'),'success');
+		prnMsg(__('The transaction should have been emailed off. If this does not happen (perhaps the browser does not support META Refresh)') . '<a href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $_POST['FromTransNo'] . '&orientation=landscape&PrintPDF=Yes&InvOrCredit=' . $_POST['InvOrCredit'] .'&Email=' . $_POST['EmailAddr'] . '&DebtorNo=' . $DebtorNo . '">' . __('click here') . '</a> ' . __('to email the customer transaction'),'success');
 	} else {
-		echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $_POST['TransNo'] . '&orientation=portrait&PrintPDF=Yes&InvOrCredit=' . $_POST['InvOrCredit'] .'&Email=' . $_POST['EmailAddr'] . '">';
+		echo '<meta http-equiv="Refresh" content="0; url=' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $_POST['TransNo'] . '&orientation=portrait&PrintPDF=Yes&InvOrCredit=' . $_POST['InvOrCredit'] .'&Email=' . $_POST['EmailAddr'] . '&DebtorNo=' . $DebtorNo . '">';
 
-		prnMsg(__('The transaction should have been emailed off. If this does not happen (perhaps the browser does not support META Refresh)') . '<a href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $_POST['FromTransNo'] . '&orientation=portrait&PrintPDF=Yes&InvOrCredit=' . $_POST['InvOrCredit'] .'&Email=' . $_POST['EmailAddr'] . '">' . __('click here') . '</a> ' . __('to email the customer transaction'),'success');
+		prnMsg(__('The transaction should have been emailed off. If this does not happen (perhaps the browser does not support META Refresh)') . '<a href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $_POST['FromTransNo'] . '&orientation=portrait&PrintPDF=Yes&InvOrCredit=' . $_POST['InvOrCredit'] .'&Email=' . $_POST['EmailAddr'] . '&DebtorNo=' . $DebtorNo . '">' . __('click here') . '</a> ' . __('to email the customer transaction'),'success');
 	}
 	include(__DIR__ . '/includes/footer.php');
 	exit();
@@ -47,6 +58,7 @@ echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />'
 
 echo '<input type="hidden" name="TransNo" value="' . $_GET['FromTransNo'] . '" />';
 echo '<input type="hidden" name="InvOrCredit" value="' . $_GET['InvOrCredit'] . '" />';
+echo '<input type="hidden" name="DebtorNo" value="' . $DebtorNo . '" />';
 
 echo '<br /><table>';
 
@@ -56,6 +68,9 @@ $SQL = "SELECT email
 			AND custbranch.branchcode=debtortrans.branchcode
 		WHERE debtortrans.type='" . $TypeCode . "'
 		AND debtortrans.transno='" .$_GET['FromTransNo'] . "'";
+if ($DebtorNo != '') {
+	$SQL .= " AND debtortrans.debtorno='" . $DebtorNo . "'";
+}
 
 $ErrMsg = __('There was a problem retrieving the contact details for the customer');
 $ContactResult = DB_query($SQL, $ErrMsg);

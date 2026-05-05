@@ -1,5 +1,6 @@
 <?php
 require_once (__DIR__ . '/includes/session.php');
+require_once (__DIR__ . '/includes/DateFunctions.php');
 require_once (__DIR__ . '/vendor/autoload.php');
 include_once (__DIR__ . '/includes/SQL_CommonFunctions.php');
 
@@ -172,7 +173,7 @@ if (isset($PrintPDF)
 			if (isset($_POST['PrintEDI']) AND $_POST['PrintEDI']=='No') {
 				$SQL .= ' AND debtorsmaster.ediinvoices=0';
 			}
-		} else {
+			} elseif ($InvOrCredit=='Credit') {
 			$SQL = "SELECT debtortrans.trandate,
 							debtortrans.ovamount,
 							debtortrans.ovdiscount,
