@@ -400,18 +400,22 @@ $TransResult = DB_query($SQL, $ErrMsg);
 						</a>';
 		}
 
+		$TransTypeStr = 'Invoice';
+		if ($MyRow['type'] == 11) $TransTypeStr = 'Credit';
+		if ($MyRow['type'] == 12) $TransTypeStr = 'Receipt';
+
 		// Standard View (HTML) Action
-		$Actions .= '<a href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $MyRow['transno'] . '&amp;InvOrCredit=' . ($MyRow['type'] == 11 ? 'Credit' : 'Invoice') . '&View=Yes" title="' . __('HTML') . '" target="_blank" class="db-btn db-btn-secondary" style="padding: 4px 8px;">
+		$Actions .= '<a href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $MyRow['transno'] . '&amp;InvOrCredit=' . $TransTypeStr . '&amp;DebtorNo=' . $CustomerID . '&View=Yes" title="' . __('HTML') . '" target="_blank" class="db-btn db-btn-secondary" style="padding: 4px 8px;">
 						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
 					</a>';
 
 		// PDF Action
-		$Actions .= '<a href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $MyRow['transno'] . '&amp;InvOrCredit=' . ($MyRow['type'] == 11 ? 'Credit' : 'Invoice') . '&amp;PrintPDF=True&orientation=' . $Orientation . '" title="' . __('PDF') . '" target="_blank" class="db-btn db-btn-secondary" style="padding: 4px 8px;">
+		$Actions .= '<a href="' . $RootPath . '/PrintCustTrans.php?FromTransNo=' . $MyRow['transno'] . '&amp;InvOrCredit=' . $TransTypeStr . '&amp;DebtorNo=' . $CustomerID . '&amp;PrintPDF=True&orientation=' . $Orientation . '" title="' . __('PDF') . '" target="_blank" class="db-btn db-btn-secondary" style="padding: 4px 8px;">
 						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
 					</a>';
 
 		// Email Action
-		$Actions .= '<a href="' . $RootPath . '/EmailCustTrans.php?FromTransNo=' . $MyRow['transno'] . '&amp;InvOrCredit=' . ($MyRow['type'] == 11 ? 'Credit' : 'Invoice') . '" title="' . __('Email') . '" class="db-btn db-btn-secondary" style="padding: 4px 8px;">
+		$Actions .= '<a href="' . $RootPath . '/EmailCustTrans.php?FromTransNo=' . $MyRow['transno'] . '&amp;InvOrCredit=' . $TransTypeStr . '&amp;DebtorNo=' . $CustomerID . '" title="' . __('Email') . '" class="db-btn db-btn-secondary" style="padding: 4px 8px;">
 						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
 					</a>';
 

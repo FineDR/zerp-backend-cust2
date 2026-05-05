@@ -36,8 +36,16 @@ if (isset($_GET['PrintPDF'])) {
 	$PrintPDF = $_POST['PrintPDF'];
 }
 
-if (!isset($InvOrCredit) || ($InvOrCredit != 'Invoice' && $InvOrCredit != 'Credit')) {
+if (!isset($InvOrCredit) || ($InvOrCredit != 'Invoice' && $InvOrCredit != 'Credit' && $InvOrCredit != 'Receipt')) {
 	$InvOrCredit = 'Invoice';
+}
+
+if (isset($_GET['DebtorNo'])) {
+	$DebtorNo = $_GET['DebtorNo'];
+} elseif (isset($_POST['DebtorNo'])) {
+	$DebtorNo = $_POST['DebtorNo'];
+} else {
+	$DebtorNo = '';
 }
 
 if (!isset($_POST['ToTransNo'])
@@ -157,6 +165,9 @@ if (isset($PrintPDF)
 						ON debtorsmaster.currcode=currencies.currabrev
 						WHERE debtortrans.type=10
 						AND debtortrans.transno='" . $FromTransNo . "'";
+			if ($DebtorNo != '') {
+				$SQL .= " AND debtortrans.debtorno='" . $DebtorNo . "'";
+			}
 
 			if (isset($_POST['PrintEDI']) AND $_POST['PrintEDI']=='No') {
 				$SQL .= ' AND debtorsmaster.ediinvoices=0';
@@ -209,6 +220,55 @@ if (isset($PrintPDF)
 						ON debtorsmaster.currcode=currencies.currabrev
 						WHERE debtortrans.type=11
 						AND debtortrans.transno='" . $FromTransNo . "'";
+			if ($DebtorNo != '') {
+				$SQL .= " AND debtortrans.debtorno='" . $DebtorNo . "'";
+			}
+		} elseif ($InvOrCredit=='Receipt') {
+			$SQL = "SELECT debtortrans.trandate,
+							debtortrans.ovamount,
+							debtortrans.ovdiscount,
+							debtortrans.ovfreight,
+							debtortrans.ovgst,
+							debtortrans.rate,
+							debtortrans.invtext,
+							debtorsmaster.invaddrbranch,
+							debtorsmaster.name,
+							debtorsmaster.address1,
+							debtorsmaster.address2,
+							debtorsmaster.address3,
+							debtorsmaster.address4,
+							debtorsmaster.address5,
+							debtorsmaster.address6,
+							debtorsmaster.currcode,
+							debtorsmaster.taxref,
+							debtorsmaster.language_id,
+							custbranch.brname,
+							custbranch.braddress1,
+							custbranch.braddress2,
+							custbranch.braddress3,
+							custbranch.braddress4,
+							custbranch.braddress5,
+							custbranch.braddress6,
+							custbranch.salesman,
+							salesman.salesmanname,
+							debtortrans.debtorno,
+							debtortrans.branchcode,
+							debtortrans.id as transid,
+							currencies.decimalplaces
+						FROM debtortrans INNER JOIN debtorsmaster
+						ON debtortrans.debtorno=debtorsmaster.debtorno
+						INNER JOIN custbranch
+						ON debtortrans.debtorno=custbranch.debtorno
+						AND debtortrans.branchcode=custbranch.branchcode
+						INNER JOIN salesman
+						ON custbranch.salesman=salesman.salesmancode
+						INNER JOIN currencies
+						ON debtorsmaster.currcode=currencies.currabrev
+						WHERE debtortrans.type=12
+						AND debtortrans.transno='" . $FromTransNo . "'";
+			if ($DebtorNo != '') {
+				$SQL .= " AND debtortrans.debtorno='" . $DebtorNo . "'";
+			}
 			if (isset($_POST['PrintEDI']) AND $_POST['PrintEDI']=='No') {
 				$SQL .= ' AND debtorsmaster.ediinvoices=0';
 			}
@@ -216,7 +276,7 @@ if (isset($PrintPDF)
 		$ErrMsg = __('There was a problem retrieving the invoice or credit note details for note number') . ' ' . $FromTransNo;
 		$Result = DB_query($SQL, $ErrMsg);
 
-		if (DB_num_rows($Result)==1) {
+		if (DB_num_rows($Result) >= 1) {
 			$MyRow = DB_fetch_array($Result);
 
 			$CustomerAddress = '';
@@ -273,7 +333,7 @@ if (isset($PrintPDF)
 							WHERE stockmoves.type=10
 							AND stockmoves.transno='" . $FromTransNo . "'
 							AND stockmoves.show_on_inv_crds=1";
-			} else {
+			} elseif ($InvOrCredit=='Credit') {
 				$SQLLines = "SELECT stockmoves.stockid,
 								stockmaster.description,
 								stockmoves.qty as quantity,
@@ -291,265 +351,291 @@ if (isset($PrintPDF)
 							WHERE stockmoves.type=11
 							AND stockmoves.transno='" . $FromTransNo . "'
 							AND stockmoves.show_on_inv_crds=1";
+			} else {
+				// Receipts show allocations
+				$SQLLines = "SELECT systypes.typename,
+								debtortrans.transno,
+								debtortrans.trandate,
+								custallocns.amt as quantity,
+								1 as units,
+								custallocns.amt as fxprice,
+								0 as discountpercent,
+								custallocns.amt as fxnet,
+								debtortrans.reference as stockid,
+								CONCAT(systypes.typename, ' #', debtortrans.transno) as description,
+								0 as controlled,
+								0 as serialised,
+								0 as decimalplaces,
+								'' as narrative
+							FROM custallocns
+							INNER JOIN debtortrans ON custallocns.transid_allocto = debtortrans.id
+							INNER JOIN systypes ON debtortrans.type = systypes.typeid
+							WHERE custallocns.transid_allocfrom = '" . $MyRow['transid'] . "'";
 			}
 			$ErrMsgLines = __('There was a problem retrieving the invoice or credit note stock movement details for invoice number') . ' ' . $FromTransNo;
 			$ResultLines = DB_query($SQLLines, $ErrMsgLines);
 
-			// --- Calculate Due Date (Invoice only) ---
+			// --- Calculate Due Date ---
 			if ($InvOrCredit=='Invoice') {
 				$DisplayDueDate = CalcDueDate(ConvertSQLDate($MyRow['trandate']), $MyRow['dayinfollowingmonth'], $MyRow['daysbeforedue']);
+			} else {
+				$DisplayDueDate = ConvertSQLDate($MyRow['trandate']);
 			}
 
-			// --- Calculate Totals ---
 			if ($InvOrCredit=='Invoice') {
 				$DisplaySubTot = locale_number_format($MyRow['ovamount'],$MyRow['decimalplaces']);
 				$DisplayFreight = locale_number_format($MyRow['ovfreight'],$MyRow['decimalplaces']);
 				$DisplayTax = locale_number_format($MyRow['ovgst'],$MyRow['decimalplaces']);
 				$DisplayTotal = locale_number_format($MyRow['ovfreight']+$MyRow['ovgst']+$MyRow['ovamount'],$MyRow['decimalplaces']);
 			} else {
-				$DisplaySubTot = locale_number_format(-$MyRow['ovamount'],$MyRow['decimalplaces']);
-				$DisplayFreight = locale_number_format(-$MyRow['ovfreight'],$MyRow['decimalplaces']);
-				$DisplayTax = locale_number_format(-$MyRow['ovgst'],$MyRow['decimalplaces']);
-				$DisplayTotal = locale_number_format(-$MyRow['ovfreight']-$MyRow['ovgst']-$MyRow['ovamount'],$MyRow['decimalplaces']);
+				$DisplaySubTot = locale_number_format(abs($MyRow['ovamount']),$MyRow['decimalplaces']);
+				$DisplayFreight = locale_number_format(abs($MyRow['ovfreight']),$MyRow['decimalplaces']);
+				$DisplayTax = locale_number_format(abs($MyRow['ovgst']),$MyRow['decimalplaces']);
+				$DisplayTotal = locale_number_format(abs($MyRow['ovfreight']+$MyRow['ovgst']+$MyRow['ovamount']),$MyRow['decimalplaces']);
 			}
 
-			// --- Begin HTML ---
+			// --- Begin Modern Industry-Standard HTML ---
 			$HTML = '<html>
 			<head>
 				<style>
-				body { font-family: DejaVu Sans, sans-serif; font-size: 10px; }
-				.header { background: #eee; padding: 10px; }
-				.table1 { width: 100%; border-collapse: collapse; }
-				.table1 th, .table1 td { border: 1px solid #ccc; padding: 5px; }
-				.number { text-align: right; }
-				.striped_row:nth-child(even) { background: #f9f9f9; }
-				.centre { text-align: center; }
-				.footer { margin-top: 20px; }
+					@page { margin: 30px; }
+					body { 
+						font-family: "Helvetica", "Arial", sans-serif; 
+						font-size: 10px; 
+						color: #333; 
+						line-height: 1.4;
+					}
+					.container { width: 100%; }
+					
+					/* Header Layout */
+					.header-table { width: 100%; border-bottom: 2px solid #059669; padding-bottom: 20px; margin-bottom: 20px; }
+					.logo { height: 60px; max-width: 250px; }
+					.document-title { 
+						font-size: 24px; 
+						font-weight: 900; 
+						color: #064e3b; 
+						text-align: right; 
+						text-transform: uppercase;
+						margin: 0;
+						letter-spacing: -1px;
+					}
+					.document-meta { text-align: right; font-size: 11px; margin-top: 5px; }
+					.meta-label { font-weight: bold; color: #666; }
+					
+					/* Address Sections */
+					.address-table { width: 100%; margin-bottom: 30px; }
+					.address-box { width: 31%; vertical-align: top; padding: 10px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; }
+					.address-label { 
+						font-size: 8px; 
+						text-transform: uppercase; 
+						font-weight: 800; 
+						color: #059669; 
+						margin-bottom: 8px; 
+						display: block;
+						letter-spacing: 1px;
+					}
+					.address-content { font-size: 10px; font-weight: 600; }
+
+					/* Info Bar (Order details) */
+					.info-bar { 
+						width: 100%; 
+						background: #064e3b; 
+						color: white; 
+						margin-bottom: 20px;
+						border-radius: 4px;
+					}
+					.info-bar td { padding: 8px 12px; font-size: 9px; text-align: center; border-right: 1px solid rgba(255,255,255,0.1); }
+					.info-bar td:last-child { border-right: none; }
+					.info-label { display: block; font-size: 7px; text-transform: uppercase; opacity: 0.7; margin-bottom: 2px; }
+
+					/* Main Items Table */
+					.items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+					.items-table th { 
+						background: #f3f4f6; 
+						color: #374151; 
+						text-transform: uppercase; 
+						font-size: 8px; 
+						font-weight: 800; 
+						padding: 10px; 
+						border-bottom: 2px solid #e5e7eb;
+						text-align: left;
+					}
+					.items-table td { padding: 10px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+					.items-table tr:nth-child(even) { background: #fafafa; }
+					.text-right { text-align: right; }
+					.font-bold { font-weight: bold; }
+					
+					/* Totals Layout */
+					.totals-container { width: 100%; }
+					.totals-table { width: 250px; float: right; }
+					.totals-table td { padding: 6px 0; font-size: 11px; }
+					.total-row { border-top: 2px solid #059669; font-size: 14px; font-weight: 900; color: #064e3b; }
+					.total-row td { padding-top: 15px; }
+
+					/* Footer */
+					.footer-section { clear: both; margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; }
+					.payment-info { width: 60%; font-size: 9px; color: #666; }
+					.thank-you { font-size: 14px; font-weight: bold; color: #059669; margin-bottom: 10px; }
+					.legal-notice { font-size: 7px; color: #999; margin-top: 20px; font-style: italic; }
 				</style>
 			</head>
-			<body>';
+			<body>
+				<div class="container">
+					<table class="header-table">
+						<tr>
+							<td width="50%">
+								<img class="logo" src="' . $_SESSION['LogoFile'] . '" alt="Logo" />
+								<div style="margin-top:10px; font-weight: bold;">' . $_SESSION['CompanyRecord']['coyname'] . '</div>
+								<div>' . $_SESSION['CompanyRecord']['regoffice1'] . ', ' . $_SESSION['CompanyRecord']['regoffice2'] . '</div>
+								<div>' . __('Tel') . ': ' . $_SESSION['CompanyRecord']['telephone'] . ' | ' . __('Email') . ': ' . $_SESSION['CompanyRecord']['email'] . '</div>
+								<div>' . __("Tax Ref") . ': ' . $_SESSION['CompanyRecord']['gstno'] . '</div>
+							</td>
+							<td width="50%" style="vertical-align: top;">
+								<div class="document-title">' . ($InvOrCredit == "Invoice" ? __("TAX INVOICE") : ($InvOrCredit == "Receipt" ? __("OFFICIAL RECEIPT") : __("TAX CREDIT NOTE"))) . '</div>
+								<div class="document-meta">
+									<div><span class="meta-label">' . ($InvOrCredit == "Receipt" ? __("Receipt No") : __("Document No")) . ':</span> #' . $FromTransNo . '</div>
+									<div><span class="meta-label">' . __("Date") . ':</span> ' . ConvertSQLDate($MyRow['trandate']) . '</div>
+									<div><span class="meta-label">' . __("Due Date") . ':</span> ' . $DisplayDueDate . '</div>
+									<div><span class="meta-label">' . __("Currency") . ':</span> ' . $MyRow['currcode'] . '</div>
+								</div>
+							</td>
+						</tr>
+					</table>
 
-			$HTML .= '<table class="table1">
-					<tr>
-						<td>
-						<img class="logo" src="' . $_SESSION['LogoFile'] . '" alt="" style="height:50px;" />';
-			if ($InvOrCredit == "Invoice") {
-				$HTML .= '<h2>
-							' . __("TAX INVOICE") . ' ' . __("Number") . ' ' . $FromTransNo .
-						'</h2>';
-			} else {
-				$HTML .= '<h2>
-							' . __("TAX CREDIT NOTE") . ' ' . __("Number") . ' ' . $FromTransNo .
-						'</h2>';
+					<table class="address-table">
+						<tr>
+							<td class="address-box">
+								<span class="address-label">' . __('Bill To') . '</span>
+								<div class="address-content">
+									' . $MyRow['name'] . '<br/>
+									' . $CustomerAddress . '
+									' . ($MyRow['taxref'] ? '<br/>'.__('Tax Ref').': ' . $MyRow['taxref'] : '') . '
+								</div>
+							</td>
+							<td width="3%">&nbsp;</td>
+							<td class="address-box">
+								<span class="address-label">' . __('Ship To') . '</span>
+								<div class="address-content">
+									' . $MyRow['deliverto'] . '<br/>
+									' . $DeliveryAddress . '
+								</div>
+							</td>
+							<td width="3%">&nbsp;</td>
+							<td class="address-box">
+								<span class="address-label">' . __('Branch Details') . '</span>
+								<div class="address-content">
+									' . $MyRow['brname'] . '<br/>
+									' . $BranchAddress . '
+								</div>
+							</td>
+						</tr>
+					</table>
+
+					' . ($InvOrCredit == 'Invoice' ? '
+					<table class="info-bar">
+						<tr>
+							<td><span class="info-label">' . __('Your Ref') . '</span>' . $MyRow['customerref'] . '</td>
+							<td><span class="info-label">' . __('Our Order') . '</span>' . $MyRow['orderno'] . '</td>
+							<td><span class="info-label">' . __('Order Date') . '</span>' . ConvertSQLDate($MyRow['orddate']) . '</td>
+							<td><span class="info-label">' . __('Sales Person') . '</span>' . $MyRow['salesmanname'] . '</td>
+							<td><span class="info-label">' . __('Shipper') . '</span>' . $MyRow['shippername'] . '</td>
+						</tr>
+					</table>' : '') . '
+
+					<table class="items-table">
+						<thead>
+							<tr>
+								<th width="15%">' . ($InvOrCredit == 'Receipt' ? __('Original Ref') : __('Item Code')) . '</th>
+								<th width="40%">' . ($InvOrCredit == 'Receipt' ? __('Trans Type') : __('Item Description')) . '</th>
+								<th class="text-right">' . ($InvOrCredit == 'Receipt' ? __('Allocated') : __('Qty')) . '</th>
+								<th class="text-right">' . ($InvOrCredit == 'Receipt' ? __('Units') : __('Price')) . '</th>
+								<th class="text-right">' . __('Discount') . '</th>
+								<th class="text-right">' . __('Net Amount') . '</th>
+							</tr>
+						</thead>
+						<tbody>';
+
+			while ($MyRow2 = DB_fetch_array($ResultLines)) {
+				$DisplayPrice = locale_number_format($MyRow2['fxprice'], $MyRow['decimalplaces']);
+				$DisplayQty = locale_number_format($MyRow2['quantity'], $MyRow2['decimalplaces']);
+				$DisplayNet = locale_number_format($MyRow2['fxnet'], $MyRow['decimalplaces']);
+				$DisplayDiscount = $MyRow2['discountpercent'] == 0 ? '' : locale_number_format($MyRow2['discountpercent'] * 100, 1) . '%';
+
+				$HTML .= '<tr>
+							<td class="font-bold">' . $MyRow2['stockid'] . '</td>
+							<td>';
+				
+				// Get translation if available
+				$TranslationResult = DB_query("SELECT descriptiontranslation FROM stockdescriptiontranslations WHERE stockid='" . $MyRow2['stockid'] . "' AND language_id='" . $MyRow['language_id'] ."'");
+				if (DB_num_rows($TranslationResult)==1){
+					$TranslationRow = DB_fetch_array($TranslationResult);
+					$HTML .= $TranslationRow['descriptiontranslation'];
+				} else {
+					$HTML .= $MyRow2['description'];
+				}
+
+				if (mb_strlen($MyRow2['narrative']) > 1) {
+					$HTML .= '<br/><span style="font-size:8px; color:#666; font-style:italic;">' . str_replace(array("\r\n", "\n", "\r"), "<br/>", $MyRow2['narrative']) . '</span>';
+				}
+
+				$HTML .= '  </td>
+							<td class="text-right">' . $DisplayQty . ' ' . ($InvOrCredit == "Receipt" ? "" : $MyRow2['units']) . '</td>
+							<td class="text-right">' . $DisplayPrice . '</td>
+							<td class="text-right">' . $DisplayDiscount . '</td>
+							<td class="text-right font-bold">' . $DisplayNet . '</td>
+						</tr>';
 			}
 
+			$HTML .= '  </tbody>
+					</table>
 
-			$HTML .= '<p>' . __("Tax Authority Ref") . '. ' . $_SESSION['CompanyRecord']['gstno'] . '</p>';
-			if ($InvOrCredit == "Invoice") {
-				$HTML .='<p>' . __("Payment Terms") . ': ' . $MyRow['terms'] . '<br />' . __("Due Date") . ': ' . $DisplayDueDate . '</p>
-						</td>
-						<td>
-							<b>' . $_SESSION['CompanyRecord']['coyname'] . '</b><br/>'
-							. $_SESSION['CompanyRecord']['regoffice1'] . '<br/>'
-							. $_SESSION['CompanyRecord']['regoffice2'] . '<br/>'
-							. $_SESSION['CompanyRecord']['regoffice3'] . '<br/>'
-							. $_SESSION['CompanyRecord']['regoffice4'] . '<br/>'
-							. $_SESSION['CompanyRecord']['regoffice5'] . '<br/>'
-							. $_SESSION['CompanyRecord']['regoffice6'] . '<br/>'
-							. __('Telephone') . ': ' . $_SESSION['CompanyRecord']['telephone'] . '<br/>'
-							. __('Facsimile') . ': ' . $_SESSION['CompanyRecord']['fax'] . '<br/>'
-							. __('Email') . ': ' . $_SESSION['CompanyRecord']['email'] . '<br/>
-						</td>';
+					<div class="totals-container">
+						<div style="float: left; width: 50%;">
+							<div class="thank-you">' . __('Thank you for your business!') . '</div>
+							<div style="font-size: 9px; color: #666;">
+								<b>' . __('Terms') . ':</b> ' . $MyRow['terms'] . '<br/>
+								' . ($MyRow['invtext'] ? '<b>' . __('Notes') . ':</b> ' . $MyRow['invtext'] : '') . '
+							</div>
+						</div>
+						<table class="totals-table">
+							<tr>
+								<td>' . __('Sub Total') . '</td>
+								<td class="text-right">' . $DisplaySubTot . '</td>
+							</tr>
+							<tr>
+								<td>' . __('Freight') . '</td>
+								<td class="text-right">' . $DisplayFreight . '</td>
+							</tr>
+							<tr>
+								<td>' . __('Tax') . '</td>
+								<td class="text-right">' . $DisplayTax . '</td>
+							</tr>
+							<tr class="total-row">
+								<td>' . ($InvOrCredit == "Receipt" ? __("TOTAL RECEIVED") : __("TOTAL DUE")) . '</td>
+								<td class="text-right">' . $DisplayTotal . '</td>
+							</tr>
+						</table>
+					</div>
 
-				$HTML .= '<td class="number">
-							<b>' . __('Page') . ': 1</b>
-						</td>
-					</tr>
-				</table>';
-
-				$HTML .= '<table class="table1">
-					<tr>
-					</tr>
-					<tr>
-					</tr>
-				</table>';
-
-				if ($InvOrCredit=='Invoice') {
-					$HTML .= '<table class="table1">
-						<tr>
-							<th>' . __('Charge To') . '</th>
-							<th>' . __('Charge Branch') .  '</th>
-							<th>' . __('Delivered To') . '</th>
-						</tr>
-						<tr>
-							<td style="vertical-align:top">
-								' . $MyRow['name'] . '<br/>
-								' . $CustomerAddress . '
-							</td>
-							<td style="vertical-align:top">
-								' . $MyRow['brname'] . '<br/>
-								' . $BranchAddress . '
-							</td>
-							<td style="vertical-align:top">
-								' . $MyRow['deliverto'] . '<br/>
-								' . $DeliveryAddress . '
-							</td>
-						</tr>
-					</table>';
-
-					$HTML .= '<table class="table1">
-						<tr>
-							<td><b>' . __('Your Order Ref'). '</b></td>
-							<td><b>' . __('Our Order No'). '</b></td>
-							<td><b>' . __('Order Date'). '</b></td>
-							<td><b>' . __('Invoice Date'). '</b></td>
-							<td><b>' . __('Sales Person'). '</b></td>
-							<td><b>' . __('Shipper'). '</b></td>
-							<td><b>' . __('Consignment Ref'). '</b></td>
-						</tr>
-						<tr>
-							<td>' . $MyRow['customerref']. '</td>
-							<td>' . $MyRow['orderno']. '</td>
-							<td>' . ConvertSQLDate($MyRow['orddate']). '</td>
-							<td>' . ConvertSQLDate($MyRow['trandate']). '</td>
-							<td>' . $MyRow['salesmanname']. '</td>
-							<td>' . $MyRow['shippername']. '</td>
-							<td>' . $MyRow['consignment']. '</td>
-						</tr>
-					</table>';
-
-				} else {
-					$HTML .= '<table class="table1">
-						<tr>
-							<th>' . __('Branch'). '</th>
-						</tr>
-						<tr>
-							<td>
-								' . $MyRow['brname']. '<br/>
-								' . $MyRow['braddress1']. '<br/>
-								' . $MyRow['braddress2']. '<br/>
-								' . $MyRow['braddress3']. '<br/>
-								' . $MyRow['braddress4']. '<br/>
-								' . $MyRow['braddress5']. '<br/>
-								' . $MyRow['braddress6']. '
-							</td>
-						</tr>
-					</table>';
-
-					$HTML .= '<table class="table1">
-						<tr>
-							<th>' . __('Date'). '</th>
-							<th>' . __('Sales Person'). '</th>
-						</tr>
-						<tr>
-							<td>' . ConvertSQLDate($MyRow['trandate']). '</td>
-							<td>' . $MyRow['salesmanname']. '</td>
-						</tr>
-					</table>';  
-				    }
- 
-	 				$HTML .= '<table class="table1">
-					<tr>
-						<th>' . __('Item Code'). '</th>
-						<th>' . __('Item Description'). '</th>
-						<th>' . __('Quantity'). '</th>
-						<th>' . __('Unit'). '</th>
-						<th>' . __('Price'). '</th>
-						<th>' . __('Discount'). '</th>
-						<th>' . __('Net'). '</th>
-					</tr>';
-				}
-					while ($MyRow2 = DB_fetch_array($ResultLines)) {
-						$DisplayPrice = locale_number_format($MyRow2['fxprice'], $MyRow['decimalplaces']);
-						$DisplayQty = locale_number_format($MyRow2['quantity'], $MyRow2['decimalplaces']);
-						$DisplayNet = locale_number_format($MyRow2['fxnet'], $MyRow['decimalplaces']);
-						$DisplayDiscount = $MyRow2['discountpercent'] == 0 ? '' : locale_number_format($MyRow2['discountpercent'] * 100, 2) . '%';
-
-						$HTML .= '<tr class="striped_row">
-							<td>' . $MyRow2['stockid'] . '</td>
-							<td>';
-
-						// Get translation if available
-						$TranslationResult = DB_query("SELECT descriptiontranslation
-									FROM stockdescriptiontranslations
-									WHERE stockid='" . $MyRow2['stockid'] . "'
-									AND language_id='" . $MyRow['language_id'] ."'");
-						if (DB_num_rows($TranslationResult)==1){
-							$TranslationRow = DB_fetch_array($TranslationResult);
-							$HTML .= $TranslationRow['descriptiontranslation'];
-						} else {
-							$HTML .= $MyRow2['description'];
-						}
-						$HTML .= '<td class="number">' . $DisplayQty . '</td>
-								<td>' . $MyRow2['units'] . '</td>
-								<td class="number">' . $DisplayPrice . '</td>
-								<td class="number">' . $DisplayDiscount . '</td>
-								<td class="number">' . $DisplayNet . '</td>
-							</tr>';
-						if (mb_strlen($MyRow2['narrative']) > 1) {
-							$Narrative = str_replace(array("\r\n", "\n", "\r", "\\r\\n"), '<br />', $MyRow2['narrative']);
-							$HTML .= '<tr class="striped_row"><td></td><td colspan="6">' . $Narrative . '</td></tr>';
-						}
-						// Serial/controlled stock lines if you want to show them
-						if ($MyRow2['controlled']==1) {
-							$GetControlMovts = DB_query("
-								SELECT
-									moveqty,
-									serialno
-								FROM stockserialmoves
-								WHERE stockmoveno='" . $MyRow2['stkmoveno'] . "'");
-							if ($MyRow2['serialised']==1) {
-								while($ControlledMovtRow = DB_fetch_array($GetControlMovts)) {
-									$HTML .= '<tr><td></td><td colspan="6">' . $ControlledMovtRow['serialno'] . '</td></tr>';
-								}
-							} else {
-								while($ControlledMovtRow = DB_fetch_array($GetControlMovts)) {
-									$HTML .= '<tr><td></td><td colspan="6">' . (-$ControlledMovtRow['moveqty']) . ' x ' . $ControlledMovtRow['serialno'] . '</td></tr>';
-								}
-							}
-						}
-					}
-				$HTML .= '</table>
-							<b>' . __('Invoice Text') . ':</b>' . $MyRow['invtext'] . '<br/>';
-
-				$HTML .= '<table class="table1 footer">
-					<tr>
-						<td>' . __('Sub Total') . '</td>
-						<td class="number">' . $DisplaySubTot . '</td>
-					</tr>
-					<tr>
-						<td>' . __('Freight') . '</td>
-						<td class="number">' . $DisplayFreight . '</td>
-					</tr>
-					<tr>
-						<td>' . __('Tax') . '</td>
-						<td class="number">' . $DisplayTax . '</td>
-					</tr>';
-
-				if ($InvOrCredit == 'Invoice') {
-					$HTML .= '<tr>
-								<td><b>' . __('TOTAL INVOICE') . '</b></td>
-								<td class="number"><b>' . $DisplayTotal . '</b></td>
-							</tr>';
-				} else {
-					$HTML .= '<tr>
-								<td><b>' . __('TOTAL CREDIT') . '</b></td>
-								<td class="number"><b>' . $DisplayTotal  . '</b></td>
-					</tr>';
-				}
-				$HTML .= '</table>';
-
-				$HTML .= '<b>' . __('All amounts stated in') . ' ' . $MyRow['currcode'] . '</b>';
-
-				if ($InvOrCredit=='Invoice' && ($DefaultBankAccountCode || $DefaultBankAccountNumber)) {
-					$HTML .= '<div class="footer">
-						<b>' . $DefaultBankAccountCode . ' ' . $DefaultBankAccountNumber . '</b>
-					</div>';
-				}
-				if ($InvOrCredit=='Invoice' && $_SESSION['RomalpaClause']) {
-					$HTML .= '<div class="footer">' . $_SESSION['RomalpaClause'] . '</div>';
-				}
-			$HTML .= '</body>
+					<div class="footer-section">
+						<table width="100%">
+							<tr>
+								<td class="payment-info">
+									' . (($DefaultBankAccountCode || $DefaultBankAccountNumber) ? '
+									<div style="margin-bottom:10px;">
+										<span class="address-label">' . __('Payment Instructions') . '</span>
+										<div style="font-weight:bold; color:#333;">' . $DefaultBankAccountCode . ' ' . $DefaultBankAccountNumber . '</div>
+									</div>' : '') . '
+									<div class="legal-notice">' . ($_SESSION['RomalpaClause'] ? $_SESSION['RomalpaClause'] : '') . '</div>
+								</td>
+								<td style="text-align:right; vertical-align: bottom;">
+									<div style="font-size: 8px; color: #999;">' . __('Printed') . ': ' . date($_SESSION['DefaultDateFormat'] . ' H:i') . '</div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</body>
 			</html>';
 		}
 		$FromTransNo++;
