@@ -45,7 +45,7 @@ if (isset($_POST['DatePaid'])) {
 // ===== ALL HTML OUTPUT STARTS BELOW =====
 
 // Determine the active tab label for allocation/analysis
-$allocationTabLabel = $_SESSION['PaymentDetail' . $identifier]->SupplierID ? __('3. Allocation') : __('3. Analysis');
+$allocationTabLabel = $_SESSION['PaymentDetail' . $identifier]->SupplierID ? __('2. Allocation') : __('2. Analysis');
 
 // --- OUTER PAGE & FORM OPEN ---
 echo '<div class="db-page">
@@ -70,198 +70,174 @@ echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-
 echo '<style>
 	#Header_SubBreadcrumb, .legacy-footer { display: none !important; }
 
-	/* ---- Tab visibility ---- */
-	.pay-tab-content { display: none; margin-top:20px; }
-	.pay-tab-content.active { display: block; animation: db-fade-in 0.25s ease; }
-	@keyframes db-fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
-	/* ---- Architect Dashboard Overrides ---- */
-	.db-card { 
-		background: #ffffff; 
-		border-radius: 16px !important; 
-		border: 1px solid #e5e7eb; 
-		box-shadow: var(--shadow-sm);
-		overflow: hidden;
-		margin-bottom: 24px;
+	/* ---- Unified Page Layout ---- */
+	.db-page {
+		max-width: 1400px;
+		margin: 0 auto;
+		padding: 24px;
 	}
-    .db-card-header { 
-        background: #f9fafb; 
-        border-bottom: 1px solid #f3f4f6; 
-        padding: 16px 24px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .db-card-title {
-        font-size: 0.9rem; font-weight: 850; color: #064e3b; margin: 0;
-        display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    
-    .db-btn, .architect-btn, .db-btn-secondary, .db-btn-primary {
-        border-radius: 8px !important;
-        padding: 10px 20px;
-        font-weight: 700;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        border: none;
-        font-size: 0.85rem;
-    }
-    .db-btn-primary { background: #059669; color: #ffffff; }
-    .db-btn-primary:hover { background: #065f46; }
-    .db-btn-secondary { background: #f3f4f6; color: #4b5563; }
-    .db-btn-secondary:hover { background: #e5e7eb; }
-
-    /* ---- Form Standardization ---- */
-    .db-form-group { margin-bottom: 24px; }
-    .db-form-label {
-        display: block;
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        font-weight: 900;
-        letter-spacing: 0.08em;
-        color: #065f46;
-        margin-bottom: 8px;
-    }
-    .db-form-input, .db-form-select, .db-input {
-        width: 100%;
-        height: 48px;
-        padding: 0 16px;
-        border-radius: 8px !important;
-        border: 1px solid #d1fae5;
-        background: #ffffff;
-        font-weight: 600;
-        font-size: 0.95rem;
-        transition: all 0.2s ease;
-    }
-    .db-form-input:focus, .db-form-select:focus {
-        border-color: #059669;
-        outline: none;
-        box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
-    }
-
-	/* ---- Sidebar nav ---- */
-	.db-nav-aside {
+	
+	/* ---- Horizontal Tabs Component ---- */
+	.pay-tabs-nav {
 		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		padding: 4px 0;
+		background: #ffffff;
+		border: 1px solid #e5e7eb;
+		border-radius: 12px 12px 0 0;
+		padding: 6px;
+		gap: 4px;
+		overflow-x: auto;
+		scrollbar-width: none;
+		-ms-overflow-style: none; /* IE and Edge */
 	}
-	.db-nav-item {
+	.pay-tabs-nav::-webkit-scrollbar { display: none; }
+	
+	.pay-tab-btn {
+		flex: 1;
+		min-width: 160px;
 		display: flex;
 		align-items: center;
-		gap: 12px;
-		width: 100%;
-		padding: 14px 18px;
+		justify-content: center;
+		gap: 10px;
+		padding: 12px 20px;
 		border: none;
 		background: transparent;
-		color: #52635a;
+		color: #6b7280;
 		font-size: 0.88rem;
-		font-weight: 750;
-		border-radius: 8px !important;
+		font-weight: 700;
+		border-radius: 8px;
 		cursor: pointer;
-		text-align: left;
 		transition: all 0.2s ease;
-		border: 1px solid transparent;
+		white-space: nowrap;
 	}
-	.db-nav-item i {
-		width: 18px; text-align: center; font-size: 1rem; opacity: 0.5;
-	}
-	.db-nav-item.active {
-		background: #059669;
-		color: #ffffff;
-		box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15);
-	}
-	.db-nav-item.active i { opacity: 1; }
-	.db-nav-item:hover:not(.active) {
+	.pay-tab-btn i { font-size: 1.1rem; opacity: 0.7; }
+	
+	.pay-tab-btn.active {
 		background: #f0fdf4;
 		color: #059669;
+		box-shadow: inset 0 0 0 1px #d1fae5;
+	}
+	.pay-tab-btn.active i { opacity: 1; color: #059669; }
+	.pay-tab-btn:hover:not(.active) {
+		background: #f9fafb;
+		color: #111827;
 	}
 
-	/* ---- Layout columns ---- */
-	.db-col-aside {
-		min-width: 280px;
-		max-width: 300px;
-		flex-shrink: 0;
-		padding: 24px;
-		background: #f9fafb;
-		border-right: 1px solid #e5e7eb;
-		overflow-y: auto;
-	}
-	.db-col-main {
-		flex: 1;
-		padding: 32px;
-		overflow-y: auto;
-		min-width: 0;
+	/* ---- Tab Content Wrapper ---- */
+	.pay-tab-container {
 		background: #ffffff;
-	}
-	.db-bottom-layout {
-		display: flex;
-		height: calc(100vh - 120px);
+		border: 1px solid #e5e7eb;
+		border-top: none;
+		border-radius: 0 0 12px 12px;
+		min-height: 400px;
+		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 		overflow: hidden;
 	}
+	.pay-tab-content { 
+		display: none; 
+		padding: 32px;
+		width: 100%;
+		box-sizing: border-box;
+	}
+	.pay-tab-content.active { display: block; }
 
-    /* ---- Responsive Logic ---- */
-    @media (max-width: 1024px) {
-        .db-col-aside { min-width: 250px; padding: 20px; }
-        .db-col-main { padding: 24px; }
-    }
+	/* ---- Session Summary Header ---- */
+	.pay-summary-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		background: #064e3b;
+		color: #ffffff;
+		padding: 16px 32px;
+		border-radius: 12px;
+		margin-bottom: 24px;
+		box-shadow: 0 10px 15px -3px rgba(6, 78, 59, 0.2);
+	}
+	.pay-summary-item {
+		display: flex;
+		flex-direction: column;
+	}
+	.pay-summary-label {
+		font-size: 0.65rem;
+		text-transform: uppercase;
+		font-weight: 800;
+		letter-spacing: 0.05em;
+		opacity: 0.7;
+	}
+	.pay-summary-value {
+		font-size: 1.25rem;
+		font-weight: 900;
+	}
 
-    @media (max-width: 992px) {
-        .db-bottom-layout { 
-            flex-direction: column; 
-            height: auto; 
-            overflow: visible;
-        }
-        .db-col-aside { 
-            max-width: 100% !important; 
-            width: 100%; 
-            border-right: none; 
-            border-bottom: 1px solid #e5e7eb;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background: #ffffff;
-            padding: 15px;
-        }
-        .db-col-main { 
-            width: 100%; 
-            overflow: visible;
-            padding: 20px;
-        }
-        .db-nav-aside {
-            flex-direction: row;
-            overflow-x: auto;
-            white-space: nowrap;
-            padding-bottom: 5px;
-            gap: 10px;
-        }
-        .db-nav-item {
-            width: auto;
-            padding: 10px 15px;
-            font-size: 0.8rem;
-        }
-        .db-card[style*="margin-top: 16px"] { display: none; } /* Hide session summary in sidebar on mobile */
-    }
+	/* ---- Professional Card Overrides ---- */
+	.db-card { 
+		border: none !important;
+		background: transparent !important;
+		box-shadow: none !important;
+		margin-bottom: 0 !important;
+		width: 100%;
+		box-sizing: border-box;
+	}
+	.db-card-header {
+		padding: 0 0 20px 0 !important;
+		background: transparent !important;
+		border: none !important;
+	}
+	.db-card-title {
+		font-size: 1.1rem !important;
+		color: #111827 !important;
+		font-weight: 850 !important;
+	}
+	
+	/* ---- Responsive Table Wrapper ---- */
+	.db-table-wrapper {
+		width: 100%;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		margin-bottom: 1.5rem;
+		border-radius: 8px;
+		border: 1px solid #f3f4f6;
+	}
+	.db-table {
+		width: 100%;
+		min-width: 800px; /* Force minimum width to enable horizontal scroll on mobile */
+		border-collapse: collapse;
+	}
 
-    @media (max-width: 600px) {
-        .db-page-header { flex-direction: column !important; align-items: flex-start !important; gap: 15px !important; }
-        .db-header-actions { width: 100% !important; }
-        .db-btn, .db-btn-secondary { width: 100% !important; justify-content: center !important; }
-        .db-page-title { font-size: 1.1rem !important; }
+    /* ---- Responsive UI ---- */
+    @media (max-width: 768px) {
+		.db-page { padding: 16px; }
+        .pay-summary-bar { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px 20px; }
+        .pay-tab-content { padding: 20px; }
+        .pay-tabs-nav { 
+			padding: 4px; 
+			justify-content: flex-start; /* Ensure scroll works correctly */
+		}
+        .pay-tab-btn { 
+			flex: 0 0 auto; /* Don\'t grow/shrink to fit, keep min-width */
+			min-width: 130px; 
+			padding: 10px 12px; 
+			font-size: 0.8rem; 
+		}
     }
 </style>
 <script>
 function payShowTab(tabId) {
 	document.querySelectorAll(".pay-tab-content").forEach(function(el){ el.classList.remove("active"); });
-	document.querySelectorAll(".db-nav-item").forEach(function(el){ el.classList.remove("active"); });
+	document.querySelectorAll(".pay-tab-btn").forEach(function(el){ el.classList.remove("active"); });
+	
 	var target = document.getElementById(tabId);
-	if (target) target.classList.add("active");
-	var btn = document.querySelector(".db-nav-item[data-tab=\"" + tabId + "\"]");
-	if (btn) btn.classList.add("active");
-	try { localStorage.setItem("payment_active_tab_v2", tabId); } catch(e) {}
+	if (target) {
+		target.classList.add("active");
+		var btn = document.querySelector(".pay-tab-btn[data-tab=\"" + tabId + "\"]");
+		if (btn) btn.classList.add("active");
+		try { localStorage.setItem("payment_active_tab_v4", tabId); } catch(e) {}
+		
+		// Auto-focus first empty or relevant input
+		setTimeout(function() {
+			var focusField = target.querySelector("input:not([type=hidden]):not([readonly]), select, textarea");
+			if (focusField) focusField.focus();
+		}, 50);
+	}
 }
 
 function payVerify(amountId, totalId) {
@@ -283,62 +259,73 @@ function payVerify(amountId, totalId) {
 
 window.addEventListener("load", function() {
 	var saved = "";
-	try { saved = localStorage.getItem("payment_active_tab_v2") || ""; } catch(e) {}
-	payShowTab(saved || "pay-tab-source");
+	try { saved = localStorage.getItem("payment_active_tab_v4") || ""; } catch(e) {}
+	payShowTab(saved || "pay-tab-header");
+	
+	// Keyboard Shortcuts
+	document.addEventListener("keydown", function(e) {
+		if (e.altKey) {
+			if (e.key === "1") payShowTab("pay-tab-header");
+			if (e.key === "2") payShowTab("pay-tab-allocation");
+			if (e.key === "3") payShowTab("pay-tab-finalize");
+		}
+		if (e.ctrlKey && e.key === "Enter") {
+			var activeTab = document.querySelector(".pay-tab-content.active");
+			var primaryBtn = activeTab.querySelector("button[type=submit], button[name=UpdateHeader], button[name=CommitBatch]");
+			if (primaryBtn) primaryBtn.click();
+		}
+	});
+	
+	// Enter key in GL inputs triggers Add Line
+	document.querySelectorAll("#pay-tab-allocation input").forEach(function(el) {
+		el.addEventListener("keypress", function(e) {
+			if (e.key === "Enter") {
+				e.preventDefault();
+				var addBtn = document.querySelector("button[name=Process]");
+				if (addBtn) addBtn.click();
+			}
+		});
+	});
 });
 </script>';
 
-// ===== TWO-COLUMN LAYOUT =====
-echo '<div class="db-bottom-layout">
-
-	<!-- SIDEBAR NAVIGATOR -->
-	<aside class="db-col-aside">';
-
-// -- Sidebar: Status Card --
-echo '	<div class="db-card">
-			<div class="db-card-header">
-				<div class="db-card-title"><i class="fas fa-tasks"></i> ' . __('Payment Phases') . '</div>
+// --- SUMMARY BAR ---
+echo '<div class="pay-summary-bar">
+		<div class="pay-summary-item">
+			<div class="pay-summary-label">' . __('Selected Provider') . '</div>
+			<div class="pay-summary-value"><i class="fas fa-building" style="margin-right:8px; font-size:0.9em;"></i>' . (!empty($_SESSION['PaymentDetail' . $identifier]->SuppName) ? htmlspecialchars($_SESSION['PaymentDetail' . $identifier]->SuppName) : __('Generic Payment')) . '</div>
+		</div>
+		<div style="display: flex; gap: 40px;">
+			<div class="pay-summary-item" style="text-align: right;">
+				<div class="pay-summary-label">' . __('Transaction Date') . '</div>
+				<div class="pay-summary-value"><i class="fas fa-calendar-alt" style="margin-right:8px; font-size:0.9em;"></i>' . ($_SESSION['PaymentDetail' . $identifier]->DatePaid ? $_SESSION['PaymentDetail' . $identifier]->DatePaid : date($_SESSION['DefaultDateFormat'])) . '</div>
 			</div>
-			<div class="db-card-body" style="padding: 8px 0;">
-				<nav class="db-nav-aside">
-					<button type="button" class="db-nav-item" data-tab="pay-tab-source" onclick="payShowTab(\'pay-tab-source\')">
-						<i class="fas fa-university"></i> ' . __('1. Source & Bank') . '
-					</button>
-					<button type="button" class="db-nav-item" data-tab="pay-tab-execution" onclick="payShowTab(\'pay-tab-execution\')">
-						<i class="fas fa-file-invoice-dollar"></i> ' . __('2. Execution Details') . '
-					</button>
-					<button type="button" class="db-nav-item" data-tab="pay-tab-allocation" onclick="payShowTab(\'pay-tab-allocation\')">
-						<i class="fas fa-tasks"></i> ' . $allocationTabLabel . '
-					</button>
-					<button type="button" class="db-nav-item" data-tab="pay-tab-finalize" onclick="payShowTab(\'pay-tab-finalize\')">
-						<i class="fas fa-check-double"></i> ' . __('4. Review & Finalize') . '
-					</button>
-				</nav>
+			<div class="pay-summary-item" style="text-align: right;">
+				<div class="pay-summary-label">' . __('Total Amount') . '</div>
+				<div class="pay-summary-value" style="color: #34d399;">' . $_SESSION['PaymentDetail' . $identifier]->Currency . ' ' . locale_number_format($_SESSION['PaymentDetail' . $identifier]->Amount, $_SESSION['PaymentDetail' . $identifier]->CurrDecimalPlaces) . '</div>
 			</div>
-		</div>';
+		</div>
+	</div>';
 
-// -- Sidebar: Session Summary Card --
-echo '	<div class="db-card" style="margin-top: 16px;">
-			<div class="db-card-header">
-				<div class="db-card-title"><i class="fas fa-wallet"></i> ' . __('Session Total') . '</div>
-			</div>
-			<div class="db-card-body" style="text-align: center; padding: 20px 16px;">
-				<div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;">' . __('Current Amount') . '</div>
-				<div style="font-size: 1.75rem; font-weight: 900; color: var(--primary);">' . $_SESSION['PaymentDetail' . $identifier]->Currency . ' ' . locale_number_format($_SESSION['PaymentDetail' . $identifier]->Amount, $_SESSION['PaymentDetail' . $identifier]->CurrDecimalPlaces) . '</div>
-				' . (($_SESSION['PaymentDetail' . $identifier]->SuppName) ? '<div style="margin-top:10px; font-size:0.8rem; color:var(--text-muted); font-weight:600;"><i class="fas fa-building" style="margin-right:4px;"></i>' . htmlspecialchars($_SESSION['PaymentDetail' . $identifier]->SuppName) . '</div>' : '') . '
-				' . (($_SESSION['PaymentDetail' . $identifier]->DatePaid) ? '<div style="margin-top:6px; font-size:0.8rem; color:var(--text-muted);"><i class="fas fa-calendar" style="margin-right:4px;"></i>' . $_SESSION['PaymentDetail' . $identifier]->DatePaid . '</div>' : '') . '
-			</div>
-		</div>';
+// --- TABS NAVIGATION ---
+echo '<nav class="pay-tabs-nav">
+		<button type="button" class="pay-tab-btn" data-tab="pay-tab-header" onclick="payShowTab(\'pay-tab-header\')">
+			<i class="fas fa-file-invoice"></i> ' . __('1. Header Details') . '
+		</button>
+		<button type="button" class="pay-tab-btn" data-tab="pay-tab-allocation" onclick="payShowTab(\'pay-tab-allocation\')">
+			<i class="fas fa-tasks"></i> ' . $allocationTabLabel . '
+		</button>
+		<button type="button" class="pay-tab-btn" data-tab="pay-tab-finalize" onclick="payShowTab(\'pay-tab-finalize\')">
+			<i class="fas fa-check-double"></i> ' . __('3. Review & Finish') . '
+		</button>
+	</nav>';
 
-echo '	</aside>
-
-	<!-- MAIN CONTENT AREA -->
-	<main class="db-col-main">';
+echo '<div class="pay-tab-container">';
 
 // ==========================================
 // TAB 1: SOURCE & BANK SETTINGS
 // ==========================================
-echo '<div id="pay-tab-source" class="pay-tab-content">
+echo '<div id="pay-tab-header" class="pay-tab-content">
 	<div class="db-card">
 		<div class="db-card-header">
 			<div class="db-card-title"><i class="fas fa-university"></i> ' . __('Bank & Header Settings') . '</div>
@@ -1433,7 +1420,9 @@ if ($_SESSION['PaymentDetail' . $identifier]->AccountCurrency != $_SESSION['Comp
 		</div>';
 }
 
-	echo '</div></div></div></div>'; // end inner-div, card-body, db-card, pay-tab-source
+	echo '<div style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 2px dashed #e5e7eb;">
+			<div class="db-card-title" style="margin-bottom: var(--space-4); color: var(--primary);"><i class="fas fa-file-invoice-dollar"></i> ' . __('Execution & Audit Details') . '</div>
+		  </div>';
 
 if (!isset($_POST['BankTransRef'])) {
 	$_POST['BankTransRef'] = (isset($_SESSION['PaymentDetail' . $identifier]->BankTransRef)) ? $_SESSION['PaymentDetail' . $identifier]->BankTransRef : '';
@@ -1462,15 +1451,7 @@ if (!isset($_POST['Currency'])) {
 if (!isset($_POST['Paymenttype'])) {
 	$_POST['Paymenttype'] = (isset($_SESSION['PaymentDetail' . $identifier]->Paymenttype)) ? $_SESSION['PaymentDetail' . $identifier]->Paymenttype : '';
 }
-
-echo '<!-- TAB 2: EXECUTION & AUDIT -->
-	<div id="pay-tab-execution" class="pay-tab-content">
-		<div class="db-card">
-			<div class="db-card-header">
-				<div class="db-card-title"><i class="fas fa-file-invoice-dollar"></i> ' . __('Payment Execution Details') . '</div>
-			</div>
-			<div class="db-card-body">
-				<div style="display: flex; flex-direction: column; gap: var(--space-5);">';
+echo '<div style="display: flex; flex-direction: column; gap: var(--space-5);">';
 
 echo '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
 		<div class="db-form-group">
@@ -1504,10 +1485,10 @@ echo '<div style="margin-top: auto; display: flex; justify-content: flex-end; ga
 		<input type="hidden" name="PreviousBankAccount" value="' . $_SESSION['PaymentDetail' . $identifier]->Account . '" />
 		<button name="UpdateHeader" type="submit" class="db-btn db-btn-primary" style="height: 48px; padding: 0 32px; font-weight: 800;">
 			<i class="fas fa-sync-alt" style="margin-right: 10px;"></i>
-			' . __('Sync Header') . '
+			' . __('Save & Update Header') . '
 		</button>
-	</div>
-	</div></div></div></div>'; // end inner-div, card-body, db-card, pay-tab-execution
+	</div>';
+	echo '</div></div></div></div></div>'; // end inner-flex, inner-div, card-body, db-card, pay-tab-header
 
 
 
@@ -1591,7 +1572,7 @@ if ($_SESSION['CompanyRecord']['gllink_creditors'] == 1 AND $_SESSION['PaymentDe
 		<div class="db-card-footer">
 			<button type="submit" name="Process" class="db-btn db-btn-primary" style="height: 44px; padding: 0 24px;">
 				<i class="fas fa-plus-circle" style="margin-right: 8px;"></i>
-				' . __('Analyze & Add Line') . '
+				' . __('Add to Analysis') . '
 			</button>
 		</div>';
 
@@ -1638,7 +1619,7 @@ if ($_SESSION['CompanyRecord']['gllink_creditors'] == 1 AND $_SESSION['PaymentDe
 			</table></div></div>';
 	}
 			echo '<div class="card-footer-v2" style="padding: var(--space-5); text-align: center; background: var(--surface-alt);">
-				<button type="submit" name="CommitBatch" class="db-btn db-btn-primary" style="padding: var(--space-2) var(--space-8); height: 44px; font-weight: 800;">' . __('Accept and Process Payment') . '</button>
+				<button type="submit" name="CommitBatch" class="db-btn db-btn-primary" style="padding: var(--space-2) var(--space-8); height: 44px; font-weight: 800;">' . __('Complete Payment') . '</button>
 			</div></div>';
 } else {
 	// Supplier Payment Mode: List Invoices
@@ -1712,7 +1693,7 @@ if ($_SESSION['CompanyRecord']['gllink_creditors'] == 1 AND $_SESSION['PaymentDe
 				<div style="font-size: 0.9rem; color: var(--text-muted); font-weight: 700;">' . __('Aggregated Allocation') . ': <input type="text" id="ttl" value="0" readonly style="width: 150px; text-align: right; border: none; background: transparent; font-weight: 900; color: var(--primary); font-size: 1.25rem;"></div>
 				<button type="button" class="db-btn db-btn-secondary" onclick="update1(\'' . $ids . '\')" id="update" style="height: 40px;">
 					<i class="fas fa-sync-alt" style="margin-right: 8px;"></i>
-					' . __('Recalculate') . '
+					' . __('Recalculate Total') . '
 				</button>
 			</div>
 	</div></div></div></div>'; // end footer-row, card-body, db-card, pay-tab-allocation
@@ -1758,14 +1739,13 @@ echo '<!-- TAB 4: REVIEW & FINALIZE -->
 			<div class="db-card-footer">
 				<button type="submit" name="CommitBatch" onClick="return payVerify(\'Amount\',\'ttl\')" class="db-btn db-btn-primary" style="height: 48px; padding: 0 32px; font-size: 1.1rem;">
 					<i class="fas fa-check-double" style="margin-right: 12px;"></i>
-					' . __('Finalize & Process Payment') . '
+					' . __('Finalize Payment') . '
 				</button>
 			</div>
 		</div> <!-- end db-card -->
 	</div> <!-- end pay-tab-finalize -->
 
-</main> <!-- end db-col-main -->
-</div> <!-- end db-bottom-layout -->
+</div> <!-- end pay-tab-container -->
 </div> <!-- end db-page -->
 </form>';
 
