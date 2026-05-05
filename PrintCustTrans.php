@@ -408,70 +408,71 @@ if (isset($PrintPDF)
 					body { 
 						font-family: "Helvetica", "Arial", sans-serif; 
 						font-size: 10px; 
-						color: #1f2937; 
+						color: #000; 
 						line-height: 1.5;
 						background: #fff;
 					}
 					.container { width: 100%; }
 					
 					/* Header Layout */
-					.header-table { width: 100%; border-bottom: 3px solid #1e3a8a; padding-bottom: 20px; margin-bottom: 25px; }
-					.logo { height: 70px; max-width: 300px; }
+					.header-table { width: 100%; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 25px; }
+					.logo { height: 70px; max-width: 300px; filter: grayscale(100%); }
 					.document-title { 
-						font-size: 28px; 
+						font-size: 32px; 
 						font-weight: 800; 
-						color: #1e3a8a; 
+						color: #000; 
 						text-align: right; 
 						text-transform: uppercase;
 						margin: 0;
-						letter-spacing: 1px;
+						letter-spacing: 2px;
 					}
-					.document-meta { text-align: right; font-size: 11px; margin-top: 8px; color: #4b5563; }
-					.meta-label { font-weight: 700; color: #111; }
+					.document-meta { text-align: right; font-size: 11px; margin-top: 8px; color: #333; }
+					.meta-label { font-weight: 700; color: #000; }
 					
 					/* Address Sections */
 					.address-table { width: 100%; margin-bottom: 30px; }
-					.address-box { width: 33%; vertical-align: top; padding: 0 15px; border-left: 1px solid #e5e7eb; }
+					.address-box { width: 33%; vertical-align: top; padding: 0 15px; border-left: 1px solid #ddd; }
 					.address-box:first-child { border-left: none; padding-left: 0; }
 					.address-label { 
 						font-size: 10px; 
 						text-transform: uppercase; 
 						font-weight: 800; 
-						color: #1e3a8a; 
+						color: #000; 
 						margin-bottom: 12px; 
 						display: block;
 						letter-spacing: 1px;
+						border-bottom: 1px solid #eee;
+						padding-bottom: 4px;
 					}
-					.address-content { font-size: 11px; font-weight: 500; color: #374151; }
+					.address-content { font-size: 11px; font-weight: 500; color: #111; }
 
-					/* Info Bar (Order details) */
+					/* Info Bar (Order details) - Smart Gray */
 					.info-bar { 
 						width: 100%; 
-						background: #f8fafc; 
-						color: #1e3a8a; 
+						background: #f9fafb; 
+						color: #000; 
 						margin-bottom: 25px;
-						border: 1px solid #e2e8f0;
-						border-radius: 4px;
+						border: 1px solid #ddd;
 					}
-					.info-bar td { padding: 10px 15px; font-size: 10px; text-align: center; border-right: 1px solid #e2e8f0; }
+					.info-bar td { padding: 10px 15px; font-size: 10px; text-align: center; border-right: 1px solid #ddd; }
 					.info-bar td:last-child { border-right: none; }
-					.info-label { display: block; font-size: 8px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 3px; }
+					.info-label { display: block; font-size: 8px; text-transform: uppercase; color: #666; font-weight: 700; margin-bottom: 3px; }
 
-					/* Main Items Table with Vertical Lines */
-					.items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #d1d5db; }
+					/* Main Items Table with Gray Vertical Lines */
+					.items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #333; }
 					.items-table th { 
-						background: #1e3a8a; 
-						color: #ffffff; 
+						background: #f3f4f6; 
+						color: #000; 
 						text-transform: uppercase; 
 						font-size: 9px; 
-						font-weight: 700; 
+						font-weight: 800; 
 						padding: 12px 10px; 
 						text-align: left;
-						border: 1px solid #1e40af;
+						border: 1px solid #333;
 					}
 					.items-table td { 
 						padding: 12px 10px; 
-						border: 1px solid #d1d5db; /* Vertical and Horizontal lines */
+						border: 1px solid #333; 
 						vertical-align: top; 
 						font-size: 10px;
 					}
@@ -482,15 +483,15 @@ if (isset($PrintPDF)
 					/* Totals Layout */
 					.totals-container { width: 100%; margin-top: 20px; }
 					.totals-table { width: 280px; float: right; border-collapse: collapse; }
-					.totals-table td { padding: 8px 10px; font-size: 11px; border-bottom: 1px solid #f3f4f6; }
-					.total-row { background: #f8fafc; font-size: 15px; font-weight: 800; color: #1e3a8a; border-top: 2px solid #1e3a8a; }
+					.totals-table td { padding: 8px 10px; font-size: 11px; border-bottom: 1px solid #eee; }
+					.total-row { background: #f3f4f6; font-size: 16px; font-weight: 900; color: #000; border: 2px solid #333; }
 					.total-row td { padding: 15px 10px; border-bottom: none; }
 
 					/* Footer */
-					.footer-section { clear: both; margin-top: 60px; padding-top: 25px; border-top: 2px solid #1e3a8a; }
-					.payment-info { width: 65%; font-size: 10px; color: #4b5563; }
-					.thank-you { font-size: 16px; font-weight: 800; color: #1e3a8a; margin-bottom: 12px; }
-					.legal-notice { font-size: 8px; color: #94a3b8; margin-top: 25px; font-style: italic; line-height: 1.4; }
+					.footer-section { clear: both; margin-top: 60px; padding-top: 25px; border-top: 2px solid #333; }
+					.payment-info { width: 65%; font-size: 10px; color: #333; }
+					.thank-you { font-size: 16px; font-weight: 800; color: #000; margin-bottom: 12px; }
+					.legal-notice { font-size: 8px; color: #666; margin-top: 25px; font-style: italic; line-height: 1.4; }
 				</style>
 			</head>
 			<body>
