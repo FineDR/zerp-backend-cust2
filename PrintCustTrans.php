@@ -144,6 +144,7 @@ if (isset($PrintPDF)
 							salesman.salesmanname,
 							debtortrans.debtorno,
 							debtortrans.branchcode,
+							debtortrans.reference,
 							currencies.decimalplaces
 						FROM debtortrans INNER JOIN debtorsmaster
 						ON debtortrans.debtorno=debtorsmaster.debtorno
@@ -209,6 +210,7 @@ if (isset($PrintPDF)
 							salesman.salesmanname,
 							debtortrans.debtorno,
 							debtortrans.branchcode,
+							debtortrans.reference,
 							currencies.decimalplaces
 						FROM debtortrans INNER JOIN debtorsmaster
 						ON debtortrans.debtorno=debtorsmaster.debtorno
@@ -255,6 +257,7 @@ if (isset($PrintPDF)
 							debtortrans.debtorno,
 							debtortrans.branchcode,
 							debtortrans.id as transid,
+							debtortrans.reference,
 							currencies.decimalplaces
 						FROM debtortrans INNER JOIN debtorsmaster
 						ON debtortrans.debtorno=debtorsmaster.debtorno
@@ -281,23 +284,27 @@ if (isset($PrintPDF)
 			$MyRow = DB_fetch_array($Result);
 
 			$CustomerAddress = '';
-			for ($i = 1; $i < 6; $i++) {
-				if (trim($MyRow['address' . $i]) != '') {
-					$CustomerAddress .= $MyRow['address' . $i] . '<br />';
+			for ($i = 1; $i < 7; $i++) {
+				$addr = trim($MyRow['address' . $i]);
+				// Hide dummy data placeholders
+				if ($addr != '' && !preg_match('/^address[1-6]$/i', $addr)) {
+					$CustomerAddress .= $addr . '<br />';
 				}
 			}
 
 			$BranchAddress = '';
-			for ($i = 1; $i < 6; $i++) {
-				if (trim($MyRow['braddress' . $i]) != '') {
-					$BranchAddress .= $MyRow['braddress' . $i] . '<br />';
+			for ($i = 1; $i < 7; $i++) {
+				$addr = trim($MyRow['braddress' . $i]);
+				if ($addr != '' && !preg_match('/^address[1-6]$/i', $addr)) {
+					$BranchAddress .= $addr . '<br />';
 				}
 			}
 
 			$DeliveryAddress = '';
-			for ($i = 1; $i < 6; $i++) {
-				if (trim($MyRow['deladd' . $i]) != '') {
-					$DeliveryAddress .= $MyRow['deladd' . $i] . '<br />';
+			for ($i = 1; $i < 7; $i++) {
+				$addr = trim($MyRow['deladd' . $i]);
+				if ($addr != '' && !preg_match('/^address[1-6]$/i', $addr)) {
+					$DeliveryAddress .= $addr . '<br />';
 				}
 			}
 
@@ -332,8 +339,7 @@ if (isset($PrintPDF)
 							FROM stockmoves INNER JOIN stockmaster
 							ON stockmoves.stockid = stockmaster.stockid
 							WHERE stockmoves.type=10
-							AND stockmoves.transno='" . $FromTransNo . "'
-							AND stockmoves.show_on_inv_crds=1";
+							AND stockmoves.transno='" . $FromTransNo . "'";
 			} elseif ($InvOrCredit=='Credit') {
 				$SQLLines = "SELECT stockmoves.stockid,
 								stockmaster.description,
@@ -350,8 +356,7 @@ if (isset($PrintPDF)
 							FROM stockmoves INNER JOIN stockmaster
 							ON stockmoves.stockid = stockmaster.stockid
 							WHERE stockmoves.type=11
-							AND stockmoves.transno='" . $FromTransNo . "'
-							AND stockmoves.show_on_inv_crds=1";
+							AND stockmoves.transno='" . $FromTransNo . "'";
 			} else {
 				// Receipts show allocations
 				$SQLLines = "SELECT systypes.typename,
@@ -424,18 +429,20 @@ if (isset($PrintPDF)
 					.meta-label { font-weight: bold; color: #666; }
 					
 					/* Address Sections */
-					.address-table { width: 100%; margin-bottom: 30px; }
-					.address-box { width: 31%; vertical-align: top; padding: 10px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; }
+					.address-table { width: 100%; margin-bottom: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+					.address-box { width: 33%; vertical-align: top; padding: 0 10px; }
 					.address-label { 
-						font-size: 8px; 
+						font-size: 9px; 
 						text-transform: uppercase; 
 						font-weight: 800; 
 						color: #059669; 
-						margin-bottom: 8px; 
+						margin-bottom: 10px; 
 						display: block;
 						letter-spacing: 1px;
+						border-bottom: 1px solid #f0fdf4;
+						padding-bottom: 4px;
 					}
-					.address-content { font-size: 10px; font-weight: 600; }
+					.address-content { font-size: 11px; font-weight: 500; color: #1f2937; line-height: 1.6; }
 
 					/* Info Bar (Order details) */
 					.info-bar { 
@@ -556,34 +563,46 @@ if (isset($PrintPDF)
 						</thead>
 						<tbody>';
 
-			while ($MyRow2 = DB_fetch_array($ResultLines)) {
-				$DisplayPrice = locale_number_format($MyRow2['fxprice'], $MyRow['decimalplaces']);
-				$DisplayQty = locale_number_format($MyRow2['quantity'], $MyRow2['decimalplaces']);
-				$DisplayNet = locale_number_format($MyRow2['fxnet'], $MyRow['decimalplaces']);
-				$DisplayDiscount = $MyRow2['discountpercent'] == 0 ? '' : locale_number_format($MyRow2['discountpercent'] * 100, 1) . '%';
+			if (DB_num_rows($ResultLines) > 0) {
+				while ($MyRow2 = DB_fetch_array($ResultLines)) {
+					$DisplayPrice = locale_number_format($MyRow2['fxprice'], $MyRow['decimalplaces']);
+					$DisplayQty = locale_number_format($MyRow2['quantity'], $MyRow2['decimalplaces']);
+					$DisplayNet = locale_number_format($MyRow2['fxnet'], $MyRow['decimalplaces']);
+					$DisplayDiscount = $MyRow2['discountpercent'] == 0 ? '' : locale_number_format($MyRow2['discountpercent'] * 100, 1) . '%';
 
+					$HTML .= '<tr>
+								<td class="font-bold">' . $MyRow2['stockid'] . '</td>
+								<td>';
+					
+					// Get translation if available
+					$TranslationResult = DB_query("SELECT descriptiontranslation FROM stockdescriptiontranslations WHERE stockid='" . $MyRow2['stockid'] . "' AND language_id='" . $MyRow['language_id'] ."'");
+					if (DB_num_rows($TranslationResult)==1){
+						$TranslationRow = DB_fetch_array($TranslationResult);
+						$HTML .= $TranslationRow['descriptiontranslation'];
+					} else {
+						$HTML .= $MyRow2['description'];
+					}
+
+					if (mb_strlen($MyRow2['narrative']) > 1) {
+						$HTML .= '<br/><span style="font-size:8px; color:#666; font-style:italic;">' . str_replace(array("\r\n", "\n", "\r"), "<br/>", $MyRow2['narrative']) . '</span>';
+					}
+
+					$HTML .= '  </td>
+								<td class="text-right">' . $DisplayQty . ' ' . ($InvOrCredit == "Receipt" ? "" : $MyRow2['units']) . '</td>
+								<td class="text-right">' . $DisplayPrice . '</td>
+								<td class="text-right">' . $DisplayDiscount . '</td>
+								<td class="text-right font-bold">' . $DisplayNet . '</td>
+							</tr>';
+				}
+			} else {
+				// Fallback for GL-only invoices (no stock moves)
 				$HTML .= '<tr>
-							<td class="font-bold">' . $MyRow2['stockid'] . '</td>
-							<td>';
-				
-				// Get translation if available
-				$TranslationResult = DB_query("SELECT descriptiontranslation FROM stockdescriptiontranslations WHERE stockid='" . $MyRow2['stockid'] . "' AND language_id='" . $MyRow['language_id'] ."'");
-				if (DB_num_rows($TranslationResult)==1){
-					$TranslationRow = DB_fetch_array($TranslationResult);
-					$HTML .= $TranslationRow['descriptiontranslation'];
-				} else {
-					$HTML .= $MyRow2['description'];
-				}
-
-				if (mb_strlen($MyRow2['narrative']) > 1) {
-					$HTML .= '<br/><span style="font-size:8px; color:#666; font-style:italic;">' . str_replace(array("\r\n", "\n", "\r"), "<br/>", $MyRow2['narrative']) . '</span>';
-				}
-
-				$HTML .= '  </td>
-							<td class="text-right">' . $DisplayQty . ' ' . ($InvOrCredit == "Receipt" ? "" : $MyRow2['units']) . '</td>
-							<td class="text-right">' . $DisplayPrice . '</td>
-							<td class="text-right">' . $DisplayDiscount . '</td>
-							<td class="text-right font-bold">' . $DisplayNet . '</td>
+							<td class="font-bold">SERVICE</td>
+							<td>' . ($MyRow['invtext'] ? $MyRow['invtext'] : ($MyRow['reference'] ? $MyRow['reference'] : __('Invoice Detail / Narrative'))) . '</td>
+							<td class="text-right">1.00</td>
+							<td class="text-right">' . $DisplaySubTot . '</td>
+							<td class="text-right"></td>
+							<td class="text-right font-bold">' . $DisplaySubTot . '</td>
 						</tr>';
 			}
 
