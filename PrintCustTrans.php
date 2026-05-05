@@ -403,115 +403,122 @@ if (isset($PrintPDF)
 			// --- Begin Modern Industry-Standard HTML ---
 			$HTML = '<html>
 			<head>
+				<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 				<style>
-					@page { margin: 30px; }
+					@page { margin: 40px; }
 					body { 
-						font-family: "Helvetica", "Arial", sans-serif; 
+						font-family: "Inter", "Helvetica", "Arial", sans-serif; 
 						font-size: 10px; 
-						color: #000; 
-						line-height: 1.5;
+						color: #1f2937; 
+						line-height: 1.6;
 						background: #fff;
+						-webkit-font-smoothing: antialiased;
 					}
-					.container { width: 100%; }
+					.container { width: 100%; max-width: 800px; margin: 0 auto; }
 					
-					/* Header Layout */
-					.header-table { width: 100%; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 25px; }
-					.logo { height: 70px; max-width: 300px; filter: grayscale(100%); }
+					/* Modern Header */
+					.header-table { width: 100%; margin-bottom: 45px; border-bottom: 1px solid #f1f5f9; padding-bottom: 30px; }
+					.logo { height: 45px; max-width: 220px; filter: grayscale(100%); opacity: 0.9; }
 					.document-title { 
-						font-size: 32px; 
-						font-weight: 800; 
+						font-size: 26px; 
+						font-weight: 200; 
 						color: #000; 
 						text-align: right; 
 						text-transform: uppercase;
 						margin: 0;
-						letter-spacing: 2px;
+						letter-spacing: 6px;
 					}
-					.document-meta { text-align: right; font-size: 11px; margin-top: 8px; color: #333; }
-					.meta-label { font-weight: 700; color: #000; }
+					.document-meta { text-align: right; font-size: 9px; margin-top: 15px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; }
+					.meta-label { font-weight: 700; color: #111; margin-right: 8px; }
 					
-					/* Address Sections */
-					.address-table { width: 100%; margin-bottom: 30px; }
-					.address-box { width: 33%; vertical-align: top; padding: 0 15px; border-left: 1px solid #ddd; }
+					/* Clean Address Grid */
+					.address-table { width: 100%; margin-bottom: 45px; }
+					.address-box { width: 33.33%; vertical-align: top; padding: 0 25px; border-left: 1px solid #f1f5f9; }
 					.address-box:first-child { border-left: none; padding-left: 0; }
 					.address-label { 
-						font-size: 10px; 
+						font-size: 8px; 
 						text-transform: uppercase; 
 						font-weight: 800; 
-						color: #000; 
-						margin-bottom: 12px; 
+						color: #94a3b8; 
+						margin-bottom: 15px; 
 						display: block;
-						letter-spacing: 1px;
-						border-bottom: 1px solid #eee;
-						padding-bottom: 4px;
+						letter-spacing: 2px;
 					}
-					.address-content { font-size: 11px; font-weight: 500; color: #111; }
+					.address-content { font-size: 11px; font-weight: 400; color: #334155; line-height: 1.7; }
 
-					/* Info Bar (Order details) - Smart Gray */
+					/* Minimal Info Bar */
 					.info-bar { 
 						width: 100%; 
-						background: #f9fafb; 
-						color: #000; 
-						margin-bottom: 25px;
-						border: 1px solid #ddd;
+						background: #fcfdfe; 
+						margin-bottom: 45px;
+						border-top: 1px solid #f1f5f9;
+						border-bottom: 1px solid #f1f5f9;
 					}
-					.info-bar td { padding: 10px 15px; font-size: 10px; text-align: center; border-right: 1px solid #ddd; }
-					.info-bar td:last-child { border-right: none; }
-					.info-label { display: block; font-size: 8px; text-transform: uppercase; color: #666; font-weight: 700; margin-bottom: 3px; }
+					.info-bar td { padding: 25px 15px; font-size: 10px; text-align: center; }
+					.info-label { display: block; font-size: 7px; text-transform: uppercase; color: #94a3b8; font-weight: 700; margin-bottom: 6px; letter-spacing: 1.5px; }
+					.info-value { font-weight: 700; color: #111; font-size: 11px; }
 
-					/* Main Items Table with Gray Vertical Lines */
-					.items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #333; }
+					/* Modern Minimalist Table */
+					.items-table { width: 100%; border-collapse: collapse; margin-bottom: 45px; }
 					.items-table th { 
-						background: #f3f4f6; 
-						color: #000; 
+						background: #f8fafc; 
+						color: #64748b; 
 						text-transform: uppercase; 
-						font-size: 9px; 
+						font-size: 8px; 
 						font-weight: 800; 
-						padding: 12px 10px; 
+						padding: 15px 15px; 
 						text-align: left;
-						border: 1px solid #333;
+						letter-spacing: 1.5px;
+						border-bottom: 1px solid #e2e8f0;
 					}
 					.items-table td { 
-						padding: 12px 10px; 
-						border: 1px solid #333; 
+						padding: 22px 15px; 
+						border-bottom: 1px solid #f1f5f9; 
+						border-right: 1px solid #fcfdfe; 
 						vertical-align: top; 
 						font-size: 10px;
+						color: #475569;
 					}
-					.items-table tr:nth-child(even) { background: #fdfdfd; }
+					.items-table td:last-child { border-right: none; }
+					.items-table tr:nth-child(even) { background: #f9fafb; }
 					.text-right { text-align: right; }
-					.font-bold { font-weight: 700; }
+					.font-bold { font-weight: 700; color: #111; }
 					
-					/* Totals Layout */
-					.totals-container { width: 100%; margin-top: 20px; }
-					.totals-table { width: 280px; float: right; border-collapse: collapse; }
-					.totals-table td { padding: 8px 10px; font-size: 11px; border-bottom: 1px solid #eee; }
-					.total-row { background: #f3f4f6; font-size: 16px; font-weight: 900; color: #000; border: 2px solid #333; }
-					.total-row td { padding: 15px 10px; border-bottom: none; }
+					/* Modern Totals */
+					.totals-container { width: 100%; margin-top: 40px; }
+					.totals-table { width: 300px; float: right; border-collapse: collapse; }
+					.totals-table td { padding: 12px 15px; font-size: 11px; color: #64748b; border-bottom: 1px solid #f8fafc; }
+					.totals-table td:last-child { color: #111; font-weight: 600; text-align: right; }
+					.total-row { font-size: 20px; color: #000; }
+					.total-row td { padding-top: 30px; border-top: 2px solid #111; color: #000; font-weight: 900 !important; }
 
-					/* Footer */
-					.footer-section { clear: both; margin-top: 60px; padding-top: 25px; border-top: 2px solid #333; }
-					.payment-info { width: 65%; font-size: 10px; color: #333; }
-					.thank-you { font-size: 16px; font-weight: 800; color: #000; margin-bottom: 12px; }
-					.legal-notice { font-size: 8px; color: #666; margin-top: 25px; font-style: italic; line-height: 1.4; }
+					/* Modern Footer */
+					.footer-section { clear: both; margin-top: 100px; padding-top: 40px; border-top: 1px solid #f1f5f9; }
+					.payment-info { width: 65%; font-size: 10px; color: #64748b; line-height: 2; }
+					.thank-you { font-size: 24px; font-weight: 200; color: #000; margin-bottom: 20px; letter-spacing: 2px; }
+					.legal-notice { font-size: 7px; color: #cbd5e1; margin-top: 50px; font-style: italic; line-height: 1.8; text-transform: uppercase; letter-spacing: 0.5px; }
 				</style>
 			</head>
 			<body>
 				<div class="container">
 					<table class="header-table">
 						<tr>
-							<td width="50%">
+							<td width="60%">
 								<img class="logo" src="' . $_SESSION['LogoFile'] . '" alt="Logo" />
-								<div style="margin-top:10px; font-weight: bold;">' . $_SESSION['CompanyRecord']['coyname'] . '</div>
-								<div>' . $_SESSION['CompanyRecord']['regoffice1'] . ', ' . $_SESSION['CompanyRecord']['regoffice2'] . '</div>
-								<div>' . __('Tel') . ': ' . $_SESSION['CompanyRecord']['telephone'] . ' | ' . __('Email') . ': ' . $_SESSION['CompanyRecord']['email'] . '</div>
-								<div>' . __("Tax Ref") . ': ' . $_SESSION['CompanyRecord']['gstno'] . '</div>
+								<div style="margin-top:20px; font-size: 12px; font-weight: 800; color: #111; text-transform: uppercase; letter-spacing: 1px;">' . $_SESSION['CompanyRecord']['coyname'] . '</div>
+								<div style="color: #64748b; font-size: 10px; margin-top: 5px;">
+									' . $_SESSION['CompanyRecord']['regoffice1'] . ', ' . $_SESSION['CompanyRecord']['regoffice2'] . '<br/>
+									' . __('Tel') . ': ' . $_SESSION['CompanyRecord']['telephone'] . ' | ' . __('Email') . ': ' . $_SESSION['CompanyRecord']['email'] . '<br/>
+									' . __("Tax Ref") . ': ' . $_SESSION['CompanyRecord']['gstno'] . '
+								</div>
 							</td>
-							<td width="50%" style="vertical-align: top;">
+							<td width="40%" style="vertical-align: top;">
 								<div class="document-title">' . ($InvOrCredit == "Invoice" ? __("TAX INVOICE") : ($InvOrCredit == "Receipt" ? __("OFFICIAL RECEIPT") : __("TAX CREDIT NOTE"))) . '</div>
 								<div class="document-meta">
-									<div><span class="meta-label">' . ($InvOrCredit == "Receipt" ? __("Receipt No") : __("Document No")) . ':</span> #' . $FromTransNo . '</div>
-									<div><span class="meta-label">' . __("Date") . ':</span> ' . ConvertSQLDate($MyRow['trandate']) . '</div>
-									<div><span class="meta-label">' . __("Due Date") . ':</span> ' . $DisplayDueDate . '</div>
-									<div><span class="meta-label">' . __("Currency") . ':</span> ' . $MyRow['currcode'] . '</div>
+									<div><span class="meta-label">' . ($InvOrCredit == "Receipt" ? __("Receipt No") : __("Document No")) . '</span> ' . $FromTransNo . '</div>
+									<div><span class="meta-label">' . __("Date") . '</span> ' . ConvertSQLDate($MyRow['trandate']) . '</div>
+									<div><span class="meta-label">' . __("Due Date") . '</span> ' . $DisplayDueDate . '</div>
+									<div><span class="meta-label">' . __("Currency") . '</span> ' . $MyRow['currcode'] . '</div>
 								</div>
 							</td>
 						</tr>
@@ -522,12 +529,11 @@ if (isset($PrintPDF)
 							<td class="address-box">
 								<span class="address-label">' . __('Bill To') . '</span>
 								<div class="address-content">
-									' . $MyRow['name'] . '<br/>
+									<strong style="color:#111; font-size: 12px;">' . $MyRow['name'] . '</strong><br/>
 									' . $CustomerAddress . '
-									' . ($MyRow['taxref'] ? '<br/>'.__('Tax Ref').': ' . $MyRow['taxref'] : '') . '
+									' . ($MyRow['taxref'] ? '<br/><span style="color:#94a3b8; font-size:9px;">'.__('Tax Ref').': ' . $MyRow['taxref'] . '</span>' : '') . '
 								</div>
 							</td>
-							<td width="3%">&nbsp;</td>
 							<td class="address-box">
 								<span class="address-label">' . __('Ship To') . '</span>
 								<div class="address-content">
@@ -535,7 +541,6 @@ if (isset($PrintPDF)
 									' . $DeliveryAddress . '
 								</div>
 							</td>
-							<td width="3%">&nbsp;</td>
 							<td class="address-box">
 								<span class="address-label">' . __('Branch Details') . '</span>
 								<div class="address-content">
@@ -549,11 +554,11 @@ if (isset($PrintPDF)
 					' . ($InvOrCredit == 'Invoice' ? '
 					<table class="info-bar">
 						<tr>
-							<td><span class="info-label">' . __('Your Ref') . '</span>' . $MyRow['customerref'] . '</td>
-							<td><span class="info-label">' . __('Our Order') . '</span>' . $MyRow['orderno'] . '</td>
-							<td><span class="info-label">' . __('Order Date') . '</span>' . ConvertSQLDate($MyRow['orddate']) . '</td>
-							<td><span class="info-label">' . __('Sales Person') . '</span>' . $MyRow['salesmanname'] . '</td>
-							<td><span class="info-label">' . __('Shipper') . '</span>' . $MyRow['shippername'] . '</td>
+							<td><span class="info-label">' . __('Your Ref') . '</span><div class="info-value">' . ($MyRow['customerref'] ? $MyRow['customerref'] : '-') . '</div></td>
+							<td><span class="info-label">' . __('Our Order') . '</span><div class="info-value">' . $MyRow['orderno'] . '</div></td>
+							<td><span class="info-label">' . __('Order Date') . '</span><div class="info-value">' . ConvertSQLDate($MyRow['orddate']) . '</div></td>
+							<td><span class="info-label">' . __('Sales Person') . '</span><div class="info-value">' . $MyRow['salesmanname'] . '</div></td>
+							<td><span class="info-label">' . __('Shipper') . '</span><div class="info-value">' . $MyRow['shippername'] . '</div></td>
 						</tr>
 					</table>' : '') . '
 
@@ -606,7 +611,7 @@ if (isset($PrintPDF)
 						}
 
 						if (mb_strlen($MyRow2['narrative']) > 1) {
-							$HTML .= '<br/><span style="font-size:8px; color:#666; font-style:italic;">' . str_replace(array("\r\n", "\n", "\r"), "<br/>", $MyRow2['narrative']) . '</span>';
+							$HTML .= '<br/><span style="font-size:8px; color:#94a3b8; font-style:italic; margin-top:5px; display:block;">' . str_replace(array("\r\n", "\n", "\r"), "<br/>", $MyRow2['narrative']) . '</span>';
 						}
 
 						$HTML .= '  </td>
@@ -636,28 +641,29 @@ if (isset($PrintPDF)
 
 					<div class="totals-container">
 						<div style="float: left; width: 50%;">
-							<div class="thank-you">' . __('Thank you for your business!') . '</div>
-							<div style="font-size: 9px; color: #666;">
-								<b>' . __('Terms') . ':</b> ' . $MyRow['terms'] . '<br/>
-								' . ($MyRow['invtext'] ? '<b>' . __('Notes') . ':</b> ' . $MyRow['invtext'] : '') . '
+							<div class="thank-you">' . __('Thank you!') . '</div>
+							<div style="font-size: 10px; color: #64748b;">
+								<span style="text-transform:uppercase; font-size:8px; font-weight:800; letter-spacing:1px; color:#94a3b8;">' . __('Terms') . '</span><br/>
+								' . $MyRow['terms'] . '<br/><br/>
+								' . ($MyRow['invtext'] ? '<span style="text-transform:uppercase; font-size:8px; font-weight:800; letter-spacing:1px; color:#94a3b8;">' . __('Notes') . '</span><br/>' . $MyRow['invtext'] : '') . '
 							</div>
 						</div>
 						<table class="totals-table">
 							<tr>
 								<td>' . __('Sub Total') . '</td>
-								<td class="text-right">' . $DisplaySubTot . '</td>
+								<td>' . $DisplaySubTot . '</td>
 							</tr>
 							<tr>
 								<td>' . __('Freight') . '</td>
-								<td class="text-right">' . $DisplayFreight . '</td>
+								<td>' . $DisplayFreight . '</td>
 							</tr>
 							<tr>
 								<td>' . __('Tax') . '</td>
-								<td class="text-right">' . $DisplayTax . '</td>
+								<td>' . $DisplayTax . '</td>
 							</tr>
 							<tr class="total-row">
-								<td>' . ($InvOrCredit == "Receipt" ? __("TOTAL RECEIVED") : __("TOTAL DUE")) . '</td>
-								<td class="text-right">' . $DisplayTotal . '</td>
+								<td style="padding-top:25px;">' . ($InvOrCredit == "Receipt" ? __("TOTAL RECEIVED") : __("TOTAL DUE")) . '</td>
+								<td style="padding-top:25px; text-align:right;">' . $DisplayTotal . '</td>
 							</tr>
 						</table>
 					</div>
@@ -667,14 +673,14 @@ if (isset($PrintPDF)
 							<tr>
 								<td class="payment-info">
 									' . (($DefaultBankAccountCode || $DefaultBankAccountNumber) ? '
-									<div style="margin-bottom:10px;">
+									<div style="margin-bottom:20px;">
 										<span class="address-label">' . __('Payment Instructions') . '</span>
-										<div style="font-weight:bold; color:#333;">' . $DefaultBankAccountCode . ' ' . $DefaultBankAccountNumber . '</div>
+										<div style="font-weight:700; color:#111; font-size:11px;">' . $DefaultBankAccountCode . '<br/>' . $DefaultBankAccountNumber . '</div>
 									</div>' : '') . '
 									<div class="legal-notice">' . ($_SESSION['RomalpaClause'] ? $_SESSION['RomalpaClause'] : '') . '</div>
 								</td>
 								<td style="text-align:right; vertical-align: bottom;">
-									<div style="font-size: 8px; color: #999;">' . __('Printed') . ': ' . date($_SESSION['DefaultDateFormat'] . ' H:i') . '</div>
+									<div style="font-size: 8px; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px;">' . __('Generated') . ' ' . date($_SESSION['DefaultDateFormat'] . ' H:i') . '</div>
 								</td>
 							</tr>
 						</table>
