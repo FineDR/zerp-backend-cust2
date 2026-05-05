@@ -575,7 +575,7 @@ if (isset($PrintPDF)
 					$DisplayPrice = locale_number_format($MyRow2['fxprice'], $MyRow['decimalplaces']);
 					$DisplayQty = locale_number_format($MyRow2['quantity'], $MyRow2['decimalplaces']);
 					$DisplayNet = locale_number_format($MyRow2['fxnet'], $MyRow['decimalplaces']);
-					$DisplayDiscount = $MyRow2['discountpercent'] == 0 ? '' : locale_number_format($MyRow2['discountpercent'] * 100, 1) . '%';
+					$DisplayDiscount = locale_number_format($MyRow2['discountpercent'] * 100, 1) . '%';
 
 					if ($InvOrCredit == 'Receipt') {
 						$HTML .= '<tr>
@@ -618,7 +618,7 @@ if (isset($PrintPDF)
 								<td>' . ($MyRow['invtext'] ? $MyRow['invtext'] : ($MyRow['reference'] ? $MyRow['reference'] : __('Invoice Detail / Narrative'))) . '</td>
 								<td class="text-right">1.00</td>
 								<td class="text-right">' . $DisplaySubTot . '</td>
-								<td class="text-right"></td>
+								<td class="text-right">0.0%</td>
 								<td class="text-right font-bold">' . $DisplaySubTot . '</td>
 							</tr>';
 				}
