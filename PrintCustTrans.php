@@ -408,83 +408,89 @@ if (isset($PrintPDF)
 					body { 
 						font-family: "Helvetica", "Arial", sans-serif; 
 						font-size: 10px; 
-						color: #333; 
-						line-height: 1.4;
+						color: #1f2937; 
+						line-height: 1.5;
+						background: #fff;
 					}
 					.container { width: 100%; }
 					
 					/* Header Layout */
-					.header-table { width: 100%; border-bottom: 2px solid #059669; padding-bottom: 20px; margin-bottom: 20px; }
-					.logo { height: 60px; max-width: 250px; }
+					.header-table { width: 100%; border-bottom: 3px solid #1e3a8a; padding-bottom: 20px; margin-bottom: 25px; }
+					.logo { height: 70px; max-width: 300px; }
 					.document-title { 
-						font-size: 24px; 
-						font-weight: 900; 
-						color: #064e3b; 
+						font-size: 28px; 
+						font-weight: 800; 
+						color: #1e3a8a; 
 						text-align: right; 
 						text-transform: uppercase;
 						margin: 0;
-						letter-spacing: -1px;
+						letter-spacing: 1px;
 					}
-					.document-meta { text-align: right; font-size: 11px; margin-top: 5px; }
-					.meta-label { font-weight: bold; color: #666; }
+					.document-meta { text-align: right; font-size: 11px; margin-top: 8px; color: #4b5563; }
+					.meta-label { font-weight: 700; color: #111; }
 					
 					/* Address Sections */
-					.address-table { width: 100%; margin-bottom: 30px; border-top: 1px solid #eee; padding-top: 20px; }
-					.address-box { width: 33%; vertical-align: top; padding: 0 10px; }
+					.address-table { width: 100%; margin-bottom: 30px; }
+					.address-box { width: 33%; vertical-align: top; padding: 0 15px; border-left: 1px solid #e5e7eb; }
+					.address-box:first-child { border-left: none; padding-left: 0; }
 					.address-label { 
-						font-size: 9px; 
+						font-size: 10px; 
 						text-transform: uppercase; 
 						font-weight: 800; 
-						color: #059669; 
-						margin-bottom: 10px; 
+						color: #1e3a8a; 
+						margin-bottom: 12px; 
 						display: block;
 						letter-spacing: 1px;
-						border-bottom: 1px solid #f0fdf4;
-						padding-bottom: 4px;
 					}
-					.address-content { font-size: 11px; font-weight: 500; color: #1f2937; line-height: 1.6; }
+					.address-content { font-size: 11px; font-weight: 500; color: #374151; }
 
 					/* Info Bar (Order details) */
 					.info-bar { 
 						width: 100%; 
-						background: #064e3b; 
-						color: white; 
-						margin-bottom: 20px;
+						background: #f8fafc; 
+						color: #1e3a8a; 
+						margin-bottom: 25px;
+						border: 1px solid #e2e8f0;
 						border-radius: 4px;
 					}
-					.info-bar td { padding: 8px 12px; font-size: 9px; text-align: center; border-right: 1px solid rgba(255,255,255,0.1); }
+					.info-bar td { padding: 10px 15px; font-size: 10px; text-align: center; border-right: 1px solid #e2e8f0; }
 					.info-bar td:last-child { border-right: none; }
-					.info-label { display: block; font-size: 7px; text-transform: uppercase; opacity: 0.7; margin-bottom: 2px; }
+					.info-label { display: block; font-size: 8px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 3px; }
 
-					/* Main Items Table */
-					.items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+					/* Main Items Table with Vertical Lines */
+					.items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #d1d5db; }
 					.items-table th { 
-						background: #f3f4f6; 
-						color: #374151; 
+						background: #1e3a8a; 
+						color: #ffffff; 
 						text-transform: uppercase; 
-						font-size: 8px; 
-						font-weight: 800; 
-						padding: 10px; 
-						border-bottom: 2px solid #e5e7eb;
+						font-size: 9px; 
+						font-weight: 700; 
+						padding: 12px 10px; 
 						text-align: left;
+						border: 1px solid #1e40af;
 					}
-					.items-table td { padding: 10px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
-					.items-table tr:nth-child(even) { background: #fafafa; }
+					.items-table td { 
+						padding: 12px 10px; 
+						border: 1px solid #d1d5db; /* Vertical and Horizontal lines */
+						vertical-align: top; 
+						font-size: 10px;
+					}
+					.items-table tr:nth-child(even) { background: #fdfdfd; }
 					.text-right { text-align: right; }
-					.font-bold { font-weight: bold; }
+					.font-bold { font-weight: 700; }
 					
 					/* Totals Layout */
-					.totals-container { width: 100%; }
-					.totals-table { width: 250px; float: right; }
-					.totals-table td { padding: 6px 0; font-size: 11px; }
-					.total-row { border-top: 2px solid #059669; font-size: 14px; font-weight: 900; color: #064e3b; }
-					.total-row td { padding-top: 15px; }
+					.totals-container { width: 100%; margin-top: 20px; }
+					.totals-table { width: 280px; float: right; border-collapse: collapse; }
+					.totals-table td { padding: 8px 10px; font-size: 11px; border-bottom: 1px solid #f3f4f6; }
+					.total-row { background: #f8fafc; font-size: 15px; font-weight: 800; color: #1e3a8a; border-top: 2px solid #1e3a8a; }
+					.total-row td { padding: 15px 10px; border-bottom: none; }
 
 					/* Footer */
-					.footer-section { clear: both; margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; }
-					.payment-info { width: 60%; font-size: 9px; color: #666; }
-					.thank-you { font-size: 14px; font-weight: bold; color: #059669; margin-bottom: 10px; }
-					.legal-notice { font-size: 7px; color: #999; margin-top: 20px; font-style: italic; }
+					.footer-section { clear: both; margin-top: 60px; padding-top: 25px; border-top: 2px solid #1e3a8a; }
+					.payment-info { width: 65%; font-size: 10px; color: #4b5563; }
+					.thank-you { font-size: 16px; font-weight: 800; color: #1e3a8a; margin-bottom: 12px; }
+					.legal-notice { font-size: 8px; color: #94a3b8; margin-top: 25px; font-style: italic; line-height: 1.4; }
 				</style>
 			</head>
 			<body>
