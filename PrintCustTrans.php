@@ -552,14 +552,21 @@ if (isset($PrintPDF)
 
 					<table class="items-table">
 						<thead>
+							' . ($InvOrCredit == 'Receipt' ? '
 							<tr>
-								<th width="15%">' . ($InvOrCredit == 'Receipt' ? __('Original Ref') : __('Item Code')) . '</th>
-								<th width="40%">' . ($InvOrCredit == 'Receipt' ? __('Trans Type') : __('Item Description')) . '</th>
-								<th class="text-right">' . ($InvOrCredit == 'Receipt' ? __('Allocated') : __('Qty')) . '</th>
-								<th class="text-right">' . ($InvOrCredit == 'Receipt' ? __('Units') : __('Price')) . '</th>
-								<th class="text-right">' . __('Discount') . '</th>
-								<th class="text-right">' . __('Net Amount') . '</th>
-							</tr>
+								<th width="20%">' . __('Original Ref') . '</th>
+								<th width="45%">' . __('Trans Type & Date') . '</th>
+								<th width="15%" class="text-right">' . __('Allocated') . '</th>
+								<th width="20%" class="text-right">' . __('Running Total') . '</th>
+							</tr>' : '
+							<tr>
+								<th width="15%">' . __('Item Code') . '</th>
+								<th width="35%">' . __('Item Description') . '</th>
+								<th width="10%" class="text-right">' . __('Qty') . '</th>
+								<th width="15%" class="text-right">' . __('Price') . '</th>
+								<th width="10%" class="text-right">' . __('Discount') . '</th>
+								<th width="15%" class="text-right">' . __('Net Amount') . '</th>
+							</tr>') . '
 						</thead>
 						<tbody>';
 
@@ -570,40 +577,51 @@ if (isset($PrintPDF)
 					$DisplayNet = locale_number_format($MyRow2['fxnet'], $MyRow['decimalplaces']);
 					$DisplayDiscount = $MyRow2['discountpercent'] == 0 ? '' : locale_number_format($MyRow2['discountpercent'] * 100, 1) . '%';
 
-					$HTML .= '<tr>
-								<td class="font-bold">' . $MyRow2['stockid'] . '</td>
-								<td>';
-					
-					// Get translation if available
-					$TranslationResult = DB_query("SELECT descriptiontranslation FROM stockdescriptiontranslations WHERE stockid='" . $MyRow2['stockid'] . "' AND language_id='" . $MyRow['language_id'] ."'");
-					if (DB_num_rows($TranslationResult)==1){
-						$TranslationRow = DB_fetch_array($TranslationResult);
-						$HTML .= $TranslationRow['descriptiontranslation'];
+					if ($InvOrCredit == 'Receipt') {
+						$HTML .= '<tr>
+									<td class="font-bold">' . $MyRow2['stockid'] . '</td>
+									<td>' . $MyRow2['description'] . ' (' . ConvertSQLDate($MyRow2['trandate']) . ')</td>
+									<td class="text-right font-bold">' . $DisplayNet . '</td>
+									<td class="text-right">' . $DisplayNet . '</td>
+								</tr>';
 					} else {
-						$HTML .= $MyRow2['description'];
-					}
+						$HTML .= '<tr>
+									<td class="font-bold">' . $MyRow2['stockid'] . '</td>
+									<td>';
+						
+						// Get translation if available
+						$TranslationResult = DB_query("SELECT descriptiontranslation FROM stockdescriptiontranslations WHERE stockid='" . $MyRow2['stockid'] . "' AND language_id='" . $MyRow['language_id'] ."'");
+						if (DB_num_rows($TranslationResult)==1){
+							$TranslationRow = DB_fetch_array($TranslationResult);
+							$HTML .= $TranslationRow['descriptiontranslation'];
+						} else {
+							$HTML .= $MyRow2['description'];
+						}
 
-					if (mb_strlen($MyRow2['narrative']) > 1) {
-						$HTML .= '<br/><span style="font-size:8px; color:#666; font-style:italic;">' . str_replace(array("\r\n", "\n", "\r"), "<br/>", $MyRow2['narrative']) . '</span>';
-					}
+						if (mb_strlen($MyRow2['narrative']) > 1) {
+							$HTML .= '<br/><span style="font-size:8px; color:#666; font-style:italic;">' . str_replace(array("\r\n", "\n", "\r"), "<br/>", $MyRow2['narrative']) . '</span>';
+						}
 
-					$HTML .= '  </td>
-								<td class="text-right">' . $DisplayQty . ' ' . ($InvOrCredit == "Receipt" ? "" : $MyRow2['units']) . '</td>
-								<td class="text-right">' . $DisplayPrice . '</td>
-								<td class="text-right">' . $DisplayDiscount . '</td>
-								<td class="text-right font-bold">' . $DisplayNet . '</td>
-							</tr>';
+						$HTML .= '  </td>
+									<td class="text-right">' . $DisplayQty . ' ' . $MyRow2['units'] . '</td>
+									<td class="text-right">' . $DisplayPrice . '</td>
+									<td class="text-right">' . $DisplayDiscount . '</td>
+									<td class="text-right font-bold">' . $DisplayNet . '</td>
+								</tr>';
+					}
 				}
 			} else {
 				// Fallback for GL-only invoices (no stock moves)
-				$HTML .= '<tr>
-							<td class="font-bold">SERVICE</td>
-							<td>' . ($MyRow['invtext'] ? $MyRow['invtext'] : ($MyRow['reference'] ? $MyRow['reference'] : __('Invoice Detail / Narrative'))) . '</td>
-							<td class="text-right">1.00</td>
-							<td class="text-right">' . $DisplaySubTot . '</td>
-							<td class="text-right"></td>
-							<td class="text-right font-bold">' . $DisplaySubTot . '</td>
-						</tr>';
+				if ($InvOrCredit != 'Receipt') {
+					$HTML .= '<tr>
+								<td class="font-bold">SERVICE</td>
+								<td>' . ($MyRow['invtext'] ? $MyRow['invtext'] : ($MyRow['reference'] ? $MyRow['reference'] : __('Invoice Detail / Narrative'))) . '</td>
+								<td class="text-right">1.00</td>
+								<td class="text-right">' . $DisplaySubTot . '</td>
+								<td class="text-right"></td>
+								<td class="text-right font-bold">' . $DisplaySubTot . '</td>
+							</tr>';
+				}
 			}
 
 			$HTML .= '  </tbody>
