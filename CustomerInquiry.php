@@ -283,7 +283,8 @@ $DateAfterCriteria = FormatDateForSQL($_POST['TransAfterDate']);
 $SQL = "SELECT SUM(ovamount + ovgst + ovfreight + ovdiscount) AS open_balance 
 		FROM debtortrans 
 		WHERE debtorno = '" . $CustomerID . "' 
-		AND trandate < '" . $DateAfterCriteria . "'";
+		AND trandate < '" . $DateAfterCriteria . "'
+		AND settled = 1";
 $OpenBalResult = DB_query($SQL, $ErrMsg);
 $OpenBalRow = DB_fetch_array($OpenBalResult);
 $RunningBalance = $OpenBalRow['open_balance'] ?? 0;
@@ -307,8 +308,15 @@ $SQL = "SELECT systypes.typename,
 			LEFT JOIN salesorders
 				ON salesorders.orderno=debtortrans.order_
 			WHERE debtortrans.debtorno = '" . $CustomerID . "'
-				AND debtortrans.trandate >= '" . $DateAfterCriteria . "'
-				ORDER BY debtortrans.trandate,
+				AND (debtortrans.trandate >= '" . $DateAfterCriteria . "' OR debtortrans.settled = 0)";
+
+if ($_POST['Status'] == '1') {
+	$SQL .= " AND debtortrans.settled = 0";
+} elseif ($_POST['Status'] == '0') {
+	$SQL .= " AND debtortrans.settled = 1";
+}
+
+$SQL .= " ORDER BY debtortrans.trandate,
 					debtortrans.id";
 $ErrMsg = __('No transactions were returned by the SQL because');
 $TransResult = DB_query($SQL, $ErrMsg);
