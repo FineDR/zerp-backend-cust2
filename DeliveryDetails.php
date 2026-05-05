@@ -364,6 +364,12 @@ UNTIL ONLINE CREDIT CARD PROCESSING IS PERFORMED ASSUME OK TO PROCESS
 
 if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.$identifier]==0) {
 
+	if (!isset($_SESSION['Items' . $identifier]) || !is_object($_SESSION['Items' . $identifier])) {
+		prnMsg(__('Your shopping cart has expired or is invalid. Please start a new order.'), 'error');
+		include(__DIR__ . '/includes/footer.php');
+		exit;
+	}
+
 /* finally write the order header to the database and then the order line details */
 
 	$DelDate = FormatDateforSQL($_SESSION['Items'.$identifier]->DeliveryDate);
@@ -419,13 +425,13 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 								'" . $_SESSION['Items'.$identifier]->PhoneNo . "',
 								'" . $_SESSION['Items'.$identifier]->Email . "',
 								'" . $_SESSION['Items'.$identifier]->SalesPerson . "',
-								'" . $_SESSION['Items'.$identifier]->FreightCost ."',
+								'" . (float)$_SESSION['Items'.$identifier]->FreightCost ."',
 								'" . $_SESSION['Items'.$identifier]->Location ."',
 								'" . $DelDate . "',
 								'" . $QuotDate . "',
 								'" . $ConfDate . "',
-								'" . $_SESSION['Items'.$identifier]->Quotation . "',
-								'" . $_SESSION['Items'.$identifier]->DeliverBlind ."'
+								'" . (int)$_SESSION['Items'.$identifier]->Quotation . "',
+								'" . (int)$_SESSION['Items'.$identifier]->DeliverBlind ."'
 								)";
 
 	$ErrMsg = __('The order cannot be added because');
@@ -445,14 +451,14 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 	foreach ($_SESSION['Items'.$identifier]->LineItems as $StockItem) {
 
 		$LineItemsSQL = $StartOf_LineItemsSQL ."
-					'" . $StockItem->LineNumber . "',
+					'" . (int)$StockItem->LineNumber . "',
 					'" . $OrderNo . "',
 					'" . $StockItem->StockID . "',
-					'" . $StockItem->Price . "',
-					'" . $StockItem->Quantity . "',
-					'" . floatval($StockItem->DiscountPercent) . "',
+					'" . (float)$StockItem->Price . "',
+					'" . (float)$StockItem->Quantity . "',
+					'" . (float)$StockItem->DiscountPercent . "',
 					'" . DB_escape_string($StockItem->Narrative) . "',
-					'" . $StockItem->POLine . "',
+					'" . DB_escape_string($StockItem->POLine) . "',
 					'" . FormatDateForSQL($StockItem->ItemDue) . "'
 				)";
 	
@@ -564,12 +570,16 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 
 				$EmailSubject = __('New Work Order Number') . ' ' . $WONo . ' ' . __('for') . ' ' . $StockItem->StockID . ' x ' . $WOQuantity;
 				//Send email to the Factory Manager
-				SendEmailFromWebERP($SysAdminEmail,
-									$_SESSION['FactoryManagerEmail'],
-									$EmailSubject,
-									$FactoryManagerEmail,
-									'',
-									false);
+				try {
+					SendEmailFromWebERP($SysAdminEmail,
+										$_SESSION['FactoryManagerEmail'],
+										$EmailSubject,
+										$FactoryManagerEmail,
+										'',
+										false);
+				} catch (Throwable $e) {
+					prnMsg(__('Automated email notification failed: ') . $e->getMessage(), 'error');
+				}
 
 			}//end if with this sales order there is a shortfall of stock - need to create the WO
 		}//end if auto create WOs in on
@@ -585,12 +595,12 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 						<i class="fas fa-check"></i>
 					</div>
 					<h2 class="db-modal-title">' . __('Order Placed successfully!') . '</h2>
-					<p class="db-page-subtitle">' . __('Your ' . ($_SESSION['Items'.$identifier]->Quotation == 1 ? 'quotation' : 'order') . ' has been recorded.') . '</p>
+					<p class="db-page-subtitle">' . __('Your ' . ((isset($_SESSION['Items'.$identifier]) && $_SESSION['Items'.$identifier]->Quotation == 1) ? 'quotation' : 'order') . ' has been recorded.') . '</p>
 				</div>
 				
 				<div class="db-modal-body">
 					<div class="db-order-number-box">
-						<span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 5px;">' . ($_SESSION['Items'.$identifier]->Quotation == 1 ? __('Quotation Number') : __('Order Number')) . '</span>
+						<span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 5px;">' . ((isset($_SESSION['Items'.$identifier]) && $_SESSION['Items'.$identifier]->Quotation == 1) ? __('Quotation Number') : __('Order Number')) . '</span>
 						<span style="display: block; font-size: 2.5rem; font-weight: 900; color: var(--primary);">' . $OrderNo . '</span>
 					</div>
 				</div>

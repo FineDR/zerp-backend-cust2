@@ -691,8 +691,8 @@ function Format_Date($DateEntry) {
 **************************************************************************************************************/
 function EnsureSQLDateFormat($Date) {
 	// All credit to GitHub Copilot
-	$Date = mb_substr($Date, 0, 10); // chop off the time stuff
-	if ($Date == '1000-01-01'){
+	$Date = mb_substr((string)$Date, 0, 10); // chop off the time stuff
+	if ($Date == '1000-01-01' OR empty($Date)){
 		return true; // The date is "no date", but in the correct SQL format
 	} else {
 		$DateTime = DateTime::createFromFormat('Y-m-d', $Date);
@@ -711,7 +711,9 @@ function EnsureSQLDateFormat($Date) {
 * Returns: String containing the date in SQL format (YYYY-MM-DD)
 **************************************************************************************************************/
 function FormatDateForSQL($DateEntry) {
-
+	if (empty($DateEntry) OR $DateEntry=='0000-00-00') {
+		return '1000-01-01';
+	}
 /* takes a date in a the format specified in $_SESSION['DefaultDateFormat']
 and converts to a yyyy-mm-dd format */
 	if (EnsureSQLDateFormat($DateEntry)){

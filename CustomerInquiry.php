@@ -279,17 +279,22 @@ if ($NIL_BALANCE == true) {
 
 $DateAfterCriteria = FormatDateForSQL($_POST['TransAfterDate']);
 
-// Calculate opening balance
+// Calculate opening balance - sum of all transactions settled before the TransAfterDate
 $SQL = "SELECT SUM(ovamount + ovgst + ovfreight + ovdiscount) AS open_balance 
 		FROM debtortrans 
 		WHERE debtorno = '" . $CustomerID . "' 
 		AND trandate < '" . $DateAfterCriteria . "'
-		AND settled = 1";
+		AND settled = 1
+		AND id NOT IN (
+			SELECT DISTINCT transid_allocfrom FROM custallocns WHERE datealloc >= '" . $DateAfterCriteria . "'
+			UNION
+			SELECT DISTINCT transid_allocto FROM custallocns WHERE datealloc >= '" . $DateAfterCriteria . "'
+		)";
 $OpenBalResult = DB_query($SQL, $ErrMsg);
 $OpenBalRow = DB_fetch_array($OpenBalResult);
 $RunningBalance = $OpenBalRow['open_balance'] ?? 0;
 
-$SQL = "SELECT systypes.typename,
+$SQL = "SELECT DISTINCT systypes.typename,
 				debtortrans.id,
 				debtortrans.type,
 				debtortrans.transno,
@@ -301,14 +306,19 @@ $SQL = "SELECT systypes.typename,
 				salesorders.customerref,
 				debtortrans.rate,
 				(debtortrans.ovamount + debtortrans.ovgst + debtortrans.ovfreight + debtortrans.ovdiscount) AS totalamount,
-				debtortrans.alloc AS allocated
+				debtortrans.alloc AS allocated,
+				debtortrans.settled
 			FROM debtortrans
 			INNER JOIN systypes
 				ON debtortrans.type = systypes.typeid
 			LEFT JOIN salesorders
 				ON salesorders.orderno=debtortrans.order_
+			LEFT JOIN custallocns
+				ON (debtortrans.id=custallocns.transid_allocfrom OR debtortrans.id=custallocns.transid_allocto)
 			WHERE debtortrans.debtorno = '" . $CustomerID . "'
-				AND (debtortrans.trandate >= '" . $DateAfterCriteria . "' OR debtortrans.settled = 0)";
+				AND (debtortrans.trandate >= '" . $DateAfterCriteria . "' 
+					 OR debtortrans.settled = 0
+					 OR (debtortrans.settled = 1 AND custallocns.datealloc >= '" . $DateAfterCriteria . "'))";
 
 if ($_POST['Status'] == '1') {
 	$SQL .= " AND debtortrans.settled = 0";

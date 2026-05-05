@@ -30,6 +30,7 @@ if (!file_exists($PathPrefix . 'config.php')) {
 $DefaultDatabase = 'weberpdemo';
 
 include($PathPrefix . 'config.php');
+require_once($PathPrefix . 'vendor/autoload.php');
 
 if (isset($dbuser)) { //this gets past an upgrade issue where old versions used lower case variable names
 	/// @todo we should attempt to update the config.php file...
