@@ -608,14 +608,16 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 				<div class="db-modal-footer">
 					<div class="db-grid-actions">';
 
-	if (count($_SESSION['AllowedPageSecurityTokens']) > 1 AND $_POST['Quotation'] == 0) {
+	$isQuotation = (isset($_SESSION['Items'.$identifier]) && $_SESSION['Items'.$identifier]->Quotation == 1);
+
+	if (count($_SESSION['AllowedPageSecurityTokens']) > 1 AND !$isQuotation) {
 		echo '<a href="' . $RootPath . '/ConfirmDispatch_Invoice.php?identifier='.$identifier . '&amp;OrderNumber=' . $OrderNo .'" class="db-btn db-btn-primary" style="justify-content: center;">
 				<i class="fas fa-file-invoice-dollar"></i> ' . __('Create Invoice Now') . '
 			  </a>';
 		echo '<a target="_blank" href="' . $RootPath . '/PrintCustOrder_generic.php?identifier='.$identifier . '&amp;TransNo=' . $OrderNo . '" class="db-btn db-btn-secondary" style="justify-content: center;">
 				<i class="fas fa-print"></i> ' . __('Print Packing Slip') . '
 			  </a>';
-	} elseif ($_POST['Quotation'] == 1) {
+	} elseif ($isQuotation) {
 		echo '<a target="_blank" href="' . $RootPath . '/PDFQuotation.php?identifier='.$identifier . '&amp;QuotationNo=' . $OrderNo . '&orientation=portrait" class="db-btn db-btn-primary" style="justify-content: center; grid-column: span 2;">
 				<i class="fas fa-file-pdf"></i> ' . __('Print Quotation') . '
 			  </a>';
@@ -632,6 +634,8 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 	unset($_SESSION['Items'.$identifier]->LineItems);
 	unset($_SESSION['Items'.$identifier]);
 	include(__DIR__ . '/includes/footer.php');
+	if (ob_get_length()) ob_flush();
+	flush();
 	exit();
 
 } elseif (isset($OK_to_PROCESS) AND ($OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.$identifier]!=0)) {
@@ -785,46 +789,54 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 	unset($_SESSION['Items'.$identifier]->LineItems);
 	unset($_SESSION['Items'.$identifier]);
 
-	if ($Quotation) {//handle Quotations and Orders print after modification
-		prnMsg(__('Quotation Number') .' ' . $_SESSION['ExistingOrder'.$identifier] . ' ' . __('has been updated'),'success');
+	$OrderNo = $_SESSION['ExistingOrder'.$identifier];
+	$isQuotation = $Quotation; // Use the value captured before unsetting session
 
-		/*link to print the quotation */
-		echo '<fieldset>
-				<tr>
-					<td><img src="'.$RootPath.'/css/'.$Theme.'/images/printer.png" title="' . __('Order') . '" alt=""></td>
-					<td>' . ' ' . '<a href="' . $RootPath . '/PDFQuotation.php?identifier='.$identifier . '&amp;QuotationNo=' . $_SESSION['ExistingOrder'.$identifier] . '&orientation=landscape" target="_blank">' .  __('Print Quotation (Landscape)')  . '</a></td>
-				</tr>
-				</fieldset>';
-		echo '<fieldset>
-				<tr>
-					<td><img src="'.$RootPath.'/css/'.$Theme.'/images/printer.png" title="' . __('Order') . '" alt="" /></td>
-					<td>' . ' ' . '<a href="' . $RootPath . '/PDFQuotation.php?identifier='.$identifier . '&amp;QuotationNo=' . $_SESSION['ExistingOrder'.$identifier] . '&orientation=portrait" target="_blank">' .  __('Print Quotation (Portrait)')  . '</a></td>
-				</tr>
-				</fieldset>';
+	// Modern Success Modal for Updated Orders
+	echo '<div class="db-modal-overlay">
+			<div class="db-modal">
+				<div class="db-modal-header">
+					<div class="db-success-icon" style="background: var(--info-soft); color: var(--info);">
+						<i class="fas fa-sync-alt"></i>
+					</div>
+					<h2 class="db-modal-title">' . ($isQuotation ? __('Quotation Updated!') : __('Order Updated!')) . '</h2>
+					<p class="db-page-subtitle">' . __('Changes to your ' . ($isQuotation ? 'quotation' : 'order') . ' have been saved successfully.') . '</p>
+				</div>
+				
+				<div class="db-modal-body">
+					<div class="db-order-number-box" style="border-color: var(--info-soft);">
+						<span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 5px;">' . ($isQuotation ? __('Quotation Number') : __('Order Number')) . '</span>
+						<span style="display: block; font-size: 2.5rem; font-weight: 900; color: var(--info);">' . $OrderNo . '</span>
+					</div>
+				</div>
+
+				<div class="db-modal-footer">
+					<div class="db-grid-actions">';
+
+	if (!$isQuotation) {
+		echo '<a href="' . $RootPath . '/ConfirmDispatch_Invoice.php?identifier='.$identifier . '&amp;OrderNumber=' . $OrderNo .'" class="db-btn db-btn-primary" style="justify-content: center;">
+				<i class="fas fa-file-invoice-dollar"></i> ' . __('Create Invoice Now') . '
+			  </a>';
+		echo '<a target="_blank" href="' . $RootPath . '/PrintCustOrder_generic.php?identifier='.$identifier . '&amp;TransNo=' . $OrderNo . '" class="db-btn db-btn-secondary" style="justify-content: center;">
+				<i class="fas fa-print"></i> ' . __('Print Packing Slip') . '
+			  </a>';
 	} else {
+		echo '<a target="_blank" href="' . $RootPath . '/PDFQuotation.php?identifier='.$identifier . '&amp;QuotationNo=' . $OrderNo . '&orientation=portrait" class="db-btn db-btn-primary" style="justify-content: center; grid-column: span 2;">
+				<i class="fas fa-file-pdf"></i> ' . __('Print Quotation') . '
+			  </a>';
+	}
+	
+	echo '      </div>
+				<a href="'. $RootPath .'/SelectSalesOrder.php?identifier='.$identifier . '" class="db-btn db-btn-secondary" style="justify-content: center; width: 100%;">
+					<i class="fas fa-search"></i> ' . __('Select Different Order') . '
+				</a>
+			</div>
+		</div>
+	 </div>';
 
-	prnMsg(__('Order Number') .' ' . $_SESSION['ExistingOrder'.$identifier] . ' ' . __('has been updated'),'success');
-
-	echo '<fieldset>
-			<tr>
-			<td><img src="'.$RootPath.'/css/'.$Theme.'/images/printer.png" title="' . __('Print') . '" alt="" /></td>
-			<td><a target="_blank" href="' . $RootPath . '/PrintCustOrder.php?identifier='.$identifier  . '&amp;TransNo=' . $_SESSION['ExistingOrder'.$identifier] . '">' .  __('Print packing slip - pre-printed stationery')  . '</a></td>
-			</tr>';
-	echo '<tr>
-			<td><img src="'.$RootPath.'/css/'.$Theme.'/images/printer.png" title="' . __('Print') . '" alt="" /></td>
-			<td><a  target="_blank" href="' . $RootPath . '/PrintCustOrder_generic.php?identifier='.$identifier  . '&amp;TransNo=' . $_SESSION['ExistingOrder'.$identifier] . '">' .  __('Print packing slip') . ' (' . __('Laser') . ')'  . '</a></td>
-		</tr>';
-	echo '<tr>
-			<td><img src="'.$RootPath.'/css/'.$Theme.'/images/reports.png" title="' . __('Invoice') . '" alt="" /></td>
-			<td><a href="' . $RootPath .'/ConfirmDispatch_Invoice.php?identifier='.$identifier  . '&amp;OrderNumber=' . $_SESSION['ExistingOrder'.$identifier] . '">' .  __('Confirm Order Delivery Quantities and Produce Invoice')  . '</a></td>
-		</tr>';
-	echo '<tr>
-			<td><img src="'.$RootPath.'/css/'.$Theme.'/images/sales.png" title="' . __('Order') . '" alt="" /></td>
-			<td><a href="' . $RootPath .'/SelectSalesOrder.php?identifier='.$identifier   . '">' .  __('Select A Different Order')  . '</a></td>
-		</tr>
-		</fieldset>';
-	}//end of print orders
 	include(__DIR__ . '/includes/footer.php');
+	if (ob_get_length()) ob_flush();
+	flush();
 	exit();
 }
 
