@@ -145,6 +145,7 @@ if (isset($PrintPDF)
 							debtortrans.debtorno,
 							debtortrans.branchcode,
 							debtortrans.reference,
+							debtortrans.alloc,
 							currencies.decimalplaces
 						FROM debtortrans INNER JOIN debtorsmaster
 						ON debtortrans.debtorno=debtorsmaster.debtorno
@@ -211,6 +212,7 @@ if (isset($PrintPDF)
 							debtortrans.debtorno,
 							debtortrans.branchcode,
 							debtortrans.reference,
+							debtortrans.alloc,
 							currencies.decimalplaces
 						FROM debtortrans INNER JOIN debtorsmaster
 						ON debtortrans.debtorno=debtorsmaster.debtorno
@@ -258,6 +260,7 @@ if (isset($PrintPDF)
 							debtortrans.branchcode,
 							debtortrans.id as transid,
 							debtortrans.reference,
+							debtortrans.alloc,
 							currencies.decimalplaces
 						FROM debtortrans INNER JOIN debtorsmaster
 						ON debtortrans.debtorno=debtorsmaster.debtorno
@@ -400,288 +403,742 @@ if (isset($PrintPDF)
 				$DisplayTotal = locale_number_format(abs($MyRow['ovfreight']+$MyRow['ovgst']+$MyRow['ovamount']),$MyRow['decimalplaces']);
 			}
 
-			// --- Begin Modern Industry-Standard HTML ---
-			$HTML = '<html>
-			<head>
-				<style>
-					@page { margin: 30px; }
-					body { 
-						font-family: "Helvetica", "Arial", sans-serif; 
-						font-size: 10px; 
-						color: #000; 
-						line-height: 1.5;
-						background: #fff;
-					}
-					.container { width: 100%; }
-					
-					/* Header Layout */
-					.header-table { width: 100%; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 25px; }
-					.logo { height: 70px; max-width: 300px; filter: grayscale(100%); }
-					.document-title { 
-						font-size: 32px; 
-						font-weight: 800; 
-						color: #000; 
-						text-align: right; 
-						text-transform: uppercase;
-						margin: 0;
-						letter-spacing: 2px;
-					}
-					.document-meta { text-align: right; font-size: 11px; margin-top: 8px; color: #333; }
-					.meta-label { font-weight: 700; color: #000; }
-					
-					/* Address Sections */
-					.address-table { width: 100%; margin-bottom: 30px; }
-					.address-box { width: 33%; vertical-align: top; padding: 0 15px; border-left: 1px solid #ddd; }
-					.address-box:first-child { border-left: none; padding-left: 0; }
-					.address-label { 
-						font-size: 10px; 
-						text-transform: uppercase; 
-						font-weight: 800; 
-						color: #000; 
-						margin-bottom: 12px; 
-						display: block;
-						letter-spacing: 1px;
-						border-bottom: 1px solid #eee;
-						padding-bottom: 4px;
-					}
-					.address-content { font-size: 11px; font-weight: 500; color: #111; }
-
-					/* Info Bar (Order details) - Smart Gray */
-					.info-bar { 
-						width: 100%; 
-						background: #f9fafb; 
-						color: #000; 
-						margin-bottom: 25px;
-						border: 1px solid #ddd;
-					}
-					.info-bar td { padding: 10px 15px; font-size: 10px; text-align: center; border-right: 1px solid #ddd; }
-					.info-bar td:last-child { border-right: none; }
-					.info-label { display: block; font-size: 8px; text-transform: uppercase; color: #666; font-weight: 700; margin-bottom: 3px; }
-
-					/* Main Items Table with Gray Vertical Lines */
-					.items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #333; }
-					.items-table th { 
-						background: #f3f4f6; 
-						color: #000; 
-						text-transform: uppercase; 
-						font-size: 9px; 
-						font-weight: 800; 
-						padding: 12px 10px; 
-						text-align: left;
-						border: 1px solid #333;
-					}
-					.items-table td { 
-						padding: 12px 10px; 
-						border: 1px solid #333; 
-						vertical-align: top; 
-						font-size: 10px;
-					}
-					.items-table tr:nth-child(even) { background: #fdfdfd; }
-					.text-right { text-align: right; }
-					.font-bold { font-weight: 700; }
-					
-					/* Totals Layout */
-					.totals-container { width: 100%; margin-top: 20px; }
-					.totals-table { width: 280px; float: right; border-collapse: collapse; }
-					.totals-table td { padding: 8px 10px; font-size: 11px; border-bottom: 1px solid #eee; }
-					.total-row { background: #f3f4f6; font-size: 16px; font-weight: 900; color: #000; border: 2px solid #333; }
-					.total-row td { padding: 15px 10px; border-bottom: none; }
-
-					/* Footer */
-					.footer-section { clear: both; margin-top: 60px; padding-top: 25px; border-top: 2px solid #333; }
-					.payment-info { width: 65%; font-size: 10px; color: #333; }
-					.thank-you { font-size: 16px; font-weight: 800; color: #000; margin-bottom: 12px; }
-					.legal-notice { font-size: 8px; color: #666; margin-top: 25px; font-style: italic; line-height: 1.4; }
-				</style>
-			</head>
-			<body>
-				<div class="container">
-					<table class="header-table">
-						<tr>
-							<td width="50%">
-								<img class="logo" src="' . $_SESSION['LogoFile'] . '" alt="Logo" />
-								<div style="margin-top:10px; font-weight: bold;">' . $_SESSION['CompanyRecord']['coyname'] . '</div>
-								<div>' . $_SESSION['CompanyRecord']['regoffice1'] . ', ' . $_SESSION['CompanyRecord']['regoffice2'] . '</div>
-								<div>' . __('Tel') . ': ' . $_SESSION['CompanyRecord']['telephone'] . ' | ' . __('Email') . ': ' . $_SESSION['CompanyRecord']['email'] . '</div>
-								<div>' . __("Tax Ref") . ': ' . $_SESSION['CompanyRecord']['gstno'] . '</div>
-							</td>
-							<td width="50%" style="vertical-align: top;">
-								<div class="document-title">' . ($InvOrCredit == "Invoice" ? __("TAX INVOICE") : ($InvOrCredit == "Receipt" ? __("OFFICIAL RECEIPT") : __("TAX CREDIT NOTE"))) . '</div>
-								<div class="document-meta">
-									<div><span class="meta-label">' . ($InvOrCredit == "Receipt" ? __("Receipt No") : __("Document No")) . ':</span> #' . $FromTransNo . '</div>
-									<div><span class="meta-label">' . __("Date") . ':</span> ' . ConvertSQLDate($MyRow['trandate']) . '</div>
-									<div><span class="meta-label">' . __("Due Date") . ':</span> ' . $DisplayDueDate . '</div>
-									<div><span class="meta-label">' . __("Currency") . ':</span> ' . $MyRow['currcode'] . '</div>
-								</div>
-							</td>
-						</tr>
-					</table>
-
-					<table class="address-table">
-						<tr>
-							<td class="address-box">
-								<span class="address-label">' . __('Bill To') . '</span>
-								<div class="address-content">
-									' . $MyRow['name'] . '<br/>
-									' . $CustomerAddress . '
-									' . ($MyRow['taxref'] ? '<br/>'.__('Tax Ref').': ' . $MyRow['taxref'] : '') . '
-								</div>
-							</td>
-							<td width="3%">&nbsp;</td>
-							<td class="address-box">
-								<span class="address-label">' . __('Ship To') . '</span>
-								<div class="address-content">
-									' . $MyRow['deliverto'] . '<br/>
-									' . $DeliveryAddress . '
-								</div>
-							</td>
-							<td width="3%">&nbsp;</td>
-							<td class="address-box">
-								<span class="address-label">' . __('Branch Details') . '</span>
-								<div class="address-content">
-									' . $MyRow['brname'] . '<br/>
-									' . $BranchAddress . '
-								</div>
-							</td>
-						</tr>
-					</table>
-
-					' . ($InvOrCredit == 'Invoice' ? '
-					<table class="info-bar">
-						<tr>
-							<td><span class="info-label">' . __('Your Ref') . '</span>' . $MyRow['customerref'] . '</td>
-							<td><span class="info-label">' . __('Our Order') . '</span>' . $MyRow['orderno'] . '</td>
-							<td><span class="info-label">' . __('Order Date') . '</span>' . ConvertSQLDate($MyRow['orddate']) . '</td>
-							<td><span class="info-label">' . __('Sales Person') . '</span>' . $MyRow['salesmanname'] . '</td>
-							<td><span class="info-label">' . __('Shipper') . '</span>' . $MyRow['shippername'] . '</td>
-						</tr>
-					</table>' : '') . '
-
-					<table class="items-table">
-						<thead>
-							' . ($InvOrCredit == 'Receipt' ? '
-							<tr>
-								<th width="20%">' . __('Original Ref') . '</th>
-								<th width="45%">' . __('Trans Type & Date') . '</th>
-								<th width="15%" class="text-right">' . __('Allocated') . '</th>
-								<th width="20%" class="text-right">' . __('Running Total') . '</th>
-							</tr>' : '
-							<tr>
-								<th width="15%">' . __('Item Code') . '</th>
-								<th width="35%">' . __('Item Description') . '</th>
-								<th width="10%" class="text-right">' . __('Qty') . '</th>
-								<th width="15%" class="text-right">' . __('Price') . '</th>
-								<th width="10%" class="text-right">' . __('Discount') . '</th>
-								<th width="15%" class="text-right">' . __('Net Amount') . '</th>
-							</tr>') . '
-						</thead>
-						<tbody>';
-
-			if (DB_num_rows($ResultLines) > 0) {
-				while ($MyRow2 = DB_fetch_array($ResultLines)) {
-					$DisplayPrice = locale_number_format($MyRow2['fxprice'], $MyRow['decimalplaces']);
-					$DisplayQty = locale_number_format($MyRow2['quantity'], $MyRow2['decimalplaces']);
-					$DisplayNet = locale_number_format($MyRow2['fxnet'], $MyRow['decimalplaces']);
-					$DisplayDiscount = locale_number_format($MyRow2['discountpercent'] * 100, 1) . '%';
-
-					if ($InvOrCredit == 'Receipt') {
-						$HTML .= '<tr>
-									<td class="font-bold">' . $MyRow2['stockid'] . '</td>
-									<td>' . $MyRow2['description'] . ' (' . ConvertSQLDate($MyRow2['trandate']) . ')</td>
-									<td class="text-right font-bold">' . $DisplayNet . '</td>
-									<td class="text-right">' . $DisplayNet . '</td>
-								</tr>';
-					} else {
-						$HTML .= '<tr>
-									<td class="font-bold">' . $MyRow2['stockid'] . '</td>
-									<td>';
-						
-						// Get translation if available
-						$TranslationResult = DB_query("SELECT descriptiontranslation FROM stockdescriptiontranslations WHERE stockid='" . $MyRow2['stockid'] . "' AND language_id='" . $MyRow['language_id'] ."'");
-						if (DB_num_rows($TranslationResult)==1){
-							$TranslationRow = DB_fetch_array($TranslationResult);
-							$HTML .= $TranslationRow['descriptiontranslation'];
-						} else {
-							$HTML .= $MyRow2['description'];
-						}
-
-						if (mb_strlen($MyRow2['narrative']) > 1) {
-							$HTML .= '<br/><span style="font-size:8px; color:#666; font-style:italic;">' . str_replace(array("\r\n", "\n", "\r"), "<br/>", $MyRow2['narrative']) . '</span>';
-						}
-
-						$HTML .= '  </td>
-									<td class="text-right">' . $DisplayQty . ' ' . $MyRow2['units'] . '</td>
-									<td class="text-right">' . $DisplayPrice . '</td>
-									<td class="text-right">' . $DisplayDiscount . '</td>
-									<td class="text-right font-bold">' . $DisplayNet . '</td>
-								</tr>';
-					}
-				}
-			} else {
-				// Fallback for GL-only invoices (no stock moves)
-				if ($InvOrCredit != 'Receipt') {
-					$HTML .= '<tr>
-								<td class="font-bold">SERVICE</td>
-								<td>' . ($MyRow['invtext'] ? $MyRow['invtext'] : ($MyRow['reference'] ? $MyRow['reference'] : __('Invoice Detail / Narrative'))) . '</td>
-								<td class="text-right">1.00</td>
-								<td class="text-right">' . $DisplaySubTot . '</td>
-								<td class="text-right">0.0%</td>
-								<td class="text-right font-bold">' . $DisplaySubTot . '</td>
-							</tr>';
-				}
+			// --- Calculate Balance & Status ---
+			$TotalAmount = $MyRow['ovamount'] + $MyRow['ovgst'] + $MyRow['ovfreight'];
+			$AmountPaid = abs($MyRow['alloc']);
+			$BalanceDue = $TotalAmount - $AmountPaid;
+			
+			$StatusLabel = 'Pending';
+			$StatusClass = 'status-pending';
+			
+			if ($BalanceDue <= 0.001) {
+				$StatusLabel = 'Paid';
+				$StatusClass = 'status-paid';
+			} elseif (strtotime($MyRow['trandate']) < strtotime('-' . $MyRow['daysbeforedue'] . ' days')) {
+				$StatusLabel = 'Overdue';
+				$StatusClass = 'status-overdue';
 			}
 
-			$HTML .= '  </tbody>
-					</table>
+			// --- Helper for missing data ---
+			$getVal = function($val, $default = 'Not provided') {
+				return (trim($val) != '' && !preg_match('/^address[1-6]$/i', trim($val))) ? $val : '<span class="not-provided">' . $default . '</span>';
+			};
 
-					<div class="totals-container">
-						<div style="float: left; width: 50%;">
-							<div class="thank-you">' . __('Thank you for your business!') . '</div>
-							<div style="font-size: 9px; color: #666;">
-								<b>' . __('Terms') . ':</b> ' . $MyRow['terms'] . '<br/>
-								' . ($MyRow['invtext'] ? '<b>' . __('Notes') . ':</b> ' . $MyRow['invtext'] : '') . '
+			if ($InvOrCredit == 'Receipt') {
+				// ====================================================================
+				// PART 3: THERMAL POS RECEIPT SYSTEM
+				// ====================================================================
+				$HTML = '<html>
+				<head>
+					<style>
+						@page { margin: 0; }
+						body { 
+							font-family: "Courier New", Courier, monospace; 
+							font-size: 13px; 
+							color: #000; 
+							line-height: 1.2;
+							background: #f1f5f9;
+							padding: 20px;
+							display: flex;
+							justify-content: center;
+						}
+						.receipt-container { 
+							width: 380px; 
+							background: #fff; 
+							padding: 25px; 
+							box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+							border: 1px solid #ddd;
+						}
+						.centered { text-align: center; }
+						.header-name { font-size: 18px; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; }
+						.header-info { font-size: 11px; color: #444; margin-bottom: 2px; }
+						.divider { border-top: 1px dashed #000; margin: 15px 0; }
+						
+						.meta-table { width: 100%; margin-bottom: 15px; }
+						.meta-table td { font-size: 12px; padding: 2px 0; }
+						.label { font-weight: bold; }
+						
+						.items-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+						.items-table th { text-align: left; border-bottom: 1px dashed #000; padding-bottom: 5px; font-size: 11px; }
+						.items-table td { padding: 5px 0; vertical-align: top; }
+						.text-right { text-align: right; }
+						
+						.total-section { margin-top: 15px; border-top: 1px solid #000; padding-top: 10px; }
+						.total-row { display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; }
+						
+						.footer { margin-top: 30px; font-size: 11px; text-align: center; color: #666; }
+
+						.sticky-footer {
+							position: fixed;
+							bottom: 0;
+							left: 0;
+							right: 0;
+							background: white;
+							border-top: 1px solid #e2e8f0;
+							padding: 16px 40px;
+							display: flex;
+							justify-content: center;
+							gap: 20px;
+							box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.05);
+							z-index: 100;
+						}
+						.btn { 
+							display: inline-flex; align-items: center; padding: 10px 18px; border-radius: 8px; 
+							font-weight: 600; font-size: 14px; text-decoration: none; border: 1px solid #e2e8f0;
+							background: white; color: #1e293b; cursor: pointer;
+						}
+						.btn-primary { background: #0f172a; color: white; border: none; }
+
+						@media print {
+							body { background: #fff; padding: 0; }
+							.receipt-container { width: 100%; box-shadow: none; border: none; padding: 10px; }
+							.sticky-footer { display: none; }
+						}
+					</style>
+				</head>
+				<body>
+					<div class="receipt-container">
+						<div class="centered">
+							<div class="header-name">' . $_SESSION['CompanyRecord']['coyname'] . '</div>
+							<div class="header-info">' . $_SESSION['CompanyRecord']['regoffice1'] . '</div>
+							<div class="header-info">' . $_SESSION['CompanyRecord']['regoffice2'] . '</div>
+							<div class="header-info">' . __('Tel') . ': ' . $_SESSION['CompanyRecord']['telephone'] . '</div>
+						</div>
+
+						<div class="divider"></div>
+
+						<table class="meta-table">
+							<tr><td class="label">' . __('Receipt No') . ':</td><td class="text-right">#' . $FromTransNo . '</td></tr>
+							<tr><td class="label">' . __('Date') . ':</td><td class="text-right">' . ConvertSQLDate($MyRow['trandate']) . '</td></tr>
+							<tr><td class="label">' . __('Customer') . ':</td><td class="text-right">' . (trim($MyRow['name']) != '' ? $MyRow['name'] : __('Walk-in Customer')) . '</td></tr>
+							<tr><td class="label">' . __('Cashier') . ':</td><td class="text-right">' . ($_SESSION['UsersRealName'] ?? 'Admin') . '</td></tr>
+						</table>
+
+						<div class="divider"></div>
+						
+						<div class="label">' . __('Payment Method') . ': ' . (trim($MyRow['reference']) != '' ? $MyRow['reference'] : __('N/A')) . '</div>
+
+						<table class="items-table">
+							<thead>
+								<tr>
+									<th>' . __('Description') . '</th>
+									<th class="text-right">' . __('Amount') . '</th>
+								</tr>
+							</thead>
+							<tbody>';
+
+				if (DB_num_rows($ResultLines) > 0) {
+					while ($MyRow2 = DB_fetch_array($ResultLines)) {
+						$DisplayNet = locale_number_format($MyRow2['fxnet'], $MyRow['decimalplaces']);
+						$HTML .= '<tr>
+									<td>' . $MyRow2['description'] . '</td>
+									<td class="text-right">' . $DisplayNet . '</td>
+								</tr>';
+					}
+				} else {
+					$HTML .= '<tr><td colspan="2" class="centered" style="padding:10px;">-- ' . __('Unallocated Payment') . ' --</td></tr>';
+				}
+
+				$HTML .= '  </tbody>
+						</table>
+
+						<div class="total-section">
+							<div class="total-row">
+								<span>' . __('TOTAL PAID') . '</span>
+								<span>' . $MyRow['currcode'] . ' ' . $DisplayTotal . '</span>
 							</div>
 						</div>
-						<table class="totals-table">
-							<tr>
-								<td>' . __('Sub Total') . '</td>
-								<td class="text-right">' . $DisplaySubTot . '</td>
-							</tr>
-							<tr>
-								<td>' . __('Freight') . '</td>
-								<td class="text-right">' . $DisplayFreight . '</td>
-							</tr>
-							<tr>
-								<td>' . __('Tax') . '</td>
-								<td class="text-right">' . $DisplayTax . '</td>
-							</tr>
-							<tr class="total-row">
-								<td>' . ($InvOrCredit == "Receipt" ? __("TOTAL RECEIVED") : __("TOTAL DUE")) . '</td>
-								<td class="text-right">' . $DisplayTotal . '</td>
-							</tr>
-						</table>
+
+						<div class="divider"></div>
+
+						<div class="footer">
+							<div>' . __('Thank you for your business!') . '</div>
+							<div style="margin-top:5px; font-size:9px;">' . __('Printed at') . ': ' . date('H:i:s') . '</div>
+						</div>
 					</div>
 
-					<div class="footer-section">
-						<table width="100%">
+					' . (isset($_GET['View']) ? '
+					<div class="sticky-footer">
+						<button onclick="window.print()" class="btn btn-primary">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+							Print Receipt
+						</button>
+						<a href="' . $_SERVER['PHP_SELF'] . '?' . $_SERVER['QUERY_STRING'] . '&PrintPDF=True" class="btn">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>
+							Download PDF
+						</a>
+					</div>' : '') . '
+				</body>
+				</html>';
+
+			} elseif (isset($_GET['View']) && $_GET['View'] == 'Yes') {
+				// ====================================================================
+				// PART 1: INTERACTIVE INVOICE UI (Dashboard View)
+				// ====================================================================
+				$HTML = '<!DOCTYPE html>
+				<html lang="en">
+				<head>
+					<meta charset="UTF-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<style>
+						:root {
+							--primary: #0f172a;
+							--primary-light: #1e293b;
+							--success: #10b981;
+							--danger: #ef4444;
+							--warning: #f59e0b;
+							--bg-main: #f8fafc;
+							--card-bg: #ffffff;
+							--border: #e2e8f0;
+							--text-main: #1e293b;
+							--text-muted: #64748b;
+							--radius: 12px;
+							--shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+						}
+
+						* { box-sizing: border-box; margin: 0; padding: 0; }
+						body { 
+							font-family: "Inter", -apple-system, sans-serif; 
+							background: var(--bg-main); 
+							color: var(--text-main); 
+							line-height: 1.6;
+							padding-bottom: 80px; 
+						}
+						.container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+
+						/* Header Section */
+						.header-section { 
+							display: flex; 
+							justify-content: space-between; 
+							align-items: center; 
+							margin-bottom: 32px; 
+						}
+						.title-group h1 { font-size: 24px; font-weight: 800; color: var(--primary); }
+						.title-group p { color: var(--text-muted); font-size: 14px; }
+						
+						.actions-group { display: flex; gap: 12px; }
+						.btn { 
+							display: inline-flex; 
+							align-items: center; 
+							padding: 10px 18px; 
+							border-radius: 8px; 
+							font-weight: 600; 
+							font-size: 14px; 
+							text-decoration: none; 
+							transition: all 0.2s;
+							cursor: pointer;
+							border: 1px solid var(--border);
+							background: white;
+							color: var(--text-main);
+						}
+						.btn:hover { background: #f1f5f9; transform: translateY(-1px); }
+						.btn-primary { background: var(--primary); color: white; border: none; }
+						.btn-primary:hover { background: var(--primary-light); }
+
+						/* Status Badges */
+						.badge { 
+							padding: 6px 12px; 
+							border-radius: 50px; 
+							font-size: 12px; 
+							font-weight: 700; 
+							text-transform: uppercase; 
+							letter-spacing: 0.5px;
+						}
+						.status-paid { background: #dcfce7; color: #15803d; }
+						.status-overdue { background: #fee2e2; color: #b91c1c; }
+						.status-pending { background: #fef3c7; color: #92400e; }
+
+						/* Summary Grid */
+						.summary-grid { 
+							display: grid; 
+							grid-template-columns: repeat(4, 1fr); 
+							gap: 20px; 
+							margin-bottom: 32px; 
+						}
+						.summary-card { 
+							background: var(--card-bg); 
+							padding: 24px; 
+							border-radius: var(--radius); 
+							box-shadow: var(--shadow);
+							border: 1px solid var(--border);
+						}
+						.summary-card label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+						.summary-card .value { font-size: 22px; font-weight: 800; color: var(--primary); }
+						.summary-card.highlight .value { color: var(--primary); }
+						.summary-card.danger .value { color: var(--danger); }
+						.summary-card.success .value { color: var(--success); }
+
+						/* Info Workspace */
+						.info-workspace { 
+							display: grid; 
+							grid-template-columns: 1fr 1fr; 
+							gap: 32px; 
+							background: var(--card-bg); 
+							padding: 40px; 
+							border-radius: var(--radius); 
+							box-shadow: var(--shadow);
+							border: 1px solid var(--border);
+							margin-bottom: 32px;
+						}
+						.info-box h3 { 
+							font-size: 14px; 
+							text-transform: uppercase; 
+							color: var(--text-muted); 
+							margin-bottom: 20px; 
+							border-bottom: 1px solid var(--border);
+							padding-bottom: 10px;
+						}
+						.info-content { font-size: 15px; color: var(--text-main); }
+						.info-row { display: flex; justify-content: space-between; margin-bottom: 12px; }
+						.info-row label { font-weight: 600; color: var(--text-muted); }
+						.not-provided { font-style: italic; color: #94a3b8; }
+
+						/* Items Table */
+						.table-card {
+							background: var(--card-bg);
+							border-radius: var(--radius);
+							box-shadow: var(--shadow);
+							border: 1px solid var(--border);
+							overflow: hidden;
+							margin-bottom: 32px;
+						}
+						.items-table { width: 100%; border-collapse: collapse; text-align: left; }
+						.items-table th { 
+							background: #f8fafc; 
+							padding: 16px 24px; 
+							font-size: 12px; 
+							text-transform: uppercase; 
+							color: var(--text-muted); 
+							border-bottom: 1px solid var(--border);
+							font-weight: 700;
+						}
+						.items-table td { padding: 16px 24px; border-bottom: 1px solid var(--border); font-size: 14px; }
+						.items-table tr:hover { background: #fdfdfd; }
+						.items-table .text-right { text-align: right; }
+						.items-table .font-bold { font-weight: 700; color: var(--primary); }
+
+						/* Totals Section */
+						.totals-section { display: flex; justify-content: flex-end; margin-bottom: 32px; }
+						.totals-card { 
+							width: 350px; 
+							background: #f8fafc; 
+							padding: 24px; 
+							border-radius: var(--radius); 
+							border: 1px solid var(--border);
+						}
+						.total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+						.total-row.grand-total { 
+							margin-top: 16px; 
+							padding-top: 16px; 
+							border-top: 2px solid var(--border); 
+							font-size: 20px; 
+							font-weight: 900; 
+							color: var(--primary); 
+						}
+
+						/* Progress Bar */
+						.payment-progress { margin-top: 24px; }
+						.progress-meta { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; font-weight: 600; }
+						.progress-bg { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+						.progress-fill { height: 100%; background: var(--success); border-radius: 4px; }
+
+						/* Sticky Footer */
+						.sticky-footer {
+							position: fixed;
+							bottom: 0;
+							left: 0;
+							right: 0;
+							background: white;
+							border-top: 1px solid var(--border);
+							padding: 16px 40px;
+							display: flex;
+							justify-content: center;
+							gap: 20px;
+							box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.05);
+							z-index: 100;
+						}
+
+						@media print { .sticky-footer { display: none; } }
+					</style>
+				</head>
+				<body>
+					<div class="container">
+						<header class="header-section">
+							<div class="title-group">
+								<p>Invoice Details</p>
+								<h1>' . ($InvOrCredit == "Invoice" ? __("Tax Invoice") : ($InvOrCredit == "Receipt" ? __("Official Receipt") : __("Tax Credit Note"))) . ' #' . $FromTransNo . '</h1>
+							</div>
+							<div class="actions-group">
+								<span class="badge ' . $StatusClass . '">' . $StatusLabel . '</span>
+								<a href="' . $_SERVER['PHP_SELF'] . '?' . $_SERVER['QUERY_STRING'] . '&PrintPDF=True" class="btn btn-primary">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>
+									Download PDF
+								</a>
+							</div>
+						</header>
+
+						<div class="summary-grid">
+							<div class="summary-card">
+								<label>' . __('Total Amount') . '</label>
+								<div class="value">' . $MyRow['currcode'] . ' ' . locale_number_format($TotalAmount, $MyRow['decimalplaces']) . '</div>
+							</div>
+							<div class="summary-card success">
+								<label>' . __('Amount Paid') . '</label>
+								<div class="value">' . locale_number_format($AmountPaid, $MyRow['decimalplaces']) . '</div>
+							</div>
+							<div class="summary-card ' . ($BalanceDue > 0 ? 'danger' : '') . '">
+								<label>' . __('Amount Due') . '</label>
+								<div class="value">' . locale_number_format($BalanceDue, $MyRow['decimalplaces']) . '</div>
+							</div>
+							<div class="summary-card">
+								<label>' . __('Due Date') . '</label>
+								<div class="value" style="font-size: 18px;">' . $DisplayDueDate . '</div>
+							</div>
+						</div>
+
+						<div class="info-workspace">
+							<div class="info-box">
+								<h3>' . __('Bill To') . '</h3>
+								<div class="info-content">
+									<div style="font-size: 18px; font-weight: 800; margin-bottom: 10px;">' . $MyRow['name'] . '</div>
+									<div style="color: var(--text-muted);">' . $CustomerAddress . '</div>
+									' . ($MyRow['taxref'] ? '<div style="margin-top:15px;"><span style="font-weight:600;">'.__('Tax Ref').':</span> ' . $MyRow['taxref'] . '</div>' : '') . '
+								</div>
+							</div>
+							<div class="info-box">
+								<h3>' . __('Invoice Information') . '</h3>
+								<div class="info-content">
+									<div class="info-row"><label>' . __('Invoice Date') . '</label><span>' . ConvertSQLDate($MyRow['trandate']) . '</span></div>
+									<div class="info-row"><label>' . __('Due Date') . '</label><span>' . $DisplayDueDate . '</span></div>
+									<div class="info-row"><label>' . __('Sales Person') . '</label><span>' . $getVal($MyRow['salesmanname']) . '</span></div>
+									<div class="info-row"><label>' . __('Order Number') . '</label><span>' . $getVal($MyRow['orderno']) . '</span></div>
+									<div class="info-row"><label>' . __('Customer Ref') . '</label><span>' . $getVal($MyRow['customerref']) . '</span></div>
+								</div>
+							</div>
+						</div>
+
+						<div class="table-card">
+							<table class="items-table">
+								<thead>
+									' . ($InvOrCredit == 'Receipt' ? '
+									<tr>
+										<th width="20%">' . __('Original Ref') . '</th>
+										<th width="45%">' . __('Trans Type & Date') . '</th>
+										<th width="15%" class="text-right">' . __('Allocated') . '</th>
+										<th width="20%" class="text-right">' . __('Running Total') . '</th>
+									</tr>' : '
+									<tr>
+										<th width="15%">' . __('Item Code') . '</th>
+										<th width="35%">' . __('Description') . '</th>
+										<th width="10%" class="text-right">' . __('Qty') . '</th>
+										<th width="15%" class="text-right">' . __('Price') . '</th>
+										<th width="10%" class="text-right">' . __('Tax') . '</th>
+										<th width="15%" class="text-right">' . __('Total') . '</th>
+									</tr>') . '
+								</thead>
+								<tbody>';
+
+				if (DB_num_rows($ResultLines) > 0) {
+					while ($MyRow2 = DB_fetch_array($ResultLines)) {
+						$DisplayPrice = locale_number_format($MyRow2['fxprice'], $MyRow['decimalplaces']);
+						$DisplayQty = locale_number_format($MyRow2['quantity'], $MyRow2['decimalplaces']);
+						$DisplayNet = locale_number_format($MyRow2['fxnet'], $MyRow['decimalplaces']);
+						$DisplayDiscount = locale_number_format($MyRow2['discountpercent'] * 100, 1) . '%';
+
+						if ($InvOrCredit == 'Receipt') {
+							$HTML .= '<tr>
+										<td class="font-bold">' . $MyRow2['stockid'] . '</td>
+										<td>' . $MyRow2['description'] . ' (' . ConvertSQLDate($MyRow2['trandate']) . ')</td>
+										<td class="text-right font-bold">' . $DisplayNet . '</td>
+										<td class="text-right">' . $DisplayNet . '</td>
+									</tr>';
+						} else {
+							$HTML .= '<tr>
+										<td class="font-bold">' . $MyRow2['stockid'] . '</td>
+										<td>';
+							
+							$TranslationResult = DB_query("SELECT descriptiontranslation FROM stockdescriptiontranslations WHERE stockid='" . $MyRow2['stockid'] . "' AND language_id='" . $MyRow['language_id'] ."'");
+							if (DB_num_rows($TranslationResult)==1){
+								$TranslationRow = DB_fetch_array($TranslationResult);
+								$HTML .= $TranslationRow['descriptiontranslation'];
+							} else {
+								$HTML .= $MyRow2['description'];
+							}
+
+							if (mb_strlen($MyRow2['narrative']) > 1) {
+								$HTML .= '<br/><span style="font-size:11px; color:var(--text-muted); font-style:italic;">' . str_replace(array("\r\n", "\n", "\r"), "<br/>", $MyRow2['narrative']) . '</span>';
+							}
+
+							$HTML .= '  </td>
+										<td class="text-right">' . $DisplayQty . ' ' . $MyRow2['units'] . '</td>
+										<td class="text-right">' . $DisplayPrice . '</td>
+										<td class="text-right">' . $DisplayDiscount . '</td>
+										<td class="text-right font-bold">' . $DisplayNet . '</td>
+									</tr>';
+						}
+					}
+				} else {
+					$HTML .= '<tr><td colspan="6" style="padding: 40px; text-align: center; color: var(--text-muted);">' . __('No items available') . '</td></tr>';
+				}
+
+				$HTML .= '  	</tbody>
+							</table>
+						</div>
+
+						<div class="totals-section">
+							<div class="totals-card">
+								<div class="total-row"><span>' . __('Sub Total') . '</span><span>' . $DisplaySubTot . '</span></div>
+								<div class="total-row"><span>' . __('Freight') . '</span><span>' . $DisplayFreight . '</span></div>
+								<div class="total-row"><span>' . __('Tax') . '</span><span>' . $DisplayTax . '</span></div>
+								<div class="total-row grand-total">
+									<span>' . ($InvOrCredit == "Receipt" ? __("Total Received") : __("Total Due")) . '</span>
+									<span>' . $MyRow['currcode'] . ' ' . $DisplayTotal . '</span>
+								</div>
+								
+								<div class="payment-progress">
+									<div class="progress-meta">
+										<span>Payment Progress</span>
+										<span>' . round(($AmountPaid / ($TotalAmount > 0 ? $TotalAmount : 1)) * 100) . '%</span>
+									</div>
+									<div class="progress-bg">
+										<div class="progress-fill" style="width: ' . min(100, ($AmountPaid / ($TotalAmount > 0 ? $TotalAmount : 1)) * 100) . '%;"></div>
+									</div>
+									<p style="font-size: 11px; margin-top: 8px; color: var(--text-muted); text-align: center;">
+										' . sprintf(__('You have paid %s out of %s'), locale_number_format($AmountPaid, $MyRow['decimalplaces']), $DisplayTotal) . '
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="sticky-footer">
+						<a href="' . $RootPath . '/EmailCustTrans.php?FromTransNo=' . $FromTransNo . '&amp;InvOrCredit=' . $InvOrCredit . '&amp;DebtorNo=' . $DebtorNo . '" class="btn">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+							Send Email
+						</a>
+						<a href="' . $_SERVER['PHP_SELF'] . '?' . $_SERVER['QUERY_STRING'] . '&PrintPDF=True" class="btn">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>
+							Download PDF
+						</a>
+						<a href="javascript:window.print()" class="btn">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+							Print Invoice
+						</a>
+					</div>
+				</body>
+				</html>';
+
+			} else {
+				// ====================================================================
+				// PART 2: PRINT / PDF INVOICE (Minimalist Document View)
+				// ====================================================================
+				$HTML = '<html>
+				<head>
+					<style>
+						@page { margin: 40px; }
+						body { 
+							font-family: "Helvetica", "Arial", sans-serif; 
+							font-size: 10px; 
+							color: #111; 
+							line-height: 1.4;
+							background: #fff;
+						}
+						.container { width: 100%; }
+						
+						/* Header */
+						.header-table { width: 100%; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 25px; }
+						.logo { height: 60px; max-width: 250px; }
+						.document-title { 
+							font-size: 28px; 
+							font-weight: 900; 
+							text-align: right; 
+							text-transform: uppercase;
+							letter-spacing: 1px;
+						}
+						.meta-table { width: 100%; margin-top: 10px; font-size: 11px; }
+						.meta-table td { text-align: right; }
+						.meta-label { font-weight: bold; color: #444; }
+						
+						/* Addresses - 3 Columns */
+						.address-table { width: 100%; margin-bottom: 30px; table-layout: fixed; }
+						.address-box { vertical-align: top; padding-right: 15px; }
+						.address-label { 
+							font-size: 9px; 
+							text-transform: uppercase; 
+							font-weight: bold; 
+							color: #000; 
+							margin-bottom: 8px; 
+							border-bottom: 1px solid #000;
+							display: block;
+							padding-bottom: 2px;
+						}
+						
+						/* Info Bar */
+						.info-bar { 
+							width: 100%; 
+							background: #f3f4f6; 
+							margin-bottom: 25px;
+							border-top: 1px solid #ccc;
+							border-bottom: 1px solid #ccc;
+						}
+						.info-bar td { padding: 8px 10px; text-align: center; border-right: 1px solid #ccc; font-size: 9px; }
+						.info-bar td:last-child { border-right: none; }
+						.info-label { display: block; font-weight: bold; font-size: 7px; text-transform: uppercase; color: #666; margin-bottom: 2px; }
+
+						/* Items Table */
+						.items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+						.items-table th { 
+							background: #000; 
+							color: #fff; 
+							text-transform: uppercase; 
+							font-size: 8px; 
+							padding: 10px 8px; 
+							text-align: left;
+						}
+						.items-table td { 
+							padding: 10px 8px; 
+							border-bottom: 1px solid #eee; 
+							vertical-align: top; 
+						}
+						.items-table tr:last-child td { border-bottom: 1px solid #000; }
+						.text-right { text-align: right; }
+						
+						/* Totals */
+						.totals-table { width: 250px; float: right; border-collapse: collapse; }
+						.totals-table td { padding: 6px 8px; font-size: 11px; }
+						.total-row { border-top: 2px solid #000; font-size: 14px; font-weight: bold; }
+
+						/* Footer */
+						.footer { clear: both; margin-top: 50px; padding-top: 20px; border-top: 1px solid #ccc; }
+						.bank-details { width: 60%; font-size: 9px; }
+						.legal { font-size: 7px; color: #777; margin-top: 15px; }
+					</style>
+				</head>
+				<body>
+					<div class="container">
+						<table class="header-table">
 							<tr>
-								<td class="payment-info">
-									' . (($DefaultBankAccountCode || $DefaultBankAccountNumber) ? '
-									<div style="margin-bottom:10px;">
-										<span class="address-label">' . __('Payment Instructions') . '</span>
-										<div style="font-weight:bold; color:#333;">' . $DefaultBankAccountCode . ' ' . $DefaultBankAccountNumber . '</div>
-									</div>' : '') . '
-									<div class="legal-notice">' . ($_SESSION['RomalpaClause'] ? $_SESSION['RomalpaClause'] : '') . '</div>
+								<td width="60%">
+									<img class="logo" src="' . $_SESSION['LogoFile'] . '" />
+									<div style="font-weight:bold; font-size:14px; margin-top:10px;">' . $_SESSION['CompanyRecord']['coyname'] . '</div>
+									<div>' . $_SESSION['CompanyRecord']['regoffice1'] . ', ' . $_SESSION['CompanyRecord']['regoffice2'] . '</div>
+									<div>' . __('Tel') . ': ' . $_SESSION['CompanyRecord']['telephone'] . ' | ' . __('Email') . ': ' . $_SESSION['CompanyRecord']['email'] . '</div>
+									<div>' . __("Tax Ref") . ': ' . $_SESSION['CompanyRecord']['gstno'] . '</div>
 								</td>
-								<td style="text-align:right; vertical-align: bottom;">
-									<div style="font-size: 8px; color: #999;">' . __('Printed') . ': ' . date($_SESSION['DefaultDateFormat'] . ' H:i') . '</div>
+								<td width="40%" style="vertical-align: top;">
+									<div class="document-title">' . ($InvOrCredit == "Invoice" ? __("TAX INVOICE") : ($InvOrCredit == "Receipt" ? __("OFFICIAL RECEIPT") : __("TAX CREDIT NOTE"))) . '</div>
+									<table class="meta-table">
+										<tr><td class="meta-label">' . ($InvOrCredit == "Receipt" ? __("Receipt No") : __("Invoice No")) . ':</td><td>#' . $FromTransNo . '</td></tr>
+										<tr><td class="meta-label">' . __("Date") . ':</td><td>' . ConvertSQLDate($MyRow['trandate']) . '</td></tr>
+										<tr><td class="meta-label">' . __("Currency") . ':</td><td>' . $MyRow['currcode'] . '</td></tr>
+										<tr><td class="meta-label">' . __("Due Date") . ':</td><td>' . $DisplayDueDate . '</td></tr>
+									</table>
 								</td>
 							</tr>
 						</table>
+
+						<table class="address-table">
+							<tr>
+								<td class="address-box">
+									<span class="address-label">' . __('Bill To') . '</span>
+									<div style="font-weight:bold; font-size:12px;">' . $MyRow['name'] . '</div>
+									' . $getVal($CustomerAddress) . '
+								</td>
+								<td class="address-box">
+									<span class="address-label">' . __('Ship To') . '</span>
+									' . $getVal($MyRow['deliverto'] . '<br/>' . $DeliveryAddress) . '
+								</td>
+								<td class="address-box" style="padding-right:0;">
+									<span class="address-label">' . __('Branch Info') . '</span>
+									' . $getVal($MyRow['brname'] . '<br/>' . $BranchAddress) . '
+								</td>
+							</tr>
+						</table>
+
+						' . ($InvOrCredit == 'Invoice' ? '
+						<table class="info-bar">
+							<tr>
+								<td><span class="info-label">' . __('Your Ref') . '</span>' . $getVal($MyRow['customerref']) . '</td>
+								<td><span class="info-label">' . __('Our Order') . '</span>' . $getVal($MyRow['orderno']) . '</td>
+								<td><span class="info-label">' . __('Sales Person') . '</span>' . $getVal($MyRow['salesmanname']) . '</td>
+								<td><span class="info-label">' . __('Shipper') . '</span>' . $getVal($MyRow['shippername']) . '</td>
+							</tr>
+						</table>' : '') . '
+
+						<table class="items-table">
+							<thead>
+								' . ($InvOrCredit == 'Receipt' ? '
+								<tr>
+									<th width="20%">' . __('Original Ref') . '</th>
+									<th width="45%">' . __('Description') . '</th>
+									<th width="15%" class="text-right">' . __('Allocated') . '</th>
+									<th width="20%" class="text-right">' . __('Total') . '</th>
+								</tr>' : '
+								<tr>
+									<th width="15%">' . __('Code') . '</th>
+									<th width="40%">' . __('Description') . '</th>
+									<th width="10%" class="text-right">' . __('Qty') . '</th>
+									<th width="15%" class="text-right">' . __('Price') . '</th>
+									<th width="20%" class="text-right">' . __('Total') . '</th>
+								</tr>') . '
+							</thead>
+							<tbody>';
+
+				if (DB_num_rows($ResultLines) > 0) {
+					DB_data_seek($ResultLines, 0); // Reset for second pass
+					while ($MyRow2 = DB_fetch_array($ResultLines)) {
+						$DisplayPrice = locale_number_format($MyRow2['fxprice'], $MyRow['decimalplaces']);
+						$DisplayQty = locale_number_format($MyRow2['quantity'], $MyRow2['decimalplaces']);
+						$DisplayNet = locale_number_format($MyRow2['fxnet'], $MyRow['decimalplaces']);
+
+						if ($InvOrCredit == 'Receipt') {
+							$HTML .= '<tr>
+										<td>' . $MyRow2['stockid'] . '</td>
+										<td>' . $MyRow2['description'] . ' (' . ConvertSQLDate($MyRow2['trandate']) . ')</td>
+										<td class="text-right">' . $DisplayNet . '</td>
+										<td class="text-right">' . $DisplayNet . '</td>
+									</tr>';
+						} else {
+							$HTML .= '<tr>
+										<td>' . $MyRow2['stockid'] . '</td>
+										<td>' . $MyRow2['description'] . '</td>
+										<td class="text-right">' . $DisplayQty . '</td>
+										<td class="text-right">' . $DisplayPrice . '</td>
+										<td class="text-right" style="font-weight:bold;">' . $DisplayNet . '</td>
+									</tr>';
+						}
+					}
+				} else {
+					$HTML .= '<tr><td colspan="5" style="text-align:center; padding:20px;">' . __('No items available') . '</td></tr>';
+				}
+
+				$HTML .= '  	</tbody>
+						</table>
+
+						<table class="totals-table">
+							<tr><td>' . __('Sub Total') . '</td><td class="text-right">' . $DisplaySubTot . '</td></tr>
+							<tr><td>' . __('Tax') . '</td><td class="text-right">' . $DisplayTax . '</td></tr>
+							<tr class="total-row"><td>' . ($InvOrCredit == "Receipt" ? __("TOTAL RECEIVED") : __("TOTAL DUE")) . '</td><td class="text-right">' . $MyRow['currcode'] . ' ' . $DisplayTotal . '</td></tr>
+						</table>
+
+						<div class="footer">
+							<table width="100%">
+								<tr>
+									<td class="bank-details">
+										<div style="font-weight:bold; margin-bottom:5px;">' . __('Payment Instructions') . '</div>
+										' . $DefaultBankAccountCode . ' ' . $DefaultBankAccountNumber . '
+										<div class="legal">' . ($_SESSION['RomalpaClause'] ?? '') . '</div>
+									</td>
+									<td style="text-align:right; vertical-align:bottom; font-size:8px; color:#999;">
+										' . __('Printed') . ': ' . date($_SESSION['DefaultDateFormat'] . ' H:i') . '
+									</td>
+								</tr>
+							</table>
+						</div>
 					</div>
-				</div>
-			</body>
-			</html>';
+				</body>
+				</html>';
+			}
 		}
 		$FromTransNo++;
 	}
