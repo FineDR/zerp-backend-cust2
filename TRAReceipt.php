@@ -73,16 +73,17 @@ if ($res_efd_check && mysqli_num_rows($res_efd_check) > 0) {
 }
 
 // 3. Transaction Details
-$sql_trans = "SELECT debtortrans.trandate, debtortrans.debtorno, debtorsmaster.name, currencies.currabrev AS currcode
+$sql_trans = "SELECT debtortrans.trandate, debtortrans.debtorno, debtortrans.type, debtortrans.ovamount, debtortrans.ovgst, debtorsmaster.name, currencies.currabrev AS currcode
               FROM debtortrans 
               INNER JOIN debtorsmaster ON debtortrans.debtorno = debtorsmaster.debtorno
               INNER JOIN currencies ON debtorsmaster.currcode = currencies.currabrev
-              WHERE debtortrans.type=10 AND debtortrans.transno='" . $invoice_no . "'";
+              WHERE debtortrans.transno='" . $invoice_no . "' AND (debtortrans.type=10 OR debtortrans.type=12 OR debtortrans.type=11)";
 $res_trans = mysqli_query($conn, $sql_trans);
 $row_trans = mysqli_fetch_assoc($res_trans);
 $cust_name = $row_trans['name'] ?? 'CASH CUSTOMER';
 $currcode = $row_trans['currcode'] ?? 'TZS';
 $rct_date = isset($row_trans['trandate']) ? date('d/m/Y', strtotime($row_trans['trandate'])) : date('d/m/Y');
+$trans_type = $row_trans['type'] ?? 10;
 
 // 4. Fiscal Ack data
 $rct_rctnum = 'NOT FISCALIZED'; $z_number = ''; $verificationcode = ''; $filename = '';
@@ -99,16 +100,11 @@ if ($res_ack_exist && mysqli_num_rows($res_ack_exist) > 0) {
 }
 
 // 5. Items
-$sql_items = "SELECT stockid, stockid AS itemdescription, -qty AS quantity, price AS unitprice, discountpercent, 18 AS taxrate
-              FROM stockmoves WHERE type = 10 AND transno = '".$invoice_no."'";
-$result_items = mysqli_query($conn, $sql_items);
-if (!$result_items || mysqli_num_rows($result_items) == 0) {
-    $sql_items = "SELECT stockid, itemdescription, quantity, unitprice, discountpercent, taxrate
-                  FROM salesorderdetails WHERE orderno = '".$invoice_no."'";
-    $result_items = mysqli_query($conn, $sql_items);
-}
-
 $items_html = ''; $total_net = 0; $total_vat = 0;
+$sql_items = "SELECT stockid, stockid AS itemdescription, -qty AS quantity, price AS unitprice, discountpercent, 18 AS taxrate
+              FROM stockmoves WHERE type = $trans_type AND transno = '".$invoice_no."'";
+$result_items = mysqli_query($conn, $sql_items);
+
 if ($result_items && mysqli_num_rows($result_items) > 0) {
     while($item = mysqli_fetch_assoc($result_items)){
         $net = $item['quantity'] * $item['unitprice'] * (1 - $item['discountpercent']);
@@ -117,6 +113,15 @@ if ($result_items && mysqli_num_rows($result_items) > 0) {
         $items_html .= '<tr><td colspan="3">'.$item['itemdescription'].'</td></tr>
         <tr><td>'.number_format($item['quantity'], 2).' x '.number_format($item['unitprice'], 2).'</td><td align="right">'.number_format($net + $vat, 2).'</td><td align="right">A</td></tr>';
     }
+} else {
+    // For receipts (type 12) or GL invoices without stockmoves
+    $total_gross = abs($row_trans['ovamount'] + $row_trans['ovgst']);
+    $total_vat = abs($row_trans['ovgst']);
+    $total_net = $total_gross - $total_vat;
+    
+    $desc = ($trans_type == 12) ? 'Payment Receipt' : 'Service/GL Transaction';
+    $items_html = '<tr><td colspan="3">'.$desc.'</td></tr>
+    <tr><td>1.00 x '.number_format($total_gross, 2).'</td><td align="right">'.number_format($total_gross, 2).'</td><td align="right">A</td></tr>';
 }
 
 $html = '
