@@ -587,6 +587,9 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 
 	 DB_Txn_Commit();
 	 
+	 // Fallback Success Message (for environments with cached CSS)
+	 prnMsg(__('Order Number') . ' ' . $OrderNo . ' ' . __('has been recorded successfully.'), 'success');
+
 	 // Modern Success Modal
 	 echo '<div class="db-modal-overlay">
 	 		<div class="db-modal">
@@ -785,12 +788,16 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 	} /* updated line items into sales order details */
 
 	DB_Txn_Commit();
+	
 	$Quotation = $_SESSION['Items'.$identifier]->Quotation;
+	$OrderNo = $_SESSION['ExistingOrder'.$identifier];
+	$isQuotation = $Quotation;
+
+	// Fallback Success Message
+	prnMsg(($isQuotation ? __('Quotation') : __('Order')) . ' ' . $OrderNo . ' ' . __('has been updated successfully.'), 'success');
+
 	unset($_SESSION['Items'.$identifier]->LineItems);
 	unset($_SESSION['Items'.$identifier]);
-
-	$OrderNo = $_SESSION['ExistingOrder'.$identifier];
-	$isQuotation = $Quotation; // Use the value captured before unsetting session
 
 	// Modern Success Modal for Updated Orders
 	echo '<div class="db-modal-overlay">

@@ -9,7 +9,7 @@ $ViewTopic = 'Dashboard';
 $BookMark = 'MainScreen';
 include(__DIR__ . '/includes/header.php');
 
-$DashBoardURL = $_SERVER['REQUEST_URI'];
+$DashBoardURL = basename($_SERVER['PHP_SELF']);
 
 // 1. Fetch User Dashboard Config
 $UserSQL = "SELECT scripts FROM dashboard_users WHERE userid = '" . $_SESSION['UserID'] . "' ";
@@ -33,7 +33,6 @@ if (isset($_GET['Remove'])) {
 if (isset($_GET['Reports']) && count($ScriptArray) < 7) {
 	if (!in_array($_GET['Reports'], $ScriptArray)) {
 		$ScriptArray[] = $_GET['Reports'];
-		asort($ScriptArray);
 		$UpdateSQL = "UPDATE dashboard_users SET scripts='" . implode(',', $ScriptArray) . "' WHERE userid = '" . $_SESSION['UserID'] . "' ";
 		DB_query($UpdateSQL);
 	}
@@ -50,7 +49,10 @@ $sqlStock = "SELECT COUNT(*) as total FROM stockmaster";
 $resStock = DB_query($sqlStock);
 $totalItems = DB_fetch_array($resStock)['total'];
 
-$sqlBank = "SELECT SUM(amount) as total FROM banktrans";
+$sqlBank = "SELECT SUM(amount) as total 
+			FROM gltrans 
+			WHERE account IN (SELECT accountcode FROM bankaccounts)
+			   OR account IN (SELECT accountcode FROM chartmaster WHERE group_ = 'Cash')";
 $resBank = DB_query($sqlBank);
 $bankBalance = DB_fetch_array($resBank)['total'] ?? 0;
 
@@ -136,17 +138,23 @@ $recentTrans = DB_fetch_array($resTrans)['total'];
 	<div class="widget-responsive-grid">
 		<?php
 		$SQL = "SELECT id, scripts, description FROM dashboard_scripts";
-		$Result = DB_query($SQL);
+		$ScriptsResult = DB_query($SQL);
+		$AllScripts = array();
+		while ($Row = DB_fetch_array($ScriptsResult)) {
+			$AllScripts[$Row['id']] = $Row;
+		}
+
 		$i = 0;
-		while ($MyRow = DB_fetch_array($Result)) {
-			if (in_array($MyRow['id'], $ScriptArray)) {
-				echo '<div class="db-card" style="position: relative;">';
+		foreach ($ScriptArray as $ScriptID) {
+			if (isset($AllScripts[$ScriptID])) {
+				$Widget = $AllScripts[$ScriptID];
+				echo '<div class="db-card" style="position: relative; display: flex; flex-direction: column;">';
 				echo '	<div class="db-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
-							<h3 class="db-card-title">' . __($MyRow['description']) . '</h3>
-							<a href="' . $DashBoardURL . '?Remove=' . $MyRow['id'] . '" class="db-badge db-badge-danger" style="text-decoration: none;">' . __('Remove') . '</a>
+							<h3 class="db-card-title">' . __($Widget['description']) . '</h3>
+							<a href="' . $DashBoardURL . '?Remove=' . $Widget['id'] . '" class="db-badge db-badge-danger" style="text-decoration: none;">' . __('Remove') . '</a>
 						</div>';
-				echo '	<div class="widget-content" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">';
-				include('dashboard/' . $MyRow['scripts']);
+				echo '	<div class="widget-content" style="flex-grow: 1; overflow-x: auto; -webkit-overflow-scrolling: touch;">';
+				include('dashboard/' . $Widget['scripts']);
 				echo '	</div>';
 				echo '</div>';
 				$i++;
@@ -184,7 +192,7 @@ include(__DIR__ . '/includes/footer.php');
 /* Responsive Grids */
 .kpi-responsive-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
 	gap: var(--space-4);
 }
 * {
@@ -198,10 +206,11 @@ include(__DIR__ . '/includes/footer.php');
 }
 .widget-responsive-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 450px), 1fr));
 	gap: var(--space-6);
 	width: 100%;
 	max-width: 100%;
+	align-items: start;
 }
 
 @media (max-width: 768px) {
@@ -212,9 +221,15 @@ include(__DIR__ . '/includes/footer.php');
 	.welcome-banner {
 		padding: var(--space-5) !important;
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: flex-start !important;
 		gap: var(--space-4);
 		width: 100%;
+	}
+	.db-header-actions {
+		width: 100%;
+	}
+	.db-header-actions form, .db-header-actions select {
+		width: 100% !important;
 	}
 	.banner-content h1 { font-size: 1.3rem !important; }
 }
@@ -223,6 +238,7 @@ include(__DIR__ . '/includes/footer.php');
 	width: 100%;
 	max-width: 100%;
 	overflow: hidden;
+	min-height: min-content;
 }
 .widget-content {
 	width: 100%;
@@ -235,7 +251,7 @@ include(__DIR__ . '/includes/footer.php');
 	width: 100% !important;
 	border: none !important;
 	margin: 0 !important;
-	min-width: 600px; /* Force scrollable content */
+	min-width: 600px; /* Force scrollable content for data integrity */
 	border-collapse: collapse;
 }
 .widget-content th {
@@ -253,5 +269,4 @@ include(__DIR__ . '/includes/footer.php');
 	display: none;
 }
 </style>
-<script async src="<?= $RootPath ?>/dashboard/javascript/dashboard.js"></script>
 <script async src="<?= $RootPath ?>/dashboard/javascript/dashboard.js"></script>

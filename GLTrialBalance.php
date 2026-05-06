@@ -173,8 +173,8 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsh
 	/* Firstly get the account totals for this period */
 	$ThisMonthSQL = "SELECT account,
 							SUM(amount) AS monthtotal
-						FROM gltotals
-						WHERE period='" . $_POST['PeriodTo'] . "'
+						FROM gltrans
+						WHERE periodno='" . $_POST['PeriodTo'] . "'
 						GROUP BY account";
 	$ThisMonthResult = DB_query($ThisMonthSQL);
 	$ThisMonthArray = array();
@@ -186,13 +186,13 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsh
 	/* Then get this periods cumulative P&L accounts */
 	$ThisPeriodPLSQL = "SELECT account,
 								SUM(amount) AS periodtotal
-						FROM gltotals
+						FROM gltrans
 						INNER JOIN chartmaster
-							ON gltotals.account=chartmaster.accountcode
+							ON gltrans.account=chartmaster.accountcode
 						INNER JOIN accountgroups
 							ON chartmaster.group_=accountgroups.groupname
-						WHERE period<='" . $_POST['PeriodTo'] . "'
-							AND period>='" . $_POST['PeriodFrom'] . "'
+						WHERE periodno<='" . $_POST['PeriodTo'] . "'
+							AND periodno>='" . $_POST['PeriodFrom'] . "'
 							AND pandl=1
 						GROUP BY account";
 	$ThisPeriodPLResult = DB_query($ThisPeriodPLSQL);
@@ -205,12 +205,12 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsh
 	/* Then get this periods cumulative BS accounts */
 	$ThisPeriodBSSQL = "SELECT account,
 								SUM(amount) AS periodtotal
-						FROM gltotals
+						FROM gltrans
 						INNER JOIN chartmaster
-							ON gltotals.account=chartmaster.accountcode
+							ON gltrans.account=chartmaster.accountcode
 						INNER JOIN accountgroups
 							ON chartmaster.group_=accountgroups.groupname
-						WHERE period<='" . $_POST['PeriodTo'] . "'
+						WHERE periodno<='" . $_POST['PeriodTo'] . "'
 							AND pandl=0
 						GROUP BY account";
 	$ThisPeriodBSResult = DB_query($ThisPeriodBSSQL);
@@ -221,12 +221,12 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Spreadsh
 
 	/* Get the retained earnings amount */
 	$RetainedEarningsSQL = "SELECT SUM(amount) AS retainedearnings
-							FROM gltotals
+							FROM gltrans
 							INNER JOIN chartmaster
-								ON gltotals.account=chartmaster.accountcode
+								ON gltrans.account=chartmaster.accountcode
 							INNER JOIN accountgroups
 								ON chartmaster.group_=accountgroups.groupname
-							WHERE period<'" . $_POST['PeriodFrom'] . "'
+							WHERE periodno<'" . $_POST['PeriodFrom'] . "'
 								AND pandl=1";
 	$RetainedEarningsResult = DB_query($RetainedEarningsSQL);
 	$RetainedEarningsRow = DB_fetch_array($RetainedEarningsResult);
