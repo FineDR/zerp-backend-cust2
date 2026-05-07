@@ -49,8 +49,8 @@ if (!function_exists('safe')) {
             display: table;
             width: 100%;
             border-bottom: 2px solid var(--primary);
-            padding-bottom: 15px;
-            margin-bottom: 20px;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
         .header-left {
             display: table-cell;
@@ -99,7 +99,7 @@ if (!function_exists('safe')) {
         .details-grid {
             display: table;
             width: 100%;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .details-col {
             display: table-cell;
@@ -127,7 +127,7 @@ if (!function_exists('safe')) {
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 10px 0;
         }
 
         th {
@@ -171,16 +171,16 @@ if (!function_exists('safe')) {
         .total-row td {
             border-top: 2px solid var(--primary);
             color: var(--primary);
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 900;
-            padding-top: 15px;
+            padding-top: 8px;
         }
 
         .footer {
-            margin-top: 30px;
-            padding-top: 20px;
+            margin-top: 10px;
+            padding-top: 10px;
             border-top: 1px solid var(--slate-200);
-            font-size: 11px;
+            font-size: 10px;
             color: var(--slate-600);
             text-align: center;
         }
@@ -212,9 +212,9 @@ if (!function_exists('safe')) {
         }
 
         @media print {
-            @page { margin: 0; }
+            @page { margin: 0.5cm; }
             body { 
-                margin: 1cm; 
+                margin: 0; 
                 padding: 0;
                 background: white;
             }
