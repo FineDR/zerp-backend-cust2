@@ -125,7 +125,7 @@ if ($result_items && mysqli_num_rows($result_items) > 0) {
 $html = '
 <table border="0" cellspacing="0" cellpadding="1" style="width:100%">
     <tr><td colspan="3" align="center">*** START OF LEGAL RECEIPT ***</td></tr>
-    <tr><td colspan="3" align="center"><img src="' . __DIR__ . '/css/TRAlogo.png" width="80" /></td></tr>
+    <tr><td colspan="3" align="center"><img src="' . __DIR__ . '/css/TRAlogo.png" width="50" /></td></tr>
     <tr><td colspan="3" align="center"><b>'.htmlspecialchars($comp_name).'</b></td></tr>
     <tr><td colspan="3" align="center">'.htmlspecialchars($caddress).'</td></tr>
     <tr><td colspan="3" align="center">TEL: '.htmlspecialchars($cmobile).' | TIN: '.htmlspecialchars($ctin).'</td></tr>
