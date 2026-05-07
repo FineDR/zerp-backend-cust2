@@ -47,6 +47,7 @@ if (!function_exists('safe')) {
         /* Header Layout */
         .header {
             width: 100%;
+            table-layout: fixed;
             border-bottom: 2px solid var(--primary);
             padding-bottom: 10px;
             margin-bottom: 15px;
@@ -61,10 +62,12 @@ if (!function_exists('safe')) {
 
         .header-left {
             text-align: left;
+            width: 65%;
         }
 
         .header-right {
             text-align: right;
+            width: 35%;
         }
 
         .logo {
@@ -101,6 +104,7 @@ if (!function_exists('safe')) {
         /* Sections Layout */
         .details-grid {
             width: 100%;
+            table-layout: fixed;
             margin-bottom: 15px;
             border-collapse: collapse;
         }
@@ -215,7 +219,7 @@ if (!function_exists('safe')) {
         }
 
         @media print {
-            @page { margin: 0.8cm; }
+            @page { margin: 1cm; }
             body { 
                 margin: 0; 
                 padding: 0;
