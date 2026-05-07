@@ -469,8 +469,12 @@ if (isset($PrintPDF)
 						.label { font-weight: bold; }
 						
 						.items-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-						.items-table th { text-align: left; border-bottom: 1px dashed #000; padding-bottom: 5px; font-size: 11px; }
-						.items-table td { padding: 5px 0; vertical-align: top; font-size: 12px; }
+						.items-table th, td {
+							padding: 4px 10px;
+							text-align: left;
+							border-bottom: 1px solid var(--slate-50);
+							font-size: 11px;
+						}
 						.text-right { text-align: right; }
 						
 						.total-section { margin-top: 15px; border-top: 1px solid #000; padding-top: 10px; }
