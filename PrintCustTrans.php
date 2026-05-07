@@ -16,6 +16,7 @@ if (isset($_GET['orientation'])) {
 } else {
 	$Orientation = 'landscape';
 }
+$is_pdf = false;
 
 if (isset($_GET['FromTransNo'])) {
 	$FromTransNo = filter_number_format($_GET['FromTransNo']);
@@ -674,6 +675,7 @@ if (isset($PrintPDF)
 		$DomPDF->loadHtml($HTML);
 		$DomPDF->setPaper($_SESSION['PageSize'], ($IsThermal ? 'portrait' : 'landscape'));
 		$DomPDF->render();
+		if (ob_get_length()) ob_end_clean();
 		$Attachment = (isset($_GET['Download']) && $_GET['Download'] == 'True') ? 1 : 0;
 		$DomPDF->stream($InvOrCredit . '_' . ($FromTransNo - 1) . '.pdf', array('Attachment' => $Attachment));
 		exit;
