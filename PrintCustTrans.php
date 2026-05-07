@@ -635,12 +635,24 @@ if (isset($PrintPDF)
 					}
 				}
 
+				// FALLBACK: If no stock items found, use the transaction reference/comments (Service Invoices)
+				if (count($items) == 0 && (strcasecmp($InvOrCredit, 'Invoice') == 0 || strcasecmp($InvOrCredit, 'Credit') == 0)) {
+					$items[] = array(
+						'code' => __('SERVICE'),
+						'description' => (trim($MyRow['invtext']) != '' ? $MyRow['invtext'] : (trim($MyRow['reference']) != '' ? $MyRow['reference'] : __('General Service Charge'))),
+						'narrative' => '',
+						'qty' => '1',
+						'price' => $DisplaySubTot,
+						'total' => $DisplaySubTot
+					);
+				}
+
 				$totals = array(
 					'subtotal' => $DisplaySubTot,
 					'freight' => $DisplayFreight,
 					'tax' => $DisplayTax,
 					'paid' => ($AmountPaid > 0 ? locale_number_format($AmountPaid, $MyRow['decimalplaces']) : null),
-					'total' => $MyRow['currcode'] . ' ' . locale_number_format($BalanceDue, $MyRow['decimalplaces'])
+					'total' => $MyRow['currcode'] . ' ' . $DisplayTotal
 				);
 
 				// Render Template
