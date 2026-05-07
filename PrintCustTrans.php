@@ -656,6 +656,7 @@ if (isset($PrintPDF)
 				);
 
 				// Render Template
+				$is_pdf = (isset($_GET['PrintPDF']) && $_GET['PrintPDF'] == 'True');
 				ob_start();
 				include 'InvoiceTemplate.php';
 				$HTML = ob_get_clean();

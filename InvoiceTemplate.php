@@ -357,11 +357,13 @@ if (!function_exists('safe')) {
     </div>
 </div>
 
+<?php if (!isset($is_pdf) || !$is_pdf): ?>
 <div class="actions no-print">
     <button class="btn-print" onclick="window.print()">
         Download / Print Document
     </button>
 </div>
+<?php endif; ?>
 
 </body>
 </html>
