@@ -32,43 +32,44 @@ if (!function_exists('safe')) {
             font-family: 'Helvetica', 'Arial', sans-serif;
             background: #fff;
             color: var(--slate-900);
-            line-height: 1.2;
+            line-height: 1.3;
             margin: 0;
             padding: 0;
-            font-size: 11px;
         }
 
         .container {
-            max-width: 760px;
-            margin: 15px auto;
-            padding: 15px;
+            max-width: 850px;
+            margin: 20px auto;
+            padding: 30px;
             background: #fff;
         }
 
         /* Header Layout */
         .header {
-            display: table;
             width: 100%;
-            table-layout: fixed;
             border-bottom: 2px solid var(--primary);
-            padding-bottom: 8px;
-            margin-bottom: 12px;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            border-collapse: collapse;
         }
+
+        .header td {
+            padding: 0;
+            border: none;
+            vertical-align: top;
+        }
+
         .header-left {
-            display: table-cell;
-            vertical-align: top;
-            width: 60%;
+            text-align: left;
         }
+
         .header-right {
-            display: table-cell;
-            vertical-align: top;
             text-align: right;
-            width: 40%;
         }
 
         .logo {
-            max-height: 50px;
-            margin-bottom: 10px;
+            max-height: 45px;
+            margin-bottom: 5px;
         }
 
         .document-title {
@@ -99,15 +100,15 @@ if (!function_exists('safe')) {
 
         /* Sections Layout */
         .details-grid {
-            display: table;
             width: 100%;
             margin-bottom: 15px;
+            border-collapse: collapse;
         }
-        .details-col {
-            display: table-cell;
+        .details-grid td {
             width: 33.33%;
             vertical-align: top;
             padding-right: 20px;
+            border: none;
         }
 
         .label {
@@ -144,10 +145,10 @@ if (!function_exists('safe')) {
         }
 
         th, td {
-            padding: 3px 8px;
+            padding: 4px 10px;
             text-align: left;
             border-bottom: 1px solid var(--slate-50);
-            font-size: 11px;
+            font-size: 12px;
         }
 
         .right { text-align: right; }
@@ -220,18 +221,11 @@ if (!function_exists('safe')) {
                 padding: 0;
                 background: white;
             }
-            .actions, .btn-print, .ModuleList, #SidebarToggle, .sidebar-mask, .help-bubble, 
-            .header_container, .menu_container, header, footer, .breadcrumb, .no-print,
-            #header_container, #menu_container, #footer_container, .quick_menu, .main_menu,
-            .ScriptTitle, .MainBody > h1:first-child, #AppIcon, #ActionIcon, #Info, #ExitIcon,
-            #help-bubble, #MessageContainerHead, #logoutDialog, #mask { 
-                display: none !important; 
-            }
             .container { 
-                margin: 0; 
-                max-width: 100%; 
-                width: 100%; 
-                padding: 0 5px; 
+                margin: 0 !important; 
+                max-width: none !important; 
+                width: 100% !important; 
+                padding: 0 5px !important; 
                 box-shadow: none;
             }
         }
@@ -240,47 +234,51 @@ if (!function_exists('safe')) {
 <body>
 
 <div class="container">
-    <div class="header">
-        <div class="header-left">
-            <?php 
-            $logo_path = safe($invoice['logo'], '');
-            if (!empty($logo_path) && file_exists($logo_path)): ?>
-                <img src="<?= $logo_path ?>" class="logo" alt="Logo">
-            <?php endif; ?>
-            <div style="font-size: 16px; font-weight: 800;"><?= safe($invoice['company_name']) ?></div>
-            <div style="font-size: 12px; color: var(--slate-600); margin-top: 5px;">
-                <?= safe($invoice['company_address']) ?><br>
-                <?= safe($invoice['company_contact']) ?>
-            </div>
-        </div>
-        <div class="header-right">
-            <h1 class="document-title"><?= safe($invoice['title'], 'TAX INVOICE') ?></h1>
-            <div class="doc-meta">#<?= safe($invoice['number']) ?></div>
-            <div class="status-badge"><?= safe($invoice['status']) ?></div>
-            <div style="margin-top: 15px; font-size: 12px;">
-                <strong>Date:</strong> <?= safe($invoice['date']) ?><br>
-                <strong>Due:</strong> <?= safe($invoice['due_date']) ?>
-            </div>
-        </div>
-    </div>
+    <table class="header">
+        <tr>
+            <td class="header-left">
+                <?php 
+                $logo_path = safe($invoice['logo'], '');
+                if (!empty($logo_path) && file_exists($logo_path)): ?>
+                    <img src="<?= $logo_path ?>" class="logo" alt="Logo">
+                <?php endif; ?>
+                <div style="font-size: 16px; font-weight: 800;"><?= safe($invoice['company_name']) ?></div>
+                <div style="font-size: 12px; color: var(--slate-600); margin-top: 5px;">
+                    <?= safe($invoice['company_address']) ?><br>
+                    <?= safe($invoice['company_contact']) ?>
+                </div>
+            </td>
+            <td class="header-right">
+                <h1 class="document-title"><?= safe($invoice['title'], 'TAX INVOICE') ?></h1>
+                <div class="doc-meta">#<?= safe($invoice['number']) ?></div>
+                <div class="status-badge"><?= safe($invoice['status']) ?></div>
+                <div style="margin-top: 15px; font-size: 12px;">
+                    <strong>Date:</strong> <?= safe($invoice['date']) ?><br>
+                    <strong>Due:</strong> <?= safe($invoice['due_date']) ?>
+                </div>
+            </td>
+        </tr>
+    </table>
 
-    <div class="details-grid">
-        <div class="details-col">
-            <span class="label">Bill To</span>
-            <div class="value">
-                <strong><?= safe($customer['name']) ?></strong><br>
-                <?= safe($customer['address']) ?>
-            </div>
-        </div>
-        <div class="details-col">
-            <span class="label">Ship To</span>
-            <div class="value"><?= safe($customer['ship_to']) ?></div>
-        </div>
-        <div class="details-col" style="padding-right:0;">
-            <span class="label">Payment Terms</span>
-            <div class="value"><?= safe($invoice['terms']) ?></div>
-        </div>
-    </div>
+    <table class="details-grid">
+        <tr>
+            <td>
+                <span class="label">Bill To</span>
+                <div class="value">
+                    <strong><?= safe($customer['name']) ?></strong><br>
+                    <?= safe($customer['address']) ?>
+                </div>
+            </td>
+            <td>
+                <span class="label">Ship To</span>
+                <div class="value"><?= safe($customer['ship_to']) ?></div>
+            </td>
+            <td style="padding-right:0;">
+                <span class="label">Payment Terms</span>
+                <div class="value"><?= safe($invoice['terms']) ?></div>
+            </td>
+        </tr>
+    </table>
 
     <table>
         <thead>
@@ -359,7 +357,7 @@ if (!function_exists('safe')) {
     </div>
 </div>
 
-<?php if (!isset($_GET['PrintPDF']) || $_GET['PrintPDF'] != 'True'): ?>
+<?php if (!isset($is_pdf) || !$is_pdf): ?>
 <div class="actions no-print">
     <button class="btn-print" onclick="window.print()">
         Download / Print Document
