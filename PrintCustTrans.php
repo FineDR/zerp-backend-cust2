@@ -333,11 +333,13 @@ if (isset($PrintPDF)
 			$ExchRate = $MyRow['rate'];
 
 			// --- Get line items ---
-			$IsThermal = ($InvOrCredit == 'Receipt' || (isset($_GET['View']) && isset($_GET['Receipt'])));
-			
-			if ($InvOrCredit=='Invoice') {
+			$IsThermal = (strcasecmp($InvOrCredit, 'Receipt') == 0 || (isset($_GET['View']) && isset($_GET['Receipt'])));
+			$ExchRate = (float)$MyRow['rate'];
+			if ($ExchRate == 0) $ExchRate = 1;
+
+			if (strcasecmp($InvOrCredit, 'Invoice') == 0) {
 				$SQLLines = "SELECT stockmoves.stockid,
-								stockmaster.description,
+								COALESCE(stockmaster.description, stockmoves.stockid) as description,
 								-stockmoves.qty as quantity,
 								stockmoves.discountpercent,
 								((1 - stockmoves.discountpercent) * stockmoves.price * " . $ExchRate . "* -stockmoves.qty) AS fxnet,
@@ -347,14 +349,14 @@ if (isset($PrintPDF)
 								stockmaster.serialised,
 								stockmaster.units,
 								stockmoves.stkmoveno,
-								stockmaster.decimalplaces
-							FROM stockmoves INNER JOIN stockmaster
+								COALESCE(stockmaster.decimalplaces, 2) as decimalplaces
+							FROM stockmoves LEFT JOIN stockmaster
 							ON stockmoves.stockid = stockmaster.stockid
 							WHERE stockmoves.type=10
-							AND stockmoves.transno='" . $FromTransNo . "'";
-			} elseif ($InvOrCredit=='Credit') {
+							AND stockmoves.transno='" . (int)$FromTransNo . "'";
+			} elseif (strcasecmp($InvOrCredit, 'Credit') == 0) {
 				$SQLLines = "SELECT stockmoves.stockid,
-								stockmaster.description,
+								COALESCE(stockmaster.description, stockmoves.stockid) as description,
 								stockmoves.qty as quantity,
 								stockmoves.discountpercent,
 								((1 - stockmoves.discountpercent) * stockmoves.price * " . $ExchRate . " * stockmoves.qty) AS fxnet,
@@ -364,11 +366,11 @@ if (isset($PrintPDF)
 								stockmaster.serialised,
 								stockmaster.units,
 								stockmoves.stkmoveno,
-								stockmaster.decimalplaces
-							FROM stockmoves INNER JOIN stockmaster
+								COALESCE(stockmaster.decimalplaces, 2) as decimalplaces
+							FROM stockmoves LEFT JOIN stockmaster
 							ON stockmoves.stockid = stockmaster.stockid
 							WHERE stockmoves.type=11
-							AND stockmoves.transno='" . $FromTransNo . "'";
+							AND stockmoves.transno='" . (int)$FromTransNo . "'";
 			} else {
 				// Receipts show allocations
 				$SQLLines = "SELECT systypes.typename,
@@ -394,13 +396,13 @@ if (isset($PrintPDF)
 			$ResultLines = DB_query($SQLLines, $ErrMsgLines);
 
 			// --- Calculate Due Date ---
-			if ($InvOrCredit=='Invoice') {
+			if (strcasecmp($InvOrCredit, 'Invoice') == 0) {
 				$DisplayDueDate = CalcDueDate(ConvertSQLDate($MyRow['trandate']), $MyRow['dayinfollowingmonth'], $MyRow['daysbeforedue']);
 			} else {
 				$DisplayDueDate = ConvertSQLDate($MyRow['trandate']);
 			}
 
-			if ($InvOrCredit=='Invoice') {
+			if (strcasecmp($InvOrCredit, 'Invoice') == 0) {
 				$DisplaySubTot = locale_number_format($MyRow['ovamount'],$MyRow['decimalplaces']);
 				$DisplayFreight = locale_number_format($MyRow['ovfreight'],$MyRow['decimalplaces']);
 				$DisplayTax = locale_number_format($MyRow['ovgst'],$MyRow['decimalplaces']);
@@ -619,11 +621,14 @@ if (isset($PrintPDF)
 				if (DB_num_rows($ResultLines) > 0) {
 					DB_data_seek($ResultLines, 0);
 					while ($line = DB_fetch_array($ResultLines)) {
+						$line_units = isset($line['units']) ? $line['units'] : '';
+						$line_decimals = isset($line['decimalplaces']) ? $line['decimalplaces'] : 2;
+						
 						$items[] = array(
 							'code' => $line['stockid'],
 							'description' => $line['description'],
 							'narrative' => $line['narrative'],
-							'qty' => locale_number_format($line['quantity'], $line['decimalplaces']) . ' ' . $line['units'],
+							'qty' => locale_number_format($line['quantity'], $line_decimals) . ' ' . $line_units,
 							'price' => locale_number_format($line['fxprice'], $MyRow['decimalplaces']),
 							'total' => locale_number_format($line['fxnet'], $MyRow['decimalplaces'])
 						);
