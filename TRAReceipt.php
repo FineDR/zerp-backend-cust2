@@ -187,18 +187,30 @@ $html = '
     
     <!-- 8. QR & Verification Section (At the Bottom) -->';
 
-if (!empty($verificationcode) || (!empty($filename) && file_exists($filename))) {
-    $html .= '<tr><td align="center" class="qr-space">';
+if (!empty($verificationcode)) {
+    $html .= '<tr><td align="center" class="qr-space">
+        Verification Code:<br/><b>'.htmlspecialchars($verificationcode).'</b><br/><br/>';
     
-    if (!empty($verificationcode)) {
-        $html .= 'Verification Code:<br/><b>'.htmlspecialchars($verificationcode).'</b><br/><br/>';
+    // Resolve absolute path for QR Code image
+    $qr_path = $filename;
+    if (!empty($qr_path) && !file_exists($qr_path)) {
+        $qr_path = __DIR__ . '/' . $qr_path;
     }
-    
-    if (!empty($filename) && file_exists($filename)) {
-        $html .= '<img src="'.htmlspecialchars($filename).'" width="60" /><br/>';
+
+    if (!empty($qr_path) && file_exists($qr_path)) {
+        $html .= '<img src="'.htmlspecialchars($qr_path).'" width="60" /><br/>';
     }
     
     $html .= '</td></tr>';
+} elseif (!empty($filename)) {
+    // Fallback if only QR path exists
+    $qr_path = $filename;
+    if (!file_exists($qr_path)) {
+        $qr_path = __DIR__ . '/' . $qr_path;
+    }
+    if (file_exists($qr_path)) {
+        $html .= '<tr><td align="center" class="qr-space"><img src="'.htmlspecialchars($qr_path).'" width="60" /></td></tr>';
+    }
 }
 
 $html .= '
