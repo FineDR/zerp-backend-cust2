@@ -1,7 +1,6 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 /* Used during order entry to allow the entry of delivery addresses other than the defaulted branch delivery address and information about carrier/shipping method etc. */
+error_reporting(E_ALL & ~E_NOTICE);
 
 /*
 This is where the delivery details are confirmed/entered/modified and the order committed to the database once the place order/modify order button is hit.
@@ -577,7 +576,7 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 										$FactoryManagerEmail,
 										'',
 										false);
-				} catch (Throwable $e) {
+				} catch (Exception $e) {
 					prnMsg(__('Automated email notification failed: ') . $e->getMessage(), 'error');
 				}
 
@@ -591,6 +590,7 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 	 prnMsg(__('Order Number') . ' ' . $OrderNo . ' ' . __('has been recorded successfully.'), 'success');
 
 	 // Modern Success Modal
+	 echo '<script>console.log("ZERP: Success modal injected for Order ' . $OrderNo . '");</script>';
 	 echo '<div class="db-modal-overlay" style="z-index: 999999 !important;">
 	 		<div class="db-modal">
 				<div class="db-modal-header">
