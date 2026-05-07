@@ -221,6 +221,13 @@ if (!function_exists('safe')) {
                 padding: 0;
                 background: white;
             }
+            .actions, .btn-print, .ModuleList, #SidebarToggle, .sidebar-mask, .help-bubble, 
+            .header_container, .menu_container, header, footer, .breadcrumb, .no-print,
+            #header_container, #menu_container, #footer_container, .quick_menu, .main_menu,
+            .ScriptTitle, .MainBody > h1:first-child, #AppIcon, #ActionIcon, #Info, #ExitIcon,
+            #help-bubble, #MessageContainerHead, #logoutDialog, #mask, .noPrint { 
+                display: none !important; 
+            }
             .container { 
                 margin: 0 !important; 
                 max-width: none !important; 
