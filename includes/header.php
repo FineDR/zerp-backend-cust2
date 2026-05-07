@@ -55,8 +55,8 @@ echo '<html lang="' , str_replace('_', '-', substr($Language ?? 'en_GB', 0, 5)) 
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-	<link href="', $RootPath, '/css/', $_SESSION['Theme'], '/styles.css?version=1.4" rel="stylesheet" type="text/css" media="screen" />
-	<link href="', $RootPath, '/css/print.css?version=1.2" rel="stylesheet" type="text/css" media="print" />
+	<link href="', $RootPath, '/css/', $_SESSION['Theme'], '/styles.css?version=1.6" rel="stylesheet" type="text/css" media="screen" />
+	<link href="', $RootPath, '/css/print.css?version=1.3" rel="stylesheet" type="text/css" media="print" />
 	<meta name="viewport" content="width=device-width, initial-scale=1">';
 echo '	<script async src="', $RootPath, '/javascripts/MiscFunctions.js?version=1.0"></script>' , "\n";
 echo '	<script async src="', $RootPath, '/javascripts/manual.js"></script>' , "\n";

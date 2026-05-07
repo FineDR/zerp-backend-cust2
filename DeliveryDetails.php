@@ -591,7 +591,7 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 	 prnMsg(__('Order Number') . ' ' . $OrderNo . ' ' . __('has been recorded successfully.'), 'success');
 
 	 // Modern Success Modal
-	 echo '<div class="db-modal-overlay">
+	 echo '<div class="db-modal-overlay" style="z-index: 999999 !important;">
 	 		<div class="db-modal">
 				<div class="db-modal-header">
 					<div class="db-success-icon">
@@ -637,8 +637,6 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 	unset($_SESSION['Items'.$identifier]->LineItems);
 	unset($_SESSION['Items'.$identifier]);
 	include(__DIR__ . '/includes/footer.php');
-	if (ob_get_length()) ob_flush();
-	flush();
 	exit();
 
 } elseif (isset($OK_to_PROCESS) AND ($OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.$identifier]!=0)) {
@@ -800,8 +798,9 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 	unset($_SESSION['Items'.$identifier]);
 
 	// Modern Success Modal for Updated Orders
-	echo '<div class="db-modal-overlay">
-			<div class="db-modal">
+	echo '<!-- UPDATE_MODAL_START -->';
+	echo '<div class="db-modal-overlay" style="z-index: 999999 !important;">
+	 		<div class="db-modal">
 				<div class="db-modal-header">
 					<div class="db-success-icon" style="background: var(--info-soft); color: var(--info);">
 						<i class="fas fa-sync-alt"></i>
@@ -842,8 +841,6 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 	 </div>';
 
 	include(__DIR__ . '/includes/footer.php');
-	if (ob_get_length()) ob_flush();
-	flush();
 	exit();
 }
 
