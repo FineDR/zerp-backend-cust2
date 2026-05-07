@@ -62,12 +62,13 @@ if (!function_exists('safe')) {
 
         .header-left {
             text-align: left;
-            width: 65%;
+            width: 60%;
         }
 
         .header-right {
             text-align: right;
-            width: 35%;
+            width: 40%;
+            padding-right: 15px;
         }
 
         .logo {
@@ -219,10 +220,13 @@ if (!function_exists('safe')) {
         }
 
         @media print {
-            @page { margin: 1cm; }
+            @page { 
+                margin: 0; 
+                size: auto;
+            }
             body { 
                 margin: 0; 
-                padding: 0;
+                padding: 1.5cm;
                 background: white;
             }
             .actions, .btn-print, .ModuleList, #SidebarToggle, .sidebar-mask, .help-bubble, 
@@ -236,7 +240,7 @@ if (!function_exists('safe')) {
                 margin: 0 !important; 
                 max-width: none !important; 
                 width: 100% !important; 
-                padding: 0 5px !important; 
+                padding: 0 !important; 
                 box-shadow: none;
             }
         }
