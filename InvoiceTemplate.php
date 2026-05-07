@@ -206,6 +206,11 @@ if (!function_exists('safe')) {
 
         .btn-print:hover { background: var(--primary-dark); }
 
+        /* Hide ERP leftovers in screen view for a cleaner standalone document */
+        .breadcrumb, .ScriptTitle, .MainBody > h1:first-child, .quick_menu, .main_menu {
+            display: none !important;
+        }
+
         @media print {
             @page { margin: 0; }
             body { 
