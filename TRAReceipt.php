@@ -46,9 +46,7 @@ $pdf->SetAutoPageBreak(TRUE, 5);
 $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
 
-$font = 'helvetica';
-$font_path = "includes/tcpdf/fonts/sans-i-am-font/SansIAm-24vd.ttf";
-if (file_exists($font_path)) $font = TCPDF_FONTS::addTTFfont($font_path);
+$font = 'courier';
 $pdf->SetFont($font, '', 8.5);
 
 // 1. Company Details
@@ -127,6 +125,7 @@ if ($result_items && mysqli_num_rows($result_items) > 0) {
 $html = '
 <table border="0" cellspacing="0" cellpadding="1" style="width:100%">
     <tr><td colspan="3" align="center">*** START OF LEGAL RECEIPT ***</td></tr>
+    <tr><td colspan="3" align="center"><img src="css/TRAlogo.png" width="120" /></td></tr>
     <tr><td colspan="3" align="center"><b>'.htmlspecialchars($comp_name).'</b></td></tr>
     <tr><td colspan="3" align="center">'.htmlspecialchars($caddress).'</td></tr>
     <tr><td colspan="3" align="center">TEL: '.htmlspecialchars($cmobile).' | TIN: '.htmlspecialchars($ctin).'</td></tr>
