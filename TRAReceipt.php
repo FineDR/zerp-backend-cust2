@@ -47,7 +47,8 @@ $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
 
 $font = 'courier';
-$pdf->SetFont($font, '', 8.5);
+$pdf->SetFont($font, '', 8);
+$pdf->setCellHeightRatio(1.0);
 
 // 1. Company Details
 $sql_comp = mysqli_query($conn, "SELECT coyname, regoffice1, regoffice2, telephone, email FROM companies LIMIT 1");
@@ -123,30 +124,34 @@ if ($result_items && mysqli_num_rows($result_items) > 0) {
 }
 
 $html = '
-<table border="0" cellspacing="0" cellpadding="1" style="width:100%">
+<style>
+    td { line-height: 1.1; }
+    .hr { border-top: 1px dashed #000; height: 1px; line-height: 1px; }
+</style>
+<table border="0" cellspacing="0" cellpadding="0" style="width:100%">
     <tr><td colspan="3" align="center">*** START OF LEGAL RECEIPT ***</td></tr>
-    <tr><td colspan="3" align="center"><img src="' . __DIR__ . '/css/TRAlogo.png" width="50" /></td></tr>
+    <tr><td colspan="3" align="center"><img src="' . __DIR__ . '/css/TRAlogo.png" width="45" /></td></tr>
     <tr><td colspan="3" align="center"><b>'.htmlspecialchars($comp_name).'</b></td></tr>
     <tr><td colspan="3" align="center">'.htmlspecialchars($caddress).'</td></tr>
     <tr><td colspan="3" align="center">TEL: '.htmlspecialchars($cmobile).' | TIN: '.htmlspecialchars($ctin).'</td></tr>
     <tr><td colspan="3" align="center">SERIAL: '.htmlspecialchars($cefdserial).' | UIN: '.htmlspecialchars($cuser).'</td></tr>
-    <tr><td colspan="3">..................................................................</td></tr>
+    <tr><td colspan="3" class="hr"></td></tr>
     <tr><td colspan="3"><b>CUSTOMER:</b> '.htmlspecialchars($cust_name).'</td></tr>
-    <tr><td colspan="3">..................................................................</td></tr>
+    <tr><td colspan="3" class="hr"></td></tr>
     <tr><td colspan="2"><b>RECEIPT NO:</b></td><td align="right">'.htmlspecialchars($rct_rctnum).'</td></tr>
     <tr><td colspan="2"><b>Z NUMBER:</b></td><td align="right">'.htmlspecialchars($z_number).'</td></tr>
     <tr><td colspan="2"><b>DATE:</b></td><td align="right">'.htmlspecialchars($rct_date).' '.date('H:i:s').'</td></tr>
-    <tr><td colspan="3">..................................................................</td></tr>
+    <tr><td colspan="3" class="hr"></td></tr>
     <tr><td><b>Description</b></td><td align="right"><b>Total</b></td><td align="right"><b>Tax</b></td></tr>
     '.$items_html.'
-    <tr><td colspan="3">..................................................................</td></tr>
+    <tr><td colspan="3" class="hr"></td></tr>
     <tr><td>TOTAL EXCL TAX:</td><td colspan="2" align="right">'.number_format($total_net, 2).'</td></tr>
     <tr><td>TOTAL VAT:</td><td colspan="2" align="right">'.number_format($total_vat, 2).'</td></tr>
     <tr><td><b>TOTAL INCL TAX:</b></td><td colspan="2" align="right"><b>'.number_format($total_net + $total_vat, 2).' '.htmlspecialchars($currcode).'</b></td></tr>
-    <tr><td colspan="3">..................................................................</td></tr>';
+    <tr><td colspan="3" class="hr"></td></tr>';
 
 if (!empty($verificationcode)) $html .= '<tr><td colspan="3" align="center"><b>VERIFICATION CODE:</b><br/>'.htmlspecialchars($verificationcode).'</td></tr>';
-if (!empty($filename) && file_exists($filename)) $html .= '<tr><td colspan="3" align="center"><img src="'.htmlspecialchars($filename).'" width="70" height="70" /></td></tr>';
+if (!empty($filename) && file_exists($filename)) $html .= '<tr><td colspan="3" align="center"><img src="'.htmlspecialchars($filename).'" width="60" height="60" /></td></tr>';
 $html .= '<tr><td colspan="3" align="center">*** END OF LEGAL RECEIPT ***</td></tr>
 </table>';
 
