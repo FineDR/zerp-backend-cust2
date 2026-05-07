@@ -32,15 +32,16 @@ if (!function_exists('safe')) {
             font-family: 'Helvetica', 'Arial', sans-serif;
             background: #fff;
             color: var(--slate-900);
-            line-height: 1.3;
+            line-height: 1.2;
             margin: 0;
             padding: 0;
+            font-size: 11px;
         }
 
         .container {
-            max-width: 850px;
-            margin: 20px auto;
-            padding: 30px;
+            max-width: 760px;
+            margin: 15px auto;
+            padding: 15px;
             background: #fff;
         }
 
@@ -48,9 +49,10 @@ if (!function_exists('safe')) {
         .header {
             display: table;
             width: 100%;
+            table-layout: fixed;
             border-bottom: 2px solid var(--primary);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
         }
         .header-left {
             display: table-cell;
@@ -142,10 +144,10 @@ if (!function_exists('safe')) {
         }
 
         th, td {
-            padding: 4px 10px;
+            padding: 3px 8px;
             text-align: left;
             border-bottom: 1px solid var(--slate-50);
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .right { text-align: right; }
@@ -229,7 +231,7 @@ if (!function_exists('safe')) {
                 margin: 0; 
                 max-width: 100%; 
                 width: 100%; 
-                padding: 0 10px; 
+                padding: 0 5px; 
                 box-shadow: none;
             }
         }
@@ -357,7 +359,7 @@ if (!function_exists('safe')) {
     </div>
 </div>
 
-<?php if (!isset($is_pdf) || !$is_pdf): ?>
+<?php if (!isset($_GET['PrintPDF']) || $_GET['PrintPDF'] != 'True'): ?>
 <div class="actions no-print">
     <button class="btn-print" onclick="window.print()">
         Download / Print Document
