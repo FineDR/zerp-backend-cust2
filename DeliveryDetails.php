@@ -1,6 +1,19 @@
 <?php
 /* Used during order entry to allow the entry of delivery addresses other than the defaulted branch delivery address and information about carrier/shipping method etc. */
-error_reporting(E_ALL & ~E_NOTICE);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+/* Add mbstring fallback if not present on server */
+if (!function_exists('mb_strlen')) {
+	function mb_strlen($str) { return strlen($str); }
+}
+if (!function_exists('mb_strpos')) {
+	function mb_strpos($haystack, $needle, $offset = 0) { return strpos($haystack, $needle, $offset); }
+}
+if (!function_exists('mb_substr')) {
+	function mb_substr($str, $start, $length = NULL) { return substr($str, $start, $length); }
+}
 
 /*
 This is where the delivery details are confirmed/entered/modified and the order committed to the database once the place order/modify order button is hit.
@@ -326,6 +339,10 @@ if (isset($_POST['BackToLineDetails']) and $_POST['BackToLineDetails']==__('Modi
 }
 
 if (isset($_POST['ProcessOrder'])) {
+	/* Increase limits for order processing to prevent blank pages on slow servers */
+	@ini_set('memory_limit', '256M');
+	@set_time_limit(120);
+
 	/*Default OK_to_PROCESS to 1 change to 0 later if hit a snag */
 	if ($InputErrors ==0) {
 		$OK_to_PROCESS = 1;
@@ -578,7 +595,7 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 										$FactoryManagerEmail,
 										'',
 										false);
-				} catch (Exception $e) {
+				} catch (Throwable $e) {
 					prnMsg(__('Automated email notification failed: ') . $e->getMessage(), 'error');
 				}
 
