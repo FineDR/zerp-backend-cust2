@@ -590,8 +590,11 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 	 prnMsg(__('Order Number') . ' ' . $OrderNo . ' ' . __('has been recorded successfully.'), 'success');
 
 	 // Modern Success Modal
-	 echo '<script>console.log("ZERP: Success modal injected for Order ' . $OrderNo . '");</script>';
-	 echo '<div class="db-modal-overlay" style="z-index: 999999 !important;">
+	 echo '<script>
+	 	console.log("ZERP: Success modal injected for Order ' . $OrderNo . '");
+		alert("' . __('Order Number') . ' ' . $OrderNo . ' ' . __('has been recorded successfully.') . '");
+	 </script>';
+	 echo '<div class="db-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 9999999 !important;">
 	 		<div class="db-modal">
 				<div class="db-modal-header">
 					<div class="db-success-icon">
@@ -798,8 +801,9 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 	unset($_SESSION['Items'.$identifier]);
 
 	// Modern Success Modal for Updated Orders
+	echo '<script>alert("ZERP: Order ' . $OrderNo . ' update reached");</script>';
 	echo '<!-- UPDATE_MODAL_START -->';
-	echo '<div class="db-modal-overlay" style="z-index: 999999 !important;">
+	echo '<div class="db-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 9999999 !important;">
 	 		<div class="db-modal">
 				<div class="db-modal-header">
 					<div class="db-success-icon" style="background: var(--info-soft); color: var(--info);">
