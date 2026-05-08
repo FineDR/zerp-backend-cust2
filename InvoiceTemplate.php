@@ -28,9 +28,11 @@ if (!function_exists('safe')) {
             --slate-900: #0f172a;
         }
 
+        * { box-sizing: border-box; }
+        
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
-            background: #fff;
+            background: #f1f5f9;
             color: var(--slate-900);
             line-height: 1.3;
             margin: 0;
@@ -39,9 +41,12 @@ if (!function_exists('safe')) {
 
         .container {
             max-width: 850px;
-            margin: 20px auto;
-            padding: 30px;
+            margin: 40px auto;
+            padding: 40px;
             background: #fff;
+            border: 1px solid var(--slate-200);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            position: relative;
         }
 
         /* Header Layout */
@@ -49,8 +54,8 @@ if (!function_exists('safe')) {
             width: 100%;
             table-layout: fixed;
             border-bottom: 2px solid var(--primary);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
             border-collapse: collapse;
         }
 
@@ -68,53 +73,56 @@ if (!function_exists('safe')) {
         .header-right {
             text-align: right;
             width: 40%;
-            padding-right: 15px;
         }
 
         .logo {
-            max-height: 45px;
-            margin-bottom: 5px;
+            max-height: 50px;
+            margin-bottom: 10px;
         }
 
         .document-title {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 900;
             color: var(--primary);
             margin: 0;
             letter-spacing: -1px;
+            line-height: 1;
         }
 
         .doc-meta {
-            font-size: 13px;
-            margin-top: 5px;
+            font-size: 14px;
+            margin-top: 8px;
             font-weight: bold;
+            color: var(--slate-600);
         }
 
         .status-badge {
             display: inline-block;
-            padding: 3px 10px;
+            padding: 4px 12px;
             background: var(--primary-light);
             color: var(--primary);
             border-radius: 50px;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 800;
             text-transform: uppercase;
-            margin-top: 8px;
+            margin-top: 10px;
         }
 
         /* Sections Layout */
         .details-grid {
             width: 100%;
             table-layout: fixed;
-            margin-bottom: 15px;
+            margin-bottom: 25px;
             border-collapse: collapse;
         }
         .details-grid td {
             width: 33.33%;
             vertical-align: top;
-            padding-right: 20px;
+            padding: 0 20px 0 0;
             border: none;
         }
+        .details-grid td:first-child { padding-left: 0; }
+        .details-grid td:last-child { padding-right: 0; }
 
         .label {
             font-size: 10px;
@@ -150,12 +158,17 @@ if (!function_exists('safe')) {
         }
 
         th, td {
-            padding: 4px 10px;
+            padding: 8px 10px;
             text-align: left;
             border-bottom: 1px solid var(--slate-50);
             font-size: 12px;
+            word-wrap: break-word;
         }
 
+        /* Ensure justification at edges */
+        th:first-child, td:first-child { padding-left: 0; }
+        th:last-child, td:last-child { padding-right: 0; }
+        
         .right { text-align: right; }
         .font-bold { font-weight: bold; }
 
@@ -185,8 +198,8 @@ if (!function_exists('safe')) {
         }
 
         .footer {
-            margin-top: 5px;
-            padding-top: 5px;
+            margin-top: 30px;
+            padding-top: 20px;
             border-top: 1px solid var(--slate-200);
             font-size: 9px;
             color: var(--slate-600);
@@ -226,7 +239,7 @@ if (!function_exists('safe')) {
             }
             body { 
                 margin: 0; 
-                padding: 1.5cm;
+                padding: 1.5cm !important;
                 background: white;
             }
             .actions, .btn-print, .ModuleList, #SidebarToggle, .sidebar-mask, .help-bubble, 
@@ -237,11 +250,12 @@ if (!function_exists('safe')) {
                 display: none !important; 
             }
             .container { 
-                margin: 0 !important; 
+                margin: 0 auto !important; 
                 max-width: none !important; 
                 width: 100% !important; 
-                padding: 0 !important; 
+                padding: 20px !important; 
                 box-shadow: none;
+                border: 1px solid var(--slate-200) !important;
             }
         }
     </style>
@@ -288,7 +302,7 @@ if (!function_exists('safe')) {
                 <span class="label">Ship To</span>
                 <div class="value"><?= safe($customer['ship_to']) ?></div>
             </td>
-            <td style="padding-right:0;">
+            <td>
                 <span class="label">Payment Terms</span>
                 <div class="value"><?= safe($invoice['terms']) ?></div>
             </td>
