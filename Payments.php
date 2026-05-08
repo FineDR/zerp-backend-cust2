@@ -114,20 +114,33 @@ if (isset($_POST['CommitBatch']) AND empty($Errors)) {
 					}
 					$PaidInput = !empty($PaidArray) ? '<input type="hidden" name="PaidArray" value="' . base64_encode(serialize($PaidArray)) . '" />' : '';
 
-					echo '<div class="db-page"><div class="db-centered" style="max-width: 600px; margin-top: 50px;"><div class="db-card" style="padding:40px; text-align:center;">';
-					echo '<a href="' . $RootPath . '/PrintCheque.php?ChequeNum=' . $_POST['ChequeNum'] . '&amp;identifier=' . $identifier . '" target="_blank" class="db-btn db-btn-primary">' . __('Print Cheque using pre-printed stationery') . '</a><br /><br />';
-					echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '">
-							<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-							<p>' . __('Has the cheque been printed?') . '</p>' . $PaidInput . '
-							<input type="hidden" name="BankTransRef" value="' . $_POST['BankTransRef'] . '" />
-							<input type="hidden" name="ChequeNum" value="' . $_POST['ChequeNum'] . '" />
-							<input type="hidden" name="CommitBatch" value="' . $_POST['CommitBatch'] . '" />
-							<input type="hidden" name="BankAccount" value="' . $_POST['BankAccount'] . '" />
-							<div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
-								<input type="submit" name="ChequePrinted" class="db-btn db-btn-primary" value="' . __('Yes / Continue') . '" />
-								<input type="submit" name="PaymentCancelled" class="db-btn db-btn-secondary" value="' . __('No / Cancel Payment') . '" />
+					echo '<div class="db-page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; min-height: 60vh;">
+							<div style="max-width: 600px; width: 100%; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
+								<div class="db-card" style="text-align: center; padding: 56px; border: 1px solid #e2e8f0; border-radius: 32px; background: #ffffff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);">
+									<div style="width: 88px; height: 88px; background: #f0f9ff; color: #0369a1; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 32px;">
+										<i class="fas fa-print" style="font-size: 2.5rem;"></i>
+									</div>
+									<h2 style="font-size: 1.75rem; font-weight: 900; color: #064e3b; margin-bottom: 24px;">' . __('Cheque Printing') . '</h2>
+									
+									<a href="' . $RootPath . '/PrintCheque.php?ChequeNum=' . $_POST['ChequeNum'] . '&amp;identifier=' . $identifier . '" target="_blank" class="architect-btn" style="height: 56px; width: 100%; font-size: 1.1rem; border-radius: 16px; margin-bottom: 32px; box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.2);">
+										<i class="fas fa-external-link-alt"></i> ' . __('Open Cheque Preview') . '
+									</a>
+
+									<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '?identifier=' . urlencode($identifier) . '">
+										<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
+										<p style="color: #64748b; font-weight: 600; margin-bottom: 24px;">' . __('Has the cheque been printed correctly?') . '</p>' . $PaidInput . '
+										<input type="hidden" name="BankTransRef" value="' . $_POST['BankTransRef'] . '" />
+										<input type="hidden" name="ChequeNum" value="' . $_POST['ChequeNum'] . '" />
+										<input type="hidden" name="CommitBatch" value="' . $_POST['CommitBatch'] . '" />
+										<input type="hidden" name="BankAccount" value="' . $_POST['BankAccount'] . '" />
+										<div style="display:flex; flex-direction: column; gap:12px;">
+											<button type="submit" name="ChequePrinted" class="architect-btn" style="height: 56px; border-radius: 16px;">' . __('Yes, Continue') . '</button>
+											<button type="submit" name="PaymentCancelled" class="architect-btn danger" style="height: 56px; border-radius: 16px;">' . __('No, Cancel Payment') . '</button>
+										</div>
+									</form>
+								</div>
 							</div>
-						  </form></div></div></div>';
+						  </div>';
 					include(__DIR__ . '/includes/footer.php');
 					exit();
 				}
@@ -239,32 +252,37 @@ if (isset($_POST['CommitBatch']) AND empty($Errors)) {
 				$DisplayPayee = $SRow['suppname'];
 			}
 
-			echo '<div class="db-page"><div class="db-centered" style="max-width: 600px; margin-top: 50px;">
-					<div class="db-card" style="text-align: center; padding: 40px; border: 1px solid var(--border-soft); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);">
-						<div style="width: 80px; height: 80px; background: #ecfdf5; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
-							<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-						</div>
-						<h2 style="font-size: 1.5rem; font-weight: 900; color: var(--primary-dark); margin-bottom: 8px;">' . __('Payment Successfully Recorded') . '</h2>
-						<p style="color: var(--text-muted); margin-bottom: 24px;">' . __('Transaction has been processed and ledger entries created.') . '</p>
-						<div style="background: var(--surface-alt); border-radius: 12px; padding: 20px; margin-bottom: 32px; text-align: left; border: 1px solid var(--border-soft);">
-							<div style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid var(--border-soft); padding-bottom: 8px;">
-								<span style="color: var(--text-muted);">' . __('Payment Reference') . '</span>
-								<span style="font-weight: 700; color: var(--text-main);">#' . $TransNo . '</span>
+			echo '<div class="db-page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; min-height: 60vh;">
+					<div style="max-width: 600px; width: 100%; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
+						<div class="db-card" style="text-align: center; padding: 56px; border: 1px solid #e2e8f0; border-radius: 32px; background: #ffffff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);">
+							<div style="width: 88px; height: 88px; background: #dcfce7; color: #059669; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 32px; box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.15);">
+								<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
 							</div>
-							<div style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid var(--border-soft); padding-bottom: 8px;">
-								<span style="color: var(--text-muted);">' . __('Payee') . '</span>
-								<span style="font-weight: 600; color: var(--text-main);">' . $DisplayPayee . '</span>
+							<h2 style="font-size: 1.75rem; font-weight: 900; color: #064e3b; margin-bottom: 12px; letter-spacing: -0.025em;">' . __('Payment Successfully Recorded') . '</h2>
+							<p style="color: #64748b; font-size: 1.05rem; margin-bottom: 40px; font-weight: 500;">' . __('The transaction has been processed and all ledger entries have been synchronized.') . '</p>
+							
+							<div style="background: #f8fafc; border-radius: 20px; padding: 28px; margin-bottom: 40px; text-align: left; border: 1px solid #e2e8f0;">
+								<div style="display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+									<span style="color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">' . __('Reference') . '</span>
+									<span style="font-weight: 800; color: #1e293b;">#' . $TransNo . '</span>
+								</div>
+								<div style="display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+									<span style="color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">' . __('Payee') . '</span>
+									<span style="font-weight: 700; color: #1e293b;">' . $DisplayPayee . '</span>
+								</div>
+								<div style="display: flex; justify-content: space-between; padding-top: 4px;">
+									<span style="color: #064e3b; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">' . __('Total Amount') . '</span>
+									<span style="font-weight: 950; color: #059669; font-size: 1.5rem; letter-spacing: -0.02em;">' . locale_number_format($DisplayAmount, 2) . ' <span style="font-size: 1rem; opacity: 0.8;">' . $DisplayCurrency . '</span></span>
+								</div>
 							</div>
-							<div style="display: flex; justify-content: space-between; padding-top: 4px;">
-								<span style="color: var(--text-muted); font-weight: 600;">' . __('Total Amount') . '</span>
-								<span style="font-weight: 900; color: var(--primary); font-size: 1.2rem;">' . locale_number_format($DisplayAmount, 2) . ' ' . $DisplayCurrency . '</span>
+							
+							<div style="display: flex; flex-direction: column; gap: 16px;">
+								<a href="' . $RootPath . '/Payments.php?NewPayment=Yes" class="architect-btn" style="height: 56px; font-size: 1rem; width: 100%; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.3);">' . __('Enter another Payment') . '</a>
+								<a href="' . $RootPath . '/index.php" class="architect-btn secondary" style="height: 56px; font-size: 1rem; width: 100%; border-radius: 16px;">' . __('Return to Main Menu') . '</a>
 							</div>
 						</div>
-						<div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
-							<a href="' . $RootPath . '/Payments.php?NewPayment=Yes" class="db-btn db-btn-primary" style="height: 48px; display: flex; align-items: center; justify-content: center; text-decoration:none;">' . __('Enter another Payment') . '</a>
-							<a href="' . $RootPath . '/index.php" class="db-btn" style="height: 48px; display: flex; align-items: center; justify-content: center; text-decoration:none; color: var(--text-muted);">' . __('Return to Menu') . '</a>
-						</div>
-					</div></div></div>';
+					</div>
+				</div>';
 
 			unset($_SESSION['PaymentDetail' . $identifier]);
 			include(__DIR__ . '/includes/footer.php');
@@ -314,8 +332,24 @@ if (isset($_POST['Cancel'])) {
 $allocationTabLabel = $_SESSION['PaymentDetail' . $identifier]->SupplierID ? __('2. Allocation') : __('2. Analysis');
 
 // --- OUTER PAGE & FORM OPEN ---
-echo '<div class="db-page">
-		<div class="db-page-header">
+echo '<div class="db-page">';
+
+echo '<div class="pay-steps">
+		<div class="pay-step-item">
+			<div class="pay-step-dot">1</div>
+			<div class="pay-step-label">' . __('Setup') . '</div>
+		</div>
+		<div class="pay-step-item">
+			<div class="pay-step-dot">2</div>
+			<div class="pay-step-label">' . __('Allocation') . '</div>
+		</div>
+		<div class="pay-step-item">
+			<div class="pay-step-dot">3</div>
+			<div class="pay-step-label">' . __('Review') . '</div>
+		</div>
+	  </div>';
+
+echo '<div class="db-page-header">
 			<div class="db-header-left">
 				<div class="db-page-title">
 					<i class="fas fa-money-check-alt"></i> ' . $PageTitleText . '
@@ -469,20 +503,76 @@ echo '<style>
 		border-collapse: collapse;
 	}
 
+	/* ---- Step Progress Indicator ---- */
+	.pay-steps {
+		display: flex;
+		justify-content: space-between;
+		margin-bottom: 32px;
+		background: #fff;
+		padding: 24px;
+		border-radius: 16px;
+		border: 1px solid #e5e7eb;
+		position: relative;
+	}
+	.pay-step-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		flex: 1;
+		position: relative;
+		z-index: 2;
+	}
+	.pay-step-dot {
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		background: #fff;
+		border: 2px solid #e5e7eb;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 800;
+		font-size: 0.85rem;
+		color: #94a3b8;
+		margin-bottom: 8px;
+		transition: all 0.3s ease;
+	}
+	.pay-step-item.active .pay-step-dot {
+		background: #059669;
+		border-color: #059669;
+		color: #fff;
+		box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+	}
+	.pay-step-label {
+		font-size: 0.65rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		color: #94a3b8;
+		letter-spacing: 0.05em;
+		text-align: center;
+	}
+	.pay-step-item.active .pay-step-label { color: #059669; }
+
+	.pay-steps::before {
+		content: "";
+		position: absolute;
+		top: 40px;
+		left: 10%;
+		right: 10%;
+		height: 2px;
+		background: #f1f5f9;
+		z-index: 1;
+	}
+
     /* ---- Responsive UI ---- */
     @media (max-width: 768px) {
 		.db-page { padding: 16px; }
+		.pay-steps { display: none; } /* Hide steps on mobile for space */
         .pay-summary-bar { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px 20px; }
         .pay-tab-content { padding: 20px; }
         .pay-tabs-nav { 
 			padding: 4px; 
 			justify-content: flex-start; /* Ensure scroll works correctly */
-		}
-        .pay-tab-btn { 
-			flex: 0 0 auto; /* Don\'t grow/shrink to fit, keep min-width */
-			min-width: 130px; 
-			padding: 10px 12px; 
-			font-size: 0.8rem; 
 		}
     }
 </style>
@@ -490,13 +580,24 @@ echo '<style>
 function payShowTab(tabId) {
 	document.querySelectorAll(".pay-tab-content").forEach(function(el){ el.classList.remove("active"); });
 	document.querySelectorAll(".pay-tab-btn").forEach(function(el){ el.classList.remove("active"); });
+	document.querySelectorAll(".pay-step-item").forEach(function(el){ el.classList.remove("active"); });
 	
 	var target = document.getElementById(tabId);
 	if (target) {
 		target.classList.add("active");
 		var btn = document.querySelector(".pay-tab-btn[data-tab=\"" + tabId + "\"]");
 		if (btn) btn.classList.add("active");
-		try { localStorage.setItem("payment_active_tab_v4", tabId); } catch(e) {}
+		
+		// Update Progress Indicator
+		var stepNum = 1;
+		if (tabId === "pay-tab-alloc") stepNum = 2;
+		if (tabId === "pay-tab-gl") stepNum = 2;
+		if (tabId === "pay-tab-finalize") stepNum = 3;
+		
+		var activeStep = document.querySelector(".pay-step-item:nth-child(" + stepNum + ")");
+		if (activeStep) activeStep.classList.add("active");
+
+		try { localStorage.setItem("payment_active_tab_v5", tabId); } catch(e) {}
 		
 		if (tabId === "pay-tab-finalize") {
 			updateFinalSummary();
