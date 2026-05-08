@@ -64,9 +64,9 @@ echo '<style>
 	.rcpt-stat-item { display: flex; flex-direction: column; }
 	.rcpt-stat-label { font-size: 0.65rem; text-transform: uppercase; opacity: 0.7; font-weight: 800; letter-spacing: 0.05em; }
 	.rcpt-stat-value { font-size: 1.1rem; font-weight: 900; }
-</style>
+</style>\';
 
-<script>
+echo \'<script>
 function rcptShowTab(tabId) {
 	document.querySelectorAll(".rcpt-tab-content").forEach(el => el.classList.remove("active"));
 	document.querySelectorAll(".rcpt-tab-btn").forEach(el => el.classList.remove("active"));
@@ -79,9 +79,9 @@ window.addEventListener("load", function() {
 	rcptShowTab(saved);
 });
     function confirmProcess(btn) {
-        if (confirm('<?php echo __('Are you sure you want to process this entire receipt batch?'); ?>')) {
+        if (confirm("' . __('Are you sure you want to process this entire receipt batch?') . '")) {
             btn.disabled = true;
-            btn.innerHTML = '<i class=\"fas fa-spinner fa-spin\"></i> <?php echo __('Processing...'); ?>';
+            btn.innerHTML = \'<i class="fas fa-spinner fa-spin"></i> \' + "' . __('Processing...') . '";
             btn.form.submit();
             return true;
         }
@@ -313,7 +313,6 @@ if (isset($_POST['Process'])){ //user hit submit a new entry to the receipt batc
 }
 
 	unset($_POST['PayeeBankDetail']);
-}
 
 // Summary Bar
 $batchTotal = 0;

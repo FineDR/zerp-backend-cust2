@@ -513,7 +513,7 @@ function payShowTab(tabId) {
 function updateAllocationTotal() {
 	var total = 0;
 	document.querySelectorAll(".allocation-input").forEach(function(input) {
-		total += parseFloat(input.value.replace(/,/g, "")) || 0;
+		total += parseFloat(input.value.replace(/[^-0-9.]/g, "")) || 0;
 	});
 	var ttlDisplay = document.getElementById("ttl");
 	if (ttlDisplay) ttlDisplay.value = total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -523,8 +523,8 @@ function updateAllocationTotal() {
 
 function updateRemaining() {
 	var amtInput = document.getElementById("Amount");
-	var totalAlloc = parseFloat(document.getElementById("ttl")?.value?.replace(/,/g, "")) || 0;
-	var principal = parseFloat(amtInput?.value?.replace(/,/g, "")) || 0;
+	var totalAlloc = parseFloat(document.getElementById("ttl")?.value?.replace(/[^-0-9.]/g, "")) || 0;
+	var principal = parseFloat(amtInput?.value?.replace(/[^-0-9.]/g, "")) || 0;
 	var remaining = principal - totalAlloc;
 	
 	var remDisplay = document.getElementById("remaining-alloc");
@@ -552,17 +552,19 @@ function updateFinalSummary() {
 	document.querySelectorAll(".gl-item-row").forEach(function(row) {
 		hasItems = true;
 		var cells = row.querySelectorAll("td");
-		summaryBody.innerHTML += "<tr><td>" + (cells[2] ? cells[2].innerText : "GL Item") + "</td><td class=\"text-right\">" + (cells[1] ? cells[1].innerText : "0.00") + "</td><td>GL Analysis</td></tr>";
+		var amt = cells[1] ? cells[1].innerText.replace(/[^-0-9.]/g, "") : "0";
+		summaryBody.innerHTML += "<tr><td>" + (cells[2] ? cells[2].innerText : "GL Item") + "</td><td class=\"text-right\">" + (parseFloat(amt) || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + "</td><td>GL Analysis</td></tr>";
 	});
 	
 	// Check Allocations
 	document.querySelectorAll(".allocation-input").forEach(function(input) {
-		var val = parseFloat(input.value) || 0;
+		var val = parseFloat(input.value.replace(/[^-0-9.]/g, "")) || 0;
 		if (val !== 0) {
 			hasItems = true;
 			var row = input.closest("tr");
-			var ref = row.querySelector("td:nth-child(3)").innerText.split("\n")[0];
-			summaryBody.innerHTML += "<tr><td>" + ref + "</td><td class=\"text-right\">" + val.toLocaleString() + "</td><td>Invoice Allocation</td></tr>";
+			var refCell = row ? row.querySelector("td:nth-child(3)") : null;
+			var ref = refCell ? refCell.innerText.split("\n")[0] : "Invoice";
+			summaryBody.innerHTML += "<tr><td>" + ref + "</td><td class=\"text-right\">" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + "</td><td>Invoice Allocation</td></tr>";
 		}
 	});
 	
@@ -576,8 +578,8 @@ function payVerify(amountId, totalId) {
     var ttlInput = document.getElementById(totalId);
     if (!amtInput || !ttlInput) return true;
 
-    var amt = parseFloat(amtInput.value.replace(/,/g, "")) || 0;
-    var ttl = parseFloat(ttlInput.value.replace(/,/g, "")) || 0;
+    var amt = parseFloat(amtInput.value.replace(/[^-0-9.]/g, "")) || 0;
+    var ttl = parseFloat(ttlInput.value.replace(/[^-0-9.]/g, "")) || 0;
 
     if (ttl !== 0 && Math.abs(amt - ttl) > 0.01) {
         if (!confirm("' . __('The principal amount does not match the total allocation. Proceed anyway?') . '")) {
@@ -668,7 +670,7 @@ echo '<div id="pay-tab-header" class="pay-tab-content">
 
 
 
-	<div class="db-alert db-alert-info" style="margin-bottom: var(--space-6); border-radius: var(--radius-lg); padding: var(--space-4); display: flex; align-items: center; gap: 12px;">
+echo '<div class="db-alert db-alert-info" style="margin-bottom: var(--space-6); border-radius: var(--radius-lg); padding: var(--space-4); display: flex; align-items: center; gap: 12px;">
 		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="8"/></svg>
 		<span>' . __('Use this screen to enter payments FROM your bank account. To enter a receipt from a supplier, use a negative payment amount.') . '</span>
 	</div>';

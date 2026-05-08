@@ -12,6 +12,87 @@ include(__DIR__ . '/includes/header.php');
 include(__DIR__ . '/includes/CountriesArray.php');
 include(__DIR__ . '/includes/LanguagesArray.php');
 
+$ExtraHeadContent = '
+<style>
+	.ScriptTitle { display: none !important; }
+	.MainBody { padding: 0 !important; gap: 0 !important; background: transparent !important; }
+	.db-page { padding: 40px 32px; background: #f8fafc; min-height: 100vh; font-family: "Inter", sans-serif; }
+	
+	.premium-header { 
+		margin-bottom: 40px; 
+		padding: 40px;
+		background: #ffffff;
+		border-radius: 24px;
+		border: 1px solid #e2e8f0;
+		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	
+	.db-card {
+		background: #ffffff;
+		border-radius: 20px;
+		border: 1px solid #e2e8f0;
+		box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+		margin-bottom: 32px;
+		overflow: hidden;
+	}
+	.db-card-header {
+		padding: 24px 32px;
+		background: #f8fafc;
+		border-bottom: 1px solid #e2e8f0;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.db-card-title {
+		font-size: 1.1rem;
+		font-weight: 850;
+		color: #1e293b;
+		margin: 0;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+	
+	.architect-btn {
+		display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+		padding: 12px 24px; border-radius: 12px;
+		background: #059669; color: #ffffff !important; border: none;
+		font-weight: 700; font-size: 0.85rem; text-decoration: none;
+		transition: all 0.2s; cursor: pointer;
+	}
+	.architect-btn:hover { background: #047857; transform: translateY(-1px); }
+	.architect-btn.secondary { background: #f1f5f9; color: #475569 !important; }
+	.architect-btn.secondary:hover { background: #e2e8f0; color: #1e293b !important; }
+	.architect-btn.danger { background: #fee2e2; color: #dc2626 !important; }
+	.architect-btn.danger:hover { background: #fecaca; }
+
+	.db-grid { display: grid; gap: 24px; }
+	.db-grid-2 { grid-template-columns: repeat(2, 1fr); }
+	.db-grid-3 { grid-template-columns: repeat(3, 1fr); }
+	
+	.db-field { display: flex; flex-direction: column; gap: 8px; }
+	.db-label { font-size: 0.72rem; text-transform: uppercase; font-weight: 800; color: #64748b; letter-spacing: 0.5px; }
+	.db-input { 
+		width: 100%; border-radius: 10px; height: 48px; 
+		border: 1px solid #e2e8f0; padding: 0 16px; 
+		font-weight: 600; color: #1e293b; transition: all 0.2s;
+	}
+	.db-input:focus { border-color: #059669; box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1); outline: none; }
+	
+	.registry-table { width: 100%; border-collapse: collapse; }
+	.registry-table th { padding: 16px 24px; background: #f8fafc; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; border-bottom: 1px solid #e2e8f0; }
+	.registry-table td { padding: 16px 24px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+	
+	.breadcrumb-item { color: #64748b; text-decoration: none; font-weight: 600; transition: color 0.2s; }
+	.breadcrumb-item:hover { color: #059669; }
+</style>
+';
+
 // Initialize numeric separators from language preferences with global scope
 global $ThousandsSeparator, $DecimalPoint;
 $ThousandsSeparator = $LanguagesArray[$_SESSION['Language']]['ThousandsSeparator'] ?? (isset($_SESSION['DefaultThousandsSeparator']) ? $_SESSION['DefaultThousandsSeparator'] : ',');
@@ -31,18 +112,16 @@ $CustomerName = $Row['name'];
 echo '<div class="db-page">
 		<div class="premium-header">
 			<div>
-				<div style="font-size: 0.72rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; text-transform: lowercase; letter-spacing: 1px;">
-					<a href="index.php" class="breadcrumb-item"><i class="fas fa-home"></i> ' . __('home') . '</a>
-					<i class="fas fa-chevron-right breadcrumb-separator"></i>
-					<a href="SelectCustomer.php" class="breadcrumb-item">' . __('customer search') . '</a>
-					<i class="fas fa-chevron-right breadcrumb-separator"></i>
-					<a href="Customers.php?DebtorNo=' . $DebtorNo . '" class="breadcrumb-item">' . __('maintenance') . '</a>
-					<i class="fas fa-chevron-right breadcrumb-separator"></i>
-					<span style="color: #064e3b; opacity: 0.9;">' . __('customer branches') . '</span>
+				<div style="font-size: 0.75rem; display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+					<a href="index.php" class="breadcrumb-item"><i class="fas fa-home"></i> ' . __('Home') . '</a>
+					<i class="fas fa-chevron-right" style="font-size: 0.6rem; opacity: 0.3;"></i>
+					<a href="SelectCustomer.php" class="breadcrumb-item">' . __('Customers') . '</a>
+					<i class="fas fa-chevron-right" style="font-size: 0.6rem; opacity: 0.3;"></i>
+					<span style="color: #64748b; font-weight: 600;">' . __('Branches') . '</span>
 				</div>
 				<div>
-					<h1 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px; color: #064e3b; margin: 0; line-height: 1;">' . (isset($_GET['SelectedBranch']) ? __('Modify Branch') : __('Branch Registry')) . '</h1>
-					<p style="font-size: 1.1rem; margin-top: 12px; color: #065f46; font-weight: 500; opacity: 0.8;">' . __('Managing delivery points for') . ' <span style="font-weight: 800;">' . htmlspecialchars($CustomerName, ENT_QUOTES, 'UTF-8') . '</span></p>
+					<h1 style="font-size: 2rem; font-weight: 900; color: #1e293b; margin: 0; letter-spacing: -0.5px;">' . (isset($_GET['SelectedBranch']) ? __('Modify Branch') : __('Branch Registry')) . '</h1>
+					<p style="margin: 8px 0 0 0; color: #64748b; font-weight: 500;">' . __('Managing logistics for') . ' <span style="color: #059669; font-weight: 700;">' . htmlspecialchars($CustomerName) . '</span></p>
 				</div>
 			</div>
 			<div class="db-header-actions">
@@ -433,62 +512,63 @@ if (!isset($SelectedBranch)){
 	$Result = DB_query($SQL);
 
 	if (DB_num_rows($Result) > 0) {
-		$MyRow = DB_fetch_row($Result);
 		$TotalEnable = 0;
 		$TotalDisable = 0;
-		echo '<div style="background: #fff; overflow-x: auto;">
+		echo '<div class="db-card">
+				<div class="db-card-header">
+					<h3 class="db-card-title"><i class="fas fa-list-ul"></i> ' . __('Active Branches') . '</h3>
+				</div>
+				<div style="overflow-x: auto;">
 					<table class="registry-table">
 						<thead>
 							<tr>
-								<th>' . __('Branch Code') . '</th>
-								<th>' . __('Branch Name') . '</th>
-								<th>' . __('Authorized Contact') . '</th>
-								<th>' . __('Logistics / Region') . '</th>
-								<th>' . __('Communication') . '</th>
-								<th>' . __('Tax Group') . '</th>
+								<th>' . __('Code') . '</th>
+								<th>' . __('Name') . '</th>
+								<th>' . __('Contact') . '</th>
+								<th>' . __('Sales & Area') . '</th>
+								<th>' . __('Contact Info') . '</th>
 								<th class="text-center">' . __('Status') . '</th>
 								<th style="text-align: right;">' . __('Actions') . '</th>
 							</tr>
 						</thead>
 						<tbody>';
 
-		do {
+		while ($MyRow = DB_fetch_row($Result)) {
 			echo '<tr>
-					<td style="font-weight: 700; color: #064e3b;">' . $MyRow[1] . '</td>
-					<td>' . $MyRow[2] . '</td>
+					<td style="font-weight: 800; color: #1e293b;">' . $MyRow[1] . '</td>
+					<td style="font-weight: 600;">' . $MyRow[2] . '</td>
 					<td>' . $MyRow[5] . '</td>
 					<td>
-						<div style="font-weight: 600;">' . $MyRow[3] . '</div>
-						<div style="font-size: 0.75rem; opacity: 0.6;">' . $MyRow[4] . '</div>
+						<div style="font-weight: 700; color: #059669; font-size: 0.85rem;">' . $MyRow[3] . '</div>
+						<div style="font-size: 0.72rem; color: #64748b;">' . $MyRow[4] . '</div>
 					</td>
 					<td>
 						<div style="font-weight: 600;">' . $MyRow[6] . '</div>
-						<div style="font-size: 0.75rem; color: #059669;"><a href="mailto:' . $MyRow[8] . '">' . $MyRow[8] . '</a></div>
+						<div style="font-size: 0.75rem; color: #059669;"><a href="mailto:' . $MyRow[8] . '" style="text-decoration:none;">' . $MyRow[8] . '</a></div>
 					</td>
-					<td>' . $MyRow[9] . '</td>
 					<td class="text-center">';
 			
 			if ($MyRow[10]) {
-				echo '<span class="badge" style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">' . __('Disabled') . '</span>';
+				echo '<span style="background: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">' . __('Disabled') . '</span>';
 				$TotalDisable++;
 			} else {
-				echo '<span class="badge" style="background: #f0fdf4; color: #059669; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">' . __('Enabled') . '</span>';
+				echo '<span style="background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">' . __('Active') . '</span>';
 				$TotalEnable++;
 			}
 
 			echo '</td>
 					<td style="text-align: right;">
 						<div style="display: flex; gap: 8px; justify-content: flex-end;">
-							<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?DebtorNo=' . $DebtorNo . '&amp;SelectedBranch=' . urlencode($MyRow[1]) . '" class="db-btn db-btn-icon" style="background: #f3f4f6; color: #059669; height: 32px; width: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;" title="' . __('Edit') . '">
-								<i class="fas fa-edit" style="font-size: 0.8rem;"></i>
+							<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?DebtorNo=' . $DebtorNo . '&amp;SelectedBranch=' . urlencode($MyRow[1]) . '" class="architect-btn secondary" style="padding: 8px; min-width: 36px; height: 36px;" title="' . __('Edit') . '">
+								<i class="fas fa-edit"></i>
 							</a>
-							<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?DebtorNo=' . $DebtorNo . '&amp;SelectedBranch=' . urlencode($MyRow[1]) . '&amp;delete=yes" class="db-btn db-btn-icon" style="background: #fef2f2; color: #dc2626; height: 32px; width: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;" title="' . __('Delete') . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this branch?') . '\');">
-								<i class="fas fa-trash-alt" style="font-size: 0.8rem;"></i>
+							<a href="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?DebtorNo=' . $DebtorNo . '&amp;SelectedBranch=' . urlencode($MyRow[1]) . '&amp;delete=yes" class="architect-btn danger" style="padding: 8px; min-width: 36px; height: 36px;" title="' . __('Delete') . '" onclick="return confirm(\'' . __('Are you sure you wish to delete this branch?') . '\');">
+								<i class="fas fa-trash-alt"></i>
 							</a>
 						</div>
 					</td>
 				</tr>';
-		} while ($MyRow = DB_fetch_row($Result));
+		}
 
 		echo '			</tbody>
 						</table>
@@ -610,284 +690,92 @@ if (!isset($_GET['delete'])) {
 		echo '<input type="hidden" name="SelectedBranch" value="' . $SelectedBranch . '" />';
 		echo '<input type="hidden" name="BranchCode" value="' . $_POST['BranchCode'] . '" />';
 
-		echo '<div class="card-v2">
-				<div class="card-header-v2">
-					<h3>
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-						' . __('Change Branch Details') . ': ' . $SelectedBranch . '
-					</h3>
-				</div>
-				<div class="db-card-body">
-					<div class="db-grid db-grid-2">
-						<div class="db-field">
-							<label class="db-label">' . __('Branch Code') . '</label>
-							<input type="text" class="db-input" value="' . $_POST['BranchCode'] . '" disabled />
-						</div>';
+	echo '<div class="db-card" style="margin-top: 32px;">
+			<div class="db-card-header">
+				<h3 class="db-card-title"><i class="fas fa-edit"></i> ' . (isset($SelectedBranch) ? __('Modify Branch Details') : __('Register New Branch')) . '</h3>
+			</div>
+			<div class="db-card-body">
+				<input type="hidden" name="DebtorNo" value="'. $DebtorNo . '" />';
 
-	} else {//end of if $SelectedBranch only do the else when a new record is being entered
-
-		if (isset($_GET['BranchCode'])){
-			$SQL="SELECT name, address1, address2, address3, address4, address5, address6
-					FROM debtorsmaster WHERE debtorno='".$_GET['BranchCode']."'";
-			$Result = DB_query($SQL);
-			$MyRow = DB_fetch_array($Result);
-			$_POST['BranchCode'] = $_GET['BranchCode'];
-			$_POST['BrName'] = $MyRow['name'];
-		 	$_POST['BrAddress1'] = $MyRow['address1'];
-			$_POST['BrAddress2'] = $MyRow['address2'];
-			$_POST['BrAddress3'] = $MyRow['address3'];
-		 	$_POST['BrAddress4'] = $MyRow['address4'];
-			$_POST['BrAddress5'] = $MyRow['address5'];
-			$_POST['BrAddress6'] = $MyRow['address6'];
-		}
-		if (!isset($_POST['BranchCode'])) {
-			$_POST['BranchCode']='';
-		}
-		echo '<div class="card-v2">
-				<div class="card-header-v2">
-					<h3>
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:8px; color:var(--primary);"><path d="M12 5v14M5 12h14"></path></svg>
-						' . __('Create New Branch') . '
-					</h3>
-				</div>
-				<div class="db-card-body">
-					<div class="db-grid db-grid-2">
-						<div class="db-field">
-							<label class="db-label">' . __('Branch Code') . '</label>
-							<input tabindex="1" type="text" name="BranchCode" required="required" placeholder="'.__('alpha-numeric').'" class="db-input" maxlength="10" value="' . $_POST['BranchCode'] . '" />
-							<p class="db-field-help">'.__('Up to 10 characters. Avoid special characters.') . '</p>
-						</div>';
-		$_POST['DeliverBlind'] = $_SESSION['DefaultBlindPackNote'];
+	if (isset($SelectedBranch)) {
+		echo '<input type="hidden" name="SelectedBranch" value="' . $SelectedBranch . '" />';
+		echo '<input type="hidden" name="BranchCode" value="' . $_POST['BranchCode'] . '" />';
 	}
 
-	echo '<input type="hidden" name="DebtorNo" value="'. $DebtorNo . '" />';
+	echo '<div class="db-grid db-grid-3" style="margin-bottom: 32px;">';
+	
+	if (!isset($SelectedBranch)) {
+		echo '<div class="db-field">
+				<label class="db-label">' . __('Branch Code') . '</label>
+				<input tabindex="1" type="text" name="BranchCode" required="required" placeholder="'.__('e.g. BR001').'" class="db-input" maxlength="10" value="' . ($_POST['BranchCode'] ?? '') . '" />
+			  </div>';
+	} else {
+		echo '<div class="db-field">
+				<label class="db-label">' . __('Branch Code') . '</label>
+				<input type="text" class="db-input" value="' . $_POST['BranchCode'] . '" disabled style="background:#f1f5f9;" />
+			  </div>';
+	}
 
 	echo '<div class="db-field">
 			<label class="db-label">', __('Branch Name'), '</label>
-			<input tabindex="2" type="text" autofocus="autofocus" required="required" name="BrName" class="db-input" maxlength="40" value="'. $_POST['BrName'].'" />
+			<input tabindex="2" type="text" autofocus="autofocus" required="required" name="BrName" class="db-input" maxlength="40" value="'. ($_POST['BrName'] ?? '').'" />
 		</div>
 		<div class="db-field">
-			<label class="db-label">' . __('Branch Contact Name') . '</label>
-			<input tabindex="3" type="text" name="ContactName" required="required" class="db-input" maxlength="40" value="'. $_POST['ContactName'].'" />
+			<label class="db-label">' . __('Contact Person') . '</label>
+			<input tabindex="3" type="text" name="ContactName" required="required" class="db-input" maxlength="40" value="'. ($_POST['ContactName'] ?? '').'" />
 		</div>
-	</div>'; // End top grid
+	</div>
 
-	echo '<hr style="margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--border-color);" />';
-
-	echo '<div class="db-grid db-grid-2">
+	<div style="padding: 24px; background: #f8fafc; border-radius: 16px; margin-bottom: 32px;">
+		<h4 style="margin: 0 0 20px 0; font-size: 0.85rem; text-transform: uppercase; color: #64748b; letter-spacing: 1px;"><i class="fas fa-map-marked-alt" style="margin-right:8px;"></i>' . __('Logistics & Delivery Address') . '</h4>
+		<div class="db-grid db-grid-2">
 			<div class="db-field">
-				<label class="db-label">' . __('Street Address') . '</label>
-				<input tabindex="4" type="text" name="BrAddress1" class="db-input" maxlength="40" placeholder="' . __('Line 1') . '" value="'. $_POST['BrAddress1'].'" /><br />
-
-				<input tabindex="5" type="text" name="BrAddress2" class="db-input" maxlength="40" placeholder="' . __('Line 2') . '" value="'. $_POST['BrAddress2'].'" style="margin-top: 8px;" />
+				<label class="db-label">' . __('Physical Address') . '</label>
+				<input tabindex="4" type="text" name="BrAddress1" class="db-input" maxlength="40" placeholder="' . __('Street / Building') . '" value="'. ($_POST['BrAddress1'] ?? '').'" />
+				<input tabindex="5" type="text" name="BrAddress2" class="db-input" maxlength="40" placeholder="' . __('Area / Plot') . '" value="'. ($_POST['BrAddress2'] ?? '').'" style="margin-top: 8px;" />
 			</div>
-
 			<div class="db-grid db-grid-2">
 				<div class="db-field">
-					<label class="db-label">' . __('City / Suburb') . '</label>
-					<input tabindex="6" type="text" name="BrAddress3" class="db-input" maxlength="40" value="'. $_POST['BrAddress3'].'" />
+					<label class="db-label">' . __('City') . '</label>
+					<input tabindex="6" type="text" name="BrAddress3" class="db-input" maxlength="40" value="'. ($_POST['BrAddress3'] ?? '').'" />
 				</div>
-
 				<div class="db-field">
-					<label class="db-label">' . __('Province / State') . '</label>
-					<input tabindex="7" type="text" name="BrAddress4" class="db-input" maxlength="50" value="'. $_POST['BrAddress4'].'" />
+					<label class="db-label">' . __('Region / State') . '</label>
+					<input tabindex="7" type="text" name="BrAddress4" class="db-input" maxlength="50" value="'. ($_POST['BrAddress4'] ?? '').'" />
 				</div>
 			</div>
+		</div>
+	</div>
 
-			<div class="db-grid db-grid-2">
-				<div class="db-field">
-					<label class="db-label">' . __('Postal Code') . '</label>
-					<input tabindex="8" type="text" name="BrAddress5" class="db-input" maxlength="20" value="'. $_POST['BrAddress5'].'" />
-				</div>
-
-				<div class="db-field">
-					<label class="db-label">' . __('Country') . '</label>
-					<select name="BrAddress6" class="db-input">';
-	foreach ($CountriesArray as $CountryEntry => $CountryName){
-		$sel = (isset($_POST['BrAddress6']) AND ($_POST['BrAddress6'] == $CountryName)) ? 'selected="selected"' : '';
-		echo '<option ' . $sel . ' value="' . $CountryName . '">' . $CountryName . '</option>';
-	}
-	echo '			</select>
-				</div>
-			</div>';
-
-	echo '<hr style="margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--border-color);" />';
-
-	echo '<div class="db-grid db-grid-3">
-			<div class="db-field">
-				<label class="db-label">' . __('Special Instructions') . '</label>
-				<input tabindex="10" type="text" name="SpecialInstructions" class="db-input" value="'. $_POST['SpecialInstructions'].'" />
-			</div>
-
-			<div class="db-field">
-				<label class="db-label">' . __('Days to Deliver') . '</label>
-				<input tabindex="11" type="text" name="EstDeliveryDays" class="db-input db-number" maxlength="2" value="'. $_POST['EstDeliveryDays'].'" />
-			</div>
-
-			<div class="db-field">
-				<label class="db-label">' . __('Forward Date Day') . '</label>
-				<input tabindex="12" type="text" name="FwdDate" class="db-input db-number" maxlength="2" value="'. $_POST['FwdDate'].'" />
-				<p class="db-field-help">' . __('Day of month') . '</p>
-			</div>
-		</div>';
-
-	if ($_SESSION['SalesmanLogin'] !=  '') {
-		echo '<field>
-				<label for="Salesman">' . __('Salesperson').':</label>
-				<fieldtext>', $_SESSION['UsersRealName'], '</fieldtext>
-			</field>';
-	} else {
-
-		//SQL to poulate account selection boxes
-		$SQL = "SELECT salesmanname,
-						salesmancode
-				FROM salesman
-				WHERE current = 1
-				ORDER BY salesmanname";
-
-		$Result = DB_query($SQL);
-
-		if (DB_num_rows($Result)==0){
-			echo '</fieldset>';
-			prnMsg(__('There are no sales people defined as yet') . ' - ' . __('customer branches must be allocated to a sales person') . '. ' . __('Please use the link below to define at least one sales person'),'error');
-			echo '<p align="center"><a href="' . $RootPath . '/SalesPeople.php">' . __('Define Sales People') . '</a>';
-			include(__DIR__ . '/includes/footer.php');
-			exit();
-		}
-	} 
-
-
-	echo '<hr style="margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--border-color);" />';
-
-	echo '<div class="db-grid db-grid-3">';
-
-	if ($_SESSION['SalesmanLogin'] !=  '') {
-		echo '<div class="db-field">
-				<label class="db-label">' . __('Salesperson') . '</label>
-				<input type="text" class="db-input" value="' . $_SESSION['UsersRealName'] . '" disabled />
-			</div>';
-	} else {
-		echo '<div class="db-field">
-				<label class="db-label">' . __('Salesperson') . '</label>
-				<select tabindex="13" name="Salesman" class="db-input">';
-		$Result = DB_query("SELECT salesmanname, salesmancode FROM salesman");
-		while ($myr = DB_fetch_array($Result)) {
-			$sel = ($_POST['Salesman'] == $myr['salesmancode']) ? 'selected="selected"' : '';
-			echo '<option ' . $sel . ' value="' . $myr['salesmancode'] . '">' . $myr['salesmanname'] . '</option>';
-		}
-		echo '</select></div>';
-	}
-
-	echo '<div class="db-field">
-			<label class="db-label">' . __('Sales Area') . '</label>
-			<select tabindex="14" name="Area" class="db-input">';
-	$Result = DB_query("SELECT areadescription, areacode FROM areas");
-	while ($myr = DB_fetch_array($Result)) {
-		$sel = ($_POST['Area'] == $myr['areacode']) ? 'selected="selected"' : '';
-		echo '<option ' . $sel . ' value="' . $myr['areacode'] . '">' . $myr['areadescription'] . '</option>';
-	}
-	echo '</select></div>';
-
-	echo '<div class="db-field">
-			<label class="db-label">' . __('Stock Location') . '</label>
+	<div class="db-grid db-grid-3" style="margin-bottom: 32px;">
+		<div class="db-field">
+			<label class="db-label">' . __('Communication (Phone)') . '</label>
+			<input tabindex="16" type="tel" name="PhoneNo" class="db-input" maxlength="25" value="'. ($_POST['PhoneNo'] ?? '').'" />
+		</div>
+		<div class="db-field">
+			<label class="db-label">' . __('Email Address') . '</label>
+			<input tabindex="18" type="email" name="Email" class="db-input" maxlength="55" value="'. ($_POST['Email'] ?? '').'" />
+		</div>
+		<div class="db-field">
+			<label class="db-label">' . __('Stock Source Location') . '</label>
 			<select tabindex="15" name="DefaultLocation" class="db-input">';
 	$Result = DB_query("SELECT locationname, loccode FROM locations");
 	while ($myr = DB_fetch_array($Result)) {
-		$sel = ($_POST['DefaultLocation'] == $myr['loccode']) ? 'selected="selected"' : '';
+		$sel = (isset($_POST['DefaultLocation']) && $_POST['DefaultLocation'] == $myr['loccode']) ? 'selected="selected"' : '';
 		echo '<option ' . $sel . ' value="' . $myr['loccode'] . '">' . $myr['locationname'] . '</option>';
 	}
-	echo '</select></div></div>';
+	echo '</select></div>
+	</div>
 
-	echo '<hr style="margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--border-color);" />';
-
-	echo '<div class="db-grid db-grid-3">
-			<div class="db-field">
-				<label class="db-label">' . __('Phone Number') . '</label>
-				<input tabindex="16" type="tel" name="PhoneNo" class="db-input" maxlength="25" value="'. $_POST['PhoneNo'].'" />
-			</div>
-			<div class="db-field">
-				<label class="db-label">' . __('Fax Number') . '</label>
-				<input tabindex="17" type="tel" name="FaxNo" class="db-input" maxlength="25" value="'. $_POST['FaxNo'].'" />
-			</div>
-			<div class="db-field">
-				<label class="db-label">' . __('Email Address') . '</label>
-				<input tabindex="18" type="email" name="Email" class="db-input" maxlength="55" value="'. $_POST['Email'].'" />
-			</div>
-		</div>';
-
-	DB_data_seek($Result,0);
-
-	echo '<hr style="margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--border-color);" />';
-
-	echo '<div class="db-grid db-grid-2">
-			<div class="db-field">
-				<label class="db-label">' . __('Tax Group') . '</label>
-				<select tabindex="19" name="TaxGroup" class="db-input">';
-	$Result = DB_query("SELECT taxgroupid, taxgroupdescription FROM taxgroups");
-	while ($myr = DB_fetch_array($Result)) {
-		$sel = ($_POST['TaxGroup'] == $myr['taxgroupid']) ? 'selected="selected"' : '';
-		echo '<option ' . $sel . ' value="' . $myr['taxgroupid'] . '">' . $myr['taxgroupdescription'] . '</option>';
-	}
-	echo '			</select>
-			</div>
-			<div class="db-field">
-				<label class="db-label">' . __('Branch Status') . '</label>
-				<select tabindex="20" name="DisableTrans" class="db-input">
-					<option ' . ($_POST['DisableTrans']==0 ? 'selected="selected"' : '') . ' value="0">' . __('Enabled') . '</option>
-					<option ' . ($_POST['DisableTrans']==1 ? 'selected="selected"' : '') . ' value="1">' . __('Disabled') . '</option>
-				</select>
-			</div>
-		</div>
-		<div class="db-grid db-grid-2">
-			<div class="db-field">
-				<label class="db-label">' . __('Freight Shipper') . '</label>
-				<select tabindex="21" name="DefaultShipVia" class="db-input">';
-	$Result = DB_query("SELECT shipper_id, shippername FROM shippers");
-	while ($myr = DB_fetch_array($Result)) {
-		$sel = ($_POST['DefaultShipVia'] == $myr['shipper_id']) ? 'selected="selected"' : '';
-		echo '<option ' . $sel . ' value="' . $myr['shipper_id'] . '">' . $myr['shippername'] . '</option>';
-	}
-	echo '			</select>
-			</div>
-			<div class="db-field">
-				<label class="db-label">' . __('Default Packlist Type') . '</label>
-				<select tabindex="22" name="DeliverBlind" class="db-input">
-					<option ' . ($_POST['DeliverBlind']==1 ? 'selected="selected"' : '') . ' value="1">' . __('Show Company Details') . '</option>
-					<option ' . ($_POST['DeliverBlind']==2 ? 'selected="selected"' : '') . ' value="2">' . __('Hide Company Details') . '</option>
-				</select>
-			</div>
-		</div>';
-
-	echo '<hr style="margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--border-color);" />';
-
-	echo '<div class="db-grid db-grid-2">
-			<div class="db-field">
-				<label class="db-label">' . __('Postal Address') . '</label>
-				<input tabindex="23" type="text" name="BrPostAddr1" class="db-input" maxlength="40" placeholder="' . __('Line 1') . '" value="'. $_POST['BrPostAddr1'].'" />
-				<input tabindex="24" type="text" name="BrPostAddr2" class="db-input" maxlength="40" placeholder="' . __('Line 2') . '" value="'. $_POST['BrPostAddr2'].'" style="margin-top: 8px;" />
-				<input tabindex="25" type="text" name="BrPostAddr3" class="db-input" maxlength="40" placeholder="' . __('Province / State') . '" value="'. $_POST['BrPostAddr3'].'" style="margin-top: 8px;" />
-				<input tabindex="26" type="text" name="BrPostAddr4" class="db-input" maxlength="40" placeholder="' . __('Postal Code') . '" value="'. $_POST['BrPostAddr4'].'" style="margin-top: 8px;" />
-				<input tabindex="27" type="text" name="BrPostAddr5" class="db-input" maxlength="20" placeholder="' . __('Country (Optional)') . '" value="'. $_POST['BrPostAddr5'].'" style="margin-top: 8px;" />
-			</div>
-			<div class="db-field">
-				<label class="db-label">' . __('Internal Branch Code (EDI)') . '</label>
-				<input tabindex="28" type="text" name="CustBranchCode" class="db-input" maxlength="30" value="'. $_POST['CustBranchCode'].'" />
-				<p class="db-field-help">' . __('For electronic data interchange purposes') . '</p>
-			</div>
-		</div>
-	</div>'; // End db-card-body
-
-	echo '<div class="db-card-actions" style="justify-content: center; padding: 32px; background: #f9fafb; border-top: 1px solid #f3f4f6; gap: 16px;">
-			<button type="submit" name="submit" class="architect-btn" style="width: 240px; height: 48px;">
-				<i class="fas fa-check-circle" style="margin-right: 10px;"></i>
-				' . __('Save Branch Details') . '
-			</button>
-			<button type="reset" class="architect-btn secondary" style="width: 140px; height: 48px;">
-				<i class="fas fa-undo" style="margin-right: 10px;"></i>
-				' . __('Reset') . '
-			</button>
-		</div>
-	</div>'; // End card-v2
+	<div style="display: flex; gap: 16px; padding: 32px; background: #f8fafc; border-top: 1px solid #e2e8f0; justify-content: center;">
+		<button type="submit" name="submit" class="architect-btn" style="min-width: 200px;">
+			<i class="fas fa-save"></i> ' . __('Commit Branch Details') . '
+		</button>
+		<button type="reset" class="architect-btn secondary" style="min-width: 120px;">
+			<i class="fas fa-undo"></i> ' . __('Reset') . '
+		</button>
+	</div>
+</div>';
 
 	echo '</form>';
 }
