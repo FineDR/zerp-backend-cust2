@@ -396,6 +396,7 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 	DB_Txn_Begin();
 
 	$OrderNo = GetNextTransNo(30);
+echo "Hello World line 399". $OrderNo;exit;
 
 	$HeaderSQL = "INSERT INTO salesorders (
 								orderno,
@@ -465,7 +466,6 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 											poline,
 											itemdue)
 										VALUES (";
-echo "Hello World line 468". $StartOf_LineItemsSQL;exit;
 	foreach ($_SESSION['Items'.$identifier]->LineItems as $StockItem) {
 
 		$LineItemsSQL = $StartOf_LineItemsSQL ."
