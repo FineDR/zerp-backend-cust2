@@ -3,7 +3,7 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-
+echo "Hello World";exit;
 /* Add mbstring fallback if not present on server */
 if (!function_exists('mb_strlen')) {
 	function mb_strlen($str) { return strlen($str); }
