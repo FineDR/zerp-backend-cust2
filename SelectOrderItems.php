@@ -176,7 +176,7 @@ if (isset($_GET['ModifyOrderNumber'])) {
 	$Title = __('Select Order Items');
 }
 $ViewTopic = 'SalesOrders';
-$ExtraHeadContent = '<link rel="stylesheet" href="' . $RootPath . '/css/modern-zerp/styles.css?version=1.7">
+$ExtraHeadContent = '<link rel="stylesheet" href="' . $RootPath . '/css/modern-zerp/styles.css?version=1.8">
 					<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 					<script src="' . $RootPath . '/javascripts/SelectOrderItems.js"></script>';
 include(__DIR__ . '/includes/header.php');

@@ -188,30 +188,17 @@ $html = '
     <!-- 8. QR & Verification Section (At the Bottom) -->';
 
 if (!empty($verificationcode)) {
+    // 8.1 Verification Details
     $html .= '<tr><td align="center" class="qr-space">
         Verification Code:<br/><b>'.htmlspecialchars($verificationcode).'</b><br/><br/>';
     
-    // Resolve absolute path for QR Code image
-    $qr_path = $filename;
-    if (!empty($qr_path) && !file_exists($qr_path)) {
-        $qr_path = __DIR__ . '/' . $qr_path;
-    }
-
-    if (!empty($qr_path) && file_exists($qr_path)) {
-        $html .= '<img src="'.htmlspecialchars($qr_path).'" width="60" /><br/>';
-    }
-    
     $html .= '</td></tr>';
-} elseif (!empty($filename)) {
-    // Fallback if only QR path exists
-    $qr_path = $filename;
-    if (!file_exists($qr_path)) {
-        $qr_path = __DIR__ . '/' . $qr_path;
-    }
-    if (file_exists($qr_path)) {
-        $html .= '<tr><td align="center" class="qr-space"><img src="'.htmlspecialchars($qr_path).'" width="60" /></td></tr>';
-    }
 }
+
+$qr_data = !empty($verificationcode) ? $verificationcode : "FISCAL-RECEIPT-".$invoice_no;
+/* QR Code is now rendered directly via $pdf->write2DBarcode below */
+
+
 
 $html .= '
     <!-- 9. Legal Footer -->
@@ -221,6 +208,14 @@ $html .= '
 
 $pdf->AddPage();
 $pdf->writeHTML($html, true, false, true, false, '');
+
+// 10. Direct Barcode Rendering (More reliable than HTML tag)
+$y = $pdf->GetY();
+if ($y > 210) { // If near bottom, add new page
+    $pdf->AddPage();
+    $y = 10;
+}
+$pdf->write2DBarcode($qr_data, 'QRCODE,L', 14, $y + 5, 30, 30, array('border'=>false), 'N');
 
 // Clean output buffer before sending headers
 if (ob_get_length()) ob_end_clean();

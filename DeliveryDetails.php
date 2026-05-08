@@ -14,6 +14,8 @@ require(__DIR__ . '/includes/session.php');
 $Title = __('Order Delivery Details');// Screen identification.
 $ViewTopic = 'SalesOrders';// Filename's id in ManualContents.php's TOC.
 $BookMark = 'DeliveryDetails';// Anchor's id in the manual's html document.
+$ExtraHeadContent = '<link rel="stylesheet" href="' . $RootPath . '/css/modern-zerp/styles.css?version=1.8">
+					<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">';
 include(__DIR__ . '/includes/header.php');
 
 /* Redundant date conversion removed to prevent double-formatting issues with modern inputs */
