@@ -450,11 +450,11 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 								'" . (int)$_SESSION['Items'.$identifier]->Quotation . "',
 								'" . (int)$_SESSION['Items'.$identifier]->DeliverBlind ."'
 								)";
+echo "Hello World line 453";exit;
 
 	$ErrMsg = __('The order cannot be added because');
 	$InsertQryResult = DB_query($HeaderSQL, $ErrMsg);
-echo "Hello World line 456";exit;
-
+	
 	$StartOf_LineItemsSQL = "INSERT INTO salesorderdetails (
 											orderlineno,
 											orderno,
