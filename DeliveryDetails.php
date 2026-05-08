@@ -452,9 +452,9 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 								)";
 
 	$ErrMsg = __('The order cannot be added because');
+echo "Hello World line 457.".$HeaderSQL;exit;
 
 	$InsertQryResult = DB_query($HeaderSQL, $ErrMsg);
-echo "Hello World line 457";exit;
 	
 	$StartOf_LineItemsSQL = "INSERT INTO salesorderdetails (
 											orderlineno,
