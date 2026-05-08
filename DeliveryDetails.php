@@ -211,7 +211,6 @@ if (isset($_POST['Update'])
 				FROM custbranch
 				WHERE custbranch.branchcode='" . $_SESSION['Items'.$identifier]->Branch . "'
 				AND custbranch.debtorno = '" . $_SESSION['Items'.$identifier]->DebtorNo . "'";
-echo "Hello World line 214". $SQL;exit;
 
 		$ErrMsg = __('The customer branch record of the customer selected') . ': ' . $_SESSION['Items'.$identifier]->CustomerName . ' ' . __('cannot be retrieved because');
 		$Result = DB_query($SQL, $ErrMsg);
@@ -319,6 +318,7 @@ echo "Hello World line 214". $SQL;exit;
 		}
 	}
 }
+echo "Hello World line 321";exit;
 
 if (isset($_POST['MakeRecurringOrder']) AND ! $InputErrors) {
 
