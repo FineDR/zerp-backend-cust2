@@ -318,7 +318,6 @@ if (isset($_POST['Update'])
 		}
 	}
 }
-echo "Hello World line 321";exit;
 
 if (isset($_POST['MakeRecurringOrder']) AND ! $InputErrors) {
 
@@ -602,6 +601,7 @@ if (isset($OK_to_PROCESS) AND $OK_to_PROCESS == 1 AND $_SESSION['ExistingOrder'.
 			}//end if with this sales order there is a shortfall of stock - need to create the WO
 		}//end if auto create WOs in on
 	} /* end inserted line items into sales order details */
+echo "Hello World line 605";exit;
 
 	 DB_Txn_Commit();
 	 
