@@ -252,33 +252,33 @@ if (isset($_POST['CommitBatch']) AND empty($Errors)) {
 				$DisplayPayee = $SRow['suppname'];
 			}
 
-			echo '<div id="success-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px;">
-					<div style="max-width: 600px; width: 100%; animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
-						<div class="db-card" style="text-align: center; padding: 56px; border: 1px solid #e2e8f0; border-radius: 32px; background: #ffffff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
-							<div style="width: 88px; height: 88px; background: #dcfce7; color: #059669; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 32px; box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.15);">
-								<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+			echo '<div id="success-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 24px;">
+					<div style="max-width: 500px; width: 100%; animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+						<div style="text-align: center; padding: 48px; border-radius: 24px; background: #ffffff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative; overflow: hidden;">
+							<div style="width: 80px; height: 80px; background: #dcfce7; color: #059669; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.2);">
+								<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
 							</div>
-							<h2 style="font-size: 1.75rem; font-weight: 900; color: #064e3b; margin-bottom: 12px; letter-spacing: -0.025em;">' . __('Payment Successfully Recorded') . '</h2>
-							<p style="color: #64748b; font-size: 1.05rem; margin-bottom: 40px; font-weight: 500;">' . __('The transaction has been processed and all ledger entries have been synchronized.') . '</p>
+							<div style="font-size: 1.5rem; font-weight: 900; color: #064e3b; margin-bottom: 12px; letter-spacing: -0.025em; line-height: 1.2; background: transparent; padding: 0; border: none;">' . __('Payment Successfully Recorded') . '</div>
+							<div style="color: #64748b; font-size: 1rem; margin-bottom: 32px; font-weight: 500; line-height: 1.5;">' . __('The transaction has been processed and all ledger entries have been synchronized.') . '</div>
 							
-							<div style="background: #f8fafc; border-radius: 20px; padding: 28px; margin-bottom: 40px; text-align: left; border: 1px solid #e2e8f0;">
-								<div style="display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
-									<span style="color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">' . __('Reference') . '</span>
-									<span style="font-weight: 800; color: #1e293b;">#' . $TransNo . '</span>
+							<div style="background: #f8fafc; border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: left; border: 1px solid #e2e8f0;">
+								<div style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 12px;">
+									<span style="color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase;">' . __('Reference') . '</span>
+									<span style="font-weight: 800; color: #0f172a;">#' . $TransNo . '</span>
 								</div>
-								<div style="display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
-									<span style="color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">' . __('Payee') . '</span>
-									<span style="font-weight: 700; color: #1e293b;">' . $DisplayPayee . '</span>
+								<div style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 12px;">
+									<span style="color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase;">' . __('Payee') . '</span>
+									<span style="font-weight: 700; color: #0f172a;">' . $DisplayPayee . '</span>
 								</div>
 								<div style="display: flex; justify-content: space-between; padding-top: 4px;">
-									<span style="color: #064e3b; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">' . __('Total Amount') . '</span>
-									<span style="font-weight: 950; color: #059669; font-size: 1.5rem; letter-spacing: -0.02em;">' . locale_number_format($DisplayAmount, 2) . ' <span style="font-size: 1rem; opacity: 0.8;">' . $DisplayCurrency . '</span></span>
+									<span style="color: #064e3b; font-weight: 800; font-size: 0.9rem; text-transform: uppercase;">' . __('Amount') . '</span>
+									<span style="font-weight: 900; color: #059669; font-size: 1.3rem;">' . locale_number_format($DisplayAmount, 2) . ' <span style="font-size: 0.9rem; opacity: 0.8;">' . $DisplayCurrency . '</span></span>
 								</div>
 							</div>
 							
-							<div style="display: flex; flex-direction: column; gap: 16px;">
-								<button type="button" onclick="window.close()" class="db-btn db-btn-primary" style="height: 56px; font-size: 1.1rem; width: 100%; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.3);"><i class="fas fa-times-circle" style="margin-right: 8px;"></i>' . __('Close Window') . '</button>
-								<button type="button" onclick="document.getElementById(\'success-modal-overlay\').style.display=\'none\'" class="db-btn db-btn-secondary" style="height: 56px; font-size: 1rem; width: 100%; border-radius: 16px;">' . __('Enter another Payment') . '</button>
+							<div style="display: flex; gap: 16px;">
+								<button type="button" onclick="window.close()" class="db-btn db-btn-primary" style="flex: 1; height: 50px; font-size: 1rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.3);"><i class="fas fa-times" style="margin-right: 8px;"></i>' . __('Close') . '</button>
+								<button type="button" onclick="document.getElementById(\'success-modal-overlay\').style.display=\'none\'" class="db-btn db-btn-secondary" style="flex: 1; height: 50px; font-size: 1rem; border-radius: 12px; background: #f1f5f9; color: #475569; border: none;">' . __('New Payment') . '</button>
 							</div>
 						</div>
 					</div>
@@ -680,14 +680,15 @@ function updateFinalSummary() {
 function payVerify(amountId, totalId) {
     var amtInput = document.getElementById(amountId);
     var ttlInput = document.getElementById(totalId);
-    if (!amtInput || !ttlInput) return true;
 
-    var amt = parseFloat(amtInput.value.replace(/[^-0-9.]/g, "")) || 0;
-    var ttl = parseFloat(ttlInput.value.replace(/[^-0-9.]/g, "")) || 0;
+    if (amtInput && ttlInput) {
+        var amt = parseFloat(amtInput.value.replace(/[^-0-9.]/g, "")) || 0;
+        var ttl = parseFloat(ttlInput.value.replace(/[^-0-9.]/g, "")) || 0;
 
-    if (ttl !== 0 && Math.abs(amt - ttl) > 0.01) {
-        if (!confirm("' . __('The principal amount does not match the total allocation. Proceed anyway?') . '")) {
-            return false;
+        if (ttl !== 0 && Math.abs(amt - ttl) > 0.01) {
+            if (!confirm("' . __('The principal amount does not match the total allocation. Proceed anyway?') . '")) {
+                return false;
+            }
         }
     }
 	
