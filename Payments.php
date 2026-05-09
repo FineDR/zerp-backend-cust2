@@ -11,7 +11,7 @@ $Title = __('Payment Entry');
 if (isset($_GET['SupplierID'])) { // Links to Manual before header.php
 	$ViewTopic = 'AccountsPayable';
 	$BookMark = 'SupplierPayments';
-	$PageTitleText = __('Enter a Payment to, or Receipt from the Supplier');
+	$PageTitleText = __('Supplier Transaction Payment Entry');
 } else {
 	$ViewTopic = 'GeneralLedger';
 	$BookMark = 'BankAccountPayments';
@@ -252,9 +252,9 @@ if (isset($_POST['CommitBatch']) AND empty($Errors)) {
 				$DisplayPayee = $SRow['suppname'];
 			}
 
-			echo '<div class="db-page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; min-height: 60vh;">
-					<div style="max-width: 600px; width: 100%; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
-						<div class="db-card" style="text-align: center; padding: 56px; border: 1px solid #e2e8f0; border-radius: 32px; background: #ffffff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);">
+			echo '<div id="success-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px;">
+					<div style="max-width: 600px; width: 100%; animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+						<div class="db-card" style="text-align: center; padding: 56px; border: 1px solid #e2e8f0; border-radius: 32px; background: #ffffff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
 							<div style="width: 88px; height: 88px; background: #dcfce7; color: #059669; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 32px; box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.15);">
 								<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
 							</div>
@@ -277,16 +277,17 @@ if (isset($_POST['CommitBatch']) AND empty($Errors)) {
 							</div>
 							
 							<div style="display: flex; flex-direction: column; gap: 16px;">
-								<a href="' . $RootPath . '/Payments.php?NewPayment=Yes" class="architect-btn" style="height: 56px; font-size: 1rem; width: 100%; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.3);">' . __('Enter another Payment') . '</a>
-								<a href="' . $RootPath . '/index.php" class="architect-btn secondary" style="height: 56px; font-size: 1rem; width: 100%; border-radius: 16px;">' . __('Return to Main Menu') . '</a>
+								<button type="button" onclick="window.close()" class="db-btn db-btn-primary" style="height: 56px; font-size: 1.1rem; width: 100%; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.3);"><i class="fas fa-times-circle" style="margin-right: 8px;"></i>' . __('Close Window') . '</button>
+								<button type="button" onclick="document.getElementById(\'success-modal-overlay\').style.display=\'none\'" class="db-btn db-btn-secondary" style="height: 56px; font-size: 1rem; width: 100%; border-radius: 16px;">' . __('Enter another Payment') . '</button>
 							</div>
 						</div>
 					</div>
 				</div>';
 
 			unset($_SESSION['PaymentDetail' . $identifier]);
-			include(__DIR__ . '/includes/footer.php');
-			exit();
+			$_SESSION['PaymentDetail' . $identifier] = new Payment;
+			$_SESSION['PaymentDetail' . $identifier]->GLItemCounter = 1;
+			// Do not exit, let the page render behind the modal
 		}
 	}
 }
@@ -377,71 +378,78 @@ echo '<style>
 		padding: 24px;
 	}
 	
-	/* ---- Horizontal Tabs Component ---- */
-	.pay-tabs-nav {
-		display: flex;
+	/* ---- Vertical Accordion Sections ---- */
+	.pay-section {
+		width: 100%;
+		box-sizing: border-box;
 		background: #ffffff;
 		border: 1px solid #e5e7eb;
-		border-radius: 12px 12px 0 0;
-		padding: 6px;
-		gap: 4px;
-		overflow-x: auto;
-		scrollbar-width: none;
-		-ms-overflow-style: none; /* IE and Edge */
+		border-radius: 12px;
+		margin-bottom: 24px;
+		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+		overflow: hidden;
 	}
-	.pay-tabs-nav::-webkit-scrollbar { display: none; }
-	
-	.pay-tab-btn {
-		flex: 1;
-		min-width: 160px;
+	.pay-section-header-banner {
+		padding: 20px 24px;
+		background: #f8fafc;
+		border-bottom: 1px solid #e5e7eb;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		cursor: pointer;
+		user-select: none;
+		transition: background 0.2s ease;
+	}
+	.pay-section-header-banner:hover {
+		background: #f1f5f9;
+	}
+	.pay-section-title {
+		font-size: 1.15rem;
+		font-weight: 800;
+		color: #0f172a;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+	.pay-section-icon {
+		width: 32px;
+		height: 32px;
+		border-radius: 8px;
+		background: #e2e8f0;
+		color: #475569;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 10px;
-		padding: 12px 20px;
-		border: none;
-		background: transparent;
-		color: #6b7280;
-		font-size: 0.88rem;
-		font-weight: 700;
-		border-radius: 8px;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		white-space: nowrap;
+		font-size: 0.9rem;
+		font-weight: 800;
+		transition: all 0.3s ease;
 	}
-	.pay-tab-btn i { font-size: 1.1rem; opacity: 0.7; }
-	
-	.pay-tab-btn.active {
-		background: #f0fdf4;
-		color: #059669;
-		box-shadow: inset 0 0 0 1px #d1fae5;
-	}
-	.pay-tab-btn.active i { opacity: 1; color: #059669; }
-	.pay-tab-btn:hover:not(.active) {
-		background: #f9fafb;
-		color: #111827;
-	}
-
-	/* ---- Tab Content Wrapper ---- */
-	.pay-tab-container {
+	.pay-section.active .pay-section-header-banner {
 		background: #ffffff;
-		border: 1px solid #e5e7eb;
-		border-top: none;
-		border-radius: 0 0 12px 12px;
-		min-height: 400px;
-		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-		overflow: hidden;
+		border-bottom: 2px solid #059669;
 	}
-	.pay-tab-content { 
-		display: none; 
+	.pay-section.active .pay-section-icon {
+		background: #dcfce7;
+		color: #059669;
+	}
+	.pay-section-body {
+		display: none;
 		padding: 32px;
-		width: 100%;
-		box-sizing: border-box;
+		animation: slideDown 0.3s ease-out forwards;
 	}
-	.pay-tab-content.active { display: block; }
+	.pay-section.active .pay-section-body {
+		display: block;
+	}
+	@keyframes slideDown {
+		from { opacity: 0; transform: translateY(-10px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
 
 	/* ---- Session Summary Header ---- */
 	.pay-summary-bar {
+		position: sticky;
+		top: 16px;
+		z-index: 100;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -577,37 +585,32 @@ echo '<style>
     }
 </style>
 <script>
-function payShowTab(tabId) {
-	document.querySelectorAll(".pay-tab-content").forEach(function(el){ el.classList.remove("active"); });
-	document.querySelectorAll(".pay-tab-btn").forEach(function(el){ el.classList.remove("active"); });
-	document.querySelectorAll(".pay-step-item").forEach(function(el){ el.classList.remove("active"); });
-	
-	var target = document.getElementById(tabId);
-	if (target) {
-		target.classList.add("active");
-		var btn = document.querySelector(".pay-tab-btn[data-tab=\"" + tabId + "\"]");
-		if (btn) btn.classList.add("active");
-		
-		// Update Progress Indicator
-		var stepNum = 1;
-		if (tabId === "pay-tab-alloc") stepNum = 2;
-		if (tabId === "pay-tab-gl") stepNum = 2;
-		if (tabId === "pay-tab-finalize") stepNum = 3;
-		
-		var activeStep = document.querySelector(".pay-step-item:nth-child(" + stepNum + ")");
-		if (activeStep) activeStep.classList.add("active");
-
-		try { localStorage.setItem("payment_active_tab_v5", tabId); } catch(e) {}
-		
-		if (tabId === "pay-tab-finalize") {
-			updateFinalSummary();
+function payToggleStep(stepId) {
+	var step = document.getElementById(stepId);
+	if (step) {
+		if (step.classList.contains(\'active\')) {
+			step.classList.remove(\'active\');
+		} else {
+			step.classList.add(\'active\');
 		}
+	}
+}
 
-		// Auto-focus first empty or relevant input
-		setTimeout(function() {
-			var focusField = target.querySelector("input:not([type=hidden]):not([readonly]), select, textarea");
-			if (focusField) focusField.focus();
-		}, 50);
+function payNextStep(currentId, nextId) {
+	if (currentId) {
+		var curr = document.getElementById(currentId);
+		if (curr) curr.classList.remove(\'active\');
+	}
+	if (nextId) {
+		var next = document.getElementById(nextId);
+		if (next) {
+			next.classList.add(\'active\');
+			next.scrollIntoView({ behavior: \'smooth\', block: \'start\' });
+			setTimeout(function() {
+				var focusField = next.querySelector("input:not([type=hidden]):not([readonly]), select, textarea");
+				if (focusField) focusField.focus();
+			}, 300);
+		}
 	}
 }
 
@@ -708,20 +711,8 @@ function payVerify(amountId, totalId) {
 }
 
 window.addEventListener("load", function() {
-	var saved = "";
-	try { saved = localStorage.getItem("payment_active_tab_v4") || ""; } catch(e) {}
-	payShowTab(saved || "pay-tab-header");
-	
 	updateAllocationTotal();
-
-	// Keyboard Shortcuts
-	document.addEventListener("keydown", function(e) {
-		if (e.altKey) {
-			if (e.key === "1") payShowTab("pay-tab-header");
-			if (e.key === "2") payShowTab("pay-tab-allocation");
-			if (e.key === "3") payShowTab("pay-tab-finalize");
-		}
-	});
+	updateFinalSummary();
 });
 </script>';
 
@@ -743,25 +734,16 @@ echo '<div class="pay-summary-bar">
 		</div>
 	</div>';
 
-// --- TABS NAVIGATION ---
-echo '<nav class="pay-tabs-nav">
-		<button type="button" class="pay-tab-btn" data-tab="pay-tab-header" onclick="payShowTab(\'pay-tab-header\')">
-			<i class="fas fa-file-invoice"></i> ' . __('1. Header Details') . '
-		</button>
-		<button type="button" class="pay-tab-btn" data-tab="pay-tab-allocation" onclick="payShowTab(\'pay-tab-allocation\')">
-			<i class="fas fa-tasks"></i> ' . $allocationTabLabel . '
-		</button>
-		<button type="button" class="pay-tab-btn" data-tab="pay-tab-finalize" onclick="payShowTab(\'pay-tab-finalize\')">
-			<i class="fas fa-check-double"></i> ' . __('3. Review & Finish') . '
-		</button>
-	</nav>';
-
-echo '<div class="pay-tab-container">';
-
 // ==========================================
-// TAB 1: SOURCE & BANK SETTINGS
+// SECTION 1: SOURCE & BANK SETTINGS
 // ==========================================
-echo '<div id="pay-tab-header" class="pay-tab-content">
+$step1Active = empty($_SESSION['PaymentDetail' . $identifier]->Account) ? 'active' : '';
+echo '<div id="pay-section-header" class="pay-section ' . $step1Active . '">
+	<div class="pay-section-header-banner" onclick="payToggleStep(\'pay-section-header\')">
+		<div class="pay-section-title"><div class="pay-section-icon">1</div> ' . __('Setup Payment Header') . '</div>
+		<i class="fas fa-chevron-down" style="color: #94a3b8;"></i>
+	</div>
+	<div class="pay-section-body">
 	<div class="db-card">
 		<div class="db-card-header">
 			<div class="db-card-title"><i class="fas fa-university"></i> ' . __('Bank & Header Settings') . '</div>
@@ -1224,13 +1206,21 @@ echo '<div style="margin-top: auto; display: flex; justify-content: flex-end; ga
 			<i class="fas fa-sync-alt" style="margin-right: 10px;"></i>
 			' . __('Save & Update Header') . '
 		</button>
+		<button type="button" onclick="payNextStep(\'pay-section-header\', \'pay-section-allocation\')" class="db-btn db-btn-secondary" style="height: 48px; padding: 0 32px; font-weight: 800;">
+			' . __('Continue to Allocation') . ' <i class="fas fa-arrow-down" style="margin-left: 10px;"></i>
+		</button>
 	</div>';
-	echo '</div></div></div></div></div>'; // end inner-flex, inner-div, card-body, db-card, pay-tab-header
+	echo '</div></div></div></div></div></div>'; // end inner-flex, inner-div, card-body, db-card, pay-section-body, pay-section-header
 
 
 
-echo '<!-- TAB 3: ANALYSIS & ALLOCATION -->
-	<div id="pay-tab-allocation" class="pay-tab-content">';
+echo '<!-- SECTION 2: ANALYSIS & ALLOCATION -->
+	<div id="pay-section-allocation" class="pay-section">
+		<div class="pay-section-header-banner" onclick="payToggleStep(\'pay-section-allocation\')">
+			<div class="pay-section-title"><div class="pay-section-icon">2</div> ' . $allocationTabLabel . '</div>
+			<i class="fas fa-chevron-down" style="color: #94a3b8;"></i>
+		</div>
+		<div class="pay-section-body">';
 
 if ($_SESSION['CompanyRecord']['gllink_creditors'] == 1 AND $_SESSION['PaymentDetail' . $identifier]->SupplierID == '') {
 	echo '<div class="db-card">
@@ -1355,9 +1345,9 @@ if ($_SESSION['CompanyRecord']['gllink_creditors'] == 1 AND $_SESSION['PaymentDe
 				</tfoot>
 			</table></div></div>';
 	}
-			echo '<div class="card-footer-v2" style="padding: var(--space-5); text-align: center; background: var(--surface-alt);">
-				<button type="submit" name="CommitBatch" class="db-btn db-btn-primary" style="padding: var(--space-2) var(--space-8); height: 44px; font-weight: 800;">' . __('Complete Payment') . '</button>
-			</div></div>';
+			echo '<div class="card-footer-v2" style="padding: var(--space-5); text-align: center; background: var(--surface-alt); display: flex; justify-content: flex-end; gap: 12px;">
+				<button type="button" onclick="payNextStep(\'pay-section-allocation\', \'pay-section-finalize\')" class="db-btn db-btn-secondary" style="height: 44px; padding: 0 32px; font-weight: 800;">' . __('Continue to Review') . ' <i class="fas fa-arrow-down" style="margin-left: 8px;"></i></button>
+			</div></div></div></div>'; // end footer-v2, card, pay-section-body, pay-section
 } else {
 	// Supplier Payment Mode: List Invoices
 	echo '<div class="db-card" style="margin-top: var(--space-6);">
@@ -1429,11 +1419,20 @@ if ($_SESSION['CompanyRecord']['gllink_creditors'] == 1 AND $_SESSION['PaymentDe
 				<div style="font-size: 0.9rem; color: var(--text-muted); font-weight: 700;">' . __('Remaining to Allocate') . ': <span id="remaining-alloc" style="font-weight: 900; font-size: 1.1rem; margin-left: 8px;">0.00</span></div>
 				<div style="font-size: 0.9rem; color: var(--text-muted); font-weight: 700;">' . __('Total Allocated') . ': <input type="text" id="ttl" value="0" readonly style="width: 150px; text-align: right; border: none; background: transparent; font-weight: 900; color: var(--primary); font-size: 1.25rem;"></div>
 			</div>
-	</div></div></div></div>'; // end footer-row, card-body, db-card, pay-tab-allocation
+	</div>
+	<div style="padding: var(--space-5); text-align: center; background: var(--surface-alt); border-top: 1px solid var(--border-soft); display: flex; justify-content: flex-end; border-radius: 0 0 12px 12px;">
+		<button type="button" onclick="payNextStep(\'pay-section-allocation\', \'pay-section-finalize\')" class="db-btn db-btn-secondary" style="height: 44px; padding: 0 32px; font-weight: 800;">' . __('Continue to Review') . ' <i class="fas fa-arrow-down" style="margin-left: 8px;"></i></button>
+	</div>
+	</div></div></div></div>'; // end db-card, pay-section-body, pay-section
 }
 
-echo '<!-- TAB 4: REVIEW & FINALIZE -->
-	<div id="pay-tab-finalize" class="pay-tab-content">
+echo '<!-- SECTION 3: REVIEW & FINALIZE -->
+	<div id="pay-section-finalize" class="pay-section">
+		<div class="pay-section-header-banner" onclick="payToggleStep(\'pay-section-finalize\')">
+			<div class="pay-section-title"><div class="pay-section-icon">3</div> ' . __('Review & Finish') . '</div>
+			<i class="fas fa-chevron-down" style="color: #94a3b8;"></i>
+		</div>
+		<div class="pay-section-body">
 		<div class="db-card">
 			<div class="db-card-header">
 				<div class="db-card-title"><i class="fas fa-file-invoice-dollar" style="color: var(--primary);"></i> ' . __('Review & Remittance Confirmation') . '</div>
@@ -1500,9 +1499,9 @@ echo '<!-- TAB 4: REVIEW & FINALIZE -->
 				</div>
 			</div>
 		</div> <!-- end db-card -->
-	</div> <!-- end pay-tab-finalize -->
+		</div> <!-- end pay-section-body -->
+	</div> <!-- end pay-section-finalize -->
 
-</div> <!-- end pay-tab-container -->
 </div> <!-- end db-page -->
 </form>';
 
