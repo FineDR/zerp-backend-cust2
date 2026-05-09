@@ -581,13 +581,15 @@ foreach ($_SESSION['Items' . $identifier]->LineItems as $LnItm) {
 	$_SESSION['Items' . $identifier]->totalWeight+= ($LnItm->QtyDispatched * $LnItm->Weight);
 
 	$TaxLineTotal = 0; 
-	foreach ($LnItm->Taxes AS $Tax) {
-		$TaxAmount = ($Tax->TaxRate * $LineTotal);
-		$TaxLineTotal += $TaxAmount;
-		$TaxTotal += $TaxAmount; // Update global tax total
-		if (!isset($TaxTotals[$Tax->TaxAuthID])) $TaxTotals[$Tax->TaxAuthID] = 0;
-		$TaxTotals[$Tax->TaxAuthID] += $TaxAmount;
-		$TaxGLCodes[$Tax->TaxAuthID] = $Tax->TaxGLCode;
+	if (isset($LnItm->Taxes) && (is_array($LnItm->Taxes) || is_object($LnItm->Taxes))) {
+		foreach ($LnItm->Taxes AS $Tax) {
+			$TaxAmount = ($Tax->TaxRate * $LineTotal);
+			$TaxLineTotal += $TaxAmount;
+			$TaxTotal += $TaxAmount; // Update global tax total
+			if (!isset($TaxTotals[$Tax->TaxAuthID])) $TaxTotals[$Tax->TaxAuthID] = 0;
+			$TaxTotals[$Tax->TaxAuthID] += $TaxAmount;
+			$TaxGLCodes[$Tax->TaxAuthID] = $Tax->TaxGLCode;
+		}
 	}
 
 	echo '<tr>
@@ -1525,7 +1527,7 @@ if (isset($_POST['ProcessInvoice']) and $_POST['ProcessInvoice'] != '') {
 
 			$MyRow = DB_fetch_row($Result);
 
-			if ($MyRow[0] > 0) { /*Update the existing record that already exists */
+			if ($MyRow && $MyRow[0] > 0) { /*Update the existing record that already exists */
 
 				$SQL = "UPDATE salesanalysis SET amt=amt+" . round(($SalesValue), $_SESSION['CompanyRecord']['decimalplaces']) . ",
 												cost=cost+" . round(($OrderLine->StandardCost * $OrderLine->QtyDispatched), $_SESSION['CompanyRecord']['decimalplaces']) . ",

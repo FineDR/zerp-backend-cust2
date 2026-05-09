@@ -74,11 +74,16 @@ if (isset($Messages) and count($Messages) > 0) {
 
 echo '</section>'; // MainBody
 echo '</div>'; // dashboard-content
-echo '</div>'; // dashboard-container
-echo '<footer class="noPrint">
-		<a class="FooterLogo" href="https://www.weberp.org" target="_blank">
-			<div class="logo logo-left">web</div><div class="logo logo-right"><i>ERP</i></div>
-		</a>
-	  </footer>'; // FooterDiv
+
+if (!isset($NoMenu) || $NoMenu != 1) {
+	echo '</div>'; // dashboard-container
+	echo '<footer class="noPrint">
+			<a class="FooterLogo" href="https://www.weberp.org" target="_blank">
+				<div class="logo logo-left">web</div><div class="logo logo-right"><i>ERP</i></div>
+			</a>
+		  </footer>'; // FooterDiv
+} else {
+	echo '</div>'; // dashboard-container-standalone
+}
 echo '</body>';
 echo '</html>';

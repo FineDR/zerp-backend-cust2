@@ -128,8 +128,12 @@ echo '<div class="help-bubble" id="help-bubble">
 		<div class="help-content" id="help-content"></div>
 	</div>';
 
-echo '<div class="dashboard-container">
-		<div id="SidebarMask" class="sidebar-mask"></div>';
+if (!isset($NoMenu) || $NoMenu != 1) {
+	echo '<div class="dashboard-container">
+			<div id="SidebarMask" class="sidebar-mask"></div>';
+} else {
+	echo '<div class="dashboard-container-standalone">';
+}
 
 // Icon map for sidebar modules
 $moduleIcons = [
@@ -147,91 +151,97 @@ $moduleIcons = [
     'Utilities'       => '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>',
 ];
 
-echo '<nav class="ModuleList">
-		<ul>';
+if (!isset($NoMenu) || $NoMenu != 1) {
+	echo '<nav class="ModuleList">
+			<ul>';
 
-$dashboardActiveClass = (!isset($_GET['Application']) || $_GET['Application'] == 'Dashboard') ? 'class="ModuleSelected"' : '';
-$dashIcon = $moduleIcons['Dashboard'];
-echo '<li ' . $dashboardActiveClass . '><a href="' . $RootPath . '/index.php?Application=Dashboard"><span class="nav-icon">' . $dashIcon . '</span><span class="nav-label">' . __('Dashboard') . '</span></a></li>';
+	$dashboardActiveClass = (!isset($_GET['Application']) || $_GET['Application'] == 'Dashboard') ? 'class="ModuleSelected"' : '';
+	$dashIcon = $moduleIcons['Dashboard'];
+	echo '<li ' . $dashboardActiveClass . '><a href="' . $RootPath . '/index.php?Application=Dashboard"><span class="nav-icon">' . $dashIcon . '</span><span class="nav-label">' . __('Dashboard') . '</span></a></li>';
 
-if (isset($ModuleLink)) {
-	for ($i=0; $i < count($ModuleLink); $i++) {
-		if (in_array($ModuleLink[$i], $_SESSION['ModulesEnabled']) OR (isset($_SESSION['ModulesEnabled'][$i]) AND $_SESSION['ModulesEnabled'][$i] == '1')) {
-			$activeClass = (isset($_SESSION['Module']) AND $ModuleLink[$i] == $_SESSION['Module']) ? 'class="ModuleSelected"' : '';
-			$icon = $moduleIcons[$ModuleList[$i]] ?? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>';
-			echo '<li ' . $activeClass . '><a href="' . $RootPath . '/index.php?Application=' . urlencode($ModuleLink[$i]) . '"><span class="nav-icon">' . $icon . '</span><span class="nav-label">' . $ModuleList[$i] . '</span></a></li>';
+	if (isset($ModuleLink)) {
+		for ($i=0; $i < count($ModuleLink); $i++) {
+			if (in_array($ModuleLink[$i], $_SESSION['ModulesEnabled']) OR (isset($_SESSION['ModulesEnabled'][$i]) AND $_SESSION['ModulesEnabled'][$i] == '1')) {
+				$activeClass = (isset($_SESSION['Module']) AND $ModuleLink[$i] == $_SESSION['Module']) ? 'class="ModuleSelected"' : '';
+				$icon = $moduleIcons[$ModuleList[$i]] ?? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>';
+				echo '<li ' . $activeClass . '><a href="' . $RootPath . '/index.php?Application=' . urlencode($ModuleLink[$i]) . '"><span class="nav-icon">' . $icon . '</span><span class="nav-label">' . $ModuleList[$i] . '</span></a></li>';
+			}
 		}
 	}
-}
 
-echo '	</ul>
-	</nav>';
+	echo '	</ul>
+		</nav>';
+}
 
 
 echo '<div class="dashboard-content">';
 
-echo '<header class="noPrint">
-		<button id="SidebarToggle" class="SidebarToggle" aria-label="Toggle Navigation">
-			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-		</button>';
+if (!isset($NoMenu) || $NoMenu != 1) {
+	echo '<header class="noPrint">
+			<button id="SidebarToggle" class="SidebarToggle" aria-label="Toggle Navigation">
+				<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+			</button>';
 
-$CompanyLogo = '';
-if (file_exists('companies/' . $_SESSION['DatabaseName'] . '/logo.png')) {
-	$CompanyLogo = $RootPath . '/companies/' . $_SESSION['DatabaseName'] . '/logo.png';
-} elseif (file_exists('companies/' . $_SESSION['DatabaseName'] . '/logo.jpeg')) {
-	$CompanyLogo = $RootPath . '/companies/' . $_SESSION['DatabaseName'] . '/logo.jpeg';
-} elseif (file_exists('companies/' . $_SESSION['DatabaseName'] . '/logo.jpg')) {
-	$CompanyLogo = $RootPath . '/companies/' . $_SESSION['DatabaseName'] . '/logo.jpg';
-} elseif (file_exists('companies/' . $_SESSION['DatabaseName'] . '/logo.gif')) {
-	$CompanyLogo = $RootPath . '/companies/' . $_SESSION['DatabaseName'] . '/logo.gif';
-}
-
-echo '<div id="AppIcon"><a href="' . $RootPath . '/index.php"></a></div>';
-
-if (isset($_SESSION['AllowedPageSecurityTokens']) && is_array($_SESSION['AllowedPageSecurityTokens']) && count($_SESSION['AllowedPageSecurityTokens']) > 1) {
-	echo '<div id="ActionIcon">
-			<select name="Favourites" id="favourites" onchange="window.open (this.value,\'_self\',false)">';
-	echo '<option value=""><i>', __('Commonly used scripts'), '</i></option>';
-	if (isset($_SESSION['Favourites'])) {
-		foreach ($_SESSION['Favourites'] as $Url => $Caption) {
-			echo '<option value="', $Url, '">', __($Caption), '</option>';
-		}
+	$CompanyLogo = '';
+	if (file_exists('companies/' . $_SESSION['DatabaseName'] . '/logo.png')) {
+		$CompanyLogo = $RootPath . '/companies/' . $_SESSION['DatabaseName'] . '/logo.png';
+	} elseif (file_exists('companies/' . $_SESSION['DatabaseName'] . '/logo.jpeg')) {
+		$CompanyLogo = $RootPath . '/companies/' . $_SESSION['DatabaseName'] . '/logo.jpeg';
+	} elseif (file_exists('companies/' . $_SESSION['DatabaseName'] . '/logo.jpg')) {
+		$CompanyLogo = $RootPath . '/companies/' . $_SESSION['DatabaseName'] . '/logo.jpg';
+	} elseif (file_exists('companies/' . $_SESSION['DatabaseName'] . '/logo.gif')) {
+		$CompanyLogo = $RootPath . '/companies/' . $_SESSION['DatabaseName'] . '/logo.gif';
 	}
-	echo '</select>
+
+	echo '<div id="AppIcon"><a href="' . $RootPath . '/index.php"></a></div>';
+
+	if (isset($_SESSION['AllowedPageSecurityTokens']) && is_array($_SESSION['AllowedPageSecurityTokens']) && count($_SESSION['AllowedPageSecurityTokens']) > 1) {
+		echo '<div id="ActionIcon">
+				<select name="Favourites" id="favourites" onchange="window.open (this.value,\'_self\',false)">';
+		echo '<option value=""><i>', __('Commonly used scripts'), '</i></option>';
+		if (isset($_SESSION['Favourites'])) {
+			foreach ($_SESSION['Favourites'] as $Url => $Caption) {
+				echo '<option value="', $Url, '">', __($Caption), '</option>';
+			}
+		}
+		echo '</select>
+			</div>';
+	}
+
+	echo '<div id="Info">
+			<a class="FontSize" data-title="', __('Change the settings for'), ' ', $_SESSION['UsersRealName'], '" href="', $RootPath, '/UserSettings.php">
+				<span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span> ', $_SESSION['UsersRealName'], '
+			</a>
 		</div>';
+
+	echo '<div id="ExitIcon">
+			<a data-title="', __('Logout'), '" href="#" id="logoutLink">
+				<span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></span>
+			</a>
+		</div>';
+
+	echo '</header>';
 }
-
-echo '<div id="Info">
-		<a class="FontSize" data-title="', __('Change the settings for'), ' ', $_SESSION['UsersRealName'], '" href="', $RootPath, '/UserSettings.php">
-			<span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span> ', $_SESSION['UsersRealName'], '
-		</a>
-	</div>';
-
-echo '<div id="ExitIcon">
-		<a data-title="', __('Logout'), '" href="#" id="logoutLink">
-			<span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></span>
-		</a>
-	</div>';
-
-echo '</header>';
 
 echo '<section class="MainBody">';
 
-if ($ScriptName != 'index.php' && $ScriptName != 'Dashboard.php') {
-	if (isset($_SESSION['Module'])) {
-		$SQL = "SELECT modulename FROM modules WHERE modulelink='" . $_SESSION['Module'] . "'";
-		$Result = DB_query($SQL);
-		if (DB_num_rows($Result) > 0) {
-			$MyRow = DB_fetch_array($Result);
-			echo '<div class="ScriptTitle"><a href="index.php?Application=' . $_SESSION['Module'] . '">', $MyRow['modulename'] . '</a> -> '. $Title, '</div>';
+if (!isset($NoMenu) || $NoMenu != 1) {
+	if ($ScriptName != 'index.php' && $ScriptName != 'Dashboard.php') {
+		if (isset($_SESSION['Module'])) {
+			$SQL = "SELECT modulename FROM modules WHERE modulelink='" . $_SESSION['Module'] . "'";
+			$Result = DB_query($SQL);
+			if (DB_num_rows($Result) > 0) {
+				$MyRow = DB_fetch_array($Result);
+				echo '<div class="ScriptTitle"><a href="index.php?Application=' . $_SESSION['Module'] . '">', $MyRow['modulename'] . '</a> -> '. $Title, '</div>';
+			} else {
+				echo '<div class="ScriptTitle">', $Title, '</div>';
+			}
 		} else {
 			echo '<div class="ScriptTitle">', $Title, '</div>';
 		}
-	} else {
-		echo '<div class="ScriptTitle">', $Title, '</div>';
+	} elseif ($ScriptName == 'Dashboard.php') {
+		echo '<div class="ScriptTitle">', __('Dashboard'), '</div>';
 	}
-} elseif ($ScriptName == 'Dashboard.php') {
-    echo '<div class="ScriptTitle">', __('Dashboard'), '</div>';
 }
 
 echo '<div id="MessageContainerHead"></div>';

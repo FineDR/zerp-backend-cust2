@@ -177,6 +177,8 @@ if (!function_exists('safe')) {
             display: table;
             width: 100%;
             margin-top: 15px;
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
         .summary-left { display: table-cell; width: 60%; vertical-align: bottom; }
         .summary-right { display: table-cell; width: 40%; vertical-align: top; }
@@ -186,7 +188,7 @@ if (!function_exists('safe')) {
             margin-top: 0;
         }
         .totals-table td {
-            padding: 8px 0;
+            padding: 5px 0;
             border-bottom: 1px solid var(--slate-50);
         }
         .total-row td {
@@ -198,12 +200,14 @@ if (!function_exists('safe')) {
         }
 
         .footer {
-            margin-top: 30px;
-            padding-top: 20px;
+            margin-top: 20px;
+            padding-top: 15px;
             border-top: 1px solid var(--slate-200);
             font-size: 9px;
             color: var(--slate-600);
             text-align: center;
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
 
         .actions {
@@ -234,13 +238,16 @@ if (!function_exists('safe')) {
 
         @media print {
             @page { 
-                margin: 0; 
-                size: auto;
+                margin: 10mm; 
+                size: portrait;
             }
             body { 
                 margin: 0; 
-                padding: 1.5cm !important;
+                padding: 0 !important;
                 background: white;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
             }
             .actions, .btn-print, .ModuleList, #SidebarToggle, .sidebar-mask, .help-bubble, 
             .header_container, .menu_container, header, footer, .breadcrumb, .no-print,
@@ -249,21 +256,72 @@ if (!function_exists('safe')) {
             #help-bubble, #MessageContainerHead, #logoutDialog, #mask, .noPrint { 
                 display: none !important; 
             }
-            .container { 
-                margin: 0 auto !important; 
-                max-width: none !important; 
-                width: 100% !important; 
-                padding: 20px !important; 
-                box-shadow: none;
-                border: 1px solid var(--slate-200) !important;
+            .MainBody, .dashboard-content, .dashboard-container-standalone {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: none !important;
+                display: block !important;
             }
+            .container { 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                box-shadow: none !important;
+                border: 1px solid #e2e8f0 !important;
+                background: white !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 275mm !important;
+                max-height: 275mm !important;
+                overflow: hidden !important;
+                position: relative !important;
+            }
+            
+            .header, .details-grid, .summary-wrapper {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin-bottom: 5mm !important;
+            }
+            
+            /* Restored Professional Fonts */
+            .logo { max-height: 20mm !important; }
+            .document-title { font-size: 22pt !important; margin: 0 !important; color: #1e293b !important; }
+            .doc-meta { font-size: 11pt !important; color: #64748b !important; }
+            
+            .label { font-size: 8.5pt !important; text-transform: uppercase !important; color: #64748b !important; letter-spacing: 0.025em !important; }
+            .value { font-size: 10.5pt !important; font-weight: 600 !important; color: #1e293b !important; }
+            
+            table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
+            th { padding: 3mm !important; font-size: 10pt !important; background: #f8fafc !important; border-bottom: 2px solid #e2e8f0 !important; text-align: left !important; }
+            td { padding: 2.5mm !important; font-size: 10.5pt !important; border-bottom: 1px solid #f1f5f9 !important; }
+            
+            .summary-wrapper { margin-top: 8mm !important; }
+            .totals-table td { padding: 1.5mm 0 !important; font-size: 10.5pt !important; border: none !important; }
+            .total-row td { font-size: 14pt !important; font-weight: 800 !important; border-top: 2px solid #1e293b !important; color: #1e293b !important; }
+            
+            .footer { 
+                position: absolute !important;
+                bottom: 8mm !important;
+                left: 10mm !important;
+                right: 10mm !important;
+                padding-top: 5mm !important; 
+                font-size: 8.5pt !important;
+                border-top: 1px dashed #e2e8f0 !important;
+                text-align: center !important;
+                color: #64748b !important;
+            }
+        }
+        }
+            
+            /* Ensure no extra pages from phantom content */
+            * { -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <table class="header">
+    <table class="header" style="page-break-inside: avoid; break-inside: avoid;">
         <tr>
             <td class="header-left">
                 <?php 

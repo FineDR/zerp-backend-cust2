@@ -14,7 +14,7 @@ $BookMark = 'PrintInvoicesCredits';
 if (isset($_GET['orientation'])) {
 	$Orientation = $_GET['orientation'];
 } else {
-	$Orientation = 'landscape';
+	$Orientation = 'portrait';
 }
 $is_pdf = false;
 
@@ -43,7 +43,7 @@ if (!isset($InvOrCredit) || ($InvOrCredit != 'Invoice' && $InvOrCredit != 'Credi
 }
 
 // Suppress sidebar ONLY for PDF/Print views or if explicitly requested
-if (isset($_GET['PrintPDF']) || (isset($_GET['Receipt']) && !isset($_GET['View']) && !isset($_GET['WithMenu']))) {
+if (isset($_GET['PrintPDF']) || isset($_GET['View']) || (isset($_GET['Receipt']) && !isset($_GET['View']) && !isset($_GET['WithMenu']))) {
 	$NoMenu = 1;
 }
 
@@ -677,7 +677,7 @@ if (isset($PrintPDF)
 		}
 		$DomPDF = new Dompdf($DomPDFOptions);
 		$DomPDF->loadHtml($HTML);
-		$DomPDF->setPaper($_SESSION['PageSize'], ($IsThermal ? 'portrait' : 'landscape'));
+		$DomPDF->setPaper($_SESSION['PageSize'], ($IsThermal ? 'portrait' : $Orientation));
 		$DomPDF->render();
 		if (ob_get_length()) ob_end_clean();
 		$Attachment = (isset($_GET['Download']) && $_GET['Download'] == 'True') ? 1 : 0;
@@ -722,12 +722,13 @@ if (isset($PrintPDF)
 				  </div>';
 			include(__DIR__ . '/includes/footer.php');
 		} else {
-			if (!isset($_GET['Receipt']) || isset($_GET['WithMenu'])) {
+			// Do NOT include ERP header/footer for standalone templates as they provide their own HTML structure
+			if (strcasecmp($InvOrCredit, 'Receipt') == 0 || isset($_GET['WithMenu'])) {
 				include(__DIR__ . '/includes/header.php');
-			}
-			echo $HTML;
-			if (!isset($_GET['Receipt']) || isset($_GET['WithMenu'])) {
+				echo $HTML;
 				include(__DIR__ . '/includes/footer.php');
+			} else {
+				echo $HTML;
 			}
 		}
 		exit;

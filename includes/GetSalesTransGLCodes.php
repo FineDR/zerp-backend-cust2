@@ -134,7 +134,7 @@ function GetCOGSGLAccount ($Area, $StockID, $SalesType) {
 								1,
 								5)");
 			}
-			$SQL = "INSERT INTO chartmaster VALUES (1, 'Default Sales and COGS', 'Sales')";
+			$SQL = "INSERT INTO chartmaster (accountcode, accountname, group_) VALUES (1, 'Default Sales and COGS', 'Sales')";
 			$Result = DB_query($SQL);
 		}
 		return 1;
@@ -282,7 +282,7 @@ function GetSalesGLAccount ($Area, $StockID, $SalesType) {
 																1,
 																5)");
 			}
-			$SQL = "INSERT INTO chartmaster VALUES (1, 'Default Sales and COGS', 'Sales')";
+			$SQL = "INSERT INTO chartmaster (accountcode, accountname, group_) VALUES (1, 'Default Sales and COGS', 'Sales')";
 			$Result = DB_query($SQL);
 		}
 		return array('salesglcode'=>1,
