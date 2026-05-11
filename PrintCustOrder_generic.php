@@ -145,7 +145,8 @@ body { font-family: Arial, sans-serif; font-size: 12px; }
 	}
 	$DeliveryAddress .= htmlspecialchars($MyRow['deladd5']);
 
-for ($i = 1; $i <= 2; $i++) {  // Office + Customer copy
+	$i = 1; // Single copy
+// for ($i = 1; $i <= 2; $i++) {  // Office + Customer copy - Removed to avoid duplicate pages
 	$HTML .= '<div class="header">' . __('Customer Laser Packing Slip') . ' - ' . ($_SESSION['CompanyRecord']['coyname']) . '</div>';
 	$HTML .= '<div>' . __('Order Number') . ': <strong>' . $_GET['TransNo'] . '</strong></div>';
 	$HTML .= '<div>' . __('Customer') . ': ' . htmlspecialchars($MyRow['name']) . '</div>';
@@ -303,10 +304,6 @@ for ($i = 1; $i <= 2; $i++) {  // Office + Customer copy
 	$Volume = 0;
 	$Weight = 0;
 
-	if ($i == 1) {
-		$HTML .= '<div style="page-break-after:always"></div>';
-	}
-}
 
 $HTML .= '</body></html>';
 
