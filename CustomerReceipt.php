@@ -13,6 +13,19 @@ if (isset($_POST['DateBanked'])) {
 
 include(__DIR__ . '/includes/GetPaymentMethods.php');
 
+if (!isset($_POST['Keywords'])) $_POST['Keywords'] = '';
+if (!isset($_POST['CustCode'])) $_POST['CustCode'] = '';
+if (!isset($_POST['CustInvNo'])) $_POST['CustInvNo'] = '';
+if (!isset($_POST['CustomerID'])) $_POST['CustomerID'] = '';
+if (!isset($_POST['CustomerName'])) $_POST['CustomerName'] = '';
+
+if (!isset($_GET['Type']) && isset($_POST['Type'])) {
+    $_GET['Type'] = $_POST['Type'];
+}
+if (!isset($_GET['Type'])) {
+    $_GET['Type'] = 'Customer';
+}
+
 include(__DIR__ . '/includes/header.php');
 
 $Title = (isset($_GET['Type']) && $_GET['Type']=='GL' ? __('Process GL Receipt') : __('Customer Payment Entry'));
@@ -64,19 +77,101 @@ echo '<style>
 	.rcpt-stat-item { display: flex; flex-direction: column; }
 	.rcpt-stat-label { font-size: 0.65rem; text-transform: uppercase; opacity: 0.7; font-weight: 800; letter-spacing: 0.05em; }
 	.rcpt-stat-value { font-size: 1.1rem; font-weight: 900; }
-</style>\';
 
-echo \'<script>
-function rcptShowTab(tabId) {
-	document.querySelectorAll(".rcpt-tab-content").forEach(el => el.classList.remove("active"));
-	document.querySelectorAll(".rcpt-tab-btn").forEach(el => el.classList.remove("active"));
-	document.getElementById(tabId).classList.add("active");
-	document.querySelector(".rcpt-tab-btn[data-tab=\""+tabId+"\"]").classList.add("active");
-	localStorage.setItem("rcpt_active_tab", tabId);
+    /* Stepper UI */
+    .rcpt-stepper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        position: relative;
+        padding: 0 40px;
+    }
+    .rcpt-stepper::before {
+        content: "";
+        position: absolute;
+        top: 24px;
+        left: 80px;
+        right: 80px;
+        height: 2px;
+        background: #e2e8f0;
+        z-index: 1;
+    }
+    .rcpt-step-item {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        cursor: not-allowed;
+        opacity: 0.5;
+        transition: 0.3s;
+    }
+    .rcpt-step-item.active, .rcpt-step-item.completed {
+        opacity: 1;
+        cursor: pointer;
+    }
+    .rcpt-step-circle {
+        width: 48px;
+        height: 48px;
+        background: white;
+        border: 2px solid #cbd5e1;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #64748b;
+        transition: 0.3s;
+    }
+    .rcpt-step-item.active .rcpt-step-circle {
+        border-color: var(--primary);
+        color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1);
+    }
+    .rcpt-step-item.completed .rcpt-step-circle {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+    .rcpt-step-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .rcpt-step-item.active .rcpt-step-label { color: var(--primary); }
+</style>';
+
+echo '<script>
+function rcptShowStep(stepId) {
+	const steps = ["tab-header", "tab-entry", "tab-batch"];
+	const currentIdx = steps.indexOf(stepId);
+	
+	const contents = document.querySelectorAll(".rcpt-tab-content");
+	if (contents.length > 0) {
+		contents.forEach(el => el.classList.remove("active"));
+		const target = document.getElementById(stepId);
+		if (target) target.classList.add("active");
+	}
+	
+	document.querySelectorAll(".rcpt-step-item").forEach(el => el.classList.remove("active", "completed"));
+	
+	steps.forEach((id, idx) => {
+		const el = document.querySelector(`.rcpt-step-item[data-step="${id}"]`);
+		if (el) {
+			if (idx < currentIdx) el.classList.add("completed");
+			if (idx === currentIdx) el.classList.add("active");
+		}
+	});
+
+	localStorage.setItem("rcpt_active_step", stepId);
 }
 window.addEventListener("load", function() {
-	var saved = localStorage.getItem("rcpt_active_tab") || "tab-header";
-	rcptShowTab(saved);
+	var saved = localStorage.getItem("rcpt_active_step") || "tab-header";
+	rcptShowStep(saved);
 });
     function confirmProcess(btn) {
         if (confirm("' . __('Are you sure you want to process this entire receipt batch?') . '")) {
@@ -87,9 +182,19 @@ window.addEventListener("load", function() {
         }
         return false;
     }
-</script>
+</script>';
 
-<div class="db-page">
+if (isset($_POST['BatchInput'])) {
+    echo '<script>localStorage.setItem("rcpt_active_step", "tab-entry");</script>';
+}
+if (isset($_POST['Process']) || isset($_POST['Search']) || isset($_POST['Select'])) {
+    echo '<script>localStorage.setItem("rcpt_active_step", "tab-entry");</script>';
+}
+if (isset($_POST['CommitBatch'])) {
+    echo '<script>localStorage.setItem("rcpt_active_step", "tab-header");</script>';
+}
+
+echo '<div class="db-page">
 	<div class="db-page-header">
 		<div class="db-header-row">
 			<div class="db-header-main">
@@ -243,11 +348,11 @@ if (!isset($_GET['Delete']) AND isset($_SESSION['ReceiptBatch' . $identifier])){
 		$MyRow = DB_fetch_array($Result);
 		$TableExRate = $MyRow['rate']; //this is the rate of exchange between the functional currency and the receipt currency
 		/*Calculate cross rate to suggest appropriate exchange rate between receipt currency and account currency */
-		$SuggestedExRate = $TableExRate/$SuggestedFunctionalExRate;
+		$SuggestedExRate = $TableExRate/($SuggestedFunctionalExRate != 0 ? $SuggestedFunctionalExRate : 1);
 	}
 
-	$_SESSION['ReceiptBatch' . $identifier]->BankTransRef = $_POST['BankTransRef'];
-	$_SESSION['ReceiptBatch' . $identifier]->Narrative = $_POST['BatchNarrative'];
+	$_SESSION['ReceiptBatch' . $identifier]->BankTransRef = $_POST['BankTransRef'] ?? '';
+	$_SESSION['ReceiptBatch' . $identifier]->Narrative = $_POST['BatchNarrative'] ?? '';
 
 } elseif (isset($_GET['Delete'])) {
 	/* User hit delete the receipt entry from the batch */
@@ -271,11 +376,18 @@ if (isset($_POST['Process'])){ //user hit submit a new entry to the receipt batc
 	if (!isset($_POST['CustomerName'])) {
 		$_POST['CustomerName']='';
 	}
-	if ($_POST['Discount']==0 AND $ReceiptTypes[$_SESSION['ReceiptBatch' . $identifier]->ReceiptType]['percentdiscount']>0){
-		if (isset($_GET['Type']) AND $_GET['Type'] == 'Customer') {
-			$_POST['Discount'] = $_POST['Amount']*$ReceiptTypes[$_SESSION['ReceiptBatch' . $identifier]->ReceiptType]['percentdiscount'];
-		}
-	}
+	if (isset($_POST['Amount']) && $_POST['Amount'] != 0) {
+        $discount = isset($_POST['Discount']) ? filter_number_format($_POST['Discount']) : 0;
+        $batchReceiptType = $_SESSION['ReceiptBatch' . $identifier]->ReceiptType;
+        
+        if ($discount == 0 && isset($ReceiptTypes[$batchReceiptType]) && $ReceiptTypes[$batchReceiptType]['percentdiscount'] > 0){
+            if (isset($_GET['Type']) AND $_GET['Type'] == 'Customer') {
+                $discount = filter_number_format($_POST['Amount']) * $ReceiptTypes[$batchReceiptType]['percentdiscount'];
+            }
+        }
+    } else {
+        $discount = 0;
+    }
 
 	if ($_POST['GLCode'] == '' AND $_GET['Type']=='GL') {
 		prnMsg( __('No General Ledger code has been chosen') . ' - ' . __('so this GL analysis item could not be added'),'warn');
@@ -298,14 +410,14 @@ if (isset($_POST['Process'])){ //user hit submit a new entry to the receipt batc
  			}
  		}
  		if ($AllowThisPosting) {
- 			$_SESSION['ReceiptBatch' . $identifier]->add_to_batch(filter_number_format($_POST['Amount']),
-													$_POST['CustomerID'],
-													filter_number_format($_POST['Discount']),
-													$_POST['Narrative'],
-													$_POST['GLCode'],
-													$_POST['PayeeBankDetail'],
-													$_POST['CustomerName'],
-													$_POST['tag']);
+ 			$_SESSION["ReceiptBatch" . $identifier]->add_to_batch(filter_number_format($_POST["Amount"]),
+															$_POST["CustomerID"] ?? "",
+															$discount,
+															$_POST["Narrative"] ?? "",
+															$_POST["GLCode"] ?? "",
+															$_POST["PayeeBankDetail"] ?? "",
+															$_POST["CustomerName"] ?? "",
+															$_POST["tag"] ?? "");
 			/*Make sure the same receipt is not double processed by a page refresh */
 			$Cancel = 1;
 		}
@@ -335,20 +447,30 @@ echo '<div class="rcpt-summary-bar">
 		</div>
 	</div>';
 
-echo '<nav class="rcpt-tabs-nav">
-		<button type="button" class="rcpt-tab-btn" data-tab="tab-header" onclick="rcptShowTab(\'tab-header\')"><i class="fas fa-university"></i> ' . __('1. Bank & Settings') . '</button>
-		<button type="button" class="rcpt-tab-btn" data-tab="tab-entry" onclick="rcptShowTab(\'tab-entry\')"><i class="fas fa-user-plus"></i> ' . __('2. Entry Detail') . '</button>
-		<button type="button" class="rcpt-tab-btn" data-tab="tab-batch" onclick="rcptShowTab(\'tab-batch\')"><i class="fas fa-list-check"></i> ' . __('3. Review Batch') . '</button>
-	</nav>';
+echo '<div class="rcpt-stepper">
+		<div class="rcpt-step-item active" data-step="tab-header" onclick="rcptShowStep(\'tab-header\')">
+			<div class="rcpt-step-circle"><i class="fas fa-university"></i></div>
+			<div class="rcpt-step-label">' . __('1. Bank & Settings') . '</div>
+		</div>
+		<div class="rcpt-step-item" data-step="tab-entry" onclick="rcptShowStep(\'tab-entry\')">
+			<div class="rcpt-step-circle"><i class="fas fa-user-plus"></i></div>
+			<div class="rcpt-step-label">' . __('2. Entry Detail') . '</div>
+		</div>
+		<div class="rcpt-step-item" data-step="tab-batch" onclick="rcptShowStep(\'tab-batch\')">
+			<div class="rcpt-step-circle"><i class="fas fa-list-check"></i></div>
+			<div class="rcpt-step-label">' . __('3. Review Batch') . '</div>
+		</div>
+	</div>';
 
 echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '?Type=' . urlencode($_GET['Type']) . '&amp;identifier=' . urlencode($identifier) . '" method="post" id="form1">';
 echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+echo '<input type="hidden" name="Type" value="' . htmlspecialchars($_GET['Type']) . '" />';
 
 echo '<div id="tab-header" class="rcpt-tab-content active">
 		<div class="db-card">
 			<div class="db-card-header"><h3 class="db-card-title"><i class="fas fa-cog"></i> ' . __('Receipt Header Settings') . '</h3></div>
 			<div class="db-card-body">
-				<div class="db-grid db-grid-2" style="gap:24px;">';
+				<div class="db-grid db-grid-3" style="gap:24px;">';
 
 // Bank Selection
 $SQL = "SELECT bankaccountname, bankaccounts.accountcode, bankaccounts.currcode FROM bankaccounts INNER JOIN chartmaster ON bankaccounts.accountcode=chartmaster.accountcode INNER JOIN bankaccountusers ON bankaccounts.accountcode=bankaccountusers.accountcode WHERE bankaccountusers.userid = '" . $_SESSION['UserID'] . "' ORDER BY bankaccountname";
@@ -385,11 +507,16 @@ echo '</select></div>';
 echo '<div class="db-form-group">
 		<label class="db-form-label">' . __('Payment Method') . '</label>
 		<select class="db-form-select" name="ReceiptType">';
-foreach ($PaytTypes as $type) {
-	$selected = ($_SESSION['ReceiptBatch' . $identifier]->ReceiptType == $type) ? 'selected="selected" ' : '';
-	echo '<option ' . $selected . ' value="' . $type . '">' . $type . '</option>';
+foreach ($ReceiptTypes as $type) {
+	$selected = ($_SESSION['ReceiptBatch' . $identifier]->ReceiptType == $type['paymentid']) ? 'selected="selected" ' : '';
+	echo '<option ' . $selected . ' value="' . $type['paymentid'] . '">' . $type['paymentname'] . '</option>';
 }
 echo '</select></div>';
+
+echo '<div class="db-form-group">
+		<label class="db-form-label">' . __('Bank Reference') . '</label>
+		<input class="db-form-input" type="text" name="BankTransRef" value="' . ($_SESSION['ReceiptBatch' . $identifier]->BankTransRef ?? '') . '" />
+	</div>';
 
 echo '</div>'; // End Grid
 
@@ -420,6 +547,10 @@ if (isset($_POST['CommitBatch'])){
   also add the total discount total receipts*/
 
 	$PeriodNo = GetPeriod($_SESSION['ReceiptBatch' . $identifier]->DateBanked);
+    
+    // Safety check for exchange rates to prevent DivisionByZero errors
+    if (($_SESSION['ReceiptBatch' . $identifier]->ExRate ?? 0) == 0) $_SESSION['ReceiptBatch' . $identifier]->ExRate = 1;
+    if (($_SESSION['ReceiptBatch' . $identifier]->FunctionalExRate ?? 0) == 0) $_SESSION['ReceiptBatch' . $identifier]->FunctionalExRate = 1;
 
 	if ($_SESSION['CompanyRecord']==0){
 		prnMsg(__('The company has not yet been set up properly') . ' - ' . __('this information is needed to process the batch') . '. ' . __('Processing has been cancelled'),'error');
@@ -757,13 +888,50 @@ if (isset($_POST['CommitBatch'])){
 
 	$ErrMsg = __('Cannot commit the changes');
 	DB_Txn_Commit();
-	prnMsg( __('Receipt batch') . ' ' . $_SESSION['ReceiptBatch' . $identifier]->BatchNo . ' ' . __('has been successfully entered into the database'),'success');
+	
+    echo '<div id="success-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); animation: fadeIn 0.3s ease-out;">
+            <div class="db-card" style="width: 100%; max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); border: none; overflow: hidden; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+                <div class="db-card-body" style="text-align: center; padding: 48px 32px 40px;">
+                    <div style="width: 72px; height: 72px; background: #f0fdf4; color: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 24px; box-shadow: 0 0 0 8px #f0fdf4; border: 2px solid #bbf7d0;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <h2 style="font-size: 1.25rem; font-weight: 800; color: #0f172a; margin-bottom: 8px; letter-spacing: -0.025em;">' . __('Payment Received') . '</h2>
+                    <p style="color: #64748b; font-size: 0.935rem; margin-bottom: 32px;">' . __('The transaction has been successfully committed to the general ledger.') . '</p>
+                    
+                    <div style="background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 16px; padding: 20px; margin-bottom: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: left;">
+                        <div>
+                            <div style="font-size: 0.7rem; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 4px;">' . __('Reference') . '</div>
+                            <div style="font-weight: 700; color: #1e293b; font-family: monospace; font-size: 1.1rem;">#' . $_SESSION['ReceiptBatch' . $identifier]->BatchNo . '</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.7rem; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 4px;">' . __('Total Amount') . '</div>
+                            <div style="font-weight: 800; color: var(--primary); font-size: 1.1rem;">' . $_SESSION['ReceiptBatch' . $identifier]->Currency . ' ' . locale_number_format($batchTotal, $_SESSION['ReceiptBatch' . $identifier]->CurrDecimalPlaces) . '</div>
+                        </div>
+                    </div>
 
-	echo '<div class="centre noPrint">',
-		'<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/printer.png" title="' . __('Print') . '" alt="" />' . ' ' . '<a href="' . $RootPath . '/PDFBankingSummary.php?BatchNo=' . $_SESSION['ReceiptBatch' . $identifier]->BatchNo . '">' . __('Print PDF Batch Summary') . '</a></p>';
-	echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/allocation.png" title="' . __('Allocate') . '" alt="" />' . ' ' . '<a href="' . $RootPath . '/CustomerAllocations.php">' . __('Allocate Receipts') . '</a></p>';
-	echo '<p class="page_title_text"><img alt="" src="', $RootPath, '/css/', $Theme, '/images/transactions.png" title="', __('Enter Receipts'), '" /> ', '<a href="', $RootPath, '/CustomerReceipt.php?NewReceipt=Yes&Type=', urlencode($_GET['Type']), '">', __('Enter Receipts'), '</a></p>',
-		'</div>';
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <a href="' . $RootPath . '/PDFBankingSummary.php?BatchNo=' . $_SESSION['ReceiptBatch' . $identifier]->BatchNo . '" class="db-btn db-btn-primary" style="width: 100%; height: 52px; display: flex; align-items: center; justify-content: center; font-weight: 700; border-radius: 12px;">
+                            <i class="fas fa-print" style="margin-right: 10px;"></i> ' . __('Print Receipt Summary') . '
+                        </a>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <a href="' . $RootPath . '/CustomerReceipt.php?NewReceipt=Yes&Type=' . urlencode($_GET['Type']) . '" class="db-btn db-btn-secondary" style="height: 48px; border-radius: 12px; font-weight: 600;">
+                                <i class="fas fa-plus" style="margin-right: 8px;"></i> ' . __('New') . '
+                            </a>
+                            <a href="' . $RootPath . '/CustomerAllocations.php" class="db-btn db-btn-secondary" style="height: 48px; border-radius: 12px; font-weight: 600;">
+                                <i class="fas fa-random" style="margin-right: 8px;"></i> ' . __('Allocate') . '
+                            </a>
+                        </div>
+                        <a href="' . $RootPath . '/index.php" style="margin-top: 16px; color: #94a3b8; font-size: 0.8rem; font-weight: 600; text-decoration: none; transition: 0.2s;" onmouseover="this.style.color=\'#64748b\'" onmouseout="this.style.color=\'#94a3b8\'">
+                             ' . __('Back to Dashboard') . '
+                        </a>
+                    </div>
+                </div>
+            </div>
+          </div>
+          <style>
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+          </style>';
 
 	unset($_SESSION['ReceiptBatch' . $identifier]);
 	include(__DIR__ . '/includes/footer.php');
@@ -777,9 +945,9 @@ if (isset($_POST['Search'])){
 	if ($_POST['Keywords'] AND $_POST['CustCode']) {
 		$Msg=__('Customer name keywords have been used in preference to the customer code extract entered');
 	}
-	if ($_POST['Keywords']==''
-		AND $_POST['CustCode']==''
-		AND $_POST['CustInvNo']=='') {
+	if (($_POST['Keywords'] ?? '') == ''
+		AND ($_POST['CustCode'] ?? '') == ''
+		AND ($_POST['CustInvNo'] ?? '') == '') {
 			$SQL = "SELECT debtorsmaster.debtorno,
 						debtorsmaster.name
 					FROM debtorsmaster
@@ -957,14 +1125,21 @@ if (isset($_GET['Type']) && $_GET['Type'] == 'Customer') {
 	echo '<div class="db-card-body">';
 	
 	// Customer Search
-	echo '<div class="db-grid db-grid-3" style="gap:16px; margin-bottom:24px; padding:16px; background:var(--surface-alt); border-radius:12px;">
+    echo '<p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px; background:var(--blue-50); padding:8px 12px; border-radius:8px; border:1px solid var(--blue-100);">
+            <i class="fas fa-info-circle" style="color:var(--blue-600); margin-right:6px;"></i> ' . __('Note: Only customers trading in') . ' <b>' . $_SESSION['ReceiptBatch' . $identifier]->Currency . '</b> ' . __('are searchable here.') . '
+          </p>';
+	echo '<div class="db-grid db-grid-4" style="gap:16px; margin-bottom:24px; padding:16px; background:var(--surface-alt); border-radius:12px;">
 			<div class="db-form-group">
 				<label class="db-form-label">' . __('Name Keywords') . '</label>
-				<input class="db-form-input" type="text" name="Keywords" />
+				<input class="db-form-input" type="text" name="Keywords" value="' . ($_POST['Keywords'] ?? '') . '" />
 			</div>
 			<div class="db-form-group">
 				<label class="db-form-label">' . __('Code Fragment') . '</label>
-				<input class="db-form-input" type="text" name="CustCode" />
+				<input class="db-form-input" type="text" name="CustCode" value="' . ($_POST['CustCode'] ?? '') . '" />
+			</div>
+			<div class="db-form-group">
+				<label class="db-form-label">' . __('Invoice No') . '</label>
+				<input class="db-form-input" type="text" name="CustInvNo" value="' . ($_POST['CustInvNo'] ?? '') . '" />
 			</div>
 			<div class="db-form-group" style="display:flex; align-items:flex-end;">
 				<button type="submit" name="Search" class="db-btn db-btn-secondary" style="width:100%;">' . __('Search Customers') . '</button>
@@ -982,7 +1157,10 @@ if (isset($_GET['Type']) && $_GET['Type'] == 'Customer') {
 		echo '</tbody></table></div>';
 	}
 
-	if (isset($_SESSION['CustomerRecord' . $identifier])) {
+if (isset($_SESSION['CustomerRecord' . $identifier])) {
+    echo '<input type="hidden" name="CustomerID" value="' . $_SESSION['CustomerRecord' . $identifier]['debtorno'] . '" />';
+    echo '<input type="hidden" name="CustomerName" value="' . $_SESSION['CustomerRecord' . $identifier]['name'] . '" />';
+    
 		echo '<div style="padding:20px; border:2px solid var(--primary-soft); border-radius:12px; margin-bottom:24px; background:white;">
 				<div style="display:flex; justify-content:space-between; align-items:flex-start;">
 					<div>
@@ -1041,8 +1219,12 @@ echo '<div class="db-form-group">
 
 echo '</div>'; // End Grid
 
-echo '</div><div class="db-card-footer" style="text-align:right;">
-			<button type="submit" name="Process" class="db-btn db-btn-primary"><i class="fas fa-plus" style="margin-right:8px;"></i> ' . __('Add to Batch') . '</button>
+echo '</div><div class="db-card-footer" style="display:flex; justify-content:space-between; align-items:center;">
+            <button type="button" class="db-btn db-btn-secondary" onclick="rcptShowStep(\'tab-header\')"><i class="fas fa-chevron-left" style="margin-right:8px;"></i> ' . __('Previous Step') . '</button>
+			<div style="display:flex; gap:12px;">
+                <button type="submit" name="Process" class="db-btn db-btn-primary"><i class="fas fa-plus" style="margin-right:8px;"></i> ' . __('Add to Batch') . '</button>
+                <button type="button" class="db-btn db-btn-success" onclick="rcptShowStep(\'tab-batch\')">' . __('Review Batch') . ' <i class="fas fa-chevron-right" style="margin-left:8px;"></i></button>
+            </div>
 		</div></div></div>';
 
 echo '<div id="tab-batch" class="rcpt-tab-content">
@@ -1089,7 +1271,9 @@ if (isset($_SESSION['ReceiptBatch' . $identifier]) && count($_SESSION['ReceiptBa
 	echo '<div style="padding:40px; text-align:center; color:var(--text-muted);">' . __('No receipts added to this batch yet.') . '</div>';
 }
 
-echo '</div></div></div>';
+echo '</div><div class="db-card-footer" style="text-align:left;">
+            <button type="button" class="db-btn db-btn-secondary" onclick="rcptShowStep(\'tab-entry\')"><i class="fas fa-chevron-left" style="margin-right:8px;"></i> ' . __('Back to Entry') . '</button>
+        </div></div></div>';
 
 echo '</form></div>'; // Close form and db-page
 include(__DIR__ . '/includes/footer.php');
