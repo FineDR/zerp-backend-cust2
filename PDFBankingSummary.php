@@ -45,6 +45,11 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 	$HeaderRow = DB_fetch_array($Result);
 	$ExRate = ($HeaderRow['exrate'] != 0) ? $HeaderRow['exrate'] : 1;
 	$FunctionalExRate = ($HeaderRow['functionalexrate'] != 0) ? $HeaderRow['functionalexrate'] : 1;
+	
+	// Safety check to ensure we don't multiply by zero if data is missing
+	if ($ExRate == 0) $ExRate = 1;
+	if ($FunctionalExRate == 0) $FunctionalExRate = 1;
+
 	$Currency = $HeaderRow['currcode'];
 	$BankedDate = $HeaderRow['transdate'];
 	$BankActName = $HeaderRow['bankaccountname'];
