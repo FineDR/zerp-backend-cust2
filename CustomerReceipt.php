@@ -173,16 +173,28 @@ window.addEventListener("load", function() {
 	var saved = localStorage.getItem("rcpt_active_step") || "tab-header";
 	rcptShowStep(saved);
 });
-    function confirmProcess(btn) {
-        if (confirm("' . __('Are you sure you want to process this entire receipt batch?') . '")) {
-            btn.disabled = true;
-            btn.innerHTML = \'<i class="fas fa-spinner fa-spin"></i> \' + "' . __('Processing...') . '";
-            btn.form.submit();
-            return true;
-        }
-        return false;
+function confirmProcess(btn) {
+    if (confirm("' . addslashes(__('Are you sure you want to process this entire receipt batch?')) . '")) {
+        var hidden = document.createElement("input");
+        hidden.type = "hidden";
+        hidden.name = "CommitBatch";
+        hidden.value = "1";
+        btn.form.appendChild(hidden);
+        
+        btn.innerHTML = \'<i class="fas fa-spinner fa-spin"></i> \' + "' . addslashes(__('Processing...')) . '";
+        // Use a slight timeout to disable so the submit event still has a trigger
+        setTimeout(function() { btn.disabled = true; }, 50);
+        return true;
     }
+    return false;
+}
 </script>';
+
+if (empty($_GET['identifier'])) {
+	$identifier = date('U');
+} else {
+	$identifier = $_GET['identifier'];
+}
 
 if (isset($_POST['BatchInput'])) {
     echo '<script>localStorage.setItem("rcpt_active_step", "tab-entry");</script>';
@@ -191,6 +203,7 @@ if (isset($_POST['Process']) || isset($_POST['Search']) || isset($_POST['Select'
     echo '<script>localStorage.setItem("rcpt_active_step", "tab-entry");</script>';
 }
 if (isset($_POST['CommitBatch'])) {
+    file_put_contents(__DIR__ . "/scratch/payment_debug.log", date("Y-m-d H:i:s") . " - COMMIT TRIGGERED\n", FILE_APPEND);
     echo '<script>localStorage.setItem("rcpt_active_step", "tab-header");</script>';
 }
 
@@ -202,13 +215,8 @@ echo '<div class="db-page">
 				<p class="db-page-subtitle">' . __('Record incoming funds and allocate to invoices') . '</p>
 			</div>
 			<div class="db-header-actions">';
-if (empty($_GET['identifier'])) {
-	$identifier = date('U');
-} else {
-	$identifier = $_GET['identifier'];
-}
 
-if (isset($_SESSION['ReceiptBatch' . $identifier]) && count($_SESSION['ReceiptBatch' . $identifier]->Items) > 0) {
+if (isset($_SESSION['ReceiptBatch' . $identifier]) && is_array($_SESSION['ReceiptBatch' . $identifier]->Items ?? null) && count($_SESSION['ReceiptBatch' . $identifier]->Items) > 0) {
 	echo '			<span class="db-badge db-badge-success" style="padding: 8px 16px; font-weight: 800;">' . count($_SESSION['ReceiptBatch' . $identifier]->Items) . ' ' . __('Items in Batch') . '</span>';
 }
 echo '				</div>
@@ -221,7 +229,9 @@ include(__DIR__ . '/includes/GLFunctions.php');
 $Msg='';
 
 if (isset($_GET['NewReceipt'])){
-	unset($_SESSION['ReceiptBatch' . $identifier]->Items);
+	if (isset($_SESSION['ReceiptBatch' . $identifier])) {
+		$_SESSION['ReceiptBatch' . $identifier]->Items = array();
+	}
 	unset($_SESSION['ReceiptBatch' . $identifier]);
 	unset($_SESSION['CustomerRecord' . $identifier]);
 }
@@ -253,36 +263,39 @@ $Errors = array();
 if (!isset($_GET['Delete']) AND isset($_SESSION['ReceiptBatch' . $identifier])){
 	//always process a header update unless deleting an item
 
-	$_SESSION['ReceiptBatch' . $identifier]->Account = $_POST['BankAccount'];
-	/*Get the bank account currency and set that too */
-
-	$SQL = "SELECT bankaccountname,
-					currcode,
-					decimalplaces
-			FROM bankaccounts
-			INNER JOIN currencies
-			ON bankaccounts.currcode=currencies.currabrev
-			WHERE accountcode='" . $_POST['BankAccount']."'";
-
-	$ErrMsg =__('The bank account name cannot be retrieved because');
-	$Result = DB_query($SQL, $ErrMsg);
-
-	if (DB_num_rows($Result)==1){
-		$MyRow = DB_fetch_array($Result);
-		$_SESSION['ReceiptBatch' . $identifier]->BankAccountName = $MyRow['bankaccountname'];
-		$_SESSION['ReceiptBatch' . $identifier]->AccountCurrency=$MyRow['currcode'];
-		$_SESSION['ReceiptBatch' . $identifier]->CurrDecimalPlaces=$MyRow['decimalplaces'];
-		unset($Result);
-	} elseif (DB_num_rows($Result)==0 AND !$BankAccountEmpty){
-		prnMsg( __('The bank account number') . ' ' . $_POST['BankAccount'] . ' ' . __('is not set up as a bank account'),'error');
-		include(__DIR__ . '/includes/footer.php');
-		exit();
+	if (isset($_POST['BankAccount']) && $_POST['BankAccount'] != '') {
+		$_SESSION['ReceiptBatch' . $identifier]->Account = $_POST['BankAccount'];
 	}
 
-	if (!Is_Date($_POST['DateBanked'])){
-		$_POST['DateBanked'] = date($_SESSION['DefaultDateFormat']);
+	if (isset($_SESSION['ReceiptBatch' . $identifier]->Account) && $_SESSION['ReceiptBatch' . $identifier]->Account != '') {
+		/*Get the bank account currency and set that too */
+		$SQL = "SELECT bankaccountname,
+						currcode,
+						decimalplaces
+				FROM bankaccounts
+				INNER JOIN currencies
+				ON bankaccounts.currcode=currencies.currabrev
+				WHERE accountcode='" . $_SESSION['ReceiptBatch' . $identifier]->Account . "'";
+
+		$ErrMsg =__('The bank account name cannot be retrieved because');
+		$Result = DB_query($SQL, $ErrMsg);
+
+		if (DB_num_rows($Result)==1){
+			$MyRow = DB_fetch_array($Result);
+			$_SESSION['ReceiptBatch' . $identifier]->BankAccountName = $MyRow['bankaccountname'];
+			$_SESSION['ReceiptBatch' . $identifier]->AccountCurrency=$MyRow['currcode'];
+			$_SESSION['ReceiptBatch' . $identifier]->CurrDecimalPlaces=$MyRow['decimalplaces'];
+			unset($Result);
+		} elseif (DB_num_rows($Result)==0 AND !$BankAccountEmpty){
+			prnMsg( __('The bank account number') . ' ' . ($_POST['BankAccount'] ?? $_SESSION['ReceiptBatch' . $identifier]->Account) . ' ' . __('is not set up as a bank account'),'error');
+			include(__DIR__ . '/includes/footer.php');
+			exit();
+		}
 	}
-	$_SESSION['ReceiptBatch' . $identifier]->DateBanked = $_POST['DateBanked'];
+
+	if (isset($_POST['DateBanked']) && Is_Date($_POST['DateBanked'])){
+		$_SESSION['ReceiptBatch' . $identifier]->DateBanked = $_POST['DateBanked'];
+	}
 	if (isset($_POST['ExRate']) AND $_POST['ExRate']!= ''){
 		if (is_numeric(filter_number_format($_POST['ExRate']))){
 			$_SESSION['ReceiptBatch' . $identifier]->ExRate = filter_number_format($_POST['ExRate']);
@@ -297,10 +310,15 @@ if (!isset($_GET['Delete']) AND isset($_SESSION['ReceiptBatch' . $identifier])){
 			prnMsg(__('The functional exchange rate entered should be numeric'),'warn');
 		}
 	}
-	if (!isset($_POST['ReceiptType'])) {
-		$_POST['ReceiptType'] = '';
+	if (isset($_POST['ReceiptType']) && $_POST['ReceiptType'] != '') {
+		$_SESSION['ReceiptBatch' . $identifier]->ReceiptType = $_POST['ReceiptType'];
 	}
-	$_SESSION['ReceiptBatch' . $identifier]->ReceiptType = $_POST['ReceiptType'];
+	if (isset($_POST['Currency']) && $_POST['Currency'] != '') {
+		$_SESSION['ReceiptBatch' . $identifier]->Currency = $_POST['Currency'];
+	}
+	if (isset($_POST['BatchNarrative']) && $_POST['BatchNarrative'] != '') {
+		$_SESSION['ReceiptBatch' . $identifier]->Narrative = $_POST['BatchNarrative'];
+	}
 
 	if (!isset($_POST['Currency'])){
 		$_POST['Currency']=$_SESSION['CompanyRecord']['currencydefault'];
@@ -311,8 +329,8 @@ if (!isset($_GET['Delete']) AND isset($_SESSION['ReceiptBatch' . $identifier])){
 		$_SESSION['ReceiptBatch' . $identifier]->Currency=$_POST['Currency']; //receipt currency
 		/*Now customer receipts entered using the previous currency need to be ditched
 		and a warning message displayed if there were some customer receipted entered */
-		if (count($_SESSION['ReceiptBatch' . $identifier]->Items)>0){
-			unset($_SESSION['ReceiptBatch' . $identifier]->Items);
+		if (is_array($_SESSION['ReceiptBatch' . $identifier]->Items ?? null) && count($_SESSION['ReceiptBatch' . $identifier]->Items)>0){
+			$_SESSION['ReceiptBatch' . $identifier]->Items = array();
 			prnMsg(__('Changing the currency of the receipt means that existing entries need to be re-done - only customers trading in the selected currency can be selected'),'warn');
 		}
 
@@ -426,9 +444,8 @@ if (isset($_POST['Process'])){ //user hit submit a new entry to the receipt batc
 
 	unset($_POST['PayeeBankDetail']);
 
-// Summary Bar
 $batchTotal = 0;
-if (isset($_SESSION['ReceiptBatch' . $identifier])) {
+if (isset($_SESSION['ReceiptBatch' . $identifier]) && is_array($_SESSION['ReceiptBatch' . $identifier]->Items ?? null)) {
 	foreach ($_SESSION['ReceiptBatch' . $identifier]->Items as $item) {
 		$batchTotal += $item->Amount;
 	}
@@ -547,6 +564,7 @@ if (isset($_POST['CommitBatch'])){
   also add the total discount total receipts*/
 
 	$PeriodNo = GetPeriod($_SESSION['ReceiptBatch' . $identifier]->DateBanked);
+
     
     // Safety check for exchange rates to prevent DivisionByZero errors
     if (($_SESSION['ReceiptBatch' . $identifier]->ExRate ?? 0) == 0) $_SESSION['ReceiptBatch' . $identifier]->ExRate = 1;
@@ -1237,7 +1255,7 @@ echo '<div id="tab-batch" class="rcpt-tab-content">
 			</div>
 			<div class="db-card-body">';
 
-if (isset($_SESSION['ReceiptBatch' . $identifier]) && count($_SESSION['ReceiptBatch' . $identifier]->Items) > 0) {
+if (isset($_SESSION['ReceiptBatch' . $identifier]) && is_array($_SESSION['ReceiptBatch' . $identifier]->Items ?? null) && count($_SESSION['ReceiptBatch' . $identifier]->Items) > 0) {
 	echo '<div class="db-table-wrapper">
 			<table class="db-table">
 				<thead>
@@ -1266,7 +1284,7 @@ if (isset($_SESSION['ReceiptBatch' . $identifier]) && count($_SESSION['ReceiptBa
 				<div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">' . __('Total to be Deposited') . '</div>
 				<div style="font-size:1.5rem; font-weight:950; color:var(--primary);">' . $_SESSION['ReceiptBatch' . $identifier]->Currency . ' ' . locale_number_format($batchTotal, $_SESSION['ReceiptBatch' . $identifier]->CurrDecimalPlaces) . '</div>
 			</div>
-			<button type="submit" name="CommitBatch" class="db-btn db-btn-primary" style="height:56px; padding:0 40px; font-size:1.1rem;" onclick="return confirmProcess(this);">
+			<button type="submit" name="CommitBatch" value="1" class="db-btn db-btn-primary" style="height:56px; padding:0 40px; font-size:1.1rem;">
 				<i class="fas fa-check-double" style="margin-right:12px;"></i> ' . __('Finalize & Post Batch') . '
 			</button>
 		  </div>';
