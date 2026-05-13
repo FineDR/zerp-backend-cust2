@@ -1017,7 +1017,8 @@ customer record returned by the search - this record is then auto selected */
 	   unset($_SESSION['CustomerRecord' . $identifier]);
 	}
 
-	$SQL = "SELECT debtorsmaster.name,
+	$SQL = "SELECT debtorsmaster.debtorno,
+				debtorsmaster.name,
 				debtorsmaster.pymtdiscount,
 				debtorsmaster.currcode,
 				currencies.currency,
@@ -1055,7 +1056,8 @@ customer record returned by the search - this record is then auto selected */
 	if ($_SESSION['SalesmanLogin'] !=  '') {
 		$SQL .= " AND debtortrans.salesperson='" . $_SESSION['SalesmanLogin'] . "'";
 	}
-	$SQL .= " GROUP BY debtorsmaster.name,
+	$SQL .= " GROUP BY debtorsmaster.debtorno,
+				debtorsmaster.name,
 				debtorsmaster.pymtdiscount,
 				debtorsmaster.currcode,
 				currencies.currency,
@@ -1079,7 +1081,8 @@ customer record returned by the search - this record is then auto selected */
 
 		$NIL_BALANCE = true;
 
-		$SQL = "SELECT debtorsmaster.name,
+		$SQL = "SELECT debtorsmaster.debtorno,
+						debtorsmaster.name,
 						debtorsmaster.pymtdiscount,
 						currencies.currency,
 						currencies.rate,
