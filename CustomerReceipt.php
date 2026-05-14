@@ -928,7 +928,7 @@ if (isset($_POST['CommitBatch'])){
                     </div>
 
                     <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <a href="' . $RootPath . '/PDFBankingSummary.php?BatchNo=' . $_SESSION['ReceiptBatch' . $identifier]->BatchNo . '" class="db-btn db-btn-primary" style="width: 100%; height: 52px; display: flex; align-items: center; justify-content: center; font-weight: 700; border-radius: 12px;">
+                        <a href="' . $RootPath . '/PDFBankingSummary.php?BatchNo=' . $_SESSION['ReceiptBatch' . $identifier]->BatchNo . '" target="_blank" class="db-btn db-btn-primary" style="width: 100%; height: 52px; display: flex; align-items: center; justify-content: center; font-weight: 700; border-radius: 12px;">
                             <i class="fas fa-print" style="margin-right: 10px;"></i> ' . __('Print Receipt Summary') . '
                         </a>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
