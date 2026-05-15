@@ -14,181 +14,212 @@ if (isset($_POST['PriceEndDate'])){$_POST['PriceEndDate'] = ConvertSQLDate($_POS
 
 echo '<p class="page_title_text"><img src="'.$RootPath.'/css/'.$Theme.'/images/money_add.png" title="' . __('Search') . '" alt="" />' . $Title . '</p>';
 
-echo '<div class="page_help_text">' . __('This page adds new prices or updates already existing prices for a specified sales type (price list) and currency for the stock category selected - based on a percentage mark up from cost prices or from preferred supplier cost data or from another price list. The rounding factor ensures that prices are at least this amount or a multiple of it. A rounding factor of 5 would mean that prices would be a minimum of 5 and other prices would be expressed as multiples of 5.') . '</div><br />';
-
-echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-
-$SQL = 'SELECT sales_type, typeabbrev FROM salestypes';
-
-$PricesResult = DB_query($SQL);
-
-echo '<fieldset>
-		<legend>', __('Price Update Criteria'), '</legend>
-		<field>
-			<label for="PriceList">' . __('Select the Price List to update') .':</label>
-			<select name="PriceList">';
-
-if (!isset($_POST['PriceList']) OR $_POST['PriceList']=='0'){
-	echo '<option selected="selected" value="0">' . __('No Price List Selected') . '</option>';
-}
-
-while ($PriceLists=DB_fetch_array($PricesResult)){
-	if (isset($_POST['PriceList']) and $_POST['PriceList']==$PriceLists['typeabbrev']){
-		echo '<option selected="selected" value="' . $PriceLists['typeabbrev'] . '">' . $PriceLists['sales_type'] . '</option>';
-	} else {
-		echo '<option value="' . $PriceLists['typeabbrev'] . '">' . $PriceLists['sales_type'] . '</option>';
-	}
-}
-
-echo '</select>
-	</field>';
-
-$SQL = "SELECT currency, currabrev FROM currencies";
-
-$Result = DB_query($SQL);
-
-echo '<field>
-		<label for="CurrCode">' . __('Select the price list currency to update') . ':</label>
-		<select name="CurrCode">';
-
-if (!isset($_POST['CurrCode'])){
-	echo '<option selected="selected" value="0">' . __('No Price List Currency Selected') . '</option>';
-}
-
-while ($Currencies=DB_fetch_array($Result)){
-	if (isset($_POST['CurrCode']) and $_POST['CurrCode']==$Currencies['currabrev']) {
-		echo '<option selected="selected" value="' . $Currencies['currabrev'] . '">' . $Currencies['currency'] . '</option>';
-	} else {
-		echo '<option value="' . $Currencies['currabrev'] . '">' . $Currencies['currency'] . '</option>';
-	}
-}
-
-echo '</select>
-	</field>';
-
-if ($_SESSION['WeightedAverageCosting']==1){
-	$CostingBasis = __('Weighted Average Costs');
-} else {
-	$CostingBasis = __('Standard Costs');
-}
-
-echo '<field>
-		<label for="CostType">' . __('Cost/Preferred Supplier Data Or Other Price List') . ':</label>
-		<select name="CostType">';
-if ($_POST['CostType']=='PreferredSupplier'){
-	 echo ' <option selected="selected" value="PreferredSupplier">' . __('Preferred Supplier Cost Data') . '</option>
-			<option value="StandardCost">' . $CostingBasis . '</option>
-			<option value="OtherPriceList">' . __('Another Price List') . '</option>';
-} elseif ($_POST['CostType']=='StandardCost'){
-	 echo ' <option value="PreferredSupplier">' . __('Preferred Supplier Cost Data') . '</option>
-			<option selected="selected" value="StandardCost">' . $CostingBasis . '</option>
-			<option value="OtherPriceList">' . __('Another Price List') . '</option>';
-} else {
-	echo ' <option value="PreferredSupplier">' . __('Preferred Supplier Cost Data') . '</option>
-			<option value="StandardCost">' . $CostingBasis . '</option>
-			<option selected="selected" value="OtherPriceList">' . __('Another Price List') . '</option>';
-}
-echo '</select>
-	</field>';
-
-DB_data_seek($PricesResult,0);
-
-if (isset($_POST['CostType']) and $_POST['CostType']=='OtherPriceList'){
-	 echo '<field>
-			<label for="BasePriceList">' . __('Select the Base Price List to Use') . ':</label>
-			<select name="BasePriceList">';
-
-	if (!isset($_POST['BasePriceList']) OR $_POST['BasePriceList']=='0'){
-		echo '<option selected="selected" value="0">' . __('No Price List Selected') . '</option>';
-	}
-	while ($PriceLists=DB_fetch_array($PricesResult)){
-		if (isset($_POST['BasePriceList']) AND $_POST['BasePriceList']==$PriceLists['typeabbrev']){
-			echo '<option selected="selected" value="' . $PriceLists['typeabbrev'] . '">' . $PriceLists['sales_type'] . '</option>';
-		} else {
-			echo '<option value="' . $PriceLists['typeabbrev'] . '">' . $PriceLists['sales_type'] . '</option>';
+	echo '<style>
+		.modern-form-container {
+			max-width: 950px;
+			margin: 20px auto;
+			padding: 30px;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			box-shadow: var(--shadow-md);
 		}
+		.form-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+			gap: 25px;
+			margin-bottom: 30px;
+		}
+		.form-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+		.form-group.full-width {
+			grid-column: 1 / -1;
+		}
+		.form-group label {
+			font-weight: 600;
+			color: var(--text-label);
+			font-size: 0.9rem;
+		}
+		.form-group select, .form-group input {
+			padding: 10px;
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+			background: var(--surface);
+			font-size: 0.9rem;
+			transition: all var(--transition-fast);
+		}
+		.form-group select:focus, .form-group input:focus {
+			border-color: var(--primary);
+			box-shadow: 0 0 0 3px var(--primary-soft);
+			outline: none;
+		}
+		.page_help_text {
+			background: var(--primary-soft);
+			color: var(--primary-hover);
+			padding: 15px 20px;
+			border-radius: var(--radius-md);
+			border-left: 4px solid var(--primary);
+			margin-bottom: 25px;
+			font-size: 0.95rem;
+			line-height: 1.5;
+		}
+		.button-group {
+			display: flex;
+			justify-content: center;
+			gap: 15px;
+			border-top: 1px solid var(--border-soft);
+			padding-top: 25px;
+		}
+		.button-group input[type="submit"] {
+			padding: 12px 40px;
+			border-radius: var(--radius-sm);
+			font-weight: 700;
+			cursor: pointer;
+			border: none;
+			transition: all var(--transition-fast);
+			background: var(--primary);
+			color: white;
+		}
+		.button-group input[type="submit"]:hover {
+			opacity: 0.9;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px var(--primary-glow);
+			background: var(--primary-hover);
+		}
+		.fieldhelp {
+			font-size: 0.85rem;
+			color: var(--text-muted);
+			font-style: italic;
+			margin-top: 4px;
+		}
+	</style>';
+
+	echo '<div class="modern-form-container">';
+	echo '<div class="page_help_text">' . __('This page adds new prices or updates already existing prices for a specified sales type (price list) and currency for the stock category selected - based on a percentage mark up from cost prices or from preferred supplier cost data or from another price list. The rounding factor ensures that prices are at least this amount or a multiple of it. A rounding factor of 5 would mean that prices would be a minimum of 5 and other prices would be expressed as multiples of 5.') . '</div>';
+
+	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '">';
+	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+
+	echo '<div class="form-grid">';
+	
+	// Price List
+	$SQL = 'SELECT sales_type, typeabbrev FROM salestypes';
+	$PricesResult = DB_query($SQL);
+	echo '<div class="form-group">
+			<label>' . __('Price List to update') . '</label>
+			<select name="PriceList">
+				<option value="0">' . __('No Price List Selected') . '</option>';
+	while ($PriceLists = DB_fetch_array($PricesResult)) {
+		$selected = (isset($_POST['PriceList']) && $_POST['PriceList'] == $PriceLists['typeabbrev']) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="' . $PriceLists['typeabbrev'] . '">' . $PriceLists['sales_type'] . '</option>';
 	}
-	echo '</select>
-		</field>';
-}
+	echo '  </select>
+		  </div>';
 
-echo '<field>
-		<label for="StkCatFrom">' . __('Stock Category From') . ':</label>
-		<select name="StkCatFrom">';
-
-$SQL = "SELECT categoryid, categorydescription FROM stockcategory ORDER BY categoryid";
-
-$ErrMsg = __('The stock categories could not be retrieved because');
-$Result = DB_query($SQL, $ErrMsg);
-
-while ($MyRow=DB_fetch_array($Result)){
-	if (isset($_POST['StkCatFrom']) and $MyRow['categoryid']==$_POST['StkCatFrom']){
-		echo '<option selected="selected" value="' . $MyRow['categoryid'] . '">' . $MyRow['categoryid'] . ' - ' . $MyRow['categorydescription'] . '</option>';
-	} else {
-		echo '<option value="' . $MyRow['categoryid'] . '">'  . $MyRow['categoryid'] . ' - ' . $MyRow['categorydescription'] . '</option>';
+	// Currency
+	$SQL = "SELECT currency, currabrev FROM currencies";
+	$Result = DB_query($SQL);
+	echo '<div class="form-group">
+			<label>' . __('Price List Currency') . '</label>
+			<select name="CurrCode">
+				<option value="0">' . __('No Currency Selected') . '</option>';
+	while ($Currencies = DB_fetch_array($Result)) {
+		$selected = (isset($_POST['CurrCode']) && $_POST['CurrCode'] == $Currencies['currabrev']) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="' . $Currencies['currabrev'] . '">' . $Currencies['currency'] . '</option>';
 	}
-}
-echo '</select>
-	</field>';
+	echo '  </select>
+		  </div>';
 
-DB_data_seek($Result,0);
+	// Costing Basis
+	$CostingBasis = ($_SESSION['WeightedAverageCosting'] == 1) ? __('Weighted Average Costs') : __('Standard Costs');
+	echo '<div class="form-group">
+			<label>' . __('Basis for Update') . '</label>
+			<select name="CostType">
+				<option ' . (($_POST['CostType'] == 'PreferredSupplier') ? 'selected' : '') . ' value="PreferredSupplier">' . __('Preferred Supplier Cost Data') . '</option>
+				<option ' . (($_POST['CostType'] == 'StandardCost') ? 'selected' : '') . ' value="StandardCost">' . $CostingBasis . '</option>
+				<option ' . (($_POST['CostType'] == 'OtherPriceList') ? 'selected' : '') . ' value="OtherPriceList">' . __('Another Price List') . '</option>
+			</select>
+		  </div>';
 
-echo '<field>
-		<label for="StkCatTo">' . __('Stock Category To') . ':</label>
-		<select name="StkCatTo">';
-
-while ($MyRow=DB_fetch_array($Result)){
-	if (isset($_POST['StkCatFrom']) and $MyRow['categoryid']==$_POST['StkCatTo']){
-		echo '<option selected="selected" value="'. $MyRow['categoryid'] . '">' . $MyRow['categoryid'] . ' - ' . $MyRow['categorydescription'] . '</option>';
-	} else {
-		echo '<option  value="'. $MyRow['categoryid'] . '">'  . $MyRow['categoryid'] . ' - ' . $MyRow['categorydescription'] . '</option>';
+	// Base Price List (conditional)
+	if (isset($_POST['CostType']) && $_POST['CostType'] == 'OtherPriceList') {
+		DB_data_seek($PricesResult, 0);
+		echo '<div class="form-group">
+				<label>' . __('Base Price List') . '</label>
+				<select name="BasePriceList">
+					<option value="0">' . __('No Price List Selected') . '</option>';
+		while ($PriceLists = DB_fetch_array($PricesResult)) {
+			$selected = (isset($_POST['BasePriceList']) && $_POST['BasePriceList'] == $PriceLists['typeabbrev']) ? 'selected="selected"' : '';
+			echo '<option ' . $selected . ' value="' . $PriceLists['typeabbrev'] . '">' . $PriceLists['sales_type'] . '</option>';
+		}
+		echo '  </select>
+			  </div>';
 	}
-}
-echo '</select>
-	</field>';
 
-if (!isset($_POST['RoundingFactor'])){
-	$_POST['RoundingFactor']=CurrencyTolerance($_POST['CurrCode']);
-}
+	// Stock Category Range
+	$SQL = "SELECT categoryid, categorydescription FROM stockcategory ORDER BY categoryid";
+	$Result = DB_query($SQL);
+	
+	echo '<div class="form-group">
+			<label>' . __('Stock Category From') . '</label>
+			<select name="StkCatFrom">';
+	while ($MyRow = DB_fetch_array($Result)) {
+		$selected = (isset($_POST['StkCatFrom']) && $MyRow['categoryid'] == $_POST['StkCatFrom']) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="' . $MyRow['categoryid'] . '">' . $MyRow['categoryid'] . ' - ' . $MyRow['categorydescription'] . '</option>';
+	}
+	echo '  </select>
+		  </div>';
 
-if (!isset($_POST['PriceStartDate'])) {
-	$_POST['PriceStartDate']=DateAdd(date($_SESSION['DefaultDateFormat']),'d',1);
-}
+	DB_data_seek($Result, 0);
+	echo '<div class="form-group">
+			<label>' . __('Stock Category To') . '</label>
+			<select name="StkCatTo">';
+	while ($MyRow = DB_fetch_array($Result)) {
+		$selected = (isset($_POST['StkCatTo']) && $MyRow['categoryid'] == $_POST['StkCatTo']) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="' . $MyRow['categoryid'] . '">' . $MyRow['categoryid'] . ' - ' . $MyRow['categorydescription'] . '</option>';
+	}
+	echo '  </select>
+		  </div>';
 
-if (!isset($_POST['PriceEndDate'])) {
-	$_POST['PriceEndDate']=DateAdd(date($_SESSION['DefaultDateFormat']), 'y', 1);
-}
+	// Dates
+	if (!isset($_POST['PriceStartDate'])) { $_POST['PriceStartDate'] = DateAdd(date($_SESSION['DefaultDateFormat']), 'd', 1); }
+	if (!isset($_POST['PriceEndDate'])) { $_POST['PriceEndDate'] = DateAdd(date($_SESSION['DefaultDateFormat']), 'y', 1); }
+	
+	echo '<div class="form-group">
+			<label>' . __('Effective From') . '</label>
+			<input type="date" name="PriceStartDate" value="' . FormatDateForSQL($_POST['PriceStartDate']) . '" />
+		  </div>';
 
-echo '<field>
-		<label for="RoundingFactor">' . __('Rounding Factor') . ':</label>
-		<input type="text" class="number" name="RoundingFactor" size="6" title="" maxlength="6" value="' . $_POST['RoundingFactor'] . '" />
-		<fieldhelp>' . __('To round to the smallest amount enter') . ' ' . CurrencyTolerance($_POST['CurrCode']) . '. ' . __('To round to the nearest whole dollar enter 1. To round to the nearest 5 dollars enter 5 etc') . '</fieldhelp>
-	</field>';
+	echo '<div class="form-group">
+			<label>' . __('Effective To (Blank = No End Date)') . '</label>
+			<input type="date" name="PriceEndDate" value="' . FormatDateForSQL($_POST['PriceEndDate']) . '" />
+		  </div>';
 
-echo '<field>
-		<label for="PriceStartDate">' . __('New Price To Be Effective From') . ':</label>
-		<input type="date" name="PriceStartDate" size="11" maxlength="10" value="' . FormatDateForSQL($_POST['PriceStartDate']) . '" />
-	</field>';
+	// Rounding and Increase
+	if (!isset($_POST['RoundingFactor'])) { $_POST['RoundingFactor'] = CurrencyTolerance($_POST['CurrCode']); }
+	if (!isset($_POST['IncreasePercent'])) { $_POST['IncreasePercent'] = 0; }
 
-echo '<field>
-		<label for="PriceEndDate">' . __('New Price To Be Effective To (Blank = No End Date)') . ':</label>
-		<input type="date" name="PriceEndDate" size="11" maxlength="10" value="' . FormatDateForSQL($_POST['PriceEndDate']) . '" />
-	</field>';
+	echo '<div class="form-group">
+			<label>' . __('Rounding Factor') . '</label>
+			<input type="text" class="number" name="RoundingFactor" value="' . $_POST['RoundingFactor'] . '" />
+			<div class="fieldhelp">' . __('Example: 1 for whole numbers, 5 for multiples of 5') . '</div>
+		  </div>';
 
-if (!isset($_POST['IncreasePercent'])){
-	$_POST['IncreasePercent']=0;
-}
+	echo '<div class="form-group">
+			<label>' . __('Markup Percentage (+/-)') . '</label>
+			<input type="text" name="IncreasePercent" class="number" value="' . $_POST['IncreasePercent'] . '" />
+		  </div>';
 
-echo '<field>
-		<label for="IncreasePercent">' . __('Percentage Increase (positive) or decrease (negative)') . '</label>
-		<input type="text" name="IncreasePercent" class="number" size="4" maxlength="4" value="' . $_POST['IncreasePercent'] . '" />
-	</field>
-</fieldset>';
+	echo '</div>'; // end form-grid
 
-echo '<div class="centre">
-		<input type="submit" name="UpdatePrices" value="' . __('Update Prices') . '"  onclick="return confirm(\'' . __('Are you sure you wish to update or add all the prices according to the criteria selected?') . '\');" />
-	</div>';
+	echo '<div class="button-group">
+			<input type="submit" name="UpdatePrices" value="' . __('Update Prices') . '" onclick="return confirm(\'' . __('Are you sure you wish to update or add all the prices according to the criteria selected?') . '\');" />
+		  </div>';
+
+	echo '</form></div>';
 
 echo '</form>';
 

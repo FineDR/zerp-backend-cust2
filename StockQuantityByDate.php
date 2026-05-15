@@ -13,89 +13,134 @@ echo '<p class="page_title_text" >
 		<img src="' . $RootPath . '/css/' . $_SESSION['Theme'] . '/images/inventory.png" title="' . __('Inventory') . '" alt="" /><b>' . $Title . '</b>
 	</p>';
 
-echo '<form action="' . htmlspecialchars(basename(__FILE__), ENT_QUOTES, 'UTF-8') . '" method="post">';
-echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+	echo '<style>
+		.modern-form-container {
+			max-width: 900px;
+			margin: 20px auto;
+			padding: 30px;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			box-shadow: var(--shadow-md);
+		}
+		.form-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: 25px;
+			margin-bottom: 30px;
+		}
+		.form-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+		.form-group label {
+			font-weight: 600;
+			color: var(--text-label);
+			font-size: 0.9rem;
+		}
+		.form-group select, .form-group input:not([type="checkbox"]) {
+			padding: 10px;
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+			background: var(--surface);
+			font-size: 0.9rem;
+			transition: all var(--transition-fast);
+		}
+		.form-group select:focus, .form-group input:not([type="checkbox"]):focus {
+			border-color: var(--primary);
+			box-shadow: 0 0 0 3px var(--primary-soft);
+			outline: none;
+		}
+		.checkbox-group {
+			flex-direction: row;
+			align-items: center;
+			gap: 12px;
+			padding: 12px;
+			background: var(--primary-soft);
+			border-radius: var(--radius-sm);
+		}
+		.button-group {
+			display: flex;
+			justify-content: center;
+			gap: 15px;
+			border-top: 1px solid var(--border-soft);
+			padding-top: 25px;
+		}
+		.button-group input[type="submit"] {
+			padding: 12px 35px;
+			border-radius: var(--radius-sm);
+			font-weight: 700;
+			cursor: pointer;
+			border: none;
+			transition: all var(--transition-fast);
+			background: var(--primary);
+			color: white;
+		}
+		.button-group input[type="submit"]:hover {
+			opacity: 0.9;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px var(--primary-glow);
+			background: var(--primary-hover);
+		}
+		.report-table-wrapper {
+			width: 100%;
+			overflow-x: auto;
+			margin-top: 20px;
+			border-radius: var(--radius-md);
+			border: 1px solid var(--border);
+		}
+	</style>';
 
-$SQL = "SELECT categoryid, categorydescription FROM stockcategory";
-$ResultStkLocs = DB_query($SQL);
-
-echo '<fieldset>
-		<legend>', __('Report Criteria'), '</legend>
-		<field>
-			<label for="StockCategory">' . __('For Stock Category') . ':</label>
+	echo '<div class="modern-form-container">';
+	echo '<form action="' . htmlspecialchars(basename(__FILE__), ENT_QUOTES, 'UTF-8') . '" method="post">';
+	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+	
+	echo '<div class="form-grid">';
+	
+	echo '<div class="form-group">
+			<label>' . __('Stock Category') . '</label>
 			<select required="required" name="StockCategory">
 				<option value="All">' . __('All') . '</option>';
-
-while ($MyRow = DB_fetch_array($ResultStkLocs)) {
-	if (isset($_POST['StockCategory']) and $_POST['StockCategory'] != 'All') {
-		if ($MyRow['categoryid'] == $_POST['StockCategory']) {
-			echo '<option selected="selected" value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
-		} else {
-			echo '<option value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
-		}
-	} else {
-		echo '<option value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
+	$SQL = "SELECT categoryid, categorydescription FROM stockcategory";
+	$ResultStkLocs = DB_query($SQL);
+	while ($MyRow = DB_fetch_array($ResultStkLocs)) {
+		$selected = (isset($_POST['StockCategory']) && $_POST['StockCategory'] == $MyRow['categoryid']) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
 	}
-}
-echo '</select>
-	</field>';
+	echo '  </select>
+		  </div>';
 
-$SQL = "SELECT locationname,
-				locations.loccode
-			FROM locations
-			INNER JOIN locationusers
-				ON locationusers.loccode=locations.loccode
-				AND locationusers.userid='" . $_SESSION['UserID'] . "'
-				AND locationusers.canview=1";
-
-$ResultStkLocs = DB_query($SQL);
-
-echo '<field>
-		<label for="StockLocation">' . __('For Stock Location') . ':</label>
-		<select required="required" name="StockLocation"> ';
-
-while ($MyRow = DB_fetch_array($ResultStkLocs)) {
-	if (isset($_POST['StockLocation']) and $_POST['StockLocation'] != 'All') {
-		if ($MyRow['loccode'] == $_POST['StockLocation']) {
-			echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		} else {
-			echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		}
-	} elseif ($MyRow['loccode'] == $_SESSION['UserStockLocation']) {
-		echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		$_POST['StockLocation'] = $MyRow['loccode'];
-	} else {
-		echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
+	echo '<div class="form-group">
+			<label>' . __('Stock Location') . '</label>
+			<select required="required" name="StockLocation">';
+	$SQL = "SELECT locationname, locations.loccode FROM locations
+			INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1";
+	$ResultStkLocs = DB_query($SQL);
+	while ($MyRow = DB_fetch_array($ResultStkLocs)) {
+		$selected = (isset($_POST['StockLocation']) && $_POST['StockLocation'] == $MyRow['loccode']) ? 'selected="selected"' : (!isset($_POST['StockLocation']) && $MyRow['loccode']==$_SESSION['UserStockLocation'] ? 'selected="selected"' : '');
+		echo '<option ' . $selected . ' value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 	}
-}
-echo '</select>
-	</field>';
+	echo '  </select>
+		  </div>';
 
-if (!isset($_POST['OnHandDate'])) {
-	$_POST['OnHandDate'] = date($_SESSION['DefaultDateFormat'], mktime(0, 0, 0, date('m'), 0, date('y')));
-}
+	if (!isset($_POST['OnHandDate'])) { $_POST['OnHandDate'] = date($_SESSION['DefaultDateFormat'], mktime(0, 0, 0, date('m'), 0, date('y'))); }
+	echo '<div class="form-group">
+			<label>' . __('On-Hand On Date') . '</label>
+			<input type="date" name="OnHandDate" required="required" value="' . FormatDateForSQL($_POST['OnHandDate']) . '" />
+		  </div>';
 
-echo '<field>
-		<label for="OnHandDate">' . __('On-Hand On Date') . ':</label>
-		<input type="date" name="OnHandDate" size="12" required="required" maxlength="10" value="' . FormatDateForSQL($_POST['OnHandDate']) . '" />
-	</field>';
+	echo '<div class="form-group checkbox-group">
+			<input type="checkbox" name="ShowZeroStocks" id="ShowZeroStocks" ' . (isset($_POST['ShowZeroStocks']) ? 'checked' : '') . ' />
+			<label for="ShowZeroStocks">' . __('Include zero stocks') . '</label>
+		  </div>';
+	
+	echo '</div>'; // end form-grid
 
-if (isset($_POST['ShowZeroStocks'])) {
-	$Checked = 'checked="checked"';
-} else {
-	$Checked = '';
-}
-
-echo '<field>
-		<label for="ShowZeroStocks">', ('Include zero stocks'), '</label>
-		<input type="checkbox" name="ShowZeroStocks" value="" ', $Checked, '  />
-	</field>
-</fieldset>';
-
-echo '<div class="centre">
-		<input type="submit" name="ShowStatus" value="' . __('Show Stock Status') . '" />
-	</div>
-</form>';
+	echo '<div class="button-group">
+			<input type="submit" name="ShowStatus" value="' . __('Show Stock Status') . '" />
+		  </div>';
+	echo '</form></div>';
 
 $TotalQuantity = 0;
 
@@ -123,13 +168,17 @@ if (isset($_POST['ShowStatus']) and is_date($_POST['OnHandDate'])) {
 
 	$SQLOnHandDate = FormatDateForSQL($_POST['OnHandDate']);
 
-	echo '<table>
+	echo '<div class="report-table-wrapper">
+			<table class="selection">
+			<thead>
 			<tr>
 				<th>' . __('Item Code') . '</th>
 				<th>' . __('Description') . '</th>
 				<th>' . __('Quantity On Hand') . '</th>
 				<th>' . __('Controlled') . '</th>
-			</tr>';
+			</tr>
+			</thead>
+			<tbody>';
 
 	while ($MyRow = DB_fetch_array($StockResult)) {
 
@@ -187,13 +236,14 @@ if (isset($_POST['ShowStatus']) and is_date($_POST['OnHandDate'])) {
 		}
 
 	} //end of while loop
-	echo '<tr class="total_row">
-			<td></td>
-			<td>' . __('Total Quantity') . ':</td>
-			<td class="number">' . $TotalQuantity . '</td>
-			<td></td>
-		</tr>
-		</table>';
+	echo '</tbody><tfoot>
+			<tr class="total_row">
+				<td colspan="2" class="number"><strong>' . __('Total Quantity') . ':</strong></td>
+				<td class="number"><strong>' . locale_number_format($TotalQuantity, 2) . '</strong></td>
+				<td></td>
+			</tr>
+			</tfoot>
+			</table></div>';
 }
 
 include(__DIR__ . '/includes/footer.php');

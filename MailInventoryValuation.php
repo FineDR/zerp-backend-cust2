@@ -179,15 +179,59 @@ if ($ListCount == 0) {
 	$Title = __('Send Report By Email');
 	include(__DIR__ . '/includes/header.php');
 
+	echo '<style>
+		.modern-status-card {
+			max-width: 600px;
+			margin: 40px auto;
+			padding: 30px;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			box-shadow: var(--shadow-md);
+			text-align: center;
+		}
+		.status-icon {
+			font-size: 3rem;
+			margin-bottom: 20px;
+			display: block;
+		}
+		.status-success { color: var(--success); }
+		.status-error { color: var(--danger); }
+		.status-msg {
+			font-size: 1.1rem;
+			font-weight: 600;
+			color: var(--text-main);
+			margin-bottom: 25px;
+		}
+		.back-btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			padding: 10px 24px;
+			background: var(--primary);
+			color: white;
+			text-decoration: none;
+			border-radius: var(--radius-sm);
+			font-weight: 600;
+			transition: all var(--transition-fast);
+		}
+		.back-btn:hover {
+			background: var(--primary-hover);
+			transform: translateY(-1px);
+			box-shadow: 0 4px 12px var(--primary-glow);
+		}
+	</style>';
+
+	echo '<div class="modern-status-card">';
 	if ($Result) {
-		$Title = __('Print Inventory Valuation');
-		prnMsg(__('The Inventory valuation report has been mailed'), 'success');
-		echo '<div class="centre"><a href="' . $RootPath . '/index.php">' . __('Back to the menu') . '</a></div>';
+		echo '<span class="status-icon status-success">✓</span>';
+		echo '<div class="status-msg">' . __('The Inventory valuation report has been mailed successfully.') . '</div>';
 	} else {
-		$Title = __('Print Inventory Valuation Error');
-		prnMsg(__('There are errors and the emails were not sent'), 'error');
-		echo '<div class="centre"><a href="' . $RootPath . '/index.php">' . __('Back to the menu') . '</a></div>';
+		echo '<span class="status-icon status-error">✕</span>';
+		echo '<div class="status-msg">' . __('Error: The email report could not be sent. Please check your system settings.') . '</div>';
 	}
+	echo '<a href="' . $RootPath . '/index.php" class="back-btn">← ' . __('Back to Menu') . '</a>';
+	echo '</div>';
 
 	include(__DIR__ . '/includes/footer.php');
 }

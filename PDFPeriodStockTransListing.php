@@ -189,20 +189,95 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 		prnMsg($Msg, 'error');
 	}
 
+	echo '<style>
+		.modern-form-container {
+			max-width: 900px;
+			margin: 20px auto;
+			padding: 30px;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			box-shadow: var(--shadow-md);
+		}
+		.form-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: 25px;
+			margin-bottom: 30px;
+		}
+		.form-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+		.form-group label {
+			font-weight: 600;
+			color: var(--text-label);
+			font-size: 0.9rem;
+		}
+		.form-group select, .form-group input {
+			padding: 10px;
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+			background: var(--surface);
+			font-size: 0.9rem;
+			transition: all var(--transition-fast);
+		}
+		.form-group select:focus, .form-group input:focus {
+			border-color: var(--primary);
+			box-shadow: 0 0 0 3px var(--primary-soft);
+			outline: none;
+		}
+		.button-group {
+			display: flex;
+			justify-content: center;
+			gap: 15px;
+			border-top: 1px solid var(--border-soft);
+			padding-top: 25px;
+		}
+		.button-group input[type="submit"] {
+			padding: 12px 30px;
+			border-radius: var(--radius-sm);
+			font-weight: 700;
+			cursor: pointer;
+			border: none;
+			transition: all var(--transition-fast);
+			background: var(--primary);
+			color: white;
+		}
+		.button-group input[type="submit"]:hover {
+			opacity: 0.9;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px var(--primary-glow);
+			background: var(--primary-hover);
+		}
+		.report-table-wrapper {
+			width: 100%;
+			overflow-x: auto;
+			margin-top: 20px;
+			border-radius: var(--radius-md);
+			border: 1px solid var(--border);
+		}
+	</style>';
+
+	echo '<div class="modern-form-container">';
 	echo '<form method="post" action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" target="_blank">
-		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />
-		<fieldset>
-			<legend>', __('Report Criteria'), '</legend>
-		<field>
-			<label for="FromDate">' . __('Enter the date from which the transactions are to be listed') . ':</label>
-			<input required="required" autofocus="autofocus" name="FromDate" maxlength="10" size="11" type="date" value="' . date('Y-m-d') . '" />
-		</field>
-		<field>
-			<label for="ToDate">' . __('Enter the date to which the transactions are to be listed') . ':</label>
-			<input required="required" name="ToDate" maxlength="10" size="11" type="date" value="' . date('Y-m-d') . '" />
-		</field>
-		<field>
-			<label for="TransType">' . __('Transaction type') . '</label>
+		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
+	
+	echo '<div class="form-grid">';
+	
+	echo '<div class="form-group">
+			<label>' . __('From Date') . '</label>
+			<input required="required" autofocus="autofocus" name="FromDate" type="date" value="' . date('Y-m-d') . '" />
+		  </div>';
+
+	echo '<div class="form-group">
+			<label>' . __('To Date') . '</label>
+			<input required="required" name="ToDate" type="date" value="' . date('Y-m-d') . '" />
+		  </div>';
+
+	echo '<div class="form-group">
+			<label>' . __('Transaction type') . '</label>
 			<select name="TransType">
 				<option value="10">' . __('Sales Invoice') . '</option>
 				<option value="11">' . __('Sales Credit Note') . '</option>
@@ -212,42 +287,29 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 				<option value="26">' . __('Work Order Receipt') . '</option>
 				<option value="28">' . __('Work Order Issue') . '</option>
 			</select>
-		</field>';
+		  </div>';
 
 	$SQL = "SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1";
 	$ResultStkLocs = DB_query($SQL);
 
-	echo '<field>
-			<label for="StockLocation">' . __('For Stock Location') . ':</label>
+	echo '<div class="form-group">
+			<label>' . __('For Stock Location') . '</label>
 			<select required="required" name="StockLocation">
 				<option value="All">' . __('All') . '</option>';
-
 	while ($MyRow = DB_fetch_array($ResultStkLocs)) {
-		if (isset($_POST['StockLocation']) and $_POST['StockLocation'] != 'All') {
-			if ($MyRow['loccode'] == $_POST['StockLocation']) {
-				echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-			}
-			else {
-				echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-			}
-		}
-		elseif ($MyRow['loccode'] == $_SESSION['UserStockLocation']) {
-			echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-			$_POST['StockLocation'] = $MyRow['loccode'];
-		}
-		else {
-			echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		}
+		$selected = (isset($_POST['StockLocation']) && $_POST['StockLocation'] == $MyRow['loccode']) ? 'selected="selected"' : (!isset($_POST['StockLocation']) && $MyRow['loccode']==$_SESSION['UserStockLocation'] ? 'selected="selected"' : '');
+		echo '<option ' . $selected . ' value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 	}
-	echo '</select>
-		</field>';
+	echo '  </select>
+		  </div>';
 
-	echo '</fieldset>
-			<div class="centre">
-				<input type="submit" name="PrintPDF" title="Produce PDF Report" value="' . __('Print PDF') . '" />
-				<input type="submit" name="View" title="View Report" value="' . __('View') . '" />
-			</div>';
-	echo '</form>';
+	echo '</div>'; // end form-grid
+
+	echo '<div class="button-group">
+			<input type="submit" name="PrintPDF" title="Produce PDF Report" value="' . __('Print PDF') . '" />
+			<input type="submit" name="View" title="View Report" value="' . __('View') . '" />
+		  </div>';
+	echo '</form></div>';
 
 	include (__DIR__ . '/includes/footer.php');
 }

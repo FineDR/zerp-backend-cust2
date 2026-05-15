@@ -308,47 +308,99 @@ if (isset($_POST['PrintPDF']) and isset($_POST['ReportOrClose'])) {
 
 	echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/transactions.png" title="' . $Title . '" alt="" />' . ' ' . $Title . '</p>';
 
+	echo '<style>
+		.modern-form-container {
+			max-width: 800px;
+			margin: 20px auto;
+			padding: 30px;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			box-shadow: var(--shadow-md);
+		}
+		.form-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+			gap: 25px;
+			margin-bottom: 30px;
+		}
+		.form-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+		.form-group label {
+			font-weight: 600;
+			color: var(--text-label);
+			font-size: 0.9rem;
+		}
+		.form-group select {
+			padding: 10px;
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+			background: var(--surface);
+			font-size: 0.9rem;
+			transition: all var(--transition-fast);
+		}
+		.form-group select:focus {
+			border-color: var(--primary);
+			box-shadow: 0 0 0 3px var(--primary-soft);
+			outline: none;
+		}
+		.button-group {
+			display: flex;
+			justify-content: center;
+			gap: 15px;
+			border-top: 1px solid var(--border-soft);
+			padding-top: 25px;
+		}
+		.button-group input[type="submit"] {
+			padding: 12px 30px;
+			border-radius: var(--radius-sm);
+			font-weight: 700;
+			cursor: pointer;
+			border: none;
+			transition: all var(--transition-fast);
+			background: var(--primary);
+			color: white;
+		}
+		.button-group input[type="submit"]:hover {
+			opacity: 0.9;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px var(--primary-glow);
+			background: var(--primary-hover);
+		}
+	</style>';
+
+	echo '<div class="modern-form-container">';
 	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" target="_blank">';
 	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-	echo '<fieldset>
-			<legend>', __('Stock Check Options'), '</legend>';
-	echo '<field>
-			<label for="ReportOrClose">' . __('Choose Option') . ':</label>
-			<select name="ReportOrClose">';
+	echo '<div class="form-grid">';
+	
+	echo '<div class="form-group">
+			<label>' . __('Choose Option') . '</label>
+			<select name="ReportOrClose">
+				<option selected="selected" value="ReportOnly">' . __('Report The Inventory Comparison Differences Only - No Adjustments') . '</option>
+				<option value="ReportAndClose">' . __('Report and Close the Inventory Comparison Processing Adjustments As Necessary') . '</option>
+			</select>
+		  </div>';
 
-	if ($_POST['ReportOrClose'] == 'ReportAndClose') {
-		echo '<option selected="selected" value="ReportAndClose">' . __('Report and Close the Inventory Comparison Processing Adjustments As Necessary') . '</option>';
-		echo '<option value="ReportOnly">' . __('Report The Inventory Comparison Differences Only - No Adjustments') . '</option>';
-	}
-	else {
-		echo '<option selected="selected" value="ReportOnly">' . __('Report The Inventory Comparison Differences Only - No Adjustments') . '</option>';
-		echo '<option value="ReportAndClose">' . __('Report and Close the Inventory Comparison Processing Adjustments As Necessary') . '</option>';
-	}
+	echo '<div class="form-group">
+			<label>' . __('Action for Zero Counts') . '</label>
+			<select name="ZeroCounts">
+				<option value="Adjust">' . __('Adjust System stock to Nil') . '</option>
+				<option selected="selected" value="Leave">' . __('Do not Adjust System stock to Nil') . '</option>
+			</select>
+		  </div>';
+	
+	echo '</div>'; // end form-grid
 
-	echo '</select>
-		</field>';
-
-	echo '<field>
-			<label for="ZeroCounts">' . __('Action for Zero Counts') . ':</label>
-			<select name="ZeroCounts">';
-
-	if ($_POST['ZeroCounts'] == 'Adjust') {
-		echo '<option selected="selected" value="Adjust">' . __('Adjust System stock to Nil') . '</option>';
-		echo '<option value="Leave">' . __('Do not Adjust System stock to Nil') . '</option>';
-	}
-	else {
-		echo '<option value="Adjust">' . __('Adjust System stock to Nil') . '</option>';
-		echo '<option selected="selected" value="Leave">' . __('Do not Adjust System stock to Nil') . '</option>';
-	}
-
-	echo '</select>
-		</field>';
-	echo '</fieldset>
-		<div class="centre"><input type="submit" name="PrintPDF" value="' . __('Print PDF') . '" /></div>';
-	echo '</form>';
+	echo '<div class="button-group">
+			<input type="submit" name="PrintPDF" value="' . __('Print PDF') . '" />
+		  </div>';
+	echo '</form></div>';
 
 	include ('includes/footer.php');
 
 } /*end of else not PrintPDF */
-

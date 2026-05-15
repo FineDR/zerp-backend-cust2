@@ -46,6 +46,60 @@ while ($MyRow = DB_fetch_row($Result)){
 
 fclose($fp);
 
-echo '<br /><div class="centre"><a href="' . $RootPath . '/' . $_SESSION['reports_dir'] . '/StockQties.csv ">' . __('click here') . '</a> ' . __('to view the file') . '</div>';
+	echo '<style>
+		.modern-status-card {
+			max-width: 600px;
+			margin: 40px auto;
+			padding: 40px;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			box-shadow: var(--shadow-md);
+			text-align: center;
+		}
+		.status-icon {
+			font-size: 3.5rem;
+			color: var(--primary);
+			margin-bottom: 20px;
+			display: block;
+		}
+		.status-msg {
+			font-size: 1.1rem;
+			font-weight: 600;
+			color: var(--text-main);
+			margin-bottom: 10px;
+		}
+		.status-sub {
+			color: var(--text-muted);
+			margin-bottom: 30px;
+			font-size: 0.9rem;
+		}
+		.download-btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			padding: 12px 28px;
+			background: var(--primary);
+			color: white;
+			text-decoration: none;
+			border-radius: var(--radius-sm);
+			font-weight: 700;
+			transition: all var(--transition-fast);
+			box-shadow: 0 4px 12px var(--primary-glow);
+		}
+		.download-btn:hover {
+			background: var(--primary-hover);
+			transform: translateY(-2px);
+			box-shadow: 0 6px 16px var(--primary-glow);
+			color: white;
+		}
+	</style>';
 
-include(__DIR__ . '/includes/footer.php');
+	echo '<div class="modern-status-card">';
+	echo '<span class="status-icon">📥</span>';
+	echo '<div class="status-msg">' . __('Stock Quantities CSV Ready') . '</div>';
+	echo '<div class="status-sub">' . __('The comma separated values file has been generated successfully.') . '</div>';
+	echo '<a href="' . $RootPath . '/' . $_SESSION['reports_dir'] . '/StockQties.csv" class="download-btn">' . __('Download CSV File') . '</a>';
+	echo '</div>';
+
+	include(__DIR__ . '/includes/footer.php');

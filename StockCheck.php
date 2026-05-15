@@ -167,98 +167,136 @@ if (isset($_POST['PrintPDF'])) {
 
 	echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/printer.png" title="' . __('print') . '" alt="" />' . ' ' . $Title . '</p>';
 
+	echo '<style>
+		.modern-form-container {
+			max-width: 900px;
+			margin: 20px auto;
+			padding: 30px;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			box-shadow: var(--shadow-md);
+		}
+		.form-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: 25px;
+			margin-bottom: 30px;
+		}
+		.form-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+		.form-group.checkbox-group {
+			flex-direction: row;
+			align-items: center;
+			gap: 12px;
+			padding: 10px;
+			background: var(--primary-soft);
+			border-radius: var(--radius-sm);
+		}
+		.form-group label {
+			font-weight: 600;
+			color: var(--text-label);
+			font-size: 0.9rem;
+		}
+		.form-group select {
+			padding: 10px;
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+			background: var(--surface);
+			font-size: 0.9rem;
+			transition: all var(--transition-fast);
+		}
+		.form-group select:focus {
+			border-color: var(--primary);
+			box-shadow: 0 0 0 3px var(--primary-soft);
+			outline: none;
+		}
+		.button-group {
+			display: flex;
+			justify-content: center;
+			gap: 15px;
+			border-top: 1px solid var(--border-soft);
+			padding-top: 25px;
+		}
+		.button-group input[type="submit"] {
+			padding: 12px 35px;
+			border-radius: var(--radius-sm);
+			font-weight: 700;
+			cursor: pointer;
+			border: none;
+			transition: all var(--transition-fast);
+			background: var(--primary);
+			color: white;
+		}
+		.button-group input[type="submit"]:hover {
+			opacity: 0.9;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px var(--primary-glow);
+			background: var(--primary-hover);
+		}
+	</style>';
+
+	echo '<div class="modern-form-container">';
 	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" target="_blank">';
 	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	echo '<fieldset>
-			<legend>', __('Select Items For Stock Check'), '</legend>
-			<field>
-				<label for="Categories">' . __('Select Inventory Categories') . ':</label>
-				<select autofocus="autofocus" required="required" minlength="1" name="Categories[]" multiple="multiple">';
-	$SQL = 'SELECT categoryid, categorydescription
-			FROM stockcategory
-			ORDER BY categorydescription';
+	
+	echo '<div class="form-grid">';
+	
+	echo '<div class="form-group">
+			<label>' . __('Inventory Categories') . '</label>
+			<select autofocus="autofocus" required="required" name="Categories[]" multiple="multiple" style="height: 150px;">';
+	$SQL = 'SELECT categoryid, categorydescription FROM stockcategory ORDER BY categorydescription';
 	$CatResult = DB_query($SQL);
 	while ($MyRow = DB_fetch_array($CatResult)) {
-		if (isset($_POST['Categories']) and in_array($MyRow['categoryid'], $_POST['Categories'])) {
-			echo '<option selected="selected" value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
-		}
-		else {
-			echo '<option value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
-		}
+		$selected = (isset($_POST['Categories']) and in_array($MyRow['categoryid'], $_POST['Categories'])) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
 	}
-	echo '</select>
-		</field>';
+	echo '  </select>
+		  </div>';
 
-	echo '<field>
-			<label for="Location">' . __('For Inventory in Location') . ':</label>
+	echo '<div class="form-group">
+			<label>' . __('Stock Location') . '</label>
 			<select name="Location">';
 	$SQL = "SELECT locations.loccode, locationname FROM locations
 			INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canupd=1
 			ORDER BY locationname";
 	$LocnResult = DB_query($SQL);
-
 	while ($MyRow = DB_fetch_array($LocnResult)) {
 		echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 	}
-	echo '</select>
-		</field>';
+	echo '  </select>
+		  </div>';
 
-	echo '<field>
-			<label for="MakeStkChkData">' . __('Action for Stock Check Freeze') . ':</label>
-			<select name="MakeStkChkData">';
+	echo '<div class="form-group">
+			<label>' . __('Action for Stock Check Freeze') . '</label>
+			<select name="MakeStkChkData">
+				<option value="New">' . __('Make new stock check data file') . '</option>
+				<option value="AddUpdate">' . __('Add/update existing stock check file') . '</option>
+				<option selected="selected" value="PrintOnly">' . __('Print Stock Check Sheets Only') . '</option>
+			</select>
+		  </div>';
 
-	if (!isset($_POST['MakeStkChkData'])) {
-		$_POST['MakeStkChkData'] = 'PrintOnly';
-	}
-	if ($_POST['MakeStkChkData'] == 'New') {
-		echo '<option selected="selected" value="New">' . __('Make new stock check data file') . '</option>';
-	}
-	else {
-		echo '<option value="New">' . __('Make new stock check data file') . '</option>';
-	}
-	if ($_POST['MakeStkChkData'] == 'AddUpdate') {
-		echo '<option selected="selected" value="AddUpdate">' . __('Add/update existing stock check file') . '</option>';
-	}
-	else {
-		echo '<option value="AddUpdate">' . __('Add/update existing stock check file') . '</option>';
-	}
-	if ($_POST['MakeStkChkData'] == 'PrintOnly') {
-		echo '<option selected="selected" value="PrintOnly">' . __('Print Stock Check Sheets Only') . '</option>';
-	}
-	else {
-		echo '<option value="PrintOnly">' . __('Print Stock Check Sheets Only') . '</option>';
-	}
-	echo '</select>
-		</field>';
+	echo '<div style="display: flex; flex-direction: column; gap: 15px;">';
+	echo '<div class="form-group checkbox-group">
+			<input type="checkbox" name="ShowInfo" value="true" ' . (isset($_POST['ShowInfo']) && $_POST['ShowInfo'] == 'true' ? 'checked' : '') . ' id="ShowInfo" />
+			<label for="ShowInfo">' . __('Show system quantity on sheets') . '</label>
+		  </div>';
 
-	echo '<field>
-			<label for="ShowInfo">' . __('Show system quantity on sheets') . ':</label>';
+	echo '<div class="form-group checkbox-group">
+			<input type="checkbox" name="NonZerosOnly" value="true" ' . (isset($_POST['NonZerosOnly']) && $_POST['NonZerosOnly'] == 'true' ? 'checked' : '') . ' id="NonZerosOnly" />
+			<label for="NonZerosOnly">' . __('Only print items with non zero quantities') . '</label>
+		  </div>';
+	echo '</div>';
+	
+	echo '</div>'; // end form-grid
 
-	if (isset($_POST['ShowInfo']) and $_POST['ShowInfo'] == false) {
-		echo '<input type="checkbox" name="ShowInfo" value="false" />';
-	}
-	else {
-		echo '<input type="checkbox" name="ShowInfo" value="true" />';
-	}
-	echo '</field>';
-
-	echo '<field>
-			<label for="NonZerosOnly">' . __('Only print items with non zero quantities') . ':</label>';
-	if (isset($_POST['NonZerosOnly']) and $_POST['NonZerosOnly'] == false) {
-		echo '<input type="checkbox" name="NonZerosOnly" value="false" />';
-	}
-	else {
-		echo '<input type="checkbox" name="NonZerosOnly" value="true" />';
-	}
-
-	echo '</field>';
-
-	echo '</fieldset>';
-
-	echo '<div class="centre">
+	echo '<div class="button-group">
 			<input type="submit" name="PrintPDF" value="' . __('Print and Process') . '" />
-		</div>
-	</form>';
+		  </div>';
+	echo '</form></div>';
 
 	include ('includes/footer.php');
 

@@ -48,7 +48,8 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 				' . $CompanyName . '<br>' . $ReportTitle . ' ' . $LocationText . '<br>' . __('Printed') . ': ' . $PrintDate . '
 			</div>';
 
-	$HTML .= '<table>
+	$HTML .= '<div class="report-table-wrapper">
+		<table>
 		<tr>
 			<th>' . __('Item') . '</th>
 			<th>' . __('Description') . '</th>
@@ -180,12 +181,11 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 					</div>
 				</div>
 			</table>';
-	}
-	else {
+	} else {
 		$HTML .= '</tbody>
-				</table>
-				<div class="centre">
-					<form><input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" /></form>
+				</table></div>
+				<div class="centre" style="margin-top: 20px;">
+					<form><input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" style="padding: 10px 25px; border-radius: 8px; background: var(--primary); color: white; border: none; cursor: pointer;" /></form>
 				</div>';
 	}
 	$HTML .= '</body>
@@ -229,61 +229,113 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 
 	echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/inventory.png" title="' . __('Search') . '" alt="" />' . ' ' . $Title . '</p>';
 
+	echo '<style>
+		.modern-form-container {
+			max-width: 800px;
+			margin: 20px auto;
+			padding: 30px;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			box-shadow: var(--shadow-md);
+		}
+		.form-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+			gap: 25px;
+			margin-bottom: 30px;
+		}
+		.form-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+		.form-group label {
+			font-weight: 600;
+			color: var(--text-label);
+			font-size: 0.9rem;
+		}
+		.form-group select {
+			padding: 10px;
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+			background: var(--surface);
+			font-size: 0.9rem;
+			transition: all var(--transition-fast);
+		}
+		.form-group select:focus {
+			border-color: var(--primary);
+			box-shadow: 0 0 0 3px var(--primary-soft);
+			outline: none;
+		}
+		.button-group {
+			display: flex;
+			justify-content: center;
+			gap: 15px;
+			border-top: 1px solid var(--border-soft);
+			padding-top: 25px;
+		}
+		.button-group input[type="submit"] {
+			padding: 12px 30px;
+			border-radius: var(--radius-sm);
+			font-weight: 700;
+			cursor: pointer;
+			border: none;
+			transition: all var(--transition-fast);
+			background: var(--primary);
+			color: white;
+		}
+		.button-group input[type="submit"]:hover {
+			opacity: 0.9;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px var(--primary-glow);
+			background: var(--primary-hover);
+		}
+		.report-table-wrapper {
+			width: 100%;
+			overflow-x: auto;
+			margin-top: 20px;
+			border-radius: var(--radius-md);
+			border: 1px solid var(--border);
+		}
+	</style>';
+
+	echo '<div class="modern-form-container">';
 	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" target="_blank">';
 	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	echo '<fieldset>
-			<legend>', __('Report Criteria') , '</legend>';
-
-	echo '<field>
-			<label for="Location">' . __('For Inventory in Location') . ':</label>
-			<select name="Location">';
+	
+	echo '<div class="form-grid">';
+	
+	echo '<div class="form-group">
+			<label>' . __('Inventory Location') . '</label>
+			<select name="Location">
+				<option value="All">' . __('All Locations') . '</option>';
 	$SQL = "SELECT locations.loccode, locationname FROM locations
 			INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1";
 	$LocnResult = DB_query($SQL);
-
-	echo '<option value="All">' . __('All Locations') . '</option>';
-
 	while ($MyRow = DB_fetch_array($LocnResult)) {
 		echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 	}
-	echo '</select>
-		</field>';
+	echo '  </select>
+		  </div>';
 
-	echo '<field>
-			<label for="NumberMonthsHolding">' . __('Months Buffer Stock to Hold') . ':</label>
-			<select name="NumberMonthsHolding">';
+	echo '<div class="form-group">
+			<label>' . __('Months Buffer Stock to Hold') . '</label>
+			<select name="NumberMonthsHolding">
+				<option value="0.5">' . __('Two Weeks') . '</option>
+				<option selected="selected" value="1">' . __('One Month') . '</option>
+				<option value="1.5">' . __('Six Weeks') . '</option>
+				<option value="2">' . __('Two Months') . '</option>
+			</select>
+		  </div>';
+	
+	echo '</div>'; // end form-grid
 
-	if (!isset($_POST['NumberMonthsHolding'])) {
-		$_POST['NumberMonthsHolding'] = 1;
-	}
-	if ($_POST['NumberMonthsHolding'] == 0.5) {
-		echo '<option selected="selected" value="0.5">' . __('Two Weeks') . '</option>';
-	}
-	else {
-		echo '<option value="0.5">' . __('Two Weeks') . '</option>';
-	}
-	echo '<option ' . ($_POST['NumberMonthsHolding'] == 1 ? 'selected="selected" ' : '') . 'value="1">' . __('One Month') . '</option>';
-	if ($_POST['NumberMonthsHolding'] == 1.5) {
-		echo '<option selected="selected" value="1.5">' . __('Six Weeks') . '</option>';
-	}
-	else {
-		echo '<option value="1.5">' . __('Six Weeks') . '</option>';
-	}
-	if ($_POST['NumberMonthsHolding'] == 2) {
-		echo '<option selected="selected" value="2">' . __('Two Months') . '</option>';
-	}
-	else {
-		echo '<option value="2">' . __('Two Months') . '</option>';
-	}
-	echo '</select>
-		</field>';
-
-	echo '</fieldset>
-			<div class="centre">
-				<input type="submit" name="PrintPDF" value="' . __('Print PDF') . '" />
-				<input type="submit" name="View" title="View Report" value="' . __('View') . '" />
-			</div>';
-	echo '</form>';
+	echo '<div class="button-group">
+			<input type="submit" name="PrintPDF" value="' . __('Print PDF') . '" />
+			<input type="submit" name="View" value="' . __('View Report') . '" />
+		  </div>';
+	echo '</form></div>';
 
 	include (__DIR__ . '/includes/footer.php');
 }
