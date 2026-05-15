@@ -89,6 +89,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['Spreadsheet']) or isset($_POST['V
 						' . __('Inventory Valuation Report') . '<br />
 						' . __('Printed') . ': ' . date($_SESSION['DefaultDateFormat']) . '<br />
 					</div>
+					<div class="report-table-wrapper">
 					<table>
 						<thead>
 							<tr>
@@ -111,6 +112,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['Spreadsheet']) or isset($_POST['V
 						' . __('Inventory Valuation Report') . '<br />
 						' . __('Printed') . ': ' . date($_SESSION['DefaultDateFormat']) . '<br />
 					</div>
+					<div class="report-table-wrapper">
 					<table>
 						<thead>
 							<tr>
@@ -227,12 +229,12 @@ if (isset($_POST['PrintPDF']) or isset($_POST['Spreadsheet']) or isset($_POST['V
 						<span class="page-number">Page </span>
 					</div>
 				</div>
-			</table>';
+			</table></div>';
 	} else {
 		$HTML .= '</tbody>
-				</table>
-				<div class="centre">
-					<form><input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" /></form>
+				</table></div>
+				<div class="centre" style="margin-top: 20px;">
+					<form><input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" style="padding: 10px 25px; border-radius: 8px; background: var(--primary); color: white; border: none; cursor: pointer;" /></form>
 				</div>';
 	}
 	$HTML .= '</body>
@@ -279,6 +281,105 @@ if (isset($_POST['PrintPDF']) or isset($_POST['Spreadsheet']) or isset($_POST['V
 	$BookMark = 'InventoryValuation';
 	include(__DIR__ . '/includes/header.php');
 
+	// Modern UI styles
+	echo '<style>
+		.modern-form-container {
+			max-width: 800px;
+			margin: 20px auto;
+			padding: 25px;
+			background: #fff;
+			border-radius: 12px;
+			box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+		}
+		.form-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+			gap: 20px;
+			margin-bottom: 25px;
+		}
+		.form-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+		.form-group label {
+			font-weight: 600;
+			color: #374151;
+			font-size: 0.9rem;
+		}
+		.form-group select, .form-group input {
+			padding: 10px 12px;
+			border: 1px solid #d1d5db;
+			border-radius: 8px;
+			font-size: 0.95rem;
+			transition: border-color 0.2s, box-shadow 0.2s;
+			background-color: #f9fafb;
+		}
+		.form-group select:focus {
+			outline: none;
+			border-color: var(--primary);
+			box-shadow: 0 0 0 3px var(--primary-soft);
+			background-color: #fff;
+		}
+		.button-group {
+			display: flex;
+			justify-content: center;
+			gap: 12px;
+			flex-wrap: wrap;
+			margin-top: 10px;
+		}
+		.button-group input[type="submit"] {
+			padding: 10px 24px;
+			border-radius: 8px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: transform 0.1s, opacity 0.2s;
+			border: none;
+		}
+		.button-group input[name="PrintPDF"] { background: var(--primary); color: white; }
+		.button-group input[name="View"] { background: var(--primary); color: white; }
+		.button-group input[name="Spreadsheet"] { background: #6b7280; color: white; }
+		.button-group input:hover { opacity: 0.9; transform: translateY(-1px); background: var(--primary-hover); }
+
+		/* Responsive Table Styles */
+		.report-table-wrapper {
+			width: 100%;
+			overflow-x: auto;
+			margin-top: 20px;
+			background: white;
+			border-radius: 8px;
+			box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+		}
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 0.9rem;
+		}
+		th {
+			background: #f3f4f6;
+			color: #374151;
+			font-weight: 600;
+			text-align: left;
+			padding: 12px 15px;
+			border-bottom: 2px solid #e5e7eb;
+			white-space: nowrap;
+		}
+		td {
+			padding: 12px 15px;
+			border-bottom: 1px solid #f3f4f6;
+		}
+		.striped_row:nth-child(even) { background: #f9fafb; }
+		.total_row { background: #fefce8 !important; font-weight: bold; }
+		.number { text-align: right; }
+		
+		@media (max-width: 640px) {
+			.modern-form-container { padding: 15px; margin: 10px; }
+			.form-grid { grid-template-columns: 1fr; }
+			.button-group input { width: 100%; }
+		}
+	</style>';
+
+	echo '<div class="modern-form-container">';
 	echo '<p class="page_title_text">
 			<img src="'.$RootPath.'/css/'.$Theme.'/images/inventory.png" title="' . __('Inventory') . '" alt="" />' . ' ' . $Title . '
 		</p>';
@@ -286,10 +387,11 @@ if (isset($_POST['PrintPDF']) or isset($_POST['Spreadsheet']) or isset($_POST['V
 	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8') . '" method="post" target="_blank">
 		<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
 
-		echo '<fieldset>
-				<field>
-					<label for="Categories">' . __('Select Inventory Categories') . ':</label>
-					<select autofocus="autofocus" required="required" minlength="1" name="Categories[]" multiple="multiple">';
+	echo '<div class="form-grid">
+			<div class="form-group">
+				<label for="Categories">' . __('Select Inventory Categories') . ':</label>
+				<select autofocus="autofocus" required="required" minlength="1" name="Categories[]" id="Categories" multiple="multiple" style="height: 150px;">';
+	
 	$SQL = 'SELECT categoryid, categorydescription
 			FROM stockcategory
 			ORDER BY categorydescription';
@@ -301,43 +403,41 @@ if (isset($_POST['PrintPDF']) or isset($_POST['Spreadsheet']) or isset($_POST['V
 			echo '<option value="' . $MyRow['categoryid'] . '">' . $MyRow['categorydescription'] . '</option>';
 		}
 	}
-	echo '</select>
-		</field>';
+	echo '		</select>
+			</div>';
 
-	echo '<field>
-			<label for="Location">' . __('For Inventory in Location') . ':</label>
-			<select name="Location">';
-
+	echo '	<div class="form-group">
+				<label for="Location">' . __('For Inventory in Location') . ':</label>
+				<select name="Location" id="Location">';
+	
 	$SQL = "SELECT locations.loccode,
 					locationname
 			FROM locations
 			INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" .  $_SESSION['UserID'] . "' AND locationusers.canview=1
 			ORDER BY locationname";
-
 	$LocnResult = DB_query($SQL);
-
 	echo '<option value="All">' . __('All Locations') . '</option>';
-
 	while ($MyRow=DB_fetch_array($LocnResult)){
 		echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 	}
-	echo '</select>
-		</field>';
+	echo '		</select>
+			</div>';
 
-	echo '<field>
-			<label for="DetailedReport">' . __('Summary or Detailed Report') . ':</label>
-			<select name="DetailedReport">
-				<option selected="selected" value="No">' . __('Summary Report') . '</option>
-				<option value="Yes">' . __('Detailed Report') . '</option>
-			</select>
-		</field>
-		</fieldset>
-		<div class="centre">
+	echo '	<div class="form-group">
+				<label for="DetailedReport">' . __('Summary or Detailed Report') . ':</label>
+				<select name="DetailedReport" id="DetailedReport">
+					<option selected="selected" value="No">' . __('Summary Report') . '</option>
+					<option value="Yes">' . __('Detailed Report') . '</option>
+				</select>
+			</div>
+		</div>';
+
+	echo '<div class="button-group">
 				<input type="submit" name="PrintPDF" title="Produce PDF Report" value="' . __('Print PDF') . '" />
 				<input type="submit" name="View" title="View Report" value="' . __('View') . '" />
 				<input type="submit" name="Spreadsheet" title="Spreadsheet" value="' . __('Spreadsheet') . '" />
 		</div>';
-	echo '</form>';
+	echo '</form></div>';
 
 	include(__DIR__ . '/includes/footer.php');
 

@@ -44,6 +44,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Email'])
 					' . __('Category') . ' - ' . $_POST['StockCat'] . ' - ' . $CategoryDescription . '<br />
 					' . __('Location') . ' - ' . $_POST['StockLocation'] . '<br />
 				</div>
+				<div class="report-table-wrapper">
 				<table>
 					<thead>
 						<tr>
@@ -119,12 +120,12 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Email'])
 						<span class="page-number">Page </span>
 					</div>
 				</div>
-			</table>';
+			</table></div>';
 	} else {
 		$HTML .= '</tbody>
-				</table>
-				<div class="centre">
-					<form><input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" /></form>
+				</table></div>
+				<div class="centre" style="margin-top: 20px;">
+					<form><input type="submit" name="close" value="' . __('Close') . '" onclick="window.close()" style="padding: 10px 25px; border-radius: 8px; background: var(--primary); color: white; border: none; cursor: pointer;" /></form>
 				</div>';
 	}
 	$HTML .= '</body>
@@ -192,76 +193,137 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View']) or isset($_POST['Email'])
 	$ViewTopic = 'Inventory';
 	$BookMark = '';
 	include(__DIR__ . '/includes/header.php');
+
+	// Modern UI styles
+	echo '<style>
+		.modern-form-container {
+			max-width: 800px;
+			margin: 20px auto;
+			padding: 25px;
+			background: #fff;
+			border-radius: 12px;
+			box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+		}
+		.page_help_text {
+			background: var(--primary-soft);
+			border-left: 4px solid var(--primary);
+			padding: 15px;
+			margin-bottom: 25px;
+			border-radius: 4px;
+			color: var(--text-main);
+			font-size: 0.9rem;
+		}
+		.form-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: 20px;
+			margin-bottom: 25px;
+		}
+		.form-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+		.form-group label {
+			font-weight: 600;
+			color: #374151;
+			font-size: 0.9rem;
+		}
+		.form-group select {
+			padding: 10px 12px;
+			border: 1px solid #d1d5db;
+			border-radius: 8px;
+			font-size: 0.95rem;
+			background-color: #f9fafb;
+			width: 100%;
+		}
+		.button-group {
+			display: flex;
+			justify-content: center;
+			gap: 12px;
+			flex-wrap: wrap;
+			margin-top: 20px;
+			padding-top: 20px;
+			border-top: 1px solid #e5e7eb;
+		}
+		.button-group input[type="submit"] {
+			padding: 12px 28px;
+			border-radius: 8px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.2s;
+			border: none;
+		}
+		.button-group input[name="PrintPDF"] { background: var(--primary); color: white; }
+		.button-group input[name="View"] { background: var(--primary); color: white; }
+		.button-group input[name="Email"] { background: var(--primary); color: white; }
+		.button-group input:hover { opacity: 0.9; transform: translateY(-1px); background: var(--primary-hover); }
+		
+		@media (max-width: 640px) {
+			.modern-form-container { padding: 15px; margin: 10px; }
+			.form-grid { grid-template-columns: 1fr; }
+			.button-group input { width: 100%; }
+		}
+	</style>';
+
+	echo '<div class="modern-form-container">';
 	echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/inventory.png" title="' . __('Inventory') . '" alt="" />' . ' ' . __('Inventory Reorder Level Report') . '</p>';
 	echo '<div class="page_help_text">' . __('Use this report to display the reorder levels for Inventory items in different categories.') . '</div>';
 
 	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" target="_blank">';
 	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	$SQL = "SELECT locations.loccode,
-			locationname
-		FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1";
+
+	$SQL = "SELECT locations.loccode, locationname FROM locations INNER JOIN locationusers ON locationusers.loccode=locations.loccode AND locationusers.userid='" . $_SESSION['UserID'] . "' AND locationusers.canview=1";
 	$ResultStkLocs = DB_query($SQL);
-	echo '<fieldset>
-			<legend>', __('Report Criteria') , '</legend>
-			<field>
-				<label for="StockLocation">' . __('From Stock Location') . ':</label>
-				<select name="StockLocation"> ';
-	if (!isset($_POST['StockLocation'])) {
-		$_POST['StockLocation'] = 'All';
-	}
-	if ($_POST['StockLocation'] == 'All') {
-		echo '<option selected="selected" value="All">' . __('All') . '</option>';
-	} else {
-		echo '<option value="All">' . __('All') . '</option>';
-	}
+
+	echo '<fieldset style="border:none; padding:0; margin:0;">
+			<legend style="font-weight:bold; margin-bottom:15px; font-size:1.1rem;">', __('Report Criteria') , '</legend>
+			<div class="form-grid">
+				<div class="form-group">
+					<label for="StockLocation">' . __('From Stock Location') . ':</label>
+					<select name="StockLocation" id="StockLocation">';
+	if (!isset($_POST['StockLocation'])) { $_POST['StockLocation'] = 'All'; }
+	$selectedAll = ($_POST['StockLocation'] == 'All') ? 'selected="selected"' : '';
+	echo '<option ' . $selectedAll . ' value="All">' . __('All') . '</option>';
 	while ($MyRow = DB_fetch_array($ResultStkLocs)) {
-		if ($MyRow['loccode'] == $_POST['StockLocation']) {
-			echo '<option selected="selected" value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		} else {
-			echo '<option value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
-		}
+		$selected = ($MyRow['loccode'] == $_POST['StockLocation']) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="' . $MyRow['loccode'] . '">' . $MyRow['locationname'] . '</option>';
 	}
-	echo '</select>
-		</field>';
+	echo '			</select>
+				</div>';
 
 	$SQL = "SELECT categoryid, categorydescription FROM stockcategory WHERE stocktype<>'A' ORDER BY categorydescription";
 	$Result1 = DB_query($SQL);
 	if (DB_num_rows($Result1) == 0) {
-		echo '</td></field>
-			</table>';
+		echo '</div></fieldset>';
 		prnMsg(__('There are no stock categories currently defined please use the link below to set them up') , 'warn');
 		echo '<br /><a href="' . $RootPath . '/StockCategories.php">' . __('Define Stock Categories') . '</a>';
+		echo '</div></form></div>';
 		include(__DIR__ . '/includes/footer.php');
 		exit();
 	}
 
-	echo '<field>
-			<label for="StockCat">' . __('In Stock Category') . ':</label>
-			<select name="StockCat">';
-	if (!isset($_POST['StockCat'])) {
-		$_POST['StockCat'] = 'All';
-	}
-	if ($_POST['StockCat'] == 'All') {
-		echo '<option selected="selected" value="All">' . __('All') . '</option>';
-	} else {
-		echo '<option value="All">' . __('All') . '</option>';
-	}
+	echo '		<div class="form-group">
+					<label for="StockCat">' . __('In Stock Category') . ':</label>
+					<select name="StockCat" id="StockCat">';
+	if (!isset($_POST['StockCat'])) { $_POST['StockCat'] = 'All'; }
+	$selectedAllCat = ($_POST['StockCat'] == 'All') ? 'selected="selected"' : '';
+	echo '<option ' . $selectedAllCat . ' value="All">' . __('All') . '</option>';
 	while ($MyRow1 = DB_fetch_array($Result1)) {
-		if ($MyRow1['categoryid'] == $_POST['StockCat']) {
-			echo '<option selected="selected" value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
-		} else {
-			echo '<option value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
-		}
+		$selected = ($MyRow1['categoryid'] == $_POST['StockCat']) ? 'selected="selected"' : '';
+		echo '<option ' . $selected . ' value="' . $MyRow1['categoryid'] . '">' . $MyRow1['categorydescription'] . '</option>';
 	}
-	echo '</select>
-		</field>';
-	echo '</fieldset>
-			<div class="centre">
+	echo '			</select>
+				</div>
+			</div>
+		</fieldset>';
+
+	echo '	<div class="button-group">
 				<input type="submit" name="PrintPDF" title="Produce PDF Report" value="' . __('Print PDF') . '" />
 				<input type="submit" name="View" title="View Report" value="' . __('View') . '" />
 				<input type="submit" name="Email" title="Email Report" value="' . __('Email') . '" />
 			</div>';
-	echo '</form>';
+	echo '</form></div>';
 	include(__DIR__ . '/includes/footer.php');
 
 } /*end of else not PrintPDF */
