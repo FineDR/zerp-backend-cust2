@@ -367,6 +367,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 
 		// Output the generated PDF to Browser
 		$DomPDF->stream($_SESSION['DatabaseName'] . '_StockDispatch_' . date('Y-m-d') . '.pdf', array("Attachment" => false));
+		exit;
 	}
 	else {
 		$Title = __('Inventory Planning Report');
@@ -375,7 +376,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 		echo $HTML;
 		include ('includes/footer.php');
 	}
-
+} else {
 	$Title = __('Stock Dispatch Report');
 	$ViewTopic = 'Inventory';
 	$BookMark = '';
