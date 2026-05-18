@@ -153,7 +153,7 @@ echo '<div class="modern-page-header">
 	</div>';
 
 echo '<form action="', htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'), '" method="post">',
-	'<input name="FormID" value="', $_SESSION['FormID'], '" type="hidden" />';
+	'<input name="FormID" value="', $_SESSION['FormID'] ?? '', '" type="hidden" />';
 
 echo '<div class="modern-card">';
 echo '<div class="modern-card-title">
@@ -170,7 +170,7 @@ echo '<div class="modern-field">
 
 echo '<div class="modern-field">
 		<label class="modern-label" for="UsersRealName">', __('User Name'), '</label>
-		<div class="modern-fieldtext">', $_SESSION['UsersRealName'], '<input name="RealName" type="hidden" value="', $_SESSION['UsersRealName'], '" /></div>
+		<div class="modern-fieldtext">', $_SESSION['UsersRealName'] ?? '', '<input name="RealName" type="hidden" value="', $_SESSION['UsersRealName'] ?? '', '" /></div>
 	</div>';
 
 echo '<div class="modern-field">
@@ -180,7 +180,7 @@ echo '<div class="modern-field">
 
 echo '<div class="modern-field">
 		<label class="modern-label" for="DisplayRecordsMax">', __('Max Records to Display'), '</label>
-		<input class="modern-input integer" id="DisplayRecordsMax" maxlength="3" name="DisplayRecordsMax" required="required" title="', __('The input must be positive integer'), '" type="text" value="', $_SESSION['DisplayRecordsMax'], '" />
+		<input class="modern-input integer" id="DisplayRecordsMax" maxlength="3" name="DisplayRecordsMax" required="required" title="', __('The input must be positive integer'), '" type="text" value="', $_SESSION['DisplayRecordsMax'] ?? '', '" />
 	</div>';
 
 // Select language:
