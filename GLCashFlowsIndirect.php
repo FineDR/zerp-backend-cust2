@@ -109,7 +109,6 @@ if (isset($_POST['PeriodFrom']) and isset($_POST['PeriodTo']) and !isset($_POST[
     echo '</div></div>';
 
 } else {
-	include(__DIR__ . '/includes/header.php');
 	echo '<style>
         :root { --db-primary: hsl(145, 63%, 38%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
         .db-page { background: var(--db-bg); min-height: 100vh; padding: 2rem; font-family: "Inter", sans-serif; }
