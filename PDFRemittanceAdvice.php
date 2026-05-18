@@ -179,11 +179,37 @@ if ($SQL != "") {
 	$BookMark = '';
 	include(__DIR__ . '/includes/header.php');
 
-	echo '<p class="page_title_text"><img src="' . $RootPath . '/css/' . $Theme . '/images/printer.png" title="' . $Title . '" alt="" />' . ' ' . $Title . '</p>';
+	echo '<style>
+    /* Super Modern ERP Search Bar Styles */
+    :root { --search-bg: #ffffff; --search-border: #e2e8f0; --search-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); }
+    .modern-page-header { text-align: center; margin-top: 2rem; margin-bottom: 2.5rem; }
+    .modern-page-header h1 { font-size: 2rem; font-weight: 800; color: #1e293b; margin: 0 0 0.5rem 0; letter-spacing: -0.025em; }
+    .modern-page-header p { font-size: 1.05rem; color: #64748b; margin: 0 auto; max-width: 600px; }
+    
+    .modern-search-container { max-width: 950px; margin: 0 auto 3rem auto; background: var(--search-bg); border-radius: 16px; box-shadow: var(--search-shadow); border: 1px solid var(--search-border); padding: 1rem; display: flex; flex-direction: column; gap: 15px; transition: all 0.3s ease; }
+    .modern-search-container:focus-within { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0 0 3px var(--primary-soft); border-color: var(--primary); }
+    @media (min-width: 768px) { .modern-search-container { flex-direction: row; align-items: center; padding: 0.75rem 0.75rem 0.75rem 1.5rem; border-radius: 50px; } }
+    
+    .modern-search-field { display: flex; flex-direction: column; flex: 1; position: relative; padding: 0.5rem; }
+    @media (min-width: 768px) { .modern-search-field { border-right: 1px solid #e2e8f0; padding: 0 1.5rem; } .modern-search-field:last-of-type { border-right: none; } }
+    
+    .modern-search-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 0.3rem; letter-spacing: 0.05em; }
+    .modern-search-input, .modern-search-select { border: none; background: transparent; font-size: 1.05rem; color: #0f172a; font-weight: 600; width: 100%; padding: 0; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; -moz-appearance: none; }
+    .modern-search-input::placeholder { color: #cbd5e1; font-weight: 400; }
+    
+    .modern-search-btn { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 1rem 2rem; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+    @media (min-width: 768px) { .modern-search-btn { border-radius: 50px; } }
+    .modern-search-btn:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); }
+    .modern-search-btn svg { width: 18px; height: 18px; }
+</style>';
+
 	echo '<form action="' . htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') . '" method="post" target="_blank">';
 	echo '<input type="hidden" name="FormID" value="' . $_SESSION['FormID'] . '" />';
-	echo '<fieldset>
-			<legend>', __('Remittance Advice Criteria'), '</legend>';
+	
+	echo '<div class="modern-page-header noPrint">
+		<h1>' . $Title . '</h1>
+        <p>' . __('Generate remittance advice PDFs for supplier payments.') . '</p>
+	</div>';
 
 	if (!isset($_POST['FromCriteria']) or mb_strlen($_POST['FromCriteria']) < 1) {
 		$DefaultFromCriteria = '1';
@@ -195,30 +221,30 @@ if ($SQL != "") {
 	} else {
 		$DefaultToCriteria = $_POST['ToCriteria'];
 	}
-	echo '<field>
-			<label for="FromCriteria">' . __('From Supplier Code') . ':</label>
-			<input type="text" maxlength="6" size="7" name="FromCriteria" value="' . $DefaultFromCriteria . '" />
-		</field>';
-	echo '<field>
-			<label for="ToCriteria">' . __('To Supplier Code') . ':</label>
-			<input type="text" maxlength="6" size="7" name="ToCriteria" value="' . $DefaultToCriteria . '" />
-		</field>';
-
 	if (!isset($_POST['PaymentDate'])) {
 		$DefaultDate = date($_SESSION['DefaultDateFormat'], mktime(0, 0, 0, date('m') + 1, 0, date('y')));
 	} else {
 		$DefaultDate = $_POST['PaymentDate'];
 	}
 
-	echo '<field>
-			<label for="PaymentDate">' . __('Date Of Payment') . ':</label>
-			<input type="date" name="PaymentDate" maxlength="10" size="11" value="' . FormatDateForSQL($DefaultDate) . '" />
-		</field>';
-
-	echo '</fieldset>
-		<div class="centre">
-			<input type="submit" name="PrintPDF" value="' . __('Print PDF') . '" />
-		</div>';
+	echo '<div class="modern-search-container noPrint">
+		<div class="modern-search-field">
+			<label for="FromCriteria" class="modern-search-label">' . __('From Supplier Code') . '</label>
+			<input type="text" id="FromCriteria" class="modern-search-input" name="FromCriteria" value="' . htmlspecialchars($DefaultFromCriteria, ENT_QUOTES, 'UTF-8') . '" />
+		</div>
+		<div class="modern-search-field">
+			<label for="ToCriteria" class="modern-search-label">' . __('To Supplier Code') . '</label>
+			<input type="text" id="ToCriteria" class="modern-search-input" name="ToCriteria" value="' . htmlspecialchars($DefaultToCriteria, ENT_QUOTES, 'UTF-8') . '" />
+		</div>
+		<div class="modern-search-field">
+			<label for="PaymentDate" class="modern-search-label">' . __('Date Of Payment') . '</label>
+			<input type="date" id="PaymentDate" class="modern-search-input" name="PaymentDate" value="' . FormatDateForSQL($DefaultDate) . '" />
+		</div>
+		<button type="submit" name="PrintPDF" class="modern-search-btn">
+			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+			' . __('Print PDF') . '
+		</button>
+	</div>';
 
 	echo '</form>';
 
