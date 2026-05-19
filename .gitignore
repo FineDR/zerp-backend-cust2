@@ -40,3 +40,9 @@ composer.phar
 /phpunit.xml
 
 KLConfig/
+scratch/
+*.py
+test.php
+test_*.php
+tmp_*.php
+check_schema.php
