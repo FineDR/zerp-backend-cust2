@@ -1,35 +1,39 @@
 :root {
-    /* Primary Brand — Forest Green System */
-    --primary-h: 145;
-    --primary-s: 63%;
-    --primary-l: 38%;
+    /* Primary Brand — Ocean Blue System (Gradient rgb(7,107,145) to rgb(6,89,121)) */
+    --primary-h: 197;
+    --primary-s: 91%;
+    --primary-l: 30%;
 
     --primary:        hsl(var(--primary-h), var(--primary-s), var(--primary-l));
-    --primary-hover:  hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 6%));
-    --primary-active: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 12%));
+    --primary-hover:  hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 5%));
+    --primary-active: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 10%));
     --primary-light:  hsl(var(--primary-h), 50%, 55%);
-    --primary-soft:   hsl(var(--primary-h), 40%, 95%);
+    --primary-soft:   hsl(var(--primary-h), 45%, 95%);
     --primary-subtle: hsl(var(--primary-h), 35%, 88%);
     --primary-dark:   hsl(var(--primary-h), 45%, 22%);
     --primary-glow:   hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.25);
+    
+    /* Linear Gradients */
+    --primary-gradient:       linear-gradient(182deg, rgb(7, 107, 145) 0%, rgb(6, 89, 121) 100%);
+    --primary-hover-gradient: linear-gradient(182deg, rgb(6, 89, 121) 0%, rgb(5, 71, 97) 100%);
 
     /* Backgrounds */
     --bg-main:      hsl(210, 20%, 97%);
     --bg-workspace: hsl(210, 20%, 94%);
     --bg-sidebar:   hsl(0, 0%, 100%);
 
-    /* Text - Green-tinted neutrals */
-    --text-main:    hsl(145, 15%, 12%);
-    --text-body:    hsl(145, 10%, 30%);
-    --text-muted:   hsl(145, 8%, 50%);
+    /* Text - Blue-tinted neutrals */
+    --text-main:    hsl(197, 15%, 12%);
+    --text-body:    hsl(197, 10%, 30%);
+    --text-muted:   hsl(197, 8%, 50%);
     --text-inverse: hsl(0, 0%, 100%);
-    --text-label:   hsl(145, 10%, 40%);
+    --text-label:   hsl(197, 10%, 40%);
 
     /* Surfaces */
     --surface:      hsl(0, 0%, 100%);
     --surface-alt:  hsl(210, 20%, 98%);
     --surface-glass: hsla(0, 0%, 100%, 0.85);
-    --surface-glass-dark: hsla(145, 15%, 12%, 0.85);
+    --surface-glass-dark: hsla(197, 15%, 12%, 0.85);
 
     /* Borders */
     --border:       hsl(220, 15%, 88%);

@@ -59,12 +59,11 @@ img { max-width: 100%; display: block; }
     content: "";
     display: block;
     height: var(--header-height);
-    background: var(--primary);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 64'%3E%3Ctext x='16' y='44' font-family='Inter,sans-serif' font-size='28' font-weight='800' fill='white'%3EZERP%3C/text%3E%3C/svg%3E"), var(--primary-gradient);
     flex-shrink: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 64'%3E%3Ctext x='16' y='44' font-family='Inter,sans-serif' font-size='28' font-weight='800' fill='white'%3EZERP%3C/text%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: auto 32px;
+    background-repeat: no-repeat, no-repeat;
+    background-position: center, center;
+    background-size: auto 32px, 100% 100%;
 }
 
 .ModuleList ul {
@@ -364,7 +363,7 @@ header.noPrint {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    background: var(--primary);
+    background: var(--primary-gradient);
     color: var(--text-inverse);
     padding: 10px var(--space-5);
     border-radius: var(--radius-md);
@@ -377,7 +376,7 @@ header.noPrint {
 }
 
 .primary-btn-modern:hover {
-    background: var(--primary-hover);
+    background: var(--primary-hover-gradient);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px var(--primary-glow);
     color: var(--text-inverse);
@@ -555,7 +554,7 @@ header.noPrint {
 
 .bar-fill {
     height: 100%;
-    background: var(--primary);
+    background: var(--primary-gradient);
     border-radius: var(--radius-full);
     transition: width 0.8s ease;
 }
@@ -738,7 +737,7 @@ a.button {
     text-decoration: none;
     transition: all var(--transition-fast);
     white-space: nowrap;
-    background: var(--primary);
+    background: var(--primary-gradient);
     color: var(--text-inverse);
 }
 
@@ -746,7 +745,7 @@ button:hover,
 input[type="submit"]:hover,
 input[type="button"]:hover,
 .button:hover {
-    background: var(--primary-hover);
+    background: var(--primary-hover-gradient);
     transform: translateY(-1px);
     box-shadow: 0 2px 8px var(--primary-glow);
 }
@@ -840,7 +839,7 @@ fieldset legend {
 }
 
 .help-header {
-    background: var(--primary);
+    background: var(--primary-gradient);
     padding: var(--space-3) var(--space-4);
     display: flex;
     justify-content: flex-end;
@@ -978,7 +977,7 @@ body.sidebar-collapsed .ModuleList li a {
 }
 
 body.sidebar-collapsed .ModuleList::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext x='12' y='44' font-family='Inter,sans-serif' font-size='28' font-weight='800' fill='white'%3EZ%3C/text%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext x='12' y='44' font-family='Inter,sans-serif' font-size='28' font-weight='800' fill='white'%3EZ%3C/text%3E%3C/svg%3E"), var(--primary-gradient);
 }
 
 /* 2. Responsive Breakpoints */
@@ -1260,13 +1259,13 @@ hr {
 
 
 .db-btn-primary {
-    background: var(--primary);
+    background: var(--primary-gradient);
     color: var(--text-inverse);
-    border-color: var(--primary);
+    border-color: transparent;
 }
 
 .db-btn-primary:hover {
-    background: var(--primary-hover);
+    background: var(--primary-hover-gradient);
     transform: translateY(-1px);
     box-shadow: 0 3px 10px var(--primary-glow);
     color: var(--text-inverse);
@@ -1552,7 +1551,7 @@ hr {
 
 .db-bar-fill {
     height: 100%;
-    background: var(--primary);
+    background: var(--primary-gradient);
     border-radius: var(--radius-full);
     transition: width 0.8s ease;
 }
@@ -1631,8 +1630,8 @@ hr {
 }
 
 .db-action-btn-row:hover {
-    background: var(--primary);
-    border-color: var(--primary);
+    background: var(--primary-gradient);
+    border-color: transparent;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px var(--primary-glow);
 }
@@ -1662,8 +1661,8 @@ hr {
 .db-action-muted-row .db-action-label { color: var(--text-muted); }
 
 .db-action-muted-row:hover {
-    background: var(--primary);
-    border-color: var(--primary);
+    background: var(--primary-gradient);
+    border-color: transparent;
 }
 
 /* Timeline */
@@ -2415,7 +2414,7 @@ body.has-sticky-footer {
     left: 0;
     width: 4px;
     height: 100%;
-    background: var(--primary);
+    background: var(--primary-gradient);
     opacity: 0;
     transition: opacity 0.2s ease;
 }
@@ -2544,7 +2543,7 @@ body.has-sticky-footer {
 }
 
 .db-search-btn {
-    background: var(--primary);
+    background: var(--primary-gradient);
     color: white;
     border: none;
     padding: 0 24px;
@@ -2555,7 +2554,7 @@ body.has-sticky-footer {
 }
 
 .db-search-btn:hover {
-    background: var(--primary-hover);
+    background: var(--primary-hover-gradient);
 }
 
 /* Advanced Filters */
