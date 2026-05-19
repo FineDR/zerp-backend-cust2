@@ -55,6 +55,11 @@ $_SESSION['FormID'] = sha1(uniqid(mt_rand(), true));
 $DefaultCompany = $_COOKIE['Login'] ?? $DefaultDatabase;
 
 echo '<body>
+	<div class="animation-wrapper">
+		<div class="bg-blob blob-1"></div>
+		<div class="bg-blob blob-2"></div>
+		<div class="bg-blob blob-3"></div>
+	</div>
 	<div id="container">
 		<div class="login-shell">
 			<div id="login_box">

@@ -1,21 +1,21 @@
 :root {
-    /* Primary Brand — Ocean Blue System (Gradient rgb(7,107,145) to rgb(6,89,121)) */
+    /* Primary Brand — Sky Blue System (Base #09aae8) */
     --primary-h: 197;
-    --primary-s: 91%;
-    --primary-l: 30%;
+    --primary-s: 92%;
+    --primary-l: 47%;
 
     --primary:        hsl(var(--primary-h), var(--primary-s), var(--primary-l));
-    --primary-hover:  hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 5%));
-    --primary-active: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 10%));
-    --primary-light:  hsl(var(--primary-h), 50%, 55%);
-    --primary-soft:   hsl(var(--primary-h), 45%, 95%);
-    --primary-subtle: hsl(var(--primary-h), 35%, 88%);
-    --primary-dark:   hsl(var(--primary-h), 45%, 22%);
+    --primary-hover:  hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 9%));
+    --primary-active: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 17%));
+    --primary-light:  hsl(var(--primary-h), 75%, 65%);
+    --primary-soft:   hsl(var(--primary-h), 65%, 95%);
+    --primary-subtle: hsl(var(--primary-h), 55%, 88%);
+    --primary-dark:   hsl(var(--primary-h), 75%, 22%);
     --primary-glow:   hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.25);
     
-    /* Linear Gradients */
-    --primary-gradient:       linear-gradient(182deg, rgb(7, 107, 145) 0%, rgb(6, 89, 121) 100%);
-    --primary-hover-gradient: linear-gradient(182deg, rgb(6, 89, 121) 0%, rgb(5, 71, 97) 100%);
+    /* Linear Gradients based on #09aae8 */
+    --primary-gradient:       linear-gradient(182deg, #09aae8 0%, #0788ba 100%);
+    --primary-hover-gradient: linear-gradient(182deg, #0788ba 0%, #066e96 100%);
 
     /* Backgrounds */
     --bg-main:      hsl(210, 20%, 97%);
