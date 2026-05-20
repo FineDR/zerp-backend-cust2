@@ -47,7 +47,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 	} else {
 		include(__DIR__ . '/includes/header.php');
 		echo '<style>
-            :root { --primary: hsl(145, 63%, 38%); --primary-hover: hsl(145, 63%, 32%); --primary-dark: hsl(145, 45%, 22%); --primary-soft: hsl(145, 40%, 95%); --bg-workspace: hsl(210, 20%, 97%); --border-color: hsl(220, 15%, 88%); }
+            :root { --primary: hsl(197, 92%, 47%); --primary-hover: hsl(197, 92%, 38%); --primary-dark: hsl(197, 75%, 22%); --primary-soft: hsl(197, 65%, 95%); --bg-workspace: hsl(210, 20%, 97%); --border-color: hsl(220, 15%, 88%); }
             body { background: var(--bg-workspace); font-family: "Inter", sans-serif; }
             .aw-container { padding: 4px 12px !important; max-width: none !important; width: 100% !important; margin: 0 !important; }
             .MainBody { padding-left: 0 !important; padding-right: 0 !important; width: 100% !important; max-width: none !important; }
@@ -95,7 +95,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 } else {
 	include(__DIR__ . '/includes/header.php');
     echo '<style>
-        :root { --primary: hsl(145, 63%, 38%); --primary-hover: hsl(145, 63%, 32%); --primary-dark: hsl(145, 45%, 22%); --primary-soft: hsl(145, 40%, 95%); --bg-workspace: hsl(210, 20%, 97%); --border-color: hsl(220, 15%, 88%); }
+        :root { --primary: hsl(197, 92%, 47%); --primary-hover: hsl(197, 92%, 38%); --primary-dark: hsl(197, 75%, 22%); --primary-soft: hsl(197, 65%, 95%); --bg-workspace: hsl(210, 20%, 97%); --border-color: hsl(220, 15%, 88%); }
         body { background: var(--bg-workspace); font-family: "Inter", sans-serif; }
         .aw-container { padding: 4px 12px !important; max-width: none !important; width: 100% !important; margin: 0 !important; }
         .MainBody { padding-left: 0 !important; padding-right: 0 !important; width: 100% !important; max-width: none !important; }

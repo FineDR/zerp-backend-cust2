@@ -12,6 +12,7 @@
     --primary-subtle: hsl(var(--primary-h), 55%, 88%);
     --primary-dark:   hsl(var(--primary-h), 75%, 22%);
     --primary-glow:   hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.25);
+    --primary-rgb:    9, 170, 232;
     
     /* Linear Gradients based on #09aae8 */
     --primary-gradient:       linear-gradient(182deg, #09aae8 0%, #0788ba 100%);

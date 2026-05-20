@@ -17,7 +17,7 @@ if (isset($_POST['PeriodFrom']) and ($_POST['PeriodFrom'] > $_POST['PeriodTo']))
 if (isset($_POST['Period']) and $_POST['Period'] != '') { $_POST['PeriodFrom'] = ReportPeriod($_POST['Period'], 'From'); $_POST['PeriodTo'] = ReportPeriod($_POST['Period'], 'To'); }
 
 echo '<style>
-    :root { --db-primary: hsl(145, 63%, 38%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+    :root { --db-primary: hsl(197, 92%, 47%); --db-primary-dark: hsl(197, 75%, 22%); --db-primary-soft: hsl(197, 65%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
     .db-page { background: var(--db-bg); min-height: 100vh; padding: 1.5rem; font-family: "Inter", sans-serif; }
     .db-card { background: #fff; border-radius: 12px; border: 1px solid var(--db-border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 1.5rem; }
     .db-card-header { padding: 1rem; border-bottom: 1px solid var(--db-border); }
@@ -29,9 +29,9 @@ echo '<style>
     .db-btn-primary { background: var(--db-primary); color: white; }
     .db-btn-ghost { background: var(--db-primary-soft); color: var(--db-primary); }
     .report-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-    .report-table th { background: hsl(145, 45%, 22%); color: white; padding: 10px; text-align: left; font-size: 0.7rem; text-transform: uppercase; }
+    .report-table th { background: hsl(197, 75%, 22%); color: white; padding: 10px; text-align: left; font-size: 0.7rem; text-transform: uppercase; }
     .report-table td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; }
-    .change-pos { color: hsl(145, 63%, 38%); font-weight: 800; }
+    .change-pos { color: hsl(197, 92%, 47%); font-weight: 800; }
     .change-neg { color: #dc2626; font-weight: 800; }
     @media print { .noPrint { display: none; } .db-page { padding: 0; background: white; } }
 </style>';
@@ -73,7 +73,7 @@ if ((isset($_POST['PeriodFrom']) and isset($_POST['PeriodTo'])) and (!isset($_PO
 		}
 		if ($MyRow['sectioninaccounts'] != $Section) {
 			if ($SectionTotal != 0 OR $SectionTotalLY != 0) {
-				echo '<tr style="background:hsl(145, 40%, 95%); font-weight:900;"><td colspan="2">' . $Sections[$Section] . ' Total</td><td style="text-align:right;">' . locale_number_format(-$SectionTotal, 2) . '</td><td style="text-align:right;">' . locale_number_format(-$SectionTotalLY, 2) . '</td><td style="text-align:right;">' . locale_number_format(-$SectionTotal+$SectionTotalLY, 2) . '</td><td style="text-align:right;">' . RelativeChange(-$SectionTotal, -$SectionTotalLY) . '</td></tr>';
+				echo '<tr style="background:hsl(197, 65%, 95%); font-weight:900;"><td colspan="2">' . $Sections[$Section] . ' Total</td><td style="text-align:right;">' . locale_number_format(-$SectionTotal, 2) . '</td><td style="text-align:right;">' . locale_number_format(-$SectionTotalLY, 2) . '</td><td style="text-align:right;">' . locale_number_format(-$SectionTotal+$SectionTotalLY, 2) . '</td><td style="text-align:right;">' . RelativeChange(-$SectionTotal, -$SectionTotalLY) . '</td></tr>';
 				if ($Section == 1) { $GPInc = $SectionTotal; $GPIncLY = $SectionTotalLY; }
 				if ($Section == 2) echo '<tr style="background:#e2e8f0; font-weight:900;"><td colspan="2">' . __('Gross Profit') . '</td><td style="text-align:right;">' . locale_number_format(-($GPInc + $SectionTotal), 2) . '</td><td style="text-align:right;">' . locale_number_format(-($GPIncLY + $SectionTotalLY), 2) . '</td><td style="text-align:right;">' . locale_number_format(-($GPInc + $SectionTotal) + ($GPIncLY + $SectionTotalLY), 2) . '</td><td style="text-align:right;">' . RelativeChange(-($GPInc + $SectionTotal), -($GPIncLY + $SectionTotalLY)) . '</td></tr>';
 			}
@@ -92,7 +92,7 @@ if ((isset($_POST['PeriodFrom']) and isset($_POST['PeriodTo'])) and (!isset($_PO
 		if ($_POST['ShowDetail'] == 'Detailed') {
 			if (isset($_POST['ShowZeroBalance']) OR $AccAct != 0 OR $AccLY != 0) {
 				$var = -$AccAct + $AccLY; $rel = RelativeChange(-$AccAct, -$AccLY);
-				echo '<tr><td style="padding-left:' . (25+($Level*15)) . 'px;">' . $MyRow['accountcode'] . '</td><td>' . htmlspecialchars($MyRow['accountname']) . '</td><td style="text-align:right;">' . locale_number_format(-$AccAct, 2) . '</td><td style="text-align:right;">' . locale_number_format(-$AccLY, 2) . '</td><td style="text-align:right;' . ($var < 0 ? 'color:#dc2626;' : 'color:hsl(145, 63%, 38%);') . ' font-weight:600;">' . locale_number_format($var, 2) . '</td><td style="text-align:right;">' . $rel . '</td></tr>';
+				echo '<tr><td style="padding-left:' . (25+($Level*15)) . 'px;">' . $MyRow['accountcode'] . '</td><td>' . htmlspecialchars($MyRow['accountname']) . '</td><td style="text-align:right;">' . locale_number_format(-$AccAct, 2) . '</td><td style="text-align:right;">' . locale_number_format(-$AccLY, 2) . '</td><td style="text-align:right;' . ($var < 0 ? 'color:#dc2626;' : 'color:hsl(197, 92%, 47%);') . ' font-weight:600;">' . locale_number_format($var, 2) . '</td><td style="text-align:right;">' . $rel . '</td></tr>';
 			}
 		}
 	}

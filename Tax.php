@@ -17,7 +17,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])){
 
 	$HTML .= '<div class="centre" id="ReportHeader" style="margin-bottom:2rem;">
 					<h2 style="margin:0; color:#1e293b;">' . $_SESSION['CompanyRecord']['coyname'] . '</h2>
-					<div style="font-weight:800; font-size:1.1rem; color:hsl(145, 63%, 38%);">' . $ReportTitle . '</div>
+					<div style="font-weight:800; font-size:1.1rem; color:hsl(197, 92%, 47%);">' . $ReportTitle . '</div>
 					<div style="color:#64748b; font-size:0.8rem; margin-top:5px;">' . __('Printed') . ': ' . date($_SESSION['DefaultDateFormat']) . ' | ' . __('For Periods') . ' - ' . $_POST['NoOfPeriods'] . ' ' . __('months to') . ' ' . $PeriodEnd . '</div>
 				</div>';
 
@@ -26,9 +26,9 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])){
 
 	if ($_POST['DetailOrSummary'] == 'Detail') {
 		$HTML .= '<div class="report-section" style="margin-bottom:2rem;">
-                    <h3 style="font-size:0.8rem; text-transform:uppercase; color:#1e293b; border-bottom:2px solid hsl(145, 63%, 38%); padding-bottom:5px;">' . __('Tax on Sales (Outputs)') . '</h3>
+                    <h3 style="font-size:0.8rem; text-transform:uppercase; color:#1e293b; border-bottom:2px solid hsl(197, 92%, 47%); padding-bottom:5px;">' . __('Tax on Sales (Outputs)') . '</h3>
                     <table class="report-table" style="width:100%; border-collapse:collapse; font-size:0.8rem;">
-                        <thead><tr style="background:hsl(145, 40%, 95%); color:hsl(145, 45%, 22%);"><th>Date</th><th>Type</th><th>#</th><th>Customer</th><th>Branch</th><th style="text-align:right;">Net</th><th style="text-align:right;">Tax</th></tr></thead>
+                        <thead><tr style="background:hsl(197, 65%, 95%); color:hsl(197, 75%, 22%);"><th>Date</th><th>Type</th><th>#</th><th>Customer</th><th>Branch</th><th style="text-align:right;">Net</th><th style="text-align:right;">Tax</th></tr></thead>
                         <tbody>';
 		while ($R = DB_fetch_array($DebtorRes)) {
 			$HTML .= '<tr style="border-bottom:1px solid #eee;"><td>' . ConvertSQLDate($R['trandate']) . '</td><td>' . __($R['typename']) . '</td><td>' . $R['transno'] . '</td><td>' . htmlspecialchars($R['name']) . '</td><td>' . htmlspecialchars($R['branchcode']) . '</td><td style="text-align:right;">' . locale_number_format($R['netamount'], $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($R['tax'], $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
@@ -50,9 +50,9 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])){
 	$SuppRes = DB_query($SQL_Purch); $PurchNet = 0; $PurchTax = 0; $PurchCount = 0;
 	if ($_POST['DetailOrSummary'] == 'Detail') {
 		$HTML .= '<div class="report-section" style="margin-bottom:2rem;">
-                    <h3 style="font-size:0.8rem; text-transform:uppercase; color:#1e293b; border-bottom:2px solid hsl(145, 63%, 38%); padding-bottom:5px;">' . __('Tax on Purchases (Inputs)') . '</h3>
+                    <h3 style="font-size:0.8rem; text-transform:uppercase; color:#1e293b; border-bottom:2px solid hsl(197, 92%, 47%); padding-bottom:5px;">' . __('Tax on Purchases (Inputs)') . '</h3>
                     <table class="report-table" style="width:100%; border-collapse:collapse; font-size:0.8rem;">
-                        <thead><tr style="background:hsl(145, 40%, 95%); color:hsl(145, 45%, 22%);"><th>Date</th><th>Type</th><th>#</th><th>Supplier</th><th>Reference</th><th style="text-align:right;">Net</th><th style="text-align:right;">Tax</th></tr></thead>
+                        <thead><tr style="background:hsl(197, 65%, 95%); color:hsl(197, 75%, 22%);"><th>Date</th><th>Type</th><th>#</th><th>Supplier</th><th>Reference</th><th style="text-align:right;">Net</th><th style="text-align:right;">Tax</th></tr></thead>
                         <tbody>';
 		while ($R = DB_fetch_array($SuppRes)) {
 			$HTML .= '<tr style="border-bottom:1px solid #eee;"><td>' . ConvertSQLDate($R['trandate']) . '</td><td>' . __($R['typename']) . '</td><td>' . $R['transno'] . '</td><td>' . htmlspecialchars($R['suppname']) . '</td><td>' . htmlspecialchars($R['suppreference']) . '</td><td style="text-align:right;">' . locale_number_format($R['netamount'], $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($R['taxamt'], $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
@@ -68,9 +68,9 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])){
     $PCNet = 0; $PCTax = 0; $PCCount = 0;
 	if ($_POST['DetailOrSummary'] == 'Detail') {
 		$HTML .= '<div class="report-section" style="margin-bottom:2rem;">
-                    <h3 style="font-size:0.8rem; text-transform:uppercase; color:#1e293b; border-bottom:2px solid hsl(145, 63%, 38%); padding-bottom:5px;">' . __('Tax on Petty Cash') . '</h3>
+                    <h3 style="font-size:0.8rem; text-transform:uppercase; color:#1e293b; border-bottom:2px solid hsl(197, 92%, 47%); padding-bottom:5px;">' . __('Tax on Petty Cash') . '</h3>
                     <table class="report-table" style="width:100%; border-collapse:collapse; font-size:0.8rem;">
-                        <thead><tr style="background:hsl(145, 40%, 95%); color:hsl(145, 45%, 22%);"><th>Date</th><th>#</th><th>Name</th><th>Reference</th><th style="text-align:right;">Net</th><th style="text-align:right;">Tax</th></tr></thead>
+                        <thead><tr style="background:hsl(197, 65%, 95%); color:hsl(197, 75%, 22%);"><th>Date</th><th>#</th><th>Name</th><th>Reference</th><th style="text-align:right;">Net</th><th style="text-align:right;">Tax</th></tr></thead>
                         <tbody>';
 		while ($R = DB_fetch_array($PettyRes)) {
 			$totTax = DB_fetch_row(DB_query("SELECT SUM(-amount) FROM pcashdetailtaxes WHERE pccashdetail='" . $R['transno'] . "'"))[0];
@@ -84,14 +84,14 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])){
 	}
 
 	$HTML .= '<div class="summary-section">
-                <h3 style="font-size:0.8rem; text-transform:uppercase; color:#1e293b; border-bottom:2px solid hsl(145, 63%, 38%); padding-bottom:5px;">' . __('Tax Summary') . '</h3>
+                <h3 style="font-size:0.8rem; text-transform:uppercase; color:#1e293b; border-bottom:2px solid hsl(197, 92%, 47%); padding-bottom:5px;">' . __('Tax Summary') . '</h3>
                 <table class="summary-table" style="width:100%; border-collapse:collapse; font-size:0.85rem;">
-                    <thead><tr style="background:hsl(145, 45%, 22%); color:white;"><th>' . __('Type') . '</th><th style="text-align:right;">' . __('Count') . '</th><th style="text-align:right;">' . __('Net') . '</th><th style="text-align:right;">' . __('Tax') . '</th><th style="text-align:right;">' . __('Total') . '</th></tr></thead>
+                    <thead><tr style="background:hsl(197, 75%, 22%); color:white;"><th>' . __('Type') . '</th><th style="text-align:right;">' . __('Count') . '</th><th style="text-align:right;">' . __('Net') . '</th><th style="text-align:right;">' . __('Tax') . '</th><th style="text-align:right;">' . __('Total') . '</th></tr></thead>
                     <tbody>';
     $SalesTot = $SalesNet + $SalesTax; $PurchTot = $PurchNet + $PCNet + $PurchTax + $PCTax;
-    $HTML .= '<tr style="background:hsl(145, 40%, 95%);"><td>' . __('Outputs (Sales)') . '</td><td style="text-align:right;">' . locale_number_format($SalesCount) . '</td><td style="text-align:right;">' . locale_number_format($SalesNet, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($SalesTax, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right; font-weight:800;">' . locale_number_format($SalesTot, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+    $HTML .= '<tr style="background:hsl(197, 65%, 95%);"><td>' . __('Outputs (Sales)') . '</td><td style="text-align:right;">' . locale_number_format($SalesCount) . '</td><td style="text-align:right;">' . locale_number_format($SalesNet, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($SalesTax, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right; font-weight:800;">' . locale_number_format($SalesTot, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
     $HTML .= '<tr style="background:#fef2f2;"><td>' . __('Inputs (Purchases/PC)') . '</td><td style="text-align:right;">' . locale_number_format($PurchCount + $PCCount) . '</td><td style="text-align:right;">' . locale_number_format($PurchNet + $PCNet, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($PurchTax + $PCTax, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right; font-weight:800;">' . locale_number_format($PurchTot, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
-    $HTML .= '<tr style="background:white; border-top:2px solid #334155;"><td><b>' . __('NET TAX DUE / (REFUND)') . '</b></td><td></td><td></td><td style="text-align:right; font-weight:900; font-size:1.1rem; color:hsl(145, 63%, 38%);">' . locale_number_format($SalesTax - ($PurchTax + $PCTax), $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td></td></tr>';
+    $HTML .= '<tr style="background:white; border-top:2px solid #334155;"><td><b>' . __('NET TAX DUE / (REFUND)') . '</b></td><td></td><td></td><td style="text-align:right; font-weight:900; font-size:1.1rem; color:hsl(197, 92%, 47%);">' . locale_number_format($SalesTax - ($PurchTax + $PCTax), $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td></td></tr>';
     $HTML .= '</tbody></table></div>';
 
 	$HTML .= '<div style="margin-top:2rem; padding:1rem; background:#f8fafc; border-radius:8px; font-size:0.75rem; color:#64748b; line-height:1.5;">
@@ -117,7 +117,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])){
 	$Title = __('Tax Reporting');
 	include(__DIR__ . '/includes/header.php');
 	echo '<style>
-        :root { --db-primary: hsl(145, 63%, 38%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+        :root { --db-primary: hsl(197, 92%, 47%); --db-primary-dark: hsl(197, 75%, 22%); --db-primary-soft: hsl(197, 65%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
         .db-page { background: var(--db-bg); min-height: 100vh; padding: 2rem; font-family: "Inter", sans-serif; }
         .db-card { background: #fff; border-radius: 12px; border: 1px solid var(--db-border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; overflow: hidden; }
         .db-card-header { padding: 1rem; border-bottom: 1px solid var(--db-border); }

@@ -27,14 +27,14 @@ include(__DIR__ . '/includes/header.php');
 echo '
 <style>
 	:root {
-		--primary: hsl(145, 63%, 38%); 
-		--primary-hover: hsl(145, 63%, 32%);
-		--primary-dark: hsl(145, 45%, 22%);
-		--primary-soft: hsl(145, 40%, 95%);
+		--primary: hsl(197, 92%, 47%); 
+		--primary-hover: hsl(197, 92%, 38%);
+		--primary-dark: hsl(197, 75%, 22%);
+		--primary-soft: hsl(197, 65%, 95%);
 		--bg-workspace: hsl(210, 20%, 97%);
 		--border-color: hsl(220, 15%, 88%);
-		--text-main: hsl(145, 15%, 12%);
-		--text-muted: hsl(145, 8%, 50%);
+		--text-main: hsl(197, 15%, 12%);
+		--text-muted: hsl(197, 8%, 50%);
 		--card-bg: #ffffff;
 		--radius: 12px;
 	}

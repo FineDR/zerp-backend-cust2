@@ -2261,7 +2261,7 @@ body.has-sticky-footer {
 
 .db-product-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 12px 30px rgba(0, 50, 0, 0.08);
+    box-shadow: 0 12px 30px rgba(var(--primary-rgb), 0.15);
     border-color: var(--primary-light);
 }
 

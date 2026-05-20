@@ -86,12 +86,12 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
             .kpi-row { display: table; width: 100%; margin-bottom: 20px; border-spacing: 10px; }
             .kpi-card { display: table-cell; background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center; width: 25%; }
             .kpi-label { font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
-            .kpi-value { font-size: 16px; font-weight: bold; color: hsl(145, 63%, 38%); }
+            .kpi-value { font-size: 16px; font-weight: bold; color: hsl(197, 92%, 47%); }
             .report-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-            .report-table th { background: hsl(145, 45%, 22%); color: white; padding: 8px; text-align: left; }
+            .report-table th { background: hsl(197, 75%, 22%); color: white; padding: 8px; text-align: left; }
             .report-table td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; }
-            .section-header { background: hsl(145, 40%, 95%); font-weight: bold; }
-            .group-header { font-weight: bold; color: hsl(145, 45%, 22%); }
+            .section-header { background: hsl(197, 65%, 95%); font-weight: bold; }
+            .group-header { font-weight: bold; color: hsl(197, 75%, 22%); }
             .text-right { text-align: right; }
             .variance-pos { color: #166534; font-weight: bold; }
             .variance-neg { color: #991b1b; font-weight: bold; }
@@ -102,7 +102,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 
 	$HTML .= '<div class="report-header">
                 <h1 style="margin:0; font-size:1.8rem;">' . $_SESSION['CompanyRecord']['coyname'] . '</h1>
-                <div style="font-weight:900; color:hsl(145, 63%, 38%); font-size:1.2rem; text-transform:uppercase;">' . $Title . '</div>
+                <div style="font-weight:900; color:hsl(197, 92%, 47%); font-size:1.2rem; text-transform:uppercase;">' . $Title . '</div>
                 <div style="color:#64748b; font-size:0.9rem;">' . $PeriodFromDate . ' ' . __('to') . ' ' . $PeriodToDate . '</div>
               </div>';
 
@@ -111,7 +111,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
     $HTML .= '<div class="kpi-card"><div class="kpi-label">' . __('Total Revenue') . '</div><div class="kpi-value">' . locale_number_format($TotalRevenue, 0) . '</div></div>';
     $HTML .= '<div class="kpi-card"><div class="kpi-label">' . __('Gross Profit') . '</div><div class="kpi-value">' . locale_number_format($GrossProfit, 0) . ' <small>(' . ($TotalRevenue > 0 ? round($GrossProfit*100/$TotalRevenue,1) : 0) . '%)</small></div></div>';
     $HTML .= '<div class="kpi-card"><div class="kpi-label">' . __('Total Expenses') . '</div><div class="kpi-value" style="color:#ef4444;">' . locale_number_format($TotalExpenses, 0) . '</div></div>';
-    $HTML .= '<div class="kpi-card"><div class="kpi-label">' . __('Net Profit') . '</div><div class="kpi-value" style="color:'.($NetProfit < 0 ? '#ef4444' : 'hsl(145, 63%, 38%)').';">' . locale_number_format($NetProfit, 0) . '</div></div>';
+    $HTML .= '<div class="kpi-card"><div class="kpi-label">' . __('Net Profit') . '</div><div class="kpi-value" style="color:'.($NetProfit < 0 ? '#ef4444' : 'hsl(197, 92%, 47%)').';">' . locale_number_format($NetProfit, 0) . '</div></div>';
     $HTML .= '</div>';
 
     // 3. MAIN DATA TABLE
@@ -140,7 +140,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
             }
             $CurrentSection = $row['sectionid'];
             $SecActual = 0; $SecBudget = 0; $SecLY = 0;
-            $HTML .= '<tr style="background:#f8fafc;"><td colspan="6" style="font-weight:900; text-transform:uppercase; color:hsl(145, 63%, 38%);">' . $row['sectionname'] . '</td></tr>';
+            $HTML .= '<tr style="background:#f8fafc;"><td colspan="6" style="font-weight:900; text-transform:uppercase; color:hsl(197, 92%, 47%);">' . $row['sectionname'] . '</td></tr>';
         }
 
         // Grouping logic (simplified)
@@ -177,7 +177,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
     $HTML .= '<tr class="section-header"><td colspan="2">' . __('Total') . ' ' . $Sections[$CurrentSection] . '</td><td class="text-right">' . locale_number_format($SecActual*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td class="text-right">' . locale_number_format($SecBudget*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td></td><td class="text-right">' . locale_number_format($SecLY*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
 
     // Grand Bottom Line
-	$HTML .= '<tr style="background:hsl(145, 63%, 38%); color:white; font-weight:900;"><td colspan="2" style="font-size:1.1rem;">' . __('NET PROFIT / (LOSS)') . '</td><td class="text-right" style="font-size:1.1rem;">' . locale_number_format($NetProfit, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td class="text-right" style="font-size:1.1rem;">' . locale_number_format($NetProfitBudget, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td></td><td class="text-right" style="font-size:1.1rem;">' . locale_number_format($TotalRevenueLY - $TotalCostOfSalesLY - $TotalExpensesLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+	$HTML .= '<tr style="background:hsl(197, 92%, 47%); color:white; font-weight:900;"><td colspan="2" style="font-size:1.1rem;">' . __('NET PROFIT / (LOSS)') . '</td><td class="text-right" style="font-size:1.1rem;">' . locale_number_format($NetProfit, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td class="text-right" style="font-size:1.1rem;">' . locale_number_format($NetProfitBudget, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td></td><td class="text-right" style="font-size:1.1rem;">' . locale_number_format($TotalRevenueLY - $TotalCostOfSalesLY - $TotalExpensesLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
 	$HTML .= '</tbody></table>';
     
     if (isset($_POST['PrintPDF'])) { $HTML .= '</body></html>'; } else { $HTML .= '</div>'; }
@@ -192,7 +192,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
             .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2.5rem; }
             .kpi-card { background: var(--white); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-soft); box-shadow: var(--shadow); text-align: center; }
             .kpi-label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; }
-            .kpi-value { font-size: 1.5rem; font-weight: 900; color: hsl(145, 63%, 38%); }
+            .kpi-value { font-size: 1.5rem; font-weight: 900; color: hsl(197, 92%, 47%); }
             .report-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
             .report-table th { background: var(--primary-soft); color: var(--primary-dark); font-weight: 800; text-transform: uppercase; font-size: 0.75rem; padding: 1rem; text-align: left; }
             .report-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border-soft); }
@@ -208,7 +208,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
     // SETUP PAGE (Architect v3 Card)
 	include(__DIR__ . '/includes/header.php');
 	echo '<style>
-        :root { --primary: hsl(145, 63%, 38%); --primary-dark: hsl(145, 45%, 22%); --primary-soft: hsl(145, 40%, 95%); --bg: hsl(210, 20%, 97%); --border: #e2e8f0; }
+        :root { --primary: hsl(197, 92%, 47%); --primary-dark: hsl(197, 75%, 22%); --primary-soft: hsl(197, 65%, 95%); --bg: hsl(210, 20%, 97%); --border: #e2e8f0; }
         .aw-page { background: var(--bg); min-height: 100vh; padding: 2rem; font-family: "Inter", sans-serif; display: flex; align-items: flex-start; justify-content: center; }
         .aw-card { background: #fff; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.05); width: 100%; max-width: 600px; overflow: hidden; }
         .aw-card-header { padding: 1.5rem; border-bottom: 1px solid var(--border); background: #fff; }
@@ -220,7 +220,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
         .aw-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px var(--primary-soft); }
         .aw-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.85rem 1.5rem; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; transition: 0.2s; width: 100%; margin-top: 10px; }
         .aw-btn-primary { background: var(--primary); color: #fff; }
-        .aw-btn-primary:hover { background: hsl(145, 63%, 32%); transform: translateY(-1px); }
+        .aw-btn-primary:hover { background: hsl(197, 92%, 38%); transform: translateY(-1px); }
     </style>';
 
     echo '<div class="aw-page"><div class="aw-card">

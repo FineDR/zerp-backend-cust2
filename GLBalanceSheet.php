@@ -38,11 +38,11 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 
 	$HTML .= '<div class="report-header" style="text-align:center; margin-bottom:2rem;">
                 <h1 style="margin:0; color:#1e293b; font-size:1.8rem;">' . $_SESSION['CompanyRecord']['coyname'] . '</h1>
-                <div style="font-weight:900; color:hsl(145, 63%, 38%); font-size:1.2rem; text-transform:uppercase;">' . $Title . '</div>
+                <div style="font-weight:900; color:hsl(197, 92%, 47%); font-size:1.2rem; text-transform:uppercase;">' . $Title . '</div>
                 <div style="color:#64748b; font-size:0.9rem;">' . __('As at') . ' ' . $BalanceDate . '</div>
               </div>';
 
-	$HTML .= '<table class="report-table" style="width:100%; border-collapse:collapse; font-size:0.85rem;"><thead><tr style="background:hsl(145, 45%, 22%); color:white;">';
+	$HTML .= '<table class="report-table" style="width:100%; border-collapse:collapse; font-size:0.85rem;"><thead><tr style="background:hsl(197, 75%, 22%); color:white;">';
 	if ($_POST['ShowDetail'] == 'Detailed') {
 		$HTML .= '<th>' . __('Account') . '</th><th>' . __('Account Name') . '</th><th style="text-align:right;">' . $BalanceDate . '</th><th style="text-align:right;">' . __('Last Year') . '</th>';
 	} else {
@@ -71,7 +71,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 
 		if ($MyRow['sectionid'] != $Section) {
 			if ($Section != '') {
-				$HTML .= '<tr style="background:hsl(145, 40%, 95%); font-weight:900;"><td colspan="2">' . $Sections[$Section] . '</td><td style="text-align:right;">' . locale_number_format($SectionBalance, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($SectionBalanceLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+				$HTML .= '<tr style="background:hsl(197, 65%, 95%); font-weight:900;"><td colspan="2">' . $Sections[$Section] . '</td><td style="text-align:right;">' . locale_number_format($SectionBalance, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($SectionBalanceLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
 			}
 			$SectionBalanceLY = 0; $SectionBalance = 0; $Section = $MyRow['sectionid'];
 			if ($_POST['ShowDetail'] == 'Detailed') $HTML .= '<tr style="background:#f8fafc;"><td colspan="4"><b>' . $Sections[$MyRow['sectionid']] . '</b></td></tr>';
@@ -105,8 +105,8 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 		$Level--;
 	}
 	$HTML .= '<tr style="font-weight:800; border-bottom:1px solid #cbd5e1;"><td colspan="2">' . $ParentGroups[$Level] . '</td><td style="text-align:right;">' . locale_number_format($GroupTotal[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($LYGroupTotal[$Level], $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
-	$HTML .= '<tr style="background:hsl(145, 40%, 95%); font-weight:900;"><td colspan="2">' . $Sections[$Section] . '</td><td style="text-align:right;">' . locale_number_format($SectionBalance, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($SectionBalanceLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
-	$HTML .= '<tr style="background:hsl(145, 63%, 38%); color:white; font-weight:900;"><td colspan="2">' . __('Check Total') . '</td><td style="text-align:right;">' . locale_number_format($CheckTotal, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($LYCheckTotal, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+	$HTML .= '<tr style="background:hsl(197, 65%, 95%); font-weight:900;"><td colspan="2">' . $Sections[$Section] . '</td><td style="text-align:right;">' . locale_number_format($SectionBalance, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($SectionBalanceLY, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+	$HTML .= '<tr style="background:hsl(197, 92%, 47%); color:white; font-weight:900;"><td colspan="2">' . __('Check Total') . '</td><td style="text-align:right;">' . locale_number_format($CheckTotal, $_SESSION['CompanyRecord']['decimalplaces']) . '</td><td style="text-align:right;">' . locale_number_format($LYCheckTotal, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
 	$HTML .= '</tbody></table></body></html>';
 
 	if (isset($_POST['PrintPDF'])) {
@@ -122,7 +122,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 } else {
 	include(__DIR__ . '/includes/header.php');
 	echo '<style>
-        :root { --db-primary: hsl(145, 63%, 38%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+        :root { --db-primary: hsl(197, 92%, 47%); --db-primary-dark: hsl(197, 75%, 22%); --db-primary-soft: hsl(197, 65%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
         .db-page { background: var(--db-bg); min-height: 100vh; padding: 2rem; font-family: "Inter", sans-serif; }
         .db-card { background: #fff; border-radius: 12px; border: 1px solid var(--db-border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; overflow: hidden; }
         .db-card-header { padding: 1rem; border-bottom: 1px solid var(--db-border); }

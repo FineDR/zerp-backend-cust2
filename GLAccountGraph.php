@@ -20,7 +20,7 @@ if (isset($_POST['PeriodFrom']) and isset($_POST['PeriodTo'])) {
 }
 
 echo '<style>
-    :root { --db-primary: hsl(145, 63%, 38%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+    :root { --db-primary: hsl(197, 92%, 47%); --db-primary-dark: hsl(197, 75%, 22%); --db-primary-soft: hsl(197, 65%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
     .db-page { background: var(--db-bg); min-height: 100vh; padding: 2rem; font-family: "Inter", sans-serif; }
     .db-card { background: #fff; border-radius: 12px; border: 1px solid var(--db-border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 700px; margin: 0 auto; overflow: hidden; }
     .db-card-header { padding: 1.25rem; border-bottom: 1px solid var(--db-border); }
@@ -100,7 +100,7 @@ if ((!isset($_POST['PeriodFrom']) or !isset($_POST['PeriodTo'])) or $NewReport =
 		$Val = isset($_POST['InvertGraph']) ? -$MyRow[$DataCol] : $MyRow[$DataCol];
 		$GraphArray[$i++] = array(MonthAndYearFromSQLDate($MyRow['lastdate_in_period']), $Val);
 	}
-	$Graph->SetDataValues($GraphArray); $Graph->SetDataColors(array('hsl(145, 63%, 38%)'), array('black')); $Graph->SetLegend(array($Leg));
+	$Graph->SetDataValues($GraphArray); $Graph->SetDataColors(array('hsl(197, 92%, 47%)'), array('black')); $Graph->SetLegend(array($Leg));
 	$Graph->DrawGraph();
 
     echo '<div class="db-page"><div class="db-card" style="max-width:1100px;">

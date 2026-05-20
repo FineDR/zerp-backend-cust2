@@ -31,13 +31,13 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 
 	$HTML .= '<div class="report-header" style="text-align:center; margin-bottom:2rem;">
                 <h1 style="margin:0; color:#1e293b;">' . $_SESSION['CompanyRecord']['coyname'] . '</h1>
-                <div style="font-weight:900; color:hsl(145, 63%, 38%); font-size:1.1rem; text-transform:uppercase;">' . $Title . '</div>
+                <div style="font-weight:900; color:hsl(197, 92%, 47%); font-size:1.1rem; text-transform:uppercase;">' . $Title . '</div>
                 <div style="color:#64748b; font-size:0.85rem; margin-top:5px;"><b>Tag:</b> ' . $_POST['tag'] . ' - ' . $TagInfo[0] . ' | <b>Period:</b> ' . $NumberOfMonths . ' months to ' . $PeriodToDate . '</div>
               </div>';
 
 	$AccountList = DB_query("SELECT accountgroups.sectioninaccounts, accountgroups.groupname, accountgroups.parentgroupname, gltrans.account, chartmaster.accountname, Sum(CASE WHEN (gltrans.periodno>='" . $_POST['PeriodFrom'] . "' AND gltrans.periodno<='" . $_POST['PeriodTo'] . "') THEN gltrans.amount ELSE 0 END) AS TotalAllPeriods FROM chartmaster INNER JOIN accountgroups ON chartmaster.group_ = accountgroups.groupname INNER JOIN gltrans ON chartmaster.accountcode= gltrans.account INNER JOIN gltags ON gltags.counterindex=gltrans.counterindex WHERE accountgroups.pandl=1 AND gltags.tagref='" . $_POST['tag'] . "' GROUP BY accountgroups.sectioninaccounts, accountgroups.groupname, accountgroups.parentgroupname, gltrans.account, chartmaster.accountname ORDER BY accountgroups.sectioninaccounts, accountgroups.sequenceintb, accountgroups.groupname, gltrans.account");
 
-	$HTML .= '<table class="report-table" style="width:100%; border-collapse:collapse; font-size:0.85rem;"><thead><tr style="background:hsl(145, 45%, 22%); color:white;">';
+	$HTML .= '<table class="report-table" style="width:100%; border-collapse:collapse; font-size:0.85rem;"><thead><tr style="background:hsl(197, 75%, 22%); color:white;">';
 	if ($_POST['Detail'] == 'Detailed') { $HTML .= '<th>' . __('Account') . '</th><th>' . __('Account Name') . '</th><th style="text-align:right;">' . __('Period Actual') . '</th>'; }
 	else { $HTML .= '<th colspan="2"></th><th style="text-align:right;">' . __('Period Actual') . '</th>'; }
 	$HTML .= '</tr></thead><tbody>';
@@ -63,7 +63,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 		if ($MyRow['sectioninaccounts'] != $Section) {
 			if ($SectionPrdActual != 0) {
                 $mul = ($Section == 4 ? 1 : -1);
-				$HTML .= '<tr style="background:hsl(145, 40%, 95%); font-weight:900;"><td>' . $Sections[$Section] . '</td><td></td><td style="text-align:right;">' . locale_number_format($SectionPrdActual*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+				$HTML .= '<tr style="background:hsl(197, 65%, 95%); font-weight:900;"><td>' . $Sections[$Section] . '</td><td></td><td style="text-align:right;">' . locale_number_format($SectionPrdActual*$mul, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
                 if ($Section == 1) $TotalIncome = $SectionPrdActual;
 				if ($Section == 2) { // Gross Profit
 					$HTML .= '<tr style="background:#f1f5f9; font-weight:900;"><td>' . __('Gross Profit') . '</td><td></td><td style="text-align:right;">' . locale_number_format(($TotalIncome - $SectionPrdActual), $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
@@ -92,7 +92,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
             </tr>';
 		}
 	}
-	$HTML .= '<tr style="background:hsl(145, 63%, 38%); color:white; font-weight:900;"><td colspan="2">' . __('Surplus / (Deficit)') . '</td><td style="text-align:right;">' . locale_number_format($PeriodProfitLoss, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
+	$HTML .= '<tr style="background:hsl(197, 92%, 47%); color:white; font-weight:900;"><td colspan="2">' . __('Surplus / (Deficit)') . '</td><td style="text-align:right;">' . locale_number_format($PeriodProfitLoss, $_SESSION['CompanyRecord']['decimalplaces']) . '</td></tr>';
 	$HTML .= '</tbody></table>';
 
 	if (isset($_POST['PrintPDF'])) {
@@ -109,7 +109,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 } else {
 	include(__DIR__ . '/includes/header.php');
 	echo '<style>
-        :root { --db-primary: hsl(145, 63%, 38%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+        :root { --db-primary: hsl(197, 92%, 47%); --db-primary-dark: hsl(197, 75%, 22%); --db-primary-soft: hsl(197, 65%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
         .db-page { background: var(--db-bg); min-height: 100vh; padding: 2rem; font-family: "Inter", sans-serif; }
         .db-card { background: #fff; border-radius: 12px; border: 1px solid var(--db-border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; overflow: hidden; }
         .db-card-header { padding: 1.25rem; border-bottom: 1px solid var(--db-border); }

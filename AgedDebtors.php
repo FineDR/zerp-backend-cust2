@@ -505,7 +505,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 	.db-card-title {
 		font-size: 1.1rem;
 		font-weight: 850;
-		color: #064e3b;
+		color: #066e96;
 		margin: 0;
 		display: flex;
 		align-items: center;
@@ -517,13 +517,13 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 	.architect-btn {
 		display: inline-flex; align-items: center; justify-content: center; gap: 10px;
 		padding: 12px 28px; border-radius: 50px;
-		background: #059669; color: #ffffff; border: none;
+		background: #09aae8; color: #ffffff; border: none;
 		font-weight: 700; font-size: 0.85rem; text-decoration: none;
 		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-		box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+		box-shadow: 0 4px 12px rgba(9, 170, 232, 0.2);
 		cursor: pointer; width: 100%;
 	}
-	.architect-btn:hover { background: #065f46; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3); }
+	.architect-btn:hover { background: #0788ba; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(9, 170, 232, 0.3); }
 	.architect-btn i { color: #ffffff !important; }
 	.architect-btn.secondary { background: #e5e7eb; color: #374151; box-shadow: none; }
 	.architect-btn.secondary:hover { background: #d1d5db; color: #111827; }
@@ -543,7 +543,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 	}
 	
 	.breadcrumb-item { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; }
-	.breadcrumb-item:hover { color: #059669; }
+	.breadcrumb-item:hover { color: #09aae8; }
 	.breadcrumb-separator { font-size: 0.6rem; opacity: 0.4; margin: 0 4px; }
 </style>';
 
@@ -558,12 +558,12 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 						<i class="fas fa-chevron-right breadcrumb-separator"></i>
 						<a href="index.php?Application=AR" class="breadcrumb-item">' . __('Receivables') . '</a>
 						<i class="fas fa-chevron-right breadcrumb-separator"></i>
-						<span style="color: #064e3b; opacity: 0.9;">' . __('Aging Analysis') . '</span>
+						<span style="color: #066e96; opacity: 0.9;">' . __('Aging Analysis') . '</span>
 					</div>
 					<div style="display: flex; align-items: center; gap: 24px;">
 						<div>
-							<h1 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px; color: #064e3b; margin: 0; line-height: 1;">' . $Title . '</h1>
-							<p style="font-size: 1.1rem; margin-top: 8px; color: #065f46; font-weight: 500; opacity: 0.8;">' . __('Analyze aged customer balances and credit status') . '</p>
+							<h1 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px; color: #066e96; margin: 0; line-height: 1;">' . $Title . '</h1>
+							<p style="font-size: 1.1rem; margin-top: 8px; color: #0788ba; font-weight: 500; opacity: 0.8;">' . __('Analyze aged customer balances and credit status') . '</p>
 						</div>
 					</div>
 				</div>
@@ -585,8 +585,8 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 				<div style="padding: 24px;">
 
 					<div class="db-form-group" style="margin-bottom: 24px;">
-						<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('Report Type') . '</label>
-						<select tabindex="3" name="All_Or_Overdues" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5;">
+						<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #0788ba; display: block; margin-bottom: 8px;">' . __('Report Type') . '</label>
+						<select tabindex="3" name="All_Or_Overdues" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #cceeff;">
 							<option selected="selected" value="All">' . __('All customers with balances') . '</option>
 							<option value="OverduesOnly">' . __('Overdue accounts only') . '</option>
 							<option value="HeldOnly">' . __('Held accounts only') . '</option>
@@ -594,8 +594,8 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 					</div>
 
 					<div class="db-form-group" style="margin-bottom: 24px;">
-						<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('Detail Level') . '</label>
-						<select tabindex="6" name="DetailedReport" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5;">
+						<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #0788ba; display: block; margin-bottom: 8px;">' . __('Detail Level') . '</label>
+						<select tabindex="6" name="DetailedReport" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #cceeff;">
 							<option selected="selected" value="No">' . __('Summary Report') . '</option>
 							<option value="Yes">' . __('Detailed Report') . '</option>
 						</select>
@@ -625,24 +625,24 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 						
 						<div class="custom-range-grid">
 							<div class="db-form-group">
-								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('From Customer Code') . '</label>
-								<input tabindex="1" autofocus="autofocus" required="required" type="text" maxlength="6" name="FromCriteria" value="0" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5; padding: 0 16px; box-sizing: border-box;" />
+								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #0788ba; display: block; margin-bottom: 8px;">' . __('From Customer Code') . '</label>
+								<input tabindex="1" autofocus="autofocus" required="required" type="text" maxlength="6" name="FromCriteria" value="0" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #cceeff; padding: 0 16px; box-sizing: border-box;" />
 							</div>
 
 							<div class="db-form-group">
-								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('To Customer Code') . '</label>
-								<input tabindex="2" type="text" required="required" maxlength="6" name="ToCriteria" value="zzzzzz" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5; padding: 0 16px; box-sizing: border-box;" />
+								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #0788ba; display: block; margin-bottom: 8px;">' . __('To Customer Code') . '</label>
+								<input tabindex="2" type="text" required="required" maxlength="6" name="ToCriteria" value="zzzzzz" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #cceeff; padding: 0 16px; box-sizing: border-box;" />
 							</div>
 						</div>
 						
 						<div class="custom-range-grid">
 							<div class="db-form-group">
-								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('Salesperson') . '</label>';
+								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #0788ba; display: block; margin-bottom: 8px;">' . __('Salesperson') . '</label>';
 		if ($_SESSION['SalesmanLogin'] !=  '') {
 			echo '<input type="text" readonly value="' . $_SESSION['UsersRealName'] . '" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; padding: 0 16px; box-sizing: border-box;" />
 				  <input type="hidden" name="Salesman" value="' . $_SESSION['SalesmanLogin'] . '" />';
 		} else {
-			echo '<select tabindex="4" name="Salesman" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5;">';
+			echo '<select tabindex="4" name="Salesman" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #cceeff;">';
 			$SQL = "SELECT salesmancode, salesmanname FROM salesman";
 			$Result = DB_query($SQL);
 			echo '<option value="">' . __('All Salespeople') . '</option>';
@@ -654,8 +654,8 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])
 		echo '				</div>
 
 							<div class="db-form-group">
-								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #065f46; display: block; margin-bottom: 8px;">' . __('Currency') . '</label>
-								<select tabindex="5" name="Currency" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #d1fae5;">';
+								<label style="font-size: 0.72rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1.2px; color: #0788ba; display: block; margin-bottom: 8px;">' . __('Currency') . '</label>
+								<select tabindex="5" name="Currency" class="db-input" style="width: 100%; border-radius: 12px; height: 50px; font-weight: 600; border-color: #cceeff;">';
 		$SQL = "SELECT currency, currabrev FROM currencies";
 		$Result = DB_query($SQL);
 		while ($MyRow=DB_fetch_array($Result)) {

@@ -129,10 +129,10 @@ if (isset($_GET['Edit'])) {
 ?>
 <style>
     :root {
-        --primary: hsl(145, 63%, 38%);
-        --primary-hover: hsl(145, 63%, 32%);
-        --primary-dark: hsl(145, 45%, 22%);
-        --primary-soft: hsl(145, 40%, 95%);
+        --primary: hsl(197, 92%, 47%);
+        --primary-hover: hsl(197, 92%, 38%);
+        --primary-dark: hsl(197, 75%, 22%);
+        --primary-soft: hsl(197, 65%, 95%);
         --bg: hsl(210, 20%, 97%);
         --white: #ffffff;
         --border: #e2e8f0;

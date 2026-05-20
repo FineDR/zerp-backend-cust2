@@ -20,7 +20,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 
 	$HTML .= '<div class="report-header" style="text-align:center; margin-bottom:2rem;">
                 <h1 style="margin:0; color:#1e293b; font-size:1.6rem;">' . $_SESSION['CompanyRecord']['coyname'] . '</h1>
-                <div style="font-weight:900; color:hsl(145, 63%, 38%); font-size:1.1rem; text-transform:uppercase;">' . __('General Ledger Activity Report') . '</div>
+                <div style="font-weight:900; color:hsl(197, 92%, 47%); font-size:1.1rem; text-transform:uppercase;">' . __('General Ledger Activity Report') . '</div>
                 <div style="color:#64748b; font-size:0.8rem; margin-top:5px;">Printed: ' . date($_SESSION['DefaultDateFormat']) . ' | User: ' . $_SESSION['UserID'] . '</div>
               </div>';
 
@@ -34,8 +34,8 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 		$SQL .= " ORDER BY periodno, gltrans.trandate, gltrans.counterindex";
 		$TransResult = DB_query($SQL);
 
-		$HTML .= '<div style="margin-top:2rem; padding:10px; background:hsl(145, 40%, 95%); border-radius:8px; border:1px solid #d1fae5; display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-weight:900; color:hsl(145, 45%, 22%); font-size:0.95rem;">' . $SelectedAccount . ' - ' . $AccountName . '</div>
+		$HTML .= '<div style="margin-top:2rem; padding:10px; background:hsl(197, 65%, 95%); border-radius:8px; border:1px solid #d1fae5; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:900; color:hsl(197, 75%, 22%); font-size:0.95rem;">' . $SelectedAccount . ' - ' . $AccountName . '</div>
                     <div style="font-size:0.75rem; color:#64748b;">Period Range: ' . $F1 . ' to ' . $L1 . '</div>
                   </div>';
 
@@ -73,7 +73,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 
 			$HTML .= '<tr style="border-bottom:1px solid #f1f5f9;">
                         <td>' . $R['typename'] . '</td><td style="text-align:right;">' . $R['typeno'] . '</td><td>' . ConvertSQLDate($R['trandate']) . '</td>
-                        <td style="text-align:right; color:hsl(145, 63%, 38%);">' . $Deb . '</td><td style="text-align:right; color:#dc2626;">' . $Cre . '</td>
+                        <td style="text-align:right; color:hsl(197, 92%, 47%);">' . $Deb . '</td><td style="text-align:right; color:#dc2626;">' . $Cre . '</td>
                         <td style="font-size:0.75rem; color:#475569;">' . htmlspecialchars($R['narrative']) . '</td>
                         <td style="font-size:0.7rem; color:#64748b;">' . $R['tag'] . '</td>
                     </tr>';
@@ -99,7 +99,7 @@ if (isset($_POST['PrintPDF']) or isset($_POST['View'])) {
 } else {
 	include(__DIR__ . '/includes/header.php');
 	echo '<style>
-        :root { --db-primary: hsl(145, 63%, 38%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+        :root { --db-primary: hsl(197, 92%, 47%); --db-primary-dark: hsl(197, 75%, 22%); --db-primary-soft: hsl(197, 65%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
         .db-page { background: var(--db-bg); min-height: 100vh; padding: 2rem; font-family: "Inter", sans-serif; }
         .db-layout { display: grid; grid-template-columns: 350px 1fr; gap: 2rem; max-width: 1300px; margin: 0 auto; }
         .db-card { background: #fff; border-radius: 12px; border: 1px solid var(--db-border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }

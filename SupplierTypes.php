@@ -63,7 +63,7 @@ $ExtraHeadContent = '
 	.db-card-title {
 		font-size: 0.8rem;
 		font-weight: 850;
-		color: #064e3b;
+		color: #066e96;
 		margin: 0;
 		display: flex;
 		align-items: center;
@@ -82,35 +82,35 @@ $ExtraHeadContent = '
         text-transform: uppercase; 
         font-weight: 900; 
         letter-spacing: 0.8px; 
-        color: #064e3b; 
+        color: #066e96; 
         display: block; 
         margin-bottom: 6px;
         opacity: 0.7;
     }
     field input, field select {
-        width: 100%; border-radius: 10px; height: 44px; font-weight: 600; border: 1px solid #d1fae5;
+        width: 100%; border-radius: 10px; height: 44px; font-weight: 600; border: 1px solid #cceeff;
         padding: 0 14px; box-sizing: border-box; background: #ffffff; font-family: inherit; font-size: 0.9rem;
         transition: all 0.2s ease;
     }
     field input:focus, field select:focus { 
-        border-color: #059669; outline: none; box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1); 
+        border-color: #09aae8; outline: none; box-shadow: 0 0 0 4px rgba(9, 170, 232, 0.1); 
     }
     .fieldhelp { font-size: 0.75rem; color: #64748b; margin-top: 6px; display: block; font-weight: 500; }
 
 	.architect-btn {
 		display: inline-flex; align-items: center; justify-content: center; gap: 8px;
 		padding: 12px 24px; border-radius: 10px;
-		background: #059669; color: #ffffff; border: none;
+		background: #09aae8; color: #ffffff; border: none;
 		font-weight: 700; font-size: 0.85rem; text-decoration: none;
 		transition: all 0.3s ease;
-		box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+		box-shadow: 0 4px 12px rgba(9, 170, 232, 0.2);
 		cursor: pointer;
         font-family: inherit;
         white-space: nowrap;
 	}
-	.architect-btn-outline { background: transparent; color: #059669; border: 1.5px solid #d1fae5; box-shadow: none; }
-	.architect-btn-outline:hover { background: #f0fdf4; border-color: #059669; }
-	.architect-btn:hover { background: #065f46; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(5, 150, 105, 0.3); }
+	.architect-btn-outline { background: transparent; color: #09aae8; border: 1.5px solid #cceeff; box-shadow: none; }
+	.architect-btn-outline:hover { background: #f0f9ff; border-color: #09aae8; }
+	.architect-btn:hover { background: #0788ba; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(9, 170, 232, 0.3); }
 	
     .db-bottom-layout { 
         display: grid; 
@@ -127,7 +127,7 @@ $ExtraHeadContent = '
     table.modern-table th { text-align: left; background: #f8fafc; font-size: 0.65rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; color: #64748b; border-bottom: 2px solid #edf2f7; }
     
     .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; }
-    .badge-emerald { background: #d1fae5; color: #065f46; }
+    .badge-blue { background: #cceeff; color: #0788ba; }
 
     @media (max-width: 1200px) {
         .db-bottom-layout { grid-template-columns: 1fr; gap: 20px; }
@@ -203,7 +203,7 @@ echo '<div class="db-page">
                         <i class="fas fa-chevron-right" style="font-size: 0.4rem;"></i> 
                         ' . __('Supplier Types') . '
 					</div>
-					<h1 style="font-size: 1.6rem; font-weight: 950; letter-spacing: -0.5px; color: #064e3b; margin: 0; line-height: 1.1;">' . $Title . '</h1>
+					<h1 style="font-size: 1.6rem; font-weight: 950; letter-spacing: -0.5px; color: #066e96; margin: 0; line-height: 1.1;">' . $Title . '</h1>
 				</div>
                 <div class="header-actions">
                      <button type="submit" form="supp-form" name="submit" class="architect-btn">
@@ -235,10 +235,10 @@ echo '          <div class="db-card">
                             <tbody>';
                             while ($MyRow = DB_fetch_array($Result)) {
                                 echo '<tr>
-                                        <td><span class="badge badge-emerald">#', $MyRow['typeid'], '</span></td>
-                                        <td style="font-weight: 700; color: #064e3b;">', $MyRow['typename'], '</td>
+                                        <td><span class="badge badge-blue">#', $MyRow['typeid'], '</span></td>
+                                        <td style="font-weight: 700; color: #066e96;">', $MyRow['typename'], '</td>
                                         <td style="text-align: right; white-space: nowrap;">
-                                            <a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'), '?SelectedType=', $MyRow['typeid'], '" style="color:#059669; margin-right:12px;"><i class="fas fa-edit"></i></a>
+                                            <a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'), '?SelectedType=', $MyRow['typeid'], '" style="color:#09aae8; margin-right:12px;"><i class="fas fa-edit"></i></a>
                                             <a href="', htmlspecialchars($_SERVER['PHP_SELF'],ENT_QUOTES,'UTF-8'), '?SelectedType=', $MyRow['typeid'], '&amp;delete=yes" style="color:#dc2626;" onclick="return confirm(\'' . __('Confirm delete?') . '\');"><i class="fas fa-trash-alt"></i></a>
                                         </td>
                                     </tr>';

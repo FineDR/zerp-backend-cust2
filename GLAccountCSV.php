@@ -10,7 +10,7 @@ if (isset($_POST['Period'])) $SelectedPeriod = $_POST['Period'];
 elseif (isset($_GET['Period'])) $SelectedPeriod = $_GET['Period'];
 
 echo '<style>
-    :root { --db-primary: hsl(145, 63%, 38%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+    :root { --db-primary: hsl(197, 92%, 47%); --db-primary-dark: hsl(197, 75%, 22%); --db-primary-soft: hsl(197, 65%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
     .db-page { background: var(--db-bg); min-height: 100vh; padding: 2rem; font-family: "Inter", sans-serif; }
     .db-layout { display: grid; grid-template-columns: 350px 1fr; gap: 2rem; max-width: 1300px; margin: 0 auto; }
     .db-card { background: #fff; border-radius: 12px; border: 1px solid var(--db-border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }

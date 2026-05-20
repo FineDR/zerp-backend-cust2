@@ -16,7 +16,7 @@ include(__DIR__ . '/includes/GLFunctions.php');
 function colUI($val) {
     if (round($val, 2) == 0) return '<td></td><td style="text-align:right; color:#cbd5e1;">-</td>';
     if ($val < 0) return '<td style="text-align:right; color:#dc2626; font-weight:600;">(' . locale_number_format(abs($val), $_SESSION['CompanyRecord']['decimalplaces']) . ')</td><td></td>';
-    return '<td></td><td style="text-align:right; color:hsl(145, 63%, 38%); font-weight:600;">' . locale_number_format($val, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>';
+    return '<td></td><td style="text-align:right; color:hsl(197, 92%, 47%); font-weight:600;">' . locale_number_format($val, $_SESSION['CompanyRecord']['decimalplaces']) . '</td>';
 }
 
 if (isset($_GET['PeriodFrom'])) $_POST['PeriodFrom'] = $_GET['PeriodFrom'];
@@ -34,11 +34,11 @@ if (isset($_POST['PeriodFrom']) and isset($_POST['PeriodTo']) and !isset($_POST[
     $PFN = EndDateSQLFromPeriodNo($_POST['PeriodFrom']); $PTN = EndDateSQLFromPeriodNo($_POST['PeriodTo']);
     
     echo '<style>
-        :root { --db-primary: hsl(145, 63%, 38%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+        :root { --db-primary: hsl(197, 92%, 47%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
         .report-wrapper { max-width: 1200px; margin: 0 auto; background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
         .report-title { text-align: center; margin-bottom: 2.5rem; }
         .report-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        .report-table th { background: hsl(145, 45%, 22%); color: white; padding: 12px; text-align: left; }
+        .report-table th { background: hsl(197, 75%, 22%); color: white; padding: 12px; text-align: left; }
         .report-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
         .section-header { background: #f8fafc; font-weight: 900; text-transform: uppercase; font-size: 0.75rem; color: #475569; }
         .total-row { font-weight: 800; border-top: 2px solid #334155 !important; }
@@ -110,7 +110,7 @@ if (isset($_POST['PeriodFrom']) and isset($_POST['PeriodTo']) and !isset($_POST[
 
 } else {
 	echo '<style>
-        :root { --db-primary: hsl(145, 63%, 38%); --db-primary-dark: hsl(145, 45%, 22%); --db-primary-soft: hsl(145, 40%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
+        :root { --db-primary: hsl(197, 92%, 47%); --db-primary-dark: hsl(197, 75%, 22%); --db-primary-soft: hsl(197, 65%, 95%); --db-bg: hsl(210, 20%, 97%); --db-border: hsl(210, 14%, 89%); }
         .db-page { background: var(--db-bg); min-height: 100vh; padding: 2rem; font-family: "Inter", sans-serif; }
         .db-card { background: #fff; border-radius: 12px; border: 1px solid var(--db-border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; overflow: hidden; }
         .db-card-header { padding: 1rem; border-bottom: 1px solid var(--db-border); }

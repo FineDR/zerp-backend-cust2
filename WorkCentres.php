@@ -106,10 +106,10 @@ if (isset($_POST['submit'])) {
 
 echo '<style>
     :root {
-        --db-primary: hsl(145, 63%, 38%);
-        --db-primary-hover: hsl(145, 63%, 32%);
-        --db-primary-dark: hsl(145, 45%, 22%);
-        --db-primary-soft: hsl(145, 40%, 95%);
+        --db-primary: hsl(197, 92%, 47%);
+        --db-primary-hover: hsl(197, 92%, 38%);
+        --db-primary-dark: hsl(197, 75%, 22%);
+        --db-primary-soft: hsl(197, 65%, 95%);
         --db-bg: hsl(210, 20%, 97%);
         --db-card-bg: #ffffff;
         --db-border: hsl(210, 14%, 89%);
@@ -153,7 +153,7 @@ echo '<style>
     .db-btn-primary { background: var(--db-primary); color: white; }
     .db-btn-primary:hover { background: var(--db-primary-hover); transform: translateY(-1px); }
     .db-btn-ghost { background: var(--db-primary-soft); color: var(--db-primary); }
-    .db-btn-ghost:hover { background: hsl(145, 40%, 90%); }
+    .db-btn-ghost:hover { background: hsl(197, 40%, 90%); }
     
     .db-badge { padding: 3px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; background: var(--db-primary-soft); color: var(--db-primary); }
     .link-action { color: var(--db-primary); font-weight: 700; text-decoration: none; font-size: 0.75rem; }

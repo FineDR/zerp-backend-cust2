@@ -41,10 +41,10 @@ $Errors = array();
 
     echo '<style>
         :root {
-            --db-primary: hsl(145, 63%, 38%);
-            --db-primary-hover: hsl(145, 63%, 32%);
-            --db-primary-dark: hsl(145, 45%, 22%);
-            --db-primary-soft: hsl(145, 40%, 95%);
+            --db-primary: hsl(197, 92%, 47%);
+            --db-primary-hover: hsl(197, 92%, 38%);
+            --db-primary-dark: hsl(197, 75%, 22%);
+            --db-primary-soft: hsl(197, 65%, 95%);
             --db-bg: hsl(210, 20%, 97%);
             --db-card-bg: #ffffff;
             --db-border: hsl(210, 14%, 89%);
@@ -103,7 +103,7 @@ $Errors = array();
         
         /* Badges */
         .db-badge { padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em; }
-        .db-badge-success { background: hsl(145, 63%, 92%); color: hsl(145, 63%, 25%); }
+        .db-badge-success { background: hsl(197, 63%, 92%); color: hsl(197, 63%, 25%); }
         .db-badge-danger { background: hsl(0, 72%, 94%); color: hsl(0, 72%, 35%); }
         .db-badge-info { background: hsl(210, 30%, 92%); color: hsl(210, 30%, 30%); }
 

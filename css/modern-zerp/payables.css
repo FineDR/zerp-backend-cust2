@@ -59,13 +59,13 @@
 .db-btn-primary {
     background: var(--primary);
     color: var(--text-inverse);
-    box-shadow: 0 4px 12px rgba(43, 138, 62, 0.25);
+    box-shadow: 0 4px 12px var(--primary-glow);
 }
 
 .db-btn-primary:hover {
     background: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(43, 138, 62, 0.35);
+    box-shadow: 0 6px 16px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.35);
 }
 
 .db-btn-secondary {

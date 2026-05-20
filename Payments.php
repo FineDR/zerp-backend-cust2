@@ -120,9 +120,9 @@ if (isset($_POST['CommitBatch']) AND empty($Errors)) {
 									<div style="width: 88px; height: 88px; background: #f0f9ff; color: #0369a1; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 32px;">
 										<i class="fas fa-print" style="font-size: 2.5rem;"></i>
 									</div>
-									<h2 style="font-size: 1.75rem; font-weight: 900; color: #064e3b; margin-bottom: 24px;">' . __('Cheque Printing') . '</h2>
+									<h2 style="font-size: 1.75rem; font-weight: 900; color: #066e96; margin-bottom: 24px;">' . __('Cheque Printing') . '</h2>
 									
-									<a href="' . $RootPath . '/PrintCheque.php?ChequeNum=' . $_POST['ChequeNum'] . '&amp;identifier=' . $identifier . '" target="_blank" class="architect-btn" style="height: 56px; width: 100%; font-size: 1.1rem; border-radius: 16px; margin-bottom: 32px; box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.2);">
+									<a href="' . $RootPath . '/PrintCheque.php?ChequeNum=' . $_POST['ChequeNum'] . '&amp;identifier=' . $identifier . '" target="_blank" class="architect-btn" style="height: 56px; width: 100%; font-size: 1.1rem; border-radius: 16px; margin-bottom: 32px; box-shadow: 0 10px 15px -3px rgba(9, 170, 232, 0.2);">
 										<i class="fas fa-external-link-alt"></i> ' . __('Open Cheque Preview') . '
 									</a>
 
@@ -255,10 +255,10 @@ if (isset($_POST['CommitBatch']) AND empty($Errors)) {
 			echo '<div id="success-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 24px;">
 					<div style="max-width: 500px; width: 100%; animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
 						<div style="text-align: center; padding: 48px; border-radius: 24px; background: #ffffff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative; overflow: hidden;">
-							<div style="width: 80px; height: 80px; background: #dcfce7; color: #059669; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.2);">
+							<div style="width: 80px; height: 80px; background: #e0f2fe; color: #09aae8; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 10px 15px -3px rgba(9, 170, 232, 0.2);">
 								<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
 							</div>
-							<div style="font-size: 1.5rem; font-weight: 900; color: #064e3b; margin-bottom: 12px; letter-spacing: -0.025em; line-height: 1.2; background: transparent; padding: 0; border: none;">' . __('Payment Successfully Recorded') . '</div>
+							<div style="font-size: 1.5rem; font-weight: 900; color: #066e96; margin-bottom: 12px; letter-spacing: -0.025em; line-height: 1.2; background: transparent; padding: 0; border: none;">' . __('Payment Successfully Recorded') . '</div>
 							<div style="color: #64748b; font-size: 1rem; margin-bottom: 32px; font-weight: 500; line-height: 1.5;">' . __('The transaction has been processed and all ledger entries have been synchronized.') . '</div>
 							
 							<div style="background: #f8fafc; border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: left; border: 1px solid #e2e8f0;">
@@ -271,13 +271,13 @@ if (isset($_POST['CommitBatch']) AND empty($Errors)) {
 									<span style="font-weight: 700; color: #0f172a;">' . $DisplayPayee . '</span>
 								</div>
 								<div style="display: flex; justify-content: space-between; padding-top: 4px;">
-									<span style="color: #064e3b; font-weight: 800; font-size: 0.9rem; text-transform: uppercase;">' . __('Amount') . '</span>
-									<span style="font-weight: 900; color: #059669; font-size: 1.3rem;">' . locale_number_format($DisplayAmount, 2) . ' <span style="font-size: 0.9rem; opacity: 0.8;">' . $DisplayCurrency . '</span></span>
+									<span style="color: #066e96; font-weight: 800; font-size: 0.9rem; text-transform: uppercase;">' . __('Amount') . '</span>
+									<span style="font-weight: 900; color: #09aae8; font-size: 1.3rem;">' . locale_number_format($DisplayAmount, 2) . ' <span style="font-size: 0.9rem; opacity: 0.8;">' . $DisplayCurrency . '</span></span>
 								</div>
 							</div>
 							
 							<div style="display: flex; gap: 16px;">
-								<button type="button" onclick="window.close()" class="db-btn db-btn-primary" style="flex: 1; height: 50px; font-size: 1rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.3);"><i class="fas fa-times" style="margin-right: 8px;"></i>' . __('Close') . '</button>
+								<button type="button" onclick="window.close()" class="db-btn db-btn-primary" style="flex: 1; height: 50px; font-size: 1rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(9, 170, 232, 0.3);"><i class="fas fa-times" style="margin-right: 8px;"></i>' . __('Close') . '</button>
 								<button type="button" onclick="document.getElementById(\'success-modal-overlay\').style.display=\'none\'" class="db-btn db-btn-secondary" style="flex: 1; height: 50px; font-size: 1rem; border-radius: 12px; background: #f1f5f9; color: #475569; border: none;">' . __('New Payment') . '</button>
 							</div>
 						</div>
@@ -426,11 +426,11 @@ echo '<style>
 	}
 	.pay-section.active .pay-section-header-banner {
 		background: #ffffff;
-		border-bottom: 2px solid #059669;
+		border-bottom: 2px solid #09aae8;
 	}
 	.pay-section.active .pay-section-icon {
-		background: #dcfce7;
-		color: #059669;
+		background: #e0f2fe;
+		color: #09aae8;
 	}
 	.pay-section-body {
 		display: none;
@@ -453,7 +453,7 @@ echo '<style>
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		background: #064e3b;
+		background: #066e96;
 		color: #ffffff;
 		padding: 16px 32px;
 		border-radius: 12px;
@@ -546,10 +546,10 @@ echo '<style>
 		transition: all 0.3s ease;
 	}
 	.pay-step-item.active .pay-step-dot {
-		background: #059669;
-		border-color: #059669;
+		background: #09aae8;
+		border-color: #09aae8;
 		color: #fff;
-		box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+		box-shadow: 0 0 0 4px rgba(9, 170, 232, 0.1);
 	}
 	.pay-step-label {
 		font-size: 0.65rem;
@@ -559,7 +559,7 @@ echo '<style>
 		letter-spacing: 0.05em;
 		text-align: center;
 	}
-	.pay-step-item.active .pay-step-label { color: #059669; }
+	.pay-step-item.active .pay-step-label { color: #09aae8; }
 
 	.pay-steps::before {
 		content: "";

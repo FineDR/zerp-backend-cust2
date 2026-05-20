@@ -60,7 +60,7 @@ $ExtraHeadContent = '
 	.db-card-title {
 		font-size: 0.7rem;
 		font-weight: 900;
-		color: #064e3b;
+		color: #066e96;
 		margin: 0;
 		display: flex;
 		align-items: center;
@@ -73,26 +73,26 @@ $ExtraHeadContent = '
     field { display: block; margin-bottom: 16px; }
     field label {
         font-size: 0.6rem; text-transform: uppercase; font-weight: 900; letter-spacing: 0.8px; 
-        color: #064e3b; display: block; margin-bottom: 6px; opacity: 0.75;
+        color: #066e96; display: block; margin-bottom: 6px; opacity: 0.75;
     }
     field input, field select {
-        width: 100%; border-radius: 10px; height: 42px; font-weight: 600; border: 1px solid #d1fae5;
+        width: 100%; border-radius: 10px; height: 42px; font-weight: 600; border: 1px solid #cceeff;
         padding: 0 14px; box-sizing: border-box; background: #ffffff; font-family: inherit; font-size: 0.85rem;
         transition: all 0.2s ease;
     }
-    field input:focus, field select:focus { border-color: #059669; outline: none; box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1); }
+    field input:focus, field select:focus { border-color: #09aae8; outline: none; box-shadow: 0 0 0 4px rgba(9, 170, 232, 0.1); }
 
 	.architect-btn {
 		display: inline-flex; align-items: center; justify-content: center; gap: 8px;
 		padding: 12px 24px; border-radius: 10px;
-		background: #059669; color: #ffffff; border: none;
+		background: #09aae8; color: #ffffff; border: none;
 		font-weight: 700; font-size: 0.85rem; text-decoration: none;
 		transition: all 0.3s ease;
-		box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+		box-shadow: 0 4px 12px rgba(9, 170, 232, 0.2);
 		cursor: pointer; font-family: inherit;
         white-space: nowrap;
 	}
-	.architect-btn:hover { background: #065f46; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(5, 150, 105, 0.3); }
+	.architect-btn:hover { background: #0788ba; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(9, 170, 232, 0.3); }
 
     .db-bottom-layout { 
         display: grid; 
@@ -123,7 +123,7 @@ $ExtraHeadContent = '
         display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow-sm); 
     }
     .stat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
-    .stat-val { font-size: 1.4rem; font-weight: 900; color: #064e3b; letter-spacing: -0.5px; line-height: 1; }
+    .stat-val { font-size: 1.4rem; font-weight: 900; color: #066e96; letter-spacing: -0.5px; line-height: 1; }
     .stat-lbl { font-size: 0.65rem; font-weight: 850; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
 
     .sql-code { 
@@ -133,11 +133,11 @@ $ExtraHeadContent = '
     }
 
     .preset-btn { 
-        padding: 6px 12px; border-radius: 8px; background: #ecfdf5; color: #059669; 
-        font-size: 0.65rem; font-weight: 800; border: 1px solid #d1fae5; cursor: pointer; 
+        padding: 6px 12px; border-radius: 8px; background: #f0f9ff; color: #09aae8; 
+        font-size: 0.65rem; font-weight: 800; border: 1px solid #cceeff; cursor: pointer; 
         transition: all 0.2s; margin-right: 5px; text-transform: uppercase;
     }
-    .preset-btn:hover { background: #059669; color: #fff; }
+    .preset-btn:hover { background: #09aae8; color: #fff; }
 
     @media (max-width: 1200px) {
         .stat-bar { grid-template-columns: 1fr 1fr; }
@@ -191,7 +191,7 @@ echo '<div class="db-page">
                         <i class="fas fa-chevron-right" style="font-size: 0.4rem;"></i> 
                         ' . __('Audit Reports') . '
 					</div>
-					<h1 style="font-size: 1.6rem; font-weight: 950; letter-spacing: -0.5px; color: #064e3b; margin: 0; line-height: 1.1;">' . __('Audit Trail Explorer') . '</h1>
+					<h1 style="font-size: 1.6rem; font-weight: 950; letter-spacing: -0.5px; color: #066e96; margin: 0; line-height: 1.1;">' . __('Audit Trail Explorer') . '</h1>
 				</div>
                 <div class="header-actions">
                      <button type="submit" form="AuditFilterForm" name="Go" class="architect-btn">
@@ -208,7 +208,7 @@ echo '<div class="db-page">
                 <div><div class="stat-val">' . $TotalCount . '</div><div class="stat-lbl">' . __('Total Trails') . '</div></div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon" style="background:#ecfdf5; color:#10b981;"><i class="fas fa-plus-circle"></i></div>
+                <div class="stat-icon" style="background:#f0f9ff; color:#09aae8;"><i class="fas fa-plus-circle"></i></div>
                 <div><div class="stat-val">' . $Inserts . '</div><div class="stat-lbl">' . __('Inserts') . '</div></div>
             </div>
             <div class="stat-card">
@@ -246,7 +246,7 @@ echo '<div class="db-page">
                             
                             foreach ($Rows as $row) {
                                 $op = 'UPDATE'; $rowCls = 'row-update'; $dotColor = '#f59e0b'; $icon = 'fa-edit';
-                                if (stripos($row['querystring'], 'INSERT') !== false) { $op = 'INSERT'; $rowCls = 'row-insert'; $dotColor = '#10b981'; $icon = 'fa-plus-circle'; }
+                                if (stripos($row['querystring'], 'INSERT') !== false) { $op = 'INSERT'; $rowCls = 'row-insert'; $dotColor = '#09aae8'; $icon = 'fa-plus-circle'; }
                                 elseif (stripos($row['querystring'], 'DELETE') !== false) { $op = 'DELETE'; $rowCls = 'row-delete'; $dotColor = '#ef4444'; $icon = 'fa-trash-alt'; }
                                 
                                 echo '<tr class="' . $rowCls . '">
@@ -255,7 +255,7 @@ echo '<div class="db-page">
                                             <div style="font-size:0.7rem; color:#64748b; font-weight:500;">' . date('H:i:s', strtotime($row['transactiondate'])) . '</div>
                                         </td>
                                         <td>
-                                            <div style="font-weight: 850; color: #064e3b; display: flex; align-items: center; gap: 6px;">
+                                            <div style="font-weight: 850; color: #066e96; display: flex; align-items: center; gap: 6px;">
                                                 <i class="fas fa-user-circle" style="opacity:0.4;"></i> ' . $row['userid'] . '
                                             </div>
                                         </td>
